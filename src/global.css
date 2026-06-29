@@ -10,8 +10,7 @@
 /* global.css */
 @layer theme {
   @variant light {
-    /* Override any color variable */
-    --accent: oklch(71.4% 0.122 209.33); /* Custom indigo accent */
+    --accent: oklch(71.4% 0.122 209.33);
   }
 
   @variant dark {

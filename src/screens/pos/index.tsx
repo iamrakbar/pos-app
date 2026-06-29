@@ -13,41 +13,41 @@ import { View } from 'react-native';
 const CART_PANEL_WIDTH = 320;
 
 export default function POSScreen(): JSX.Element {
-  const openAddonModal = usePOSStore((s) => s.openAddonModal);
-  const addItem = useCartStore((s) => s.addItem);
+    const openAddonModal = usePOSStore((s) => s.openAddonModal);
+    const addItem = useCartStore((s) => s.addItem);
 
-  const handleSelectProduct = (product: POSProduct) => {
-    if (product.add_ons.length > 0) {
-      openAddonModal(product);
-    } else {
-      addItem({
-        product_id: product.id,
-        name: product.name,
-        price: product.price,
-        qty: 1,
-        notes: null,
-        add_ons: [],
-      });
-    }
-  };
+    const handleSelectProduct = (product: POSProduct) => {
+        if (product.add_ons.length > 0) {
+            openAddonModal(product);
+        } else {
+            addItem({
+                product_id: product.id,
+                name: product.name,
+                price: product.price,
+                qty: 1,
+                notes: null,
+                add_ons: [],
+            });
+        }
+    };
 
-  return (
-    <View className="flex-1 flex-row bg-background">
-      {/* Product catalog */}
-      <View className="flex-1">
-        <SearchBar />
-        <ProductGrid onSelectProduct={handleSelectProduct} />
-      </View>
+    return (
+        <View className="flex-1 flex-row bg-background">
+            {/* Product catalog */}
+            <View className="flex-1">
+                <SearchBar />
+                <ProductGrid onSelectProduct={handleSelectProduct} />
+            </View>
 
-      {/* Cart panel */}
-      <View style={{ width: CART_PANEL_WIDTH }}>
-        <CartPanel />
-      </View>
+            {/* Cart panel */}
+            <View style={{ width: CART_PANEL_WIDTH }}>
+                <CartPanel />
+            </View>
 
-      {/* Modals */}
-      <AddOnModal />
-      <CheckoutModal />
-      <PaymentModal />
-    </View>
-  );
+            {/* Modals */}
+            <AddOnModal />
+            <CheckoutModal />
+            <PaymentModal />
+        </View>
+    );
 }

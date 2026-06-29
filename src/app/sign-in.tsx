@@ -1,5 +1,5 @@
 import Logo from "@/components/common/logo";
-import { Button, Card, InputGroup, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, InputGroup, useThemeColor } from "heroui-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useState, type JSX } from "react";
 import { Pressable, View } from "react-native";
