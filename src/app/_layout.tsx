@@ -1,4 +1,7 @@
+import { StatusBar } from 'expo-status-bar';
 import { Stack } from "expo-router";
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+
 import { HeroUINativeProvider } from "heroui-native";
 import type { JSX } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -6,11 +9,23 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
 
 export default function RootLayout(): JSX.Element {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <HeroUINativeProvider>
-        <Stack screenOptions={{ headerShown: false }} />
-      </HeroUINativeProvider>
-    </GestureHandlerRootView>
-  );
+    const session = true; // Replace with your session management logic
+
+    return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <KeyboardProvider>
+                <HeroUINativeProvider>
+                    <StatusBar />
+                    <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Protected guard={!!session}>
+                            <Stack.Screen name="(app)" />
+                        </Stack.Protected>
+                        <Stack.Protected guard={!session}>
+                            <Stack.Screen name="sign-in" />
+                        </Stack.Protected>
+                    </Stack>
+                </HeroUINativeProvider>
+            </KeyboardProvider>
+        </GestureHandlerRootView>
+    );
 }

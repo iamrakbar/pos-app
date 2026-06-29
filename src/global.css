@@ -6,3 +6,15 @@
 /* End-user path: heroui-native lives in the project's node_modules, one
    level up from this src/global.css file. */
 @source '../node_modules/heroui-native/lib';
+
+/* global.css */
+@layer theme {
+  @variant light {
+    /* Override any color variable */
+    --accent: oklch(71.4% 0.122 209.33); /* Custom indigo accent */
+  }
+
+  @variant dark {
+    --accent: oklch(71.4% 0.122 209.33);
+  }
+}
