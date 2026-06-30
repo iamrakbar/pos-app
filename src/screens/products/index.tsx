@@ -1,11 +1,13 @@
 import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '@/data/pos-mock';
 import { formatRupiah } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
-import { Chip, SearchField, Select, Separator, Surface, Typography } from 'heroui-native';
+import { Button, Chip, SearchField, Select, Separator, Surface, Typography } from 'heroui-native';
 import React from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function ProductsScreen(): React.JSX.Element {
+    const router = useRouter();
     const [search, setSearch] = React.useState('');
     const [categoryId, setCategoryId] = React.useState<string | null>(null);
     const [activeFilter, setActiveFilter] = React.useState<'all' | 'active' | 'inactive'>('all');
@@ -78,6 +80,11 @@ export default function ProductsScreen(): React.JSX.Element {
                     </View>
                 </View>
 
+                        <Button size="sm" onPress={() => router.push('/products/new' as never)}>
+                    <Ionicons name="add" size={16} color="white" />
+                    <Button.Label className="ml-1">New</Button.Label>
+                </Button>
+
                 {/* Active filter pills */}
                 <View className="flex-row items-center gap-2">
                     {(['all', 'active', 'inactive'] as const).map((f) => {
@@ -117,7 +124,10 @@ export default function ProductsScreen(): React.JSX.Element {
 
                         return (
                             <View key={product.id}>
-                                <Pressable className="flex-row items-center gap-4 px-4 py-3 active:bg-muted/30">
+                                <Pressable
+                                    onPress={() => router.push(`/products/${product.id}` as never)}
+                                    className="flex-row items-center gap-4 px-4 py-3 active:bg-muted/30"
+                                >
                                     {/* Thumbnail */}
                                     <View className="w-14 h-14 rounded-xl bg-muted overflow-hidden items-center justify-center flex-shrink-0">
                                         {product.thumbnail_url ? (
