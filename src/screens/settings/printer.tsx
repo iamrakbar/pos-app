@@ -9,11 +9,10 @@ import {
 } from 'heroui-native';
 import React from 'react';
 import { Pressable, ScrollView, Switch as RNSwitch, TextInput, View } from 'react-native';
+import type { ConnectionType, PaperWidth } from '@/stores/usePrinterStore';
+import { usePrinterStore } from '@/stores/usePrinterStore';
 
 // ─── Types & constants ────────────────────────────────────────────────────────
-
-type ConnectionType = 'bluetooth' | 'wifi';
-type PaperWidth = '58mm' | '80mm';
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [
     { value: 'bluetooth', label: 'Bluetooth' },
@@ -49,26 +48,22 @@ function FieldLabel({ label }: { label: string }) {
 export default function PrinterSettingsScreen(): React.JSX.Element {
     const router = useRouter();
 
-    const [connection, setConnection] = React.useState<ConnectionType>('bluetooth');
-    const [name, setName] = React.useState('58Printer');
-    const [macAddress, setMacAddress] = React.useState('');
-    const [ipAddress, setIpAddress] = React.useState('');
-    const [paperWidth, setPaperWidth] = React.useState<PaperWidth>('58mm');
-    const [cutReceipt, setCutReceipt] = React.useState(false);
-    const [openDrawer, setOpenDrawer] = React.useState(false);
-    const [selectedDeviceId, setSelectedDeviceId] = React.useState('58printer');
+    const settings = usePrinterStore((s) => s.settings);
+    const updateSettings = usePrinterStore((s) => s.updateSettings);
+
+    const { connection, name, macAddress, ipAddress, paperWidth, cutReceipt, openDrawer, selectedDeviceId } = settings;
+
     const [scanning, setScanning] = React.useState(false);
     const [devices, setDevices] = React.useState<DiscoveredDevice[]>(MOCK_BT_DEVICES);
 
     const handleConnectionChange = (type: ConnectionType) => {
-        setConnection(type);
-        setSelectedDeviceId('');
+        updateSettings({ connection: type, selectedDeviceId: '' });
     };
 
     const handleScan = () => {
         setScanning(true);
         setDevices([]);
-        setSelectedDeviceId('');
+        updateSettings({ selectedDeviceId: '' });
         setTimeout(() => {
             setDevices(MOCK_BT_DEVICES);
             setScanning(false);
@@ -119,7 +114,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                     <FieldLabel label="Name" />
                     <TextInput
                         value={name}
-                        onChangeText={setName}
+                        onChangeText={(v) => updateSettings({ name: v })}
                         placeholder="Printer name"
                         className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
                     />
@@ -131,7 +126,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                         <FieldLabel label="MAC Address" />
                         <TextInput
                             value={macAddress}
-                            onChangeText={setMacAddress}
+                            onChangeText={(v) => updateSettings({ macAddress: v })}
                             placeholder="00:00:00:00:00:00"
                             autoCapitalize="characters"
                             className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
@@ -145,7 +140,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                         <FieldLabel label="IP Address" />
                         <TextInput
                             value={ipAddress}
-                            onChangeText={setIpAddress}
+                            onChangeText={(v) => updateSettings({ ipAddress: v })}
                             placeholder="192.168.1.100"
                             keyboardType="decimal-pad"
                             className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
@@ -159,7 +154,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                     <Select
                         value={PAPER_WIDTHS.find((w) => w.value === paperWidth)}
                         onValueChange={(opt) => {
-                            if (opt) setPaperWidth(opt.value as PaperWidth);
+                            if (opt) updateSettings({ paperWidth: opt.value as PaperWidth });
                         }}
                     >
                         <Select.Trigger>
@@ -184,7 +179,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                 {/* Cut receipt toggle */}
                 <Pressable
                     className="flex-row items-center justify-between"
-                    onPress={() => setCutReceipt((v) => !v)}
+                    onPress={() => updateSettings({ cutReceipt: !cutReceipt })}
                 >
                     <View className="flex-1 mr-4">
                         <Typography className="text-sm font-semibold text-foreground">
@@ -196,14 +191,14 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                     </View>
                     <RNSwitch
                         value={cutReceipt}
-                        onValueChange={setCutReceipt}
+                        onValueChange={(v) => updateSettings({ cutReceipt: v })}
                     />
                 </Pressable>
 
                 {/* Open drawer toggle */}
                 <Pressable
                     className="flex-row items-center justify-between"
-                    onPress={() => setOpenDrawer((v) => !v)}
+                    onPress={() => updateSettings({ openDrawer: !openDrawer })}
                 >
                     <View className="flex-1 mr-4">
                         <Typography className="text-sm font-semibold text-foreground">
@@ -215,7 +210,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                     </View>
                     <RNSwitch
                         value={openDrawer}
-                        onValueChange={setOpenDrawer}
+                        onValueChange={(v) => updateSettings({ openDrawer: v })}
                     />
                 </Pressable>
 
@@ -249,7 +244,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                                     <React.Fragment key={device.id}>
                                         <Pressable
                                             className="flex-row items-center justify-between px-4 py-3.5 active:opacity-70"
-                                            onPress={() => setSelectedDeviceId(device.id)}
+                                            onPress={() => updateSettings({ selectedDeviceId: device.id })}
                                         >
                                             <Typography className="text-sm font-medium text-foreground">
                                                 {device.name}
