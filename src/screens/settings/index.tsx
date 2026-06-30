@@ -20,6 +20,13 @@ const SETTINGS_ITEMS: SettingsItem[] = [
         label: 'Printer',
         description: 'Configure thermal printer connection and paper size',
     },
+    {
+        id: 'receipt',
+        href: '/settings/receipt',
+        icon: 'receipt-outline',
+        label: 'Receipt',
+        description: 'Customize receipt layout, store info, and footer',
+    },
 ];
 
 export default function SettingsScreen(): JSX.Element {
