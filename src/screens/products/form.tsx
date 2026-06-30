@@ -1,4 +1,8 @@
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '@/data/pos-mock';
+import { useProduct } from '@/hooks/db/useProducts';
+import { useCategories } from '@/hooks/db/useCategories';
+import { db } from '@/db';
+import { products } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { productSchema, type ProductFormValues } from '@/schemas/product';
 import { formatRupiah } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,9 +16,13 @@ import {
 } from 'heroui-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Image, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActionSheetIOS, Alert, Image, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import type { AddOnGroup } from '@/types/pos';
+import * as ImagePicker from 'expo-image-picker';
+import { Directory, File, Paths } from 'expo-file-system';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -38,6 +46,129 @@ function FieldLabel({ label, required }: { label: string; required?: boolean }) 
 function FieldError({ message }: { message?: string }) {
     if (!message) return null;
     return <Typography className="text-xs text-danger mt-0.5">{message}</Typography>;
+}
+
+type ProcessedImage = { imageUrl: string; thumbnailUrl: string };
+
+async function pickAndProcess(source: 'library' | 'camera'): Promise<ProcessedImage | null> {
+    let rawUri: string | null = null;
+
+    if (source === 'camera') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission required', 'Camera access is needed to take photos.');
+            return null;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: 'images',
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+        rawUri = result.canceled ? null : result.assets[0].uri;
+    } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission required', 'Photo library access is needed to select images.');
+            return null;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: 'images',
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+        rawUri = result.canceled ? null : result.assets[0].uri;
+    }
+
+    if (!rawUri) return null;
+
+    const [full, thumb] = await Promise.all([
+        manipulateAsync(rawUri, [{ resize: { width: 1200 } }], { compress: 0.8, format: SaveFormat.JPEG }),
+        manipulateAsync(rawUri, [{ resize: { width: 200 } }], { compress: 0.75, format: SaveFormat.JPEG }),
+    ]);
+
+    const imagesDir = new Directory(Paths.document, 'product-images');
+    if (!imagesDir.exists) {
+        imagesDir.create({ intermediates: true });
+    }
+
+    const ts = Date.now();
+    const fullDest = new File(imagesDir, `${ts}_full.jpg`);
+    const thumbDest = new File(imagesDir, `${ts}_thumb.jpg`);
+
+    await Promise.all([
+        new File(full.uri).move(fullDest),
+        new File(thumb.uri).move(thumbDest),
+    ]);
+
+    return { imageUrl: fullDest.uri, thumbnailUrl: thumbDest.uri };
+}
+
+function ImagePickerField({
+    value,
+    onChange,
+}: {
+    value: string | null;
+    onChange: (result: ProcessedImage | null) => void;
+}) {
+    const openPicker = () => {
+        if (Platform.OS === 'ios') {
+            ActionSheetIOS.showActionSheetWithOptions(
+                {
+                    options: ['Cancel', 'Choose from Library', 'Take Photo'],
+                    cancelButtonIndex: 0,
+                },
+                async (idx) => {
+                    if (idx === 1) onChange(await pickAndProcess('library'));
+                    if (idx === 2) onChange(await pickAndProcess('camera'));
+                },
+            );
+        } else {
+            Alert.alert('Product Image', 'Choose a source', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Choose from Library', onPress: async () => onChange(await pickAndProcess('library')) },
+                { text: 'Take Photo', onPress: async () => onChange(await pickAndProcess('camera')) },
+            ]);
+        }
+    };
+
+    return (
+        <Pressable onPress={openPicker} className="active:opacity-80">
+            <View className="w-full aspect-video rounded-xl overflow-hidden bg-muted">
+                {value ? (
+                    <>
+                        <Image source={{ uri: value }} className="w-full h-full" resizeMode="cover" />
+                        <View className="absolute inset-0 items-end justify-end p-3">
+                            <View className="bg-black/50 rounded-full p-2">
+                                <Ionicons name="camera" size={18} color="white" />
+                            </View>
+                        </View>
+                    </>
+                ) : (
+                    <View className="flex-1 items-center justify-center gap-3">
+                        <View className="w-16 h-16 rounded-full bg-muted-foreground/10 items-center justify-center">
+                            <Ionicons name="camera-outline" size={28} color="#9ca3af" />
+                        </View>
+                        <View className="items-center gap-1">
+                            <Typography className="text-sm font-medium text-foreground">Add product image</Typography>
+                            <Typography className="text-xs text-muted-foreground">Tap to choose from library or camera</Typography>
+                        </View>
+                        <View className="flex-row gap-3 mt-1">
+                            <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted-foreground/10">
+                                <Ionicons name="images-outline" size={14} color="#9ca3af" />
+                                <Typography className="text-xs text-muted-foreground">Library</Typography>
+                            </View>
+                            <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted-foreground/10">
+                                <Ionicons name="camera-outline" size={14} color="#9ca3af" />
+                                <Typography className="text-xs text-muted-foreground">Camera</Typography>
+                            </View>
+                        </View>
+                    </View>
+                )}
+            </View>
+        </Pressable>
+    );
 }
 
 function StyledInput({ value, onChangeText, placeholder, keyboardType, multiline, error }: {
@@ -77,18 +208,26 @@ function StyledInput({ value, onChangeText, placeholder, keyboardType, multiline
 export default function ProductFormScreen(): React.JSX.Element {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
+    const queryClient = useQueryClient();
     const isNew = id === 'new';
 
-    const existingProduct = isNew ? null : MOCK_PRODUCTS.find((p) => p.id === id) ?? null;
-    const [addOnGroups, setAddOnGroups] = React.useState<AddOnGroup[]>(
-        existingProduct?.add_ons ?? [],
-    );
+    const { data: existingProduct } = useProduct(id);
+    const { data: categoriesList = [] } = useCategories();
+
+    const [addOnGroups, setAddOnGroups] = React.useState<AddOnGroup[]>([]);
     const [expandedGroupId, setExpandedGroupId] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (existingProduct) {
+            setAddOnGroups(existingProduct.add_ons);
+        }
+    }, [existingProduct]);
 
     const {
         control,
         handleSubmit,
         watch,
+        setValue,
         formState: { errors },
     } = useForm<ProductFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,17 +243,47 @@ export default function ProductFormScreen(): React.JSX.Element {
         },
     });
 
-    const imageUrl = watch('image_url');
     const isActive = watch('is_active');
+    const watchedCategoryId = watch('category_id');
 
-    const onSubmit = (_values: ProductFormValues) => {
-        // No-op — will wire to API later
+    const onSubmit = (values: ProductFormValues) => {
+        const now = Date.now();
+        if (isNew) {
+            const newId = `prod-${now}`;
+            db.insert(products).values({
+                id: newId,
+                name: values.name,
+                price: values.price,
+                original_price: values.original_price ?? null,
+                image_url: values.image_url ?? null,
+                thumbnail_url: values.thumbnail_url ?? null,
+                category_id: values.category_id ?? null,
+                is_active: values.is_active ? 1 : 0,
+                add_ons_json: JSON.stringify(addOnGroups),
+                created_at: now,
+                updated_at: now,
+                is_dirty: 1,
+            }).run();
+        } else if (id && existingProduct) {
+            db.update(products).set({
+                name: values.name,
+                price: values.price,
+                original_price: values.original_price ?? null,
+                image_url: values.image_url ?? null,
+                thumbnail_url: values.thumbnail_url ?? null,
+                category_id: values.category_id ?? null,
+                is_active: values.is_active ? 1 : 0,
+                add_ons_json: JSON.stringify(addOnGroups),
+                updated_at: now,
+                is_dirty: 1,
+            }).where(eq(products.id, id)).run();
+        }
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: ['product', id] });
         router.back();
     };
 
-    const selectedCategory = MOCK_CATEGORIES.find(
-        (c) => c.id === watch('category_id'),
-    );
+    const selectedCategory = categoriesList.find((c) => c.id === watchedCategoryId);
 
     return (
         <View className="flex-1 bg-background">
@@ -136,17 +305,20 @@ export default function ProductFormScreen(): React.JSX.Element {
                     {isNew ? 'New Product' : 'Edit Product'}
                 </Typography>
 
-                {/* ── Image preview ── */}
-                {imageUrl ? (
-                    <View className="w-full aspect-video rounded-xl overflow-hidden bg-muted">
-                        <Image source={{ uri: imageUrl }} className="w-full h-full" resizeMode="cover" />
-                    </View>
-                ) : (
-                    <View className="w-full aspect-video rounded-xl bg-muted items-center justify-center gap-2">
-                        <Ionicons name="image-outline" size={40} color="#9ca3af" />
-                        <Typography className="text-xs text-muted-foreground">No image</Typography>
-                    </View>
-                )}
+                {/* ── Image picker ── */}
+                <Controller
+                    control={control}
+                    name="image_url"
+                    render={({ field }) => (
+                        <ImagePickerField
+                            value={field.value}
+                            onChange={(result) => {
+                                field.onChange(result?.imageUrl ?? null);
+                                setValue('thumbnail_url', result?.thumbnailUrl ?? null);
+                            }}
+                        />
+                    )}
+                />
 
                 {/* ── Basic info ── */}
                 <Card>
@@ -195,7 +367,7 @@ export default function ProductFormScreen(): React.JSX.Element {
                                             <Select.Overlay />
                                             <Select.Content presentation="popover" width="trigger">
                                                 <Select.Item value="" label="No category" />
-                                                {MOCK_CATEGORIES.map((cat) => (
+                                                {categoriesList.map((cat) => (
                                                     <Select.Item key={cat.id} value={cat.id} label={cat.name} />
                                                 ))}
                                             </Select.Content>
@@ -280,46 +452,6 @@ export default function ProductFormScreen(): React.JSX.Element {
                                             }}
                                         />
                                     </Pressable>
-                                )}
-                            />
-                        </View>
-                    </Card.Body>
-                </Card>
-
-                {/* ── Images ── */}
-                <Card>
-                    <Card.Header>
-                        <Card.Title>Images</Card.Title>
-                        <Card.Description>Paste image URLs (Unsplash, CDN, etc.)</Card.Description>
-                    </Card.Header>
-                    <Card.Body className="gap-4">
-                        <View className="gap-1.5">
-                            <FieldLabel label="Image URL" />
-                            <Controller
-                                control={control}
-                                name="image_url"
-                                render={({ field }) => (
-                                    <StyledInput
-                                        value={field.value ?? ''}
-                                        onChangeText={(v) => field.onChange(v || null)}
-                                        placeholder="https://..."
-                                        keyboardType="url"
-                                    />
-                                )}
-                            />
-                        </View>
-                        <View className="gap-1.5">
-                            <FieldLabel label="Thumbnail URL" />
-                            <Controller
-                                control={control}
-                                name="thumbnail_url"
-                                render={({ field }) => (
-                                    <StyledInput
-                                        value={field.value ?? ''}
-                                        onChangeText={(v) => field.onChange(v || null)}
-                                        placeholder="https://..."
-                                        keyboardType="url"
-                                    />
                                 )}
                             />
                         </View>

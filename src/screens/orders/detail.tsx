@@ -1,4 +1,5 @@
-import { MOCK_ORDERS, type OrderStatus } from '@/data/orders-mock';
+import { useOrder, useUpdateOrderStatus } from '@/hooks/db/useOrders';
+import type { OrderStatus } from '@/data/orders-mock';
 import { formatRupiah } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, Chip, Separator, Surface, Typography } from 'heroui-native';
@@ -33,7 +34,8 @@ export default function OrderDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
 
-    const order = MOCK_ORDERS.find((o) => o.id === id);
+    const { data: order } = useOrder(id);
+    const updateStatus = useUpdateOrderStatus();
 
     if (!order) {
         return (
@@ -199,11 +201,20 @@ export default function OrderDetailScreen() {
                             Update Status
                         </Typography>
                         <View className="flex-row gap-3">
-                            <Button className="flex-1 bg-green-500 border-green-500" onPress={() => {}}>
+                            <Button
+                                className="flex-1 bg-green-500 border-green-500"
+                                onPress={() => updateStatus.mutate({ id: order.id, status: 'completed' })}
+                                isDisabled={updateStatus.isPending}
+                            >
                                 <Ionicons name="checkmark-circle-outline" size={16} color="white" />
                                 <Button.Label className="ml-1.5">Mark Completed</Button.Label>
                             </Button>
-                            <Button variant="outline" className="border-danger" onPress={() => {}}>
+                            <Button
+                                variant="outline"
+                                className="border-danger"
+                                onPress={() => updateStatus.mutate({ id: order.id, status: 'cancelled' })}
+                                isDisabled={updateStatus.isPending}
+                            >
                                 <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
                                 <Button.Label className="ml-1.5 text-danger">Cancel</Button.Label>
                             </Button>

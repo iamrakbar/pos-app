@@ -1,6 +1,7 @@
 import { useCartStore } from '@/stores/useCartStore';
 import { usePOSStore } from '@/stores/usePOSStore';
-import { MOCK_PAYMENT_GROUPS, MOCK_TABLES } from '@/data/pos-mock';
+import { useTables } from '@/hooks/db/useTables';
+import { usePaymentGroups } from '@/hooks/db/usePayments';
 import { checkoutSchema, type CheckoutFormValues } from '@/schemas/checkout';
 import { formatRupiah } from '@/utils/format';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,16 +26,6 @@ const ORDER_TYPE_LABELS: Record<string, string> = {
     takeaway: 'Takeaway',
 };
 
-const DEFAULT_VALUES: CheckoutFormValues = {
-    order_type: 'dine-in',
-    table_id: null,
-    payment_group: 'e-money',
-    payment_id: MOCK_PAYMENT_GROUPS.find((g) => g.group_type === 'e-money')?.payments[0]?.id ?? '',
-    customer_type: 'merchant',
-    customer_search: '',
-    notes: '',
-};
-
 const now = Date.now();
 
 export default function CheckoutModal(): JSX.Element {
@@ -44,6 +35,21 @@ export default function CheckoutModal(): JSX.Element {
 
     const totalPrice = useCartStore((s) => s.totalPrice);
     const { height: windowHeight } = useWindowDimensions();
+
+    const { data: paymentGroups = [] } = usePaymentGroups();
+    const { data: tablesList = [] } = useTables();
+
+    const defaultPaymentId = paymentGroups.find((g) => g.group_type === 'e-money')?.payments[0]?.id ?? '';
+
+    const DEFAULT_VALUES: CheckoutFormValues = {
+        order_type: 'dine-in',
+        table_id: null,
+        payment_group: 'e-money',
+        payment_id: defaultPaymentId,
+        customer_type: 'merchant',
+        customer_search: '',
+        notes: '',
+    };
 
     const isOpen = modal === 'checkout';
 
@@ -64,19 +70,16 @@ export default function CheckoutModal(): JSX.Element {
     const customerType = useWatch({ control, name: 'customer_type' });
 
     const subtotal = totalPrice();
-    const selectedPayment = MOCK_PAYMENT_GROUPS.flatMap((g) => g.payments).find(
-        (p) => p.id === paymentId,
-    );
+    const allPayments = paymentGroups.flatMap((g) => g.payments);
+    const selectedPayment = allPayments.find((p) => p.id === paymentId);
     const feeRate = selectedPayment?.fee_rate ?? 0;
     const paymentFee = Math.round(subtotal * feeRate);
     const total = subtotal + paymentFee;
 
-    const selectedTable = MOCK_TABLES.find((t) => t.id === tableId);
+    const selectedTable = tablesList.find((t) => t.id === tableId);
 
     const onSubmit = (values: CheckoutFormValues) => {
-        const payment = MOCK_PAYMENT_GROUPS.flatMap((g) => g.payments).find(
-            (p) => p.id === values.payment_id,
-        );
+        const payment = allPayments.find((p) => p.id === values.payment_id);
         const session: PaymentSession = {
             transaction_id: `TR-${now}`,
             payment_type: payment?.name ?? 'QRIS',
@@ -159,7 +162,7 @@ export default function CheckoutModal(): JSX.Element {
                                         <Select.Overlay />
                                         <Select.Content presentation="popover" width="full">
                                             <Select.Item value="" label="Tidak ada" />
-                                            {MOCK_TABLES.map((t) => (
+                                            {tablesList.map((t) => (
                                                 <Select.Item key={t.id} value={t.id} label={`${t.name} (${t.area_name})`} />
                                             ))}
                                         </Select.Content>
@@ -172,7 +175,7 @@ export default function CheckoutModal(): JSX.Element {
                         <View className="gap-2">
                             <Typography className="text-sm font-semibold text-foreground">Metode</Typography>
                             <Surface className="py-3 w-full flex-row gap-2">
-                                {MOCK_PAYMENT_GROUPS.map((group) => {
+                                {paymentGroups.map((group) => {
                                     const isActive = paymentGroup === group.group_type;
                                     return (
                                         <Pressable
@@ -204,7 +207,7 @@ export default function CheckoutModal(): JSX.Element {
                                 <Typography className="text-xs text-danger">{errors.payment_id.message}</Typography>
                             )}
                             <Surface className="py-3 w-full flex-row flex-wrap gap-2">
-                                {MOCK_PAYMENT_GROUPS.find((g) => g.group_type === paymentGroup)?.payments.map(
+                                {paymentGroups.find((g) => g.group_type === paymentGroup)?.payments.map(
                                     (payment) => {
                                         const isActive = paymentId === payment.id;
                                         return (

@@ -1,5 +1,5 @@
-import { MOCK_CATEGORIES } from '@/data/pos-mock';
 import { usePOSStore } from '@/stores/usePOSStore';
+import { useCategories } from '@/hooks/db/useCategories';
 import NavMenu from '@/components/navigation/NavMenu';
 import { SearchField, Select } from 'heroui-native';
 import type { JSX } from 'react';
@@ -11,10 +11,12 @@ export default function SearchBar(): JSX.Element {
     const setSearchQuery = usePOSStore((s) => s.setSearchQuery);
     const setCategoryId = usePOSStore((s) => s.setCategoryId);
 
+    const { data: categoriesList = [] } = useCategories();
+
     const selectedCategoryOption = categoryId
         ? {
             value: categoryId,
-            label: MOCK_CATEGORIES.find((c) => c.id === categoryId)?.name ?? categoryId,
+            label: categoriesList.find((c) => c.id === categoryId)?.name ?? categoryId,
         }
         : undefined;
 
@@ -43,7 +45,7 @@ export default function SearchBar(): JSX.Element {
                         <Select.Overlay />
                         <Select.Content presentation="popover" width="trigger">
                             <Select.Item value="" label="All categories" />
-                            {MOCK_CATEGORIES.map((cat) => (
+                            {categoriesList.map((cat) => (
                                 <Select.Item key={cat.id} value={cat.id} label={cat.name} />
                             ))}
                         </Select.Content>

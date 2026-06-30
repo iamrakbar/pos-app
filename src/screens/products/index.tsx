@@ -1,4 +1,5 @@
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '@/data/pos-mock';
+import { useProducts } from '@/hooks/db/useProducts';
+import { useCategories } from '@/hooks/db/useCategories';
 import { formatRupiah } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, Chip, SearchField, Select, Separator, Surface, Typography } from 'heroui-native';
@@ -12,21 +13,22 @@ export default function ProductsScreen(): React.JSX.Element {
     const [categoryId, setCategoryId] = React.useState<string | null>(null);
     const [activeFilter, setActiveFilter] = React.useState<'all' | 'active' | 'inactive'>('all');
 
-    const totalProducts = MOCK_PRODUCTS.length;
-    const activeCount = MOCK_PRODUCTS.filter((p) => p.is_active).length;
-    const categoryCount = MOCK_CATEGORIES.length;
+    const { data: allProducts = [] } = useProducts(search || undefined, categoryId || undefined);
+    const { data: categoriesList = [] } = useCategories();
 
-    const filtered = MOCK_PRODUCTS.filter((p) => {
-        const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
-        const matchCategory = !categoryId || p.category_id === categoryId;
-        const matchActive =
+    const filtered = allProducts.filter((p) => {
+        return (
             activeFilter === 'all' ||
             (activeFilter === 'active' && p.is_active) ||
-            (activeFilter === 'inactive' && !p.is_active);
-        return matchSearch && matchCategory && matchActive;
+            (activeFilter === 'inactive' && !p.is_active)
+        );
     });
 
-    const selectedCategory = MOCK_CATEGORIES.find((c) => c.id === categoryId);
+    const totalProducts = allProducts.length;
+    const activeCount = allProducts.filter((p) => p.is_active).length;
+    const categoryCount = categoriesList.length;
+
+    const selectedCategory = categoriesList.find((c) => c.id === categoryId);
 
     return (
         <View className="flex-1 bg-background">
@@ -71,7 +73,7 @@ export default function ProductsScreen(): React.JSX.Element {
                                 <Select.Overlay />
                                 <Select.Content presentation="popover" width="trigger">
                                     <Select.Item value="" label="All categories" />
-                                    {MOCK_CATEGORIES.map((cat) => (
+                                    {categoriesList.map((cat) => (
                                         <Select.Item key={cat.id} value={cat.id} label={cat.name} />
                                     ))}
                                 </Select.Content>
@@ -80,7 +82,7 @@ export default function ProductsScreen(): React.JSX.Element {
                     </View>
                 </View>
 
-                        <Button size="sm" onPress={() => router.push('/products/new' as never)}>
+                <Button size="sm" onPress={() => router.push('/products/new' as never)}>
                     <Ionicons name="add" size={16} color="white" />
                     <Button.Label className="ml-1">New</Button.Label>
                 </Button>
@@ -119,7 +121,7 @@ export default function ProductsScreen(): React.JSX.Element {
                     </View>
                 ) : (
                     filtered.map((product, index) => {
-                        const category = MOCK_CATEGORIES.find((c) => c.id === product.category_id);
+                        const category = categoriesList.find((c) => c.id === product.category_id);
                         const isDiscounted = product.original_price !== null;
 
                         return (

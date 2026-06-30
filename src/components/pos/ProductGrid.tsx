@@ -1,9 +1,8 @@
-import { MOCK_PRODUCTS } from '@/data/pos-mock';
 import { usePOSStore } from '@/stores/usePOSStore';
+import { useProducts } from '@/hooks/db/useProducts';
 import type { POSProduct } from '@/types/pos';
 import type { JSX } from 'react';
 import { FlatList, useWindowDimensions } from 'react-native';
-import { Uniwind } from 'uniwind'
 import ProductCard from './ProductCard';
 
 const CART_PANEL_WIDTH = 400;
@@ -21,16 +20,10 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
 
     const availableWidth = width - CART_PANEL_WIDTH;
     const numColumns = Math.max(4, Math.floor(availableWidth / CARD_MIN_WIDTH)) || CARD_MIN_WIDTH;
-
     const cardWidth = Math.floor(availableWidth / numColumns);
 
-    const filtered = MOCK_PRODUCTS.filter((p) => {
-        const matchesSearch =
-            searchQuery.length === 0 ||
-            p.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = !categoryId || p.category_id === categoryId;
-        return matchesSearch && matchesCategory && p.is_active;
-    });
+    const { data: allProducts = [] } = useProducts(searchQuery || undefined, categoryId || undefined);
+    const filtered = allProducts.filter((p) => p.is_active);
 
     return (
         <FlatList

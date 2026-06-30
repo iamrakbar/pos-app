@@ -1,4 +1,5 @@
-import { MOCK_ORDERS, type MockOrder, type OrderStatus } from '@/data/orders-mock';
+import { useOrders } from '@/hooks/db/useOrders';
+import type { MockOrder, OrderStatus } from '@/data/orders-mock';
 import { formatRupiah } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
 import { Chip, Separator, Surface, Typography } from 'heroui-native';
@@ -20,11 +21,6 @@ function formatTime(iso: string): string {
     return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
-function formatDate(iso: string): string {
-    const d = new Date(iso);
-    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
 type StatusFilter = 'all' | OrderStatus;
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
@@ -38,22 +34,24 @@ export default function OrdersScreen(): React.JSX.Element {
     const router = useRouter();
     const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
 
-    const completedOrders = MOCK_ORDERS.filter((o) => o.status === 'completed');
+    const { data: allOrders = [] } = useOrders();
+
+    const completedOrders = allOrders.filter((o) => o.status === 'completed');
     const todayRevenue = completedOrders.reduce((s, o) => s + o.total, 0);
-    const pendingCount = MOCK_ORDERS.filter((o) => o.status === 'pending').length;
-    const cancelledCount = MOCK_ORDERS.filter((o) => o.status === 'cancelled').length;
+    const pendingCount = allOrders.filter((o) => o.status === 'pending').length;
+    const cancelledCount = allOrders.filter((o) => o.status === 'cancelled').length;
 
     const filtered =
         statusFilter === 'all'
-            ? MOCK_ORDERS
-            : MOCK_ORDERS.filter((o) => o.status === statusFilter);
+            ? allOrders
+            : allOrders.filter((o) => o.status === statusFilter);
 
     return (
         <View className="flex-1 bg-background">
             {/* Stats */}
             <View className="flex-row gap-3 px-4 pt-4 pb-2">
                 <Surface className="flex-1 items-center py-3 gap-0.5">
-                    <Typography className="text-xl font-bold text-foreground">{MOCK_ORDERS.length}</Typography>
+                    <Typography className="text-xl font-bold text-foreground">{allOrders.length}</Typography>
                     <Typography className="text-xs text-muted-foreground">Today</Typography>
                 </Surface>
                 <Surface className="flex-1 items-center py-3 gap-0.5">

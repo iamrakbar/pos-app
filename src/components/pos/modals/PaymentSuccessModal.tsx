@@ -1,10 +1,12 @@
 import { useCartStore } from '@/stores/useCartStore';
 import { usePOSStore } from '@/stores/usePOSStore';
+import { useCreateOrder } from '@/hooks/db/useCreateOrder';
 import { formatRupiah } from '@/utils/format';
 import { Button, Dialog, Separator, Surface, Typography } from 'heroui-native';
 import type { JSX } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
 
 function formatDateTime(date: Date): string {
     return date.toLocaleDateString('id-ID', {
@@ -27,8 +29,16 @@ export default function PaymentSuccessModal(): JSX.Element {
     const clearCart = useCartStore((s) => s.clearCart);
 
     const { height: windowHeight } = useWindowDimensions();
+    const createOrder = useCreateOrder();
 
     const isOpen = modal === 'payment-success';
+
+    React.useEffect(() => {
+        if (isOpen) {
+            createOrder.mutate();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     const handleNewOrder = () => {
         closeModal();
