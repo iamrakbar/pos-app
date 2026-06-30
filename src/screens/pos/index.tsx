@@ -4,13 +4,14 @@ import SearchBar from '@/components/pos/SearchBar';
 import AddOnModal from '@/components/pos/modals/AddOnModal';
 import CheckoutModal from '@/components/pos/modals/CheckoutModal';
 import PaymentModal from '@/components/pos/modals/PaymentModal';
+import PaymentSuccessModal from '@/components/pos/modals/PaymentSuccessModal';
 import { useCartStore } from '@/stores/useCartStore';
 import { usePOSStore } from '@/stores/usePOSStore';
 import type { POSProduct } from '@/types/pos';
 import type { JSX } from 'react';
 import { View } from 'react-native';
 
-const CART_PANEL_WIDTH = 320;
+const CART_PANEL_WIDTH = 400;
 
 export default function POSScreen(): JSX.Element {
     const openAddonModal = usePOSStore((s) => s.openAddonModal);
@@ -32,7 +33,7 @@ export default function POSScreen(): JSX.Element {
     };
 
     return (
-        <View className="flex-1 flex-row bg-background">
+        <View className="flex-1 flex-row bg-surface">
             {/* Product catalog */}
             <View className="flex-1">
                 <SearchBar />
@@ -48,6 +49,7 @@ export default function POSScreen(): JSX.Element {
             <AddOnModal />
             <CheckoutModal />
             <PaymentModal />
+            <PaymentSuccessModal />
         </View>
     );
 }

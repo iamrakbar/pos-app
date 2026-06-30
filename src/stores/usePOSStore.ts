@@ -1,7 +1,7 @@
 import type { CheckoutFormState, PaymentSession, POSProduct } from '@/types/pos';
 import { create } from 'zustand';
 
-type POSModal = 'addon' | 'checkout' | 'payment' | null;
+type POSModal = 'addon' | 'checkout' | 'payment' | 'payment-success' | null;
 
 type POSState = {
   modal: POSModal;
@@ -17,6 +17,7 @@ type POSAction = {
   openAddonModal: (product: POSProduct, editingCartItemId?: string) => void;
   openCheckoutModal: () => void;
   openPaymentModal: (session: PaymentSession) => void;
+  openPaymentSuccessModal: () => void;
   closeModal: () => void;
   setSearchQuery: (q: string) => void;
   setCategoryId: (id: string | null) => void;
@@ -50,6 +51,8 @@ export const usePOSStore = create<POSState & POSAction>()((set) => ({
 
   openPaymentModal: (session) =>
     set({ modal: 'payment', paymentSession: session }),
+
+  openPaymentSuccessModal: () => set({ modal: 'payment-success' }),
 
   closeModal: () =>
     set({ modal: null, selectedProduct: null, editingCartItemId: null }),
