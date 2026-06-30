@@ -3,10 +3,11 @@ import { usePOSStore } from '@/stores/usePOSStore';
 import type { POSProduct } from '@/types/pos';
 import type { JSX } from 'react';
 import { FlatList, useWindowDimensions } from 'react-native';
+import { Uniwind } from 'uniwind'
 import ProductCard from './ProductCard';
 
-const CART_PANEL_WIDTH = 320;
-const CARD_MIN_WIDTH = 140;
+const CART_PANEL_WIDTH = 400;
+const CARD_MIN_WIDTH = 400;
 
 type Props = {
     onSelectProduct: (product: POSProduct) => void;
@@ -19,7 +20,7 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
     const categoryId = usePOSStore((s) => s.categoryId);
 
     const availableWidth = width - CART_PANEL_WIDTH;
-    const numColumns = Math.max(3, Math.floor(availableWidth / CARD_MIN_WIDTH)) || CARD_MIN_WIDTH;
+    const numColumns = Math.max(4, Math.floor(availableWidth / CARD_MIN_WIDTH)) || CARD_MIN_WIDTH;
 
     const cardWidth = Math.floor(availableWidth / numColumns);
 
@@ -40,7 +41,7 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
             renderItem={({ item }) => (
                 <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
             )}
-            contentContainerClassName='px-2 pb-4'
+            contentContainerClassName='gap-1 px-2 py-3'
             showsVerticalScrollIndicator={false}
         />
     );

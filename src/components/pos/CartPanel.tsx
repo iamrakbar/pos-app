@@ -18,9 +18,9 @@ export default function CartPanel(): JSX.Element {
     const subtotal = totalPrice();
 
     return (
-        <View className="flex-1 bg-background border-l border-border">
+        <View className="flex-1 border-l border-border">
             {/* Header */}
-            <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
+            <View className="flex-row items-center justify-between h-18 px-4 border-b border-border">
                 <Typography className="text-base font-semibold text-foreground">
                     {itemCount} {itemCount === 1 ? 'item' : 'items'}
                 </Typography>
@@ -31,7 +31,7 @@ export default function CartPanel(): JSX.Element {
                         onPress={clearCart}
                         className="border-danger"
                     >
-                        <Ionicons name="trash-outline" size={12} color="#ef4444" />
+                        <Ionicons name="trash-outline" size={16} color="#ef4444" />
                         <Button.Label className="text-danger text-xs ml-1">Empty cart</Button.Label>
                     </Button>
                 )}
@@ -58,18 +58,12 @@ export default function CartPanel(): JSX.Element {
 
             {/* Footer */}
             <View className="px-4 py-4 border-t border-border gap-3">
-                <View className="flex-row justify-between">
-                    <Typography className="text-sm text-muted-foreground">Subtotal</Typography>
-                    <Typography className="text-sm font-semibold text-foreground">
-                        {formatRupiah(subtotal)}
-                    </Typography>
-                </View>
                 <Button
                     className="w-full"
                     onPress={openCheckoutModal}
                     isDisabled={products.length === 0}
                 >
-                    Checkout
+                    {products.length === 0 ? 'Checkout' : `Checkout ${formatRupiah(subtotal)}`}
                 </Button>
             </View>
         </View>
