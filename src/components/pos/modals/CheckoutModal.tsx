@@ -10,6 +10,7 @@ import {
     SearchField,
     Select,
     Separator,
+    Surface,
     TextArea,
     Typography,
 } from 'heroui-native';
@@ -94,16 +95,17 @@ export default function CheckoutModal(): JSX.Element {
                 <Dialog.Overlay />
                 <Dialog.Content
                     isSwipeable={false}
-                    className="w-[90%] max-w-2xl"
+                    className="w-full max-w-3xl self-center bg-background p-0 overflow-hidden"
                     style={{ maxHeight: dialogMaxHeight }}
                 >
-                    <Dialog.Close />
-
-                    <View className="mb-3 pr-8">
-                        <Dialog.Title>Checkout</Dialog.Title>
-                        <Typography className="text-sm text-muted-foreground">
-                            Lanjutkan checkout dengan metode pembayaran di bawah
-                        </Typography>
+                    <View className="flex-row justify-between gap-4 bg-surface p-4">
+                        <View>
+                            <Dialog.Title>Checkout</Dialog.Title>
+                            <Typography className="text-sm text-muted-foreground">
+                                Lanjutkan checkout dengan metode pembayaran di bawah
+                            </Typography>
+                        </View>
+                        <Dialog.Close />
                     </View>
 
                     <Separator />
@@ -112,7 +114,7 @@ export default function CheckoutModal(): JSX.Element {
                         showsVerticalScrollIndicator
                         keyboardShouldPersistTaps="handled"
                         style={{ maxHeight: scrollMaxHeight }}
-                        contentContainerStyle={{ paddingVertical: 20, gap: 24 }}
+                        contentContainerClassName="p-4 gap-4 bg-background"
                     >
                         {/* Order type + Table */}
                         <View className="flex-row gap-4">
@@ -169,7 +171,7 @@ export default function CheckoutModal(): JSX.Element {
                         {/* Payment method group */}
                         <View className="gap-2">
                             <Typography className="text-sm font-semibold text-foreground">Metode</Typography>
-                            <View className="flex-row gap-2">
+                            <Surface className="py-3 w-full flex-row gap-2">
                                 {MOCK_PAYMENT_GROUPS.map((group) => {
                                     const isActive = paymentGroup === group.group_type;
                                     return (
@@ -180,8 +182,7 @@ export default function CheckoutModal(): JSX.Element {
                                                 setValue('payment_group', group.group_type as 'e-money' | 'cash');
                                                 setValue('payment_id', firstPayment?.id ?? '');
                                             }}
-                                            className={`px-4 py-2 rounded-full border ${isActive ? 'bg-accent border-accent' : 'bg-background border-border'
-                                                }`}
+                                            className={`px-4 py-2 rounded-full border ${isActive ? 'bg-accent border-accent' : 'bg-background border-border'}`}
                                         >
                                             <Typography
                                                 className={`text-sm font-medium ${isActive ? 'text-accent-foreground' : 'text-foreground'}`}
@@ -191,7 +192,7 @@ export default function CheckoutModal(): JSX.Element {
                                         </Pressable>
                                     );
                                 })}
-                            </View>
+                            </Surface>
                         </View>
 
                         {/* Payment provider */}
@@ -202,7 +203,7 @@ export default function CheckoutModal(): JSX.Element {
                             {errors.payment_id && (
                                 <Typography className="text-xs text-danger">{errors.payment_id.message}</Typography>
                             )}
-                            <View className="flex-row flex-wrap gap-2">
+                            <Surface className="py-3 w-full flex-row flex-wrap gap-2">
                                 {MOCK_PAYMENT_GROUPS.find((g) => g.group_type === paymentGroup)?.payments.map(
                                     (payment) => {
                                         const isActive = paymentId === payment.id;
@@ -210,8 +211,7 @@ export default function CheckoutModal(): JSX.Element {
                                             <Pressable
                                                 key={payment.id}
                                                 onPress={() => setValue('payment_id', payment.id)}
-                                                className={`px-4 py-2 rounded-full border ${isActive ? 'bg-accent border-accent' : 'bg-background border-border'
-                                                    }`}
+                                                className={`px-4 py-2 rounded-full border ${isActive ? 'bg-accent border-accent' : 'bg-background border-border'}`}
                                             >
                                                 <Typography
                                                     className={`text-sm font-medium ${isActive ? 'text-accent-foreground' : 'text-foreground'}`}
@@ -222,54 +222,55 @@ export default function CheckoutModal(): JSX.Element {
                                         );
                                     },
                                 )}
-                            </View>
+                            </Surface>
                         </View>
 
                         {/* Customer */}
                         <View className="gap-2">
                             <Typography className="text-sm font-semibold text-foreground">Pelanggan</Typography>
-                            <View className="flex-row gap-2">
-                                {(['merchant', 'registered'] as const).map((type) => {
-                                    const isActive = customerType === type;
-                                    const label = type === 'merchant' ? 'Merchant' : 'Pelanggan terdaftar';
-                                    return (
-                                        <Pressable
-                                            key={type}
-                                            onPress={() => {
-                                                setValue('customer_type', type);
-                                                setValue('customer_search', '');
-                                            }}
-                                            className={`px-4 py-2 rounded-full border ${isActive ? 'bg-accent border-accent' : 'bg-background border-border'
-                                                }`}
-                                        >
-                                            <Typography
-                                                className={`text-sm font-medium ${isActive ? 'text-accent-foreground' : 'text-foreground'}`}
+                            <Surface className="py-3 w-full gap-3">
+                                <View className="flex-row gap-2">
+                                    {(['merchant', 'registered'] as const).map((type) => {
+                                        const isActive = customerType === type;
+                                        const label = type === 'merchant' ? 'Merchant' : 'Pelanggan terdaftar';
+                                        return (
+                                            <Pressable
+                                                key={type}
+                                                onPress={() => {
+                                                    setValue('customer_type', type);
+                                                    setValue('customer_search', '');
+                                                }}
+                                                className={`px-4 py-2 rounded-full border ${isActive ? 'bg-accent border-accent' : 'bg-background border-border'}`}
                                             >
-                                                {label}
-                                            </Typography>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
+                                                <Typography
+                                                    className={`text-sm font-medium ${isActive ? 'text-accent-foreground' : 'text-foreground'}`}
+                                                >
+                                                    {label}
+                                                </Typography>
+                                            </Pressable>
+                                        );
+                                    })}
+                                </View>
 
-                            {customerType === 'registered' && (
-                                <Controller
-                                    control={control}
-                                    name="customer_search"
-                                    render={({ field }) => (
-                                        <View className="gap-1">
-                                            <SearchField value={field.value} onChange={field.onChange}>
-                                                <SearchField.Group>
-                                                    <SearchField.SearchIcon />
-                                                    <SearchField.Input placeholder="Cari dengan mengetik email pelanggan" />
-                                                    <SearchField.ClearButton />
-                                                </SearchField.Group>
-                                            </SearchField>
-                                            <Typography className="text-xs text-accent">Cari berdasarkan nama</Typography>
-                                        </View>
-                                    )}
-                                />
-                            )}
+                                {customerType === 'registered' && (
+                                    <Controller
+                                        control={control}
+                                        name="customer_search"
+                                        render={({ field }) => (
+                                            <View className="gap-1">
+                                                <SearchField value={field.value} onChange={field.onChange}>
+                                                    <SearchField.Group>
+                                                        <SearchField.SearchIcon />
+                                                        <SearchField.Input placeholder="Cari dengan mengetik email pelanggan" />
+                                                        <SearchField.ClearButton />
+                                                    </SearchField.Group>
+                                                </SearchField>
+                                                <Typography className="text-xs text-accent">Cari berdasarkan nama</Typography>
+                                            </View>
+                                        )}
+                                    />
+                                )}
+                            </Surface>
                         </View>
 
                         {/* Notes */}
@@ -290,7 +291,7 @@ export default function CheckoutModal(): JSX.Element {
                         </View>
 
                         {/* Pricing summary */}
-                        <View className="border border-border rounded-xl overflow-hidden">
+                        <Surface className="w-full overflow-hidden">
                             <View className="flex-row justify-between px-4 py-3 border-b border-border">
                                 <Typography className="text-sm text-foreground">Subtotal</Typography>
                                 <Typography className="text-sm text-foreground">{formatRupiah(subtotal)}</Typography>
@@ -307,12 +308,12 @@ export default function CheckoutModal(): JSX.Element {
                                 <Typography className="text-sm font-semibold text-foreground">Total</Typography>
                                 <Typography className="text-sm font-semibold text-foreground">{formatRupiah(total)}</Typography>
                             </View>
-                        </View>
+                        </Surface>
                     </ScrollView>
 
                     <Separator />
 
-                    <View className="flex-row gap-3 pt-4">
+                    <View className="flex-row gap-3 bg-surface p-4">
                         <Button variant="outline" onPress={closeModal}>
                             Batal
                         </Button>

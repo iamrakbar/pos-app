@@ -1,9 +1,9 @@
 import { useCartStore } from '@/stores/useCartStore';
 import { usePOSStore } from '@/stores/usePOSStore';
 import { formatRupiah } from '@/utils/format';
-import { Button, Dialog, Separator, Typography } from 'heroui-native';
+import { Button, Dialog, Separator, Surface, Typography } from 'heroui-native';
 import type { JSX } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function PaymentModal(): JSX.Element {
@@ -12,6 +12,7 @@ export default function PaymentModal(): JSX.Element {
     const closeModal = usePOSStore((s) => s.closeModal);
     const resetCheckoutForm = usePOSStore((s) => s.resetCheckoutForm);
     const clearCart = useCartStore((s) => s.clearCart);
+    const { height: windowHeight } = useWindowDimensions();
 
     const isOpen = modal === 'payment';
 
@@ -27,28 +28,32 @@ export default function PaymentModal(): JSX.Element {
 
     if (!paymentSession) return <></>;
 
+    const dialogMaxHeight = windowHeight * 0.88;
+
     return (
         <Dialog isOpen={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <Dialog.Portal>
                 <Dialog.Overlay />
-                <Dialog.Content className="w-[90%] max-w-md">
-                    {/* Icon + Header */}
-                    <View className="items-center gap-3 pb-4">
-                        <View className="w-14 h-14 rounded-full bg-accent/10 items-center justify-center">
-                            <Ionicons name="receipt-outline" size={28} color="#06b6d4" />
-                        </View>
-                        <View className="items-center gap-1">
-                            <Typography className="text-lg font-semibold text-foreground">Payment</Typography>
-                            <Typography className="text-sm text-muted-foreground text-center">
+                <Dialog.Content
+                    isSwipeable={false}
+                    className="w-full max-w-md self-center bg-background p-0 overflow-hidden"
+                    style={{ maxHeight: dialogMaxHeight }}
+                >
+                    {/* Header */}
+                    <View className="flex-row justify-between gap-4 bg-surface p-4">
+                        <View className="gap-0.5">
+                            <Dialog.Title>Payment</Dialog.Title>
+                            <Typography className="text-sm text-muted-foreground">
                                 Please continue making payment
                             </Typography>
                         </View>
+                        <Dialog.Close />
                     </View>
 
                     <Separator />
 
                     {/* Payment details */}
-                    <View className="items-center gap-3 py-6">
+                    <Surface className="w-full items-center gap-3 py-8">
                         <Typography className="text-sm font-semibold text-foreground uppercase tracking-wide">
                             {paymentSession.payment_type}
                         </Typography>
@@ -66,12 +71,12 @@ export default function PaymentModal(): JSX.Element {
                         <Typography className="text-base font-semibold text-foreground">
                             {formatRupiah(paymentSession.amount)}
                         </Typography>
-                    </View>
+                    </Surface>
 
                     <Separator />
 
                     {/* Actions */}
-                    <View className="flex-row gap-3 pt-4">
+                    <View className="flex-row gap-3 bg-surface p-4">
                         <Button
                             className="flex-1 bg-green-500 border-green-500"
                             onPress={handleCheckPayment}

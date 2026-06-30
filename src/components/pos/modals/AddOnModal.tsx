@@ -12,10 +12,13 @@ import {
     Separator,
     Typography,
     TextArea,
+    Surface,
+    ControlField,
+    Label,
 } from 'heroui-native';
 import type { JSX } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
-import { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
 function constraintLabel(group: AddOnGroup): string {
@@ -125,16 +128,17 @@ export default function AddOnModal(): JSX.Element {
                 <Dialog.Overlay />
                 <Dialog.Content
                     isSwipeable={false}
-                    className="w-[90%] max-w-2xl"
+                    className="w-full max-w-3xl self-center bg-background p-0 overflow-hidden"
                     style={{ maxHeight: dialogMaxHeight }}
                 >
-                    <Dialog.Close />
-
-                    <View className="mb-3 pr-8">
-                        <Dialog.Title>{product.name}</Dialog.Title>
-                        <Typography className="text-sm text-muted-foreground">
-                            {formatRupiah(product.price)}
-                        </Typography>
+                    <View className="flex-row justify-between gap-4 bg-surface p-4">
+                        <View >
+                            <Dialog.Title>{product.name}</Dialog.Title>
+                            <Typography className="text-sm text-muted-foreground">
+                                {formatRupiah(product.price)}
+                            </Typography>
+                        </View>
+                        <Dialog.Close />
                     </View>
 
                     <Separator />
@@ -143,10 +147,10 @@ export default function AddOnModal(): JSX.Element {
                         showsVerticalScrollIndicator
                         keyboardShouldPersistTaps="handled"
                         style={{ maxHeight: scrollMaxHeight }}
-                        contentContainerStyle={{ paddingVertical: 20, gap: 24 }}
+                        contentContainerClassName='p-4 gap-4 bg-background'
                     >
                         {product.add_ons.map((group) => (
-                            <View key={group.id} className="gap-2">
+                            <View key={group.id} className="gap-4">
                                 <Typography className="text-sm font-semibold text-foreground">
                                     {group.name}
                                     {group.required && <Typography className="text-danger"> *</Typography>}
@@ -157,13 +161,19 @@ export default function AddOnModal(): JSX.Element {
                                         control={control}
                                         name={`radioSelections.${group.id}`}
                                         render={({ field }) => (
-                                            <RadioGroup value={field.value ?? ''} onValueChange={field.onChange}>
-                                                {group.options.map((option) => (
-                                                    <RadioGroup.Item key={option.id} value={option.id}>
-                                                        {optionLabel(option)}
-                                                    </RadioGroup.Item>
-                                                ))}
-                                            </RadioGroup>
+                                            <Surface className="py-5 w-full">
+                                                <RadioGroup value={field.value ?? ''} onValueChange={field.onChange}>
+                                                    {group.options.map((option, index) => (
+                                                        <React.Fragment key={option.id}>
+                                                            {index > 0 && <Separator className="my-1" />}
+                                                            <RadioGroup.Item value={option.id}>
+                                                                {optionLabel(option)}
+                                                            </RadioGroup.Item>
+                                                        </React.Fragment>
+                                                    ))}
+                                                </RadioGroup>
+                                            </Surface>
+
                                         )}
                                     />
                                 ) : (
@@ -173,13 +183,14 @@ export default function AddOnModal(): JSX.Element {
                                         render={({ field }) => {
                                             const selected: string[] = field.value ?? [];
                                             return (
-                                                <View className="gap-2">
-                                                    {group.options.map((option) => {
+                                                <Surface className="py-5 w-full">
+                                                    {group.options.map((option, index) => {
                                                         const isSelected = selected.includes(option.id);
                                                         const maxReached = !isSelected && selected.length >= group.max;
                                                         return (
-                                                            <View key={option.id} className="flex-row items-center gap-2">
-                                                                <Checkbox
+                                                            <React.Fragment key={option.id}>
+                                                                {index > 0 && <Separator className="my-4" />}
+                                                                <ControlField
                                                                     isSelected={isSelected}
                                                                     isDisabled={maxReached}
                                                                     onSelectedChange={() => {
@@ -187,13 +198,18 @@ export default function AddOnModal(): JSX.Element {
                                                                             ? selected.filter((id) => id !== option.id)
                                                                             : [...selected, option.id];
                                                                         field.onChange(next);
-                                                                    }}
-                                                                />
-                                                                <Typography className="text-sm text-foreground">{optionLabel(option)}</Typography>
-                                                            </View>
+                                                                    }}>
+                                                                    <View className="flex-1">
+                                                                        <Label>{optionLabel(option)}</Label>
+                                                                    </View>
+                                                                    <ControlField.Indicator>
+                                                                        <Checkbox className="mt-0.5" />
+                                                                    </ControlField.Indicator>
+                                                                </ControlField>
+                                                            </React.Fragment>
                                                         );
                                                     })}
-                                                </View>
+                                                </Surface>
                                             );
                                         }}
                                     />
@@ -219,7 +235,7 @@ export default function AddOnModal(): JSX.Element {
                                         value={field.value}
                                         onChangeText={field.onChange}
                                         placeholder=""
-                                        className="min-h-[80px]"
+                                        className="min-h-20"
                                     />
                                 )}
                             />
@@ -228,12 +244,12 @@ export default function AddOnModal(): JSX.Element {
 
                     <Separator />
 
-                    <View className="flex-row gap-3 pt-4">
-                        <Button className="flex-1" onPress={handleSubmit(onSubmit)}>
-                            {editingCartItemId ? 'Simpan perubahan' : 'Tambahkan ke keranjang'}
-                        </Button>
+                    <View className="flex-row gap-3 bg-surface p-4">
                         <Button variant="outline" onPress={closeModal}>
                             Batal
+                        </Button>
+                        <Button className="flex-1" onPress={handleSubmit(onSubmit)}>
+                            {editingCartItemId ? 'Simpan perubahan' : 'Tambahkan ke keranjang'}
                         </Button>
                     </View>
                 </Dialog.Content>

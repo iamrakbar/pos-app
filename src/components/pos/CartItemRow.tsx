@@ -5,7 +5,7 @@ import { formatRupiah } from '@/utils/format';
 import { MOCK_PRODUCTS } from '@/data/pos-mock';
 import { Button, Typography } from 'heroui-native';
 import type { JSX } from 'react';
-import { Image, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 type Props = {
@@ -42,82 +42,60 @@ export default function CartItemRow({ item }: Props): JSX.Element {
     };
 
     return (
-        <View className="flex-row gap-3 py-3 border-b border-border">
-            <View className="w-16 h-16 rounded-lg overflow-hidden bg-muted items-center justify-center flex-shrink-0">
-                {product?.image_url ? (
-                    <Image
-                        source={{ uri: product.image_url }}
-                        className="w-full h-full"
-                        resizeMode="cover"
-                    />
-                ) : (
-                    <Ionicons name="fast-food-outline" size={20} color="#9ca3af" />
-                )}
-            </View>
-
-            <View className="flex-1 gap-1">
-                <View className="flex-row items-start justify-between gap-2">
-                    <Typography className="text-sm font-semibold text-foreground flex-1" numberOfLines={2}>
+        <View className="gap-3 py-3 border-b border-border">
+            <Pressable className="flex-1 gap-1 active:opacity-70" onPress={handleEdit}>
+                <View className="flex-row justify-between">
+                    <Typography className="" numberOfLines={2}>
                         {item.name}
                     </Typography>
+
+                    <Typography className="text-sm font-semibold">
+                        {formatRupiah(item.price)}
+                    </Typography>
+                </View>
+
+                {(modifierSummary || addOnTotal > 0) && (
+                    <Typography.Paragraph className="text-sm text-muted" numberOfLines={2}>
+                        {modifierSummary}
+                        {addOnTotal > 0 ? ` (+${formatRupiah(addOnTotal)})` : ''}
+                    </Typography.Paragraph>
+                )}
+            </Pressable>
+
+            <View className="flex-row items-center gap-4">
+                <View className="flex-1 flex-row items-center justify-end gap-2">
                     <Button
                         variant="ghost"
                         size="sm"
                         isIconOnly
                         onPress={() => removeItem(item.id)}
-                        className="w-7 h-7"
                     >
-                        <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                        <Ionicons name="trash-outline" size={18} color="#ef4444" />
                     </Button>
                 </View>
-
-                <Typography className="text-sm font-medium text-foreground">
-                    {formatRupiah(item.price)}
-                </Typography>
-
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            isIconOnly
-                            onPress={handleDecrement}
-                            className="w-7 h-7 rounded-full"
-                        >
-                            <Ionicons name="remove" size={14} color="#6b7280" />
-                        </Button>
-                        <Typography className="text-sm font-semibold w-5 text-center text-foreground">
+                <View className="flex-row items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        isIconOnly
+                        onPress={handleDecrement}
+                    >
+                        <Ionicons name="remove" size={18} color="#6b7280" />
+                    </Button>
+                    <View className="w-8">
+                        <Typography className="text-sm font-semibold text-center text-foreground">
                             {item.qty}
                         </Typography>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            isIconOnly
-                            onPress={() => updateQty(item.id, item.qty + 1)}
-                            className="w-7 h-7 rounded-full"
-                        >
-                            <Ionicons name="add" size={14} color="#6b7280" />
-                        </Button>
                     </View>
-                </View>
-
-                {(modifierSummary || addOnTotal > 0) && (
-                    <Typography className="text-xs text-muted-foreground" numberOfLines={2}>
-                        {modifierSummary}
-                        {addOnTotal > 0 ? ` (+${formatRupiah(addOnTotal)})` : ''}
-                    </Typography>
-                )}
-
-                {product && product.add_ons.length > 0 && (
                     <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        onPress={handleEdit}
-                        className="self-start h-6 px-0"
+                        isIconOnly
+                        onPress={() => updateQty(item.id, item.qty + 1)}
                     >
-                        <Ionicons name="pencil-outline" size={12} color="#6b7280" />
+                        <Ionicons name="add" size={18} color="#6b7280" />
                     </Button>
-                )}
+                </View>
             </View>
         </View>
     );
