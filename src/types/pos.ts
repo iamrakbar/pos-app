@@ -55,14 +55,18 @@ export type POSPaymentGroup = {
 export type CheckoutFormState = {
   order_type: 'dine-in' | 'takeaway';
   table_id: string | null;
+  pickup_time: string | null;
   payment_group: 'e-money' | 'cash';
   payment_id: string | null;
-  customer_type: 'merchant' | 'registered';
+  customer_type: 'guest' | 'customer' | 'anonymous';
+  guest_id: string | null;
+  customer_id: string | null;
   customer_search: string;
   notes: string;
 };
 
 export type PaymentSession = {
+  order_id: string;
   transaction_id: string;
   payment_type: string;
   qr_url: string | null;

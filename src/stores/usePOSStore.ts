@@ -8,6 +8,7 @@ type POSState = {
   selectedProduct: POSProduct | null;
   editingCartItemId: string | null;
   paymentSession: PaymentSession | null;
+  checkoutResult: App.Data.Merchant.Checkout.CheckoutData | null;
   searchQuery: string;
   categoryId: string | null;
   checkoutForm: CheckoutFormState;
@@ -16,7 +17,7 @@ type POSState = {
 type POSAction = {
   openAddonModal: (product: POSProduct, editingCartItemId?: string) => void;
   openCheckoutModal: () => void;
-  openPaymentModal: (session: PaymentSession) => void;
+  openPaymentModal: (session: PaymentSession, result: App.Data.Merchant.Checkout.CheckoutData) => void;
   openPaymentSuccessModal: () => void;
   closeModal: () => void;
   setSearchQuery: (q: string) => void;
@@ -28,9 +29,12 @@ type POSAction = {
 const DEFAULT_CHECKOUT_FORM: CheckoutFormState = {
   order_type: 'dine-in',
   table_id: null,
+  pickup_time: null,
   payment_group: 'e-money',
   payment_id: 'pay-qris',
-  customer_type: 'merchant',
+  customer_type: 'anonymous',
+  guest_id: null,
+  customer_id: null,
   customer_search: '',
   notes: '',
 };
@@ -40,6 +44,7 @@ export const usePOSStore = create<POSState & POSAction>()((set) => ({
   selectedProduct: null,
   editingCartItemId: null,
   paymentSession: null,
+  checkoutResult: null,
   searchQuery: '',
   categoryId: null,
   checkoutForm: { ...DEFAULT_CHECKOUT_FORM },
@@ -49,8 +54,8 @@ export const usePOSStore = create<POSState & POSAction>()((set) => ({
 
   openCheckoutModal: () => set({ modal: 'checkout' }),
 
-  openPaymentModal: (session) =>
-    set({ modal: 'payment', paymentSession: session }),
+  openPaymentModal: (session, result) =>
+    set({ modal: 'payment', paymentSession: session, checkoutResult: result }),
 
   openPaymentSuccessModal: () => set({ modal: 'payment-success' }),
 
@@ -67,5 +72,5 @@ export const usePOSStore = create<POSState & POSAction>()((set) => ({
     })),
 
   resetCheckoutForm: () =>
-    set({ checkoutForm: { ...DEFAULT_CHECKOUT_FORM } }),
+    set({ checkoutForm: { ...DEFAULT_CHECKOUT_FORM }, paymentSession: null, checkoutResult: null }),
 }));
