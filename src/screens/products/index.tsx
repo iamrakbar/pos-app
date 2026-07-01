@@ -1,5 +1,8 @@
 import { useProducts } from '@/hooks/db/useProducts';
 import { useCategories } from '@/hooks/db/useCategories';
+import LoadingState from '@/components/common/LoadingState';
+import ErrorState from '@/components/common/ErrorState';
+import EmptyState from '@/components/common/EmptyState';
 import { formatRupiah } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, Chip, SearchField, Select, Separator, Surface, Typography } from 'heroui-native';
@@ -13,7 +16,14 @@ export default function ProductsScreen(): React.JSX.Element {
     const [categoryId, setCategoryId] = React.useState<string | null>(null);
     const [activeFilter, setActiveFilter] = React.useState<'all' | 'active' | 'inactive'>('all');
 
-    const { data: allProducts = [] } = useProducts(search || undefined, categoryId || undefined);
+    const {
+        data: allProductsRaw,
+        isLoading,
+        isError,
+        error,
+        refetch,
+    } = useProducts(search || undefined, categoryId || undefined);
+    const allProducts = allProductsRaw ?? [];
     const { data: categoriesList = [] } = useCategories();
 
     const filtered = allProducts.filter((p) => {
@@ -113,12 +123,14 @@ export default function ProductsScreen(): React.JSX.Element {
             <Separator />
 
             {/* Product list */}
+            {isLoading ? (
+                <LoadingState message="Loading products…" />
+            ) : isError ? (
+                <ErrorState error={error} onRetry={refetch} />
+            ) : (
             <ScrollView className="flex-1" contentContainerClassName="py-2">
                 {filtered.length === 0 ? (
-                    <View className="items-center justify-center py-20 gap-2">
-                        <Ionicons name="search-outline" size={40} color="#9ca3af" />
-                        <Typography className="text-sm text-muted-foreground">No products found</Typography>
-                    </View>
+                    <EmptyState icon="search-outline" message="No products found" />
                 ) : (
                     filtered.map((product, index) => {
                         const category = categoriesList.find((c) => c.id === product.category_id);
@@ -194,6 +206,7 @@ export default function ProductsScreen(): React.JSX.Element {
                     })
                 )}
             </ScrollView>
+            )}
         </View>
     );
 }

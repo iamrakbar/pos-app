@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DatabaseProvider } from '@/db';
 import { useAuth, setQueryClientRef } from '@/stores/useAuth';
 import { isApiError } from '@/api/ApiError';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 import "../global.css";
 
@@ -38,20 +39,22 @@ export default function RootLayout(): JSX.Element {
                     <QueryClientProvider client={queryClient}>
                         <DatabaseProvider>
                             <StatusBar />
-                            {!hasHydrated ? (
-                                <View className="flex-1 items-center justify-center bg-background">
-                                    <ActivityIndicator />
-                                </View>
-                            ) : (
-                                <Stack screenOptions={{ headerShown: false }}>
-                                    <Stack.Protected guard={session}>
-                                        <Stack.Screen name="(app)" />
-                                    </Stack.Protected>
-                                    <Stack.Protected guard={!session}>
-                                        <Stack.Screen name="sign-in" />
-                                    </Stack.Protected>
-                                </Stack>
-                            )}
+                            <ErrorBoundary>
+                                {!hasHydrated ? (
+                                    <View className="flex-1 items-center justify-center bg-background">
+                                        <ActivityIndicator />
+                                    </View>
+                                ) : (
+                                    <Stack screenOptions={{ headerShown: false }}>
+                                        <Stack.Protected guard={session}>
+                                            <Stack.Screen name="(app)" />
+                                        </Stack.Protected>
+                                        <Stack.Protected guard={!session}>
+                                            <Stack.Screen name="sign-in" />
+                                        </Stack.Protected>
+                                    </Stack>
+                                )}
+                            </ErrorBoundary>
                         </DatabaseProvider>
                     </QueryClientProvider>
                 </HeroUINativeProvider>
