@@ -305,6 +305,12 @@ export default function ProductFormScreen(): React.JSX.Element {
                     {isNew ? 'New Product' : 'Edit Product'}
                 </Typography>
 
+                <View className="rounded-xl bg-warning/10 border border-warning/30 px-3 py-2.5">
+                    <Typography className="text-xs text-warning-foreground">
+                        Product editing is not yet connected to the live API — changes here won&apos;t be saved.
+                    </Typography>
+                </View>
+
                 {/* ── Image picker ── */}
                 <Controller
                     control={control}
@@ -539,7 +545,7 @@ export default function ProductFormScreen(): React.JSX.Element {
                 <Button variant="outline" onPress={() => router.back()}>
                     Cancel
                 </Button>
-                <Button className="flex-1" onPress={handleSubmit(onSubmit)}>
+                <Button className="flex-1" onPress={handleSubmit(onSubmit)} isDisabled>
                     <Ionicons name="checkmark-outline" size={16} color="white" />
                     <Button.Label className="ml-1.5">
                         {isNew ? 'Create product' : 'Save changes'}

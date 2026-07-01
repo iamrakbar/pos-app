@@ -1,48 +1,57 @@
 import { useQuery } from '@tanstack/react-query';
-import { db } from '@/db';
-import { products } from '@/db/schema';
-import { eq, like, and } from 'drizzle-orm';
-import type { POSProduct, AddOnGroup } from '@/types/pos';
+import { getProducts } from '@/api/endpoints/products';
+import { useAuth } from '@/stores/useAuth';
+import type { POSProduct } from '@/types/pos';
 
-function rowToProduct(row: typeof products.$inferSelect): POSProduct {
+const PRODUCTS_STALE_TIME_MS = 5 * 60 * 1000;
+
+// Merchant ProductData has no `add_ons` field and no discount/original_price field —
+// no add-ons endpoint exists in the given API collection, so add_ons always maps to
+// [] (AddOnModal stays mounted but unreachable) and original_price stays null.
+export function mapProduct(raw: App.Data.Merchant.Product.ProductData): POSProduct {
     return {
-        id: row.id,
-        name: row.name,
-        price: row.price,
-        original_price: row.original_price ?? null,
-        image_url: row.image_url ?? null,
-        thumbnail_url: row.thumbnail_url ?? null,
-        category_id: row.category_id ?? null,
-        is_active: row.is_active === 1,
-        add_ons: JSON.parse(row.add_ons_json) as AddOnGroup[],
+        id: raw.id,
+        name: raw.name,
+        price: raw.price,
+        original_price: null,
+        image_url: raw.image_url,
+        thumbnail_url: raw.thumbnail_url,
+        category_id: raw.category_id,
+        is_active: raw.active,
+        add_ons: [],
     };
 }
 
-export function useProducts(search?: string, categoryId?: string | null) {
-    return useQuery<POSProduct[]>({
-        queryKey: ['products', search, categoryId],
-        queryFn: () => {
-            const conditions = [];
-            if (search) conditions.push(like(products.name, `%${search}%`));
-            if (categoryId) conditions.push(eq(products.category_id, categoryId));
-
-            const rows = conditions.length
-                ? db.select().from(products).where(and(...conditions)).all()
-                : db.select().from(products).all();
-
-            return rows.map(rowToProduct);
+export function useProductsRaw(search?: string, categoryId?: string | null) {
+    const merchantId = useAuth((s) => s.merchantId);
+    return useQuery({
+        queryKey: ['products-raw', merchantId, search, categoryId],
+        queryFn: async () => {
+            const res = await getProducts(merchantId!, {
+                search,
+                category_id: categoryId ?? undefined,
+            });
+            return res.data.data;
         },
+        enabled: !!merchantId,
+        staleTime: PRODUCTS_STALE_TIME_MS,
     });
 }
 
+export function useProducts(search?: string, categoryId?: string | null) {
+    const query = useProductsRaw(search, categoryId);
+    return {
+        ...query,
+        data: query.data?.map(mapProduct),
+    };
+}
+
 export function useProduct(id: string) {
-    return useQuery<POSProduct | null>({
-        queryKey: ['product', id],
-        queryFn: () => {
-            if (id === 'new') return null;
-            const row = db.select().from(products).where(eq(products.id, id)).get();
-            return row ? rowToProduct(row) : null;
-        },
-        enabled: !!id,
-    });
+    // No GET /products/:id endpoint in the given collection — derive from the
+    // already-fetched (unfiltered) product list instead.
+    const { data: products, ...rest } = useProducts();
+    return {
+        ...rest,
+        data: id === 'new' ? null : (products?.find((p) => p.id === id) ?? null),
+    };
 }
