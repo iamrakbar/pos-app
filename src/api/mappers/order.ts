@@ -34,10 +34,44 @@ export function extractCustomerName(customer: unknown): string | null {
     return null;
 }
 
+export function extractTableName(orderable: unknown): string | null {
+    const rec = asRecord(orderable);
+    if (!rec) return null;
+    if (typeof rec.name === 'string') return rec.name;
+    const table = asRecord(rec.table);
+    if (table && typeof table.name === 'string') return table.name;
+    return null;
+}
+
 export function extractPaymentName(payment: unknown): string {
     const rec = asRecord(payment);
     if (rec && typeof rec.name === 'string') return rec.name;
     return 'Unknown';
+}
+
+export function extractNumber(value: unknown, fallback = 0): number {
+    if (typeof value === 'number') return value;
+    const rec = asRecord(value);
+    if (rec && typeof rec.amount === 'number') return rec.amount;
+    return fallback;
+}
+
+export type OrderLineItem = { name: string; qty: number; price: number };
+
+export function extractOrderItems(products: unknown): OrderLineItem[] {
+    if (!Array.isArray(products)) return [];
+    return products.map((raw) => {
+        const rec = asRecord(raw) ?? {};
+        const name = typeof rec.name === 'string' ? rec.name : 'Unknown item';
+        const qty = typeof rec.qty === 'number' ? rec.qty : 1;
+        const price =
+            typeof rec.price === 'number'
+                ? rec.price
+                : typeof rec.subtotal === 'number' && qty > 0
+                  ? rec.subtotal / qty
+                  : 0;
+        return { name, qty, price };
+    });
 }
 
 export function extractFeeRate(fees: unknown): number {

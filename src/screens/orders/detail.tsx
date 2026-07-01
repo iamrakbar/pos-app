@@ -1,21 +1,22 @@
-import { useOrder, useUpdateOrderStatus } from '@/hooks/db/useOrders';
-import type { OrderStatus } from '@/data/orders-mock';
+import { useOrder } from '@/hooks/db/useOrders';
+import { usePaymentStatus } from '@/hooks/db/usePaymentStatus';
+import {
+    extractCustomerName,
+    extractNumber,
+    extractOrderItems,
+    extractPaymentName,
+    extractStatusColor,
+    extractStatusLabel,
+    extractTableName,
+} from '@/api/mappers/order';
+import LoadingState from '@/components/common/LoadingState';
+import ErrorState from '@/components/common/ErrorState';
 import { formatRupiah } from '@/utils/format';
+import { getErrorMessage } from '@/api/ApiError';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Chip, Separator, Surface, Typography } from 'heroui-native';
+import { Button, Chip, Surface, Typography } from 'heroui-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, ScrollView, Pressable } from 'react-native';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const STATUS_CONFIG: Record<
-    OrderStatus,
-    { label: string; color: 'success' | 'danger' | 'default' | 'warning' }
-> = {
-    completed: { label: 'Completed', color: 'success' },
-    pending:   { label: 'Pending',   color: 'warning' },
-    cancelled: { label: 'Cancelled', color: 'danger'  },
-};
+import { ActivityIndicator, View, ScrollView, Pressable } from 'react-native';
 
 function formatDateTime(iso: string): string {
     const d = new Date(iso);
@@ -28,14 +29,15 @@ function formatDateTime(iso: string): string {
     });
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
 export default function OrderDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
 
-    const { data: order } = useOrder(id);
-    const updateStatus = useUpdateOrderStatus();
+    const { data: order, isLoading, isError, error, refetch } = useOrder(id);
+    const paymentStatus = usePaymentStatus(id);
+
+    if (isLoading) return <LoadingState message="Loading order…" />;
+    if (isError) return <ErrorState error={error} onRetry={refetch} />;
 
     if (!order) {
         return (
@@ -49,11 +51,15 @@ export default function OrderDetailScreen() {
         );
     }
 
-    const status = STATUS_CONFIG[order.status];
-    const feeAmount = order.total - order.subtotal;
-    const feeRate = order.payment_method === 'QRIS' ? '0.7%'
-        : order.payment_method === 'GoPay' || order.payment_method === 'OVO' ? '1.5%'
-        : null;
+    const statusLabel = extractStatusLabel(order.order_status);
+    const statusColor = extractStatusColor(order.order_status);
+    const paymentStatusLabel = extractStatusLabel(order.payment_status);
+    const paymentStatusColor = extractStatusColor(order.payment_status);
+    const customerName = extractCustomerName(order.customer);
+    const paymentName = extractPaymentName(order.payment);
+    const tableName = extractTableName(order.orderable);
+    const items = extractOrderItems(order.products);
+    const feeAmount = extractNumber(order.payment_fee);
 
     return (
         <View className="flex-1 bg-background">
@@ -71,15 +77,12 @@ export default function OrderDetailScreen() {
                 <View className="gap-2">
                     <View className="flex-row items-center justify-between">
                         <Typography className="text-xl font-bold text-foreground font-mono">
-                            #{order.id}
+                            {order.code}
                         </Typography>
-                        <Chip color={status.color} size="sm" variant="soft">
-                            <Chip.Label>{status.label}</Chip.Label>
+                        <Chip color={statusColor} size="sm" variant="soft">
+                            <Chip.Label>{statusLabel}</Chip.Label>
                         </Chip>
                     </View>
-                    <Typography className="text-xs text-muted-foreground font-mono">
-                        {order.transaction_id}
-                    </Typography>
                     <Typography className="text-xs text-muted-foreground">
                         {formatDateTime(order.created_at)}
                     </Typography>
@@ -101,12 +104,12 @@ export default function OrderDetailScreen() {
                         </View>
                     </View>
 
-                    {order.table && (
+                    {tableName && (
                         <View className="flex-row items-center gap-3 px-4 py-3 border-b border-border">
                             <Ionicons name="grid-outline" size={16} color="#9ca3af" />
                             <View className="flex-1">
                                 <Typography className="text-xs text-muted-foreground">Table</Typography>
-                                <Typography className="text-sm font-semibold text-foreground">{order.table}</Typography>
+                                <Typography className="text-sm font-semibold text-foreground">{tableName}</Typography>
                             </View>
                         </View>
                     )}
@@ -115,8 +118,11 @@ export default function OrderDetailScreen() {
                         <Ionicons name="card-outline" size={16} color="#9ca3af" />
                         <View className="flex-1">
                             <Typography className="text-xs text-muted-foreground">Payment</Typography>
-                            <Typography className="text-sm font-semibold text-foreground">{order.payment_method}</Typography>
+                            <Typography className="text-sm font-semibold text-foreground">{paymentName}</Typography>
                         </View>
+                        <Chip color={paymentStatusColor} size="sm" variant="soft">
+                            <Chip.Label>{paymentStatusLabel}</Chip.Label>
+                        </Chip>
                     </View>
 
                     <View className="flex-row items-center gap-3 px-4 py-3">
@@ -124,7 +130,7 @@ export default function OrderDetailScreen() {
                         <View className="flex-1">
                             <Typography className="text-xs text-muted-foreground">Customer</Typography>
                             <Typography className="text-sm font-semibold text-foreground">
-                                {order.customer_name ?? 'Walk-in'}
+                                {customerName ?? 'Walk-in'}
                             </Typography>
                         </View>
                     </View>
@@ -136,10 +142,10 @@ export default function OrderDetailScreen() {
                         Order Items
                     </Typography>
                     <Surface className="w-full overflow-hidden">
-                        {order.items.map((item, index) => (
+                        {items.map((item, index) => (
                             <View
                                 key={index}
-                                className={`flex-row items-center justify-between px-4 py-3 ${index < order.items.length - 1 ? 'border-b border-border' : ''}`}
+                                className={`flex-row items-center justify-between px-4 py-3 ${index < items.length - 1 ? 'border-b border-border' : ''}`}
                             >
                                 <View className="flex-1 gap-0.5">
                                     <Typography className="text-sm font-medium text-foreground" numberOfLines={1}>
@@ -169,9 +175,7 @@ export default function OrderDetailScreen() {
                         </View>
                         {feeAmount > 0 && (
                             <View className="flex-row justify-between px-4 py-3 border-b border-border">
-                                <Typography className="text-sm text-muted-foreground">
-                                    Payment fee{feeRate ? ` (${feeRate})` : ''}
-                                </Typography>
+                                <Typography className="text-sm text-muted-foreground">Payment fee</Typography>
                                 <Typography className="text-sm text-foreground">{formatRupiah(feeAmount)}</Typography>
                             </View>
                         )}
@@ -194,33 +198,31 @@ export default function OrderDetailScreen() {
                     </View>
                 )}
 
-                {/* ── Status update ── */}
-                {order.status === 'pending' && (
-                    <View className="gap-2">
-                        <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            Update Status
-                        </Typography>
-                        <View className="flex-row gap-3">
-                            <Button
-                                className="flex-1 bg-green-500 border-green-500"
-                                onPress={() => updateStatus.mutate({ id: order.id, status: 'completed' })}
-                                isDisabled={updateStatus.isPending}
-                            >
-                                <Ionicons name="checkmark-circle-outline" size={16} color="white" />
-                                <Button.Label className="ml-1.5">Mark Completed</Button.Label>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="border-danger"
-                                onPress={() => updateStatus.mutate({ id: order.id, status: 'cancelled' })}
-                                isDisabled={updateStatus.isPending}
-                            >
-                                <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
-                                <Button.Label className="ml-1.5 text-danger">Cancel</Button.Label>
-                            </Button>
-                        </View>
-                    </View>
-                )}
+                {/* ── Payment status refresh ── */}
+                {/* No order-status-update endpoint exists in the given API collection —
+                    the only write action available is re-checking payment status. */}
+                <View className="gap-2">
+                    <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        Payment status
+                    </Typography>
+                    <Button
+                        variant="outline"
+                        onPress={() => paymentStatus.mutate()}
+                        isDisabled={paymentStatus.isPending}
+                    >
+                        {paymentStatus.isPending ? (
+                            <ActivityIndicator />
+                        ) : (
+                            <>
+                                <Ionicons name="refresh-outline" size={16} color="hsl(var(--foreground))" />
+                                <Button.Label className="ml-1.5">Refresh payment status</Button.Label>
+                            </>
+                        )}
+                    </Button>
+                    {paymentStatus.isError && (
+                        <Typography className="text-xs text-danger">{getErrorMessage(paymentStatus.error)}</Typography>
+                    )}
+                </View>
             </ScrollView>
 
             {/* ── Footer ── */}
