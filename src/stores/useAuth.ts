@@ -8,9 +8,13 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 type AuthState = {
   token: string | null;
   user: User | null;
+  merchantId: string | null;
+  activeMerchant: App.Data.Merchant.Auth.MerchantSummaryData | null;
+  hasHydrated: boolean;
+  setHasHydrated: (hasHydrated: boolean) => void;
   setToken: (token: string | null) => void;
   setUser: (user: User | null) => void;
-  loginLocal: (token: string, user: User) => void;
+  login: (payload: App.Data.Merchant.Auth.AuthTokenData) => void;
   logout: () => void;
 };
 
@@ -43,18 +47,39 @@ export const useAuth = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
+      merchantId: null,
+      activeMerchant: null,
+      hasHydrated: false,
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
       setToken: (token) => set({ token }),
       setUser: (user) => set({ user }),
-      loginLocal: (token, user) => set({ token, user }),
+      login: (payload) => {
+        const activeMerchant = payload.merchants[0] ?? null;
+        set({
+          token: payload.access_token,
+          user: payload.user,
+          activeMerchant,
+          merchantId: activeMerchant?.id ?? null,
+        });
+      },
       logout: () => {
         // Clear React Query cache to prevent stale data after logout
         queryClientRef?.clear();
-        set({ token: null, user: null });
+        set({ token: null, user: null, merchantId: null, activeMerchant: null });
       },
     }),
     {
       name: 'soeat-order-auth',
       storage: createJSONStorage(() => platformStorage),
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        merchantId: state.merchantId,
+        activeMerchant: state.activeMerchant,
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
