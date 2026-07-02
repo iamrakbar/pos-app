@@ -76,6 +76,12 @@ CREATE TABLE \`tables\` (
 );
 `;
 
+const m0001 = `
+DROP TABLE \`order_items\`;--> statement-breakpoint
+DROP TABLE \`orders\`;--> statement-breakpoint
+DROP TABLE \`payment_methods\`;
+`;
+
 export default {
     journal: {
         entries: [
@@ -85,9 +91,16 @@ export default {
                 tag: '0000_futuristic_siren',
                 breakpoints: true,
             },
+            {
+                idx: 1,
+                when: 1782960517400,
+                tag: '0001_chilly_madelyne_pryor',
+                breakpoints: true,
+            },
         ],
     },
     migrations: {
         m0000,
+        m0001,
     },
 };

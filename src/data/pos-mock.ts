@@ -1,6 +1,5 @@
 import type {
   POSCategory,
-  POSPaymentGroup,
   POSProduct,
   POSTable,
 } from '@/types/pos';
@@ -867,23 +866,4 @@ export const MOCK_TABLES: POSTable[] = [
   { id: 'tbl-4', name: 'Meja 4', area_id: 'area-2', area_name: 'Outdoor', pax: 6 },
   { id: 'tbl-5', name: 'Meja 5', area_id: 'area-2', area_name: 'Outdoor', pax: 4 },
   { id: 'tbl-6', name: 'VIP 1', area_id: 'area-3', area_name: 'VIP', pax: 8 },
-];
-
-export const MOCK_PAYMENT_GROUPS: POSPaymentGroup[] = [
-  {
-    group_type: 'e-money',
-    group_label: 'E Money',
-    payments: [
-      { id: 'pay-qris', code: 'qris', name: 'QRIS', fee_rate: 0.007 },
-      { id: 'pay-ovo', code: 'ovo', name: 'OVO', fee_rate: 0.015 },
-      { id: 'pay-gopay', code: 'gopay', name: 'GoPay', fee_rate: 0.015 },
-    ],
-  },
-  {
-    group_type: 'cash',
-    group_label: 'Tunai',
-    payments: [
-      { id: 'pay-cash', code: 'cash', name: 'Cash', fee_rate: 0 },
-    ],
-  },
 ];

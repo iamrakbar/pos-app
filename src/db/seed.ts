@@ -1,7 +1,6 @@
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_TABLES, MOCK_PAYMENT_GROUPS } from '@/data/pos-mock';
-import { MOCK_ORDERS } from '@/data/orders-mock';
+import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_TABLES } from '@/data/pos-mock';
 import { db } from './client';
-import { meta, categories, products, areas, tables, payment_methods, orders, order_items } from './schema';
+import { meta, categories, products, areas, tables } from './schema';
 import { eq } from 'drizzle-orm';
 
 export function runSeedIfNeeded() {
@@ -53,51 +52,6 @@ export function runSeedIfNeeded() {
             pax: t.pax,
         }))
     ).run();
-
-    // Payment methods (flatten groups)
-    const allPayments = MOCK_PAYMENT_GROUPS.flatMap((g) =>
-        g.payments.map((p) => ({
-            id: p.id,
-            code: p.code,
-            name: p.name,
-            fee_rate: p.fee_rate,
-            group_type: g.group_type,
-            group_label: g.group_label,
-        }))
-    );
-    db.insert(payment_methods).values(allPayments).run();
-
-    // Orders + order items
-    for (const o of MOCK_ORDERS) {
-        const totalQty = o.items.reduce((s, i) => s + i.qty, 0);
-        const fee = o.total - o.subtotal;
-        db.insert(orders).values({
-            id: o.id,
-            transaction_id: o.transaction_id,
-            order_type: o.order_type,
-            table_name: o.table ?? null,
-            payment_method: o.payment_method,
-            status: o.status,
-            subtotal: o.subtotal,
-            total: o.total,
-            total_qty: totalQty,
-            customer_type: o.customer_type,
-            customer_name: o.customer_name ?? null,
-            notes: o.notes ?? null,
-            created_at: o.created_at,
-            is_dirty: 0,
-        }).run();
-
-        db.insert(order_items).values(
-            o.items.map((item, idx) => ({
-                id: `${o.id}-${idx}`,
-                order_id: o.id,
-                product_name: item.name,
-                qty: item.qty,
-                unit_price: item.price,
-            }))
-        ).run();
-    }
 
     db.insert(meta).values({ key: 'seeded', value: '1' }).run();
 }

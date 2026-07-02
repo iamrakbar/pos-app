@@ -1,11 +1,11 @@
 import { apiRequest } from '../client';
 
+// Verified against the live server: the response is a flat { data: [...] },
+// not the double-nested { success, data: { data: [...] } } Scramble's example
+// response in the Postman collection implied.
 type ProductsResponse = {
-    success: boolean;
-    data: {
-        data: App.Data.Merchant.Product.ProductData[];
-        meta?: unknown;
-    };
+    data: App.Data.Merchant.Product.ProductData[];
+    meta?: unknown;
 };
 
 export function getProducts(
