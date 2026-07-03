@@ -16,16 +16,14 @@ import React from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
-// Read-side order_status codes aren't confirmed by the given Postman collection
-// (only the write-side UpdateOrderStatusRequest enum is documented) — status is
-// passed straight through to the server as a free-text filter.
-type StatusFilter = 'all' | 'new' | 'process' | 'completed' | 'rejected';
+type StatusFilter = 'all' | 'new' | 'process' | 'completed' | 'cancelled' | 'rejected';
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'new', label: 'New' },
     { value: 'process', label: 'Process' },
     { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' },
     { value: 'rejected', label: 'Rejected' },
 ];
 

@@ -1,4 +1,4 @@
-import { useOrder } from '@/hooks/db/useOrders';
+import { useOrder, useUpdateOrderStatus } from '@/hooks/db/useOrders';
 import { usePaymentStatus } from '@/hooks/db/usePaymentStatus';
 import {
     extractCustomerName,
@@ -35,6 +35,7 @@ export default function OrderDetailScreen() {
 
     const { data: order, isLoading, isError, error, refetch } = useOrder(id);
     const paymentStatus = usePaymentStatus(id);
+    const updateStatus = useUpdateOrderStatus();
 
     if (isLoading) return <LoadingState message="Loading order…" />;
     if (isError) return <ErrorState error={error} onRetry={refetch} />;
@@ -53,6 +54,7 @@ export default function OrderDetailScreen() {
 
     const statusLabel = extractStatusLabel(order.order_status);
     const statusColor = extractStatusColor(order.order_status);
+    const statusCode = statusLabel.toLowerCase();
     const paymentStatusLabel = extractStatusLabel(order.payment_status);
     const paymentStatusColor = extractStatusColor(order.payment_status);
     const customerName = extractCustomerName(order.customer);
@@ -198,9 +200,52 @@ export default function OrderDetailScreen() {
                     </View>
                 )}
 
+                {/* ── Status actions ── */}
+                {/* cancelled is not a merchant-settable transition via this endpoint
+                    (it's system/customer-initiated) — display only, no action. */}
+                {(statusCode === 'new' || statusCode === 'process') && (
+                    <View className="gap-2">
+                        <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            Update Status
+                        </Typography>
+                        <View className="flex-row gap-3">
+                            {statusCode === 'new' && (
+                                <Button
+                                    className="flex-1 bg-green-500 border-green-500"
+                                    onPress={() => updateStatus.mutate({ id: order.id, status: 'process' })}
+                                    isDisabled={updateStatus.isPending}
+                                >
+                                    <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+                                    <Button.Label className="ml-1.5">Accept</Button.Label>
+                                </Button>
+                            )}
+                            {statusCode === 'process' && (
+                                <Button
+                                    className="flex-1 bg-green-500 border-green-500"
+                                    onPress={() => updateStatus.mutate({ id: order.id, status: 'completed' })}
+                                    isDisabled={updateStatus.isPending}
+                                >
+                                    <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+                                    <Button.Label className="ml-1.5">Mark Completed</Button.Label>
+                                </Button>
+                            )}
+                            <Button
+                                variant="outline"
+                                className="border-danger"
+                                onPress={() => updateStatus.mutate({ id: order.id, status: 'rejected' })}
+                                isDisabled={updateStatus.isPending}
+                            >
+                                <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
+                                <Button.Label className="ml-1.5 text-danger">Reject</Button.Label>
+                            </Button>
+                        </View>
+                        {updateStatus.isError && (
+                            <Typography className="text-xs text-danger">{getErrorMessage(updateStatus.error)}</Typography>
+                        )}
+                    </View>
+                )}
+
                 {/* ── Payment status refresh ── */}
-                {/* No order-status-update endpoint exists in the given API collection —
-                    the only write action available is re-checking payment status. */}
                 <View className="gap-2">
                     <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         Payment status
