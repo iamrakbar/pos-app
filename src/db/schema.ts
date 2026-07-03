@@ -28,16 +28,3 @@ export const products = sqliteTable('products', {
     is_dirty: integer('is_dirty').notNull().default(1),
 });
 
-export const areas = sqliteTable('areas', {
-    id: text('id').primaryKey(),
-    name: text('name').notNull(),
-});
-
-export const tables = sqliteTable('tables', {
-    id: text('id').primaryKey(),
-    area_id: text('area_id').notNull(),
-    area_name: text('area_name').notNull(),
-    name: text('name').notNull(),
-    pax: integer('pax').notNull(),
-});
-

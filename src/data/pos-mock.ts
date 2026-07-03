@@ -1,7 +1,6 @@
 import type {
   POSCategory,
   POSProduct,
-  POSTable,
 } from '@/types/pos';
 
 const UNS = 'https://images.unsplash.com/photo';
@@ -857,13 +856,4 @@ export const MOCK_CATEGORIES: POSCategory[] = [
   { id: '317e588e-ddb2-478a-80fe-a082602dc7ab', name: 'Soups' },
   { id: 'f8107eb4-a491-4ae2-915c-885dc76145e2', name: 'Grill' },
   { id: '858d5448-1806-4bf8-88bf-43f37570ab2b', name: 'Makanan Utama' },
-];
-
-export const MOCK_TABLES: POSTable[] = [
-  { id: 'tbl-1', name: 'Meja 1', area_id: 'area-1', area_name: 'Indoor', pax: 4 },
-  { id: 'tbl-2', name: 'Meja 2', area_id: 'area-1', area_name: 'Indoor', pax: 4 },
-  { id: 'tbl-3', name: 'Meja 3', area_id: 'area-1', area_name: 'Indoor', pax: 2 },
-  { id: 'tbl-4', name: 'Meja 4', area_id: 'area-2', area_name: 'Outdoor', pax: 6 },
-  { id: 'tbl-5', name: 'Meja 5', area_id: 'area-2', area_name: 'Outdoor', pax: 4 },
-  { id: 'tbl-6', name: 'VIP 1', area_id: 'area-3', area_name: 'VIP', pax: 8 },
 ];

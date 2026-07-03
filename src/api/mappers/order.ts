@@ -1,13 +1,4 @@
-// Scramble typed several nested fields as `any[]` because their exact backend shape
-// isn't confirmed by the Postman collection's examples. Treat them as opaque objects
-// and read defensively rather than assuming a shape.
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-        return value as Record<string, unknown>;
-    }
-    return null;
-}
+import { asRecord } from './shared';
 
 export function extractStatusLabel(status: unknown): string {
     const rec = asRecord(status);

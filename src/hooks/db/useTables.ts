@@ -1,18 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import { db } from '@/db';
-import { tables } from '@/db/schema';
+import { getPosTables } from '@/api/endpoints/tables';
+import { useAuth } from '@/stores/useAuth';
 import type { POSTable } from '@/types/pos';
 
+const TABLES_STALE_TIME_MS = 5 * 60 * 1000;
+
 export function useTables() {
+    const merchantId = useAuth((s) => s.merchantId);
     return useQuery<POSTable[]>({
-        queryKey: ['tables'],
-        queryFn: () =>
-            db.select().from(tables).all().map((t) => ({
-                id: t.id,
-                area_id: t.area_id,
-                area_name: t.area_name,
-                name: t.name,
-                pax: t.pax,
-            })),
+        queryKey: ['tables', merchantId],
+        queryFn: async () => (await getPosTables(merchantId!)).data,
+        enabled: !!merchantId,
+        staleTime: TABLES_STALE_TIME_MS,
     });
 }

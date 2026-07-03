@@ -1,6 +1,6 @@
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_TABLES } from '@/data/pos-mock';
+import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '@/data/pos-mock';
 import { db } from './client';
-import { meta, categories, products, areas, tables } from './schema';
+import { meta, categories, products } from './schema';
 import { eq } from 'drizzle-orm';
 
 export function runSeedIfNeeded() {
@@ -33,23 +33,6 @@ export function runSeedIfNeeded() {
             created_at: now,
             updated_at: now,
             is_dirty: 0,
-        }))
-    ).run();
-
-    // Areas (unique from tables)
-    const uniqueAreas = Array.from(
-        new Map(MOCK_TABLES.map((t) => [t.area_id, { id: t.area_id, name: t.area_name }])).values()
-    );
-    db.insert(areas).values(uniqueAreas).run();
-
-    // Tables
-    db.insert(tables).values(
-        MOCK_TABLES.map((t) => ({
-            id: t.id,
-            area_id: t.area_id,
-            area_name: t.area_name,
-            name: t.name,
-            pax: t.pax,
         }))
     ).run();
 

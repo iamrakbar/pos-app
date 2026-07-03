@@ -1,22 +1,19 @@
 import { apiRequest } from '../client';
 
-// Verified against the live server: the response is a flat { data: [...] },
-// not the double-nested { success, data: { data: [...] } } Scramble's example
-// response in the Postman collection implied.
-type ProductsResponse = {
-    data: App.Data.Merchant.Product.ProductData[];
-    meta?: unknown;
+type PosProductsResponse = {
+    success: boolean;
+    data: App.Data.Merchant.Pos.ProductData[];
 };
 
-export function getProducts(
+export function getPosProducts(
     merchantId: string,
-    params?: { search?: string; category_id?: string; page?: number },
-): Promise<ProductsResponse> {
-    return apiRequest<ProductsResponse>(`/${merchantId}/products`, {
+    params?: { search?: string; category_id?: string },
+): Promise<PosProductsResponse> {
+    return apiRequest<PosProductsResponse>(`/${merchantId}/pos/products`, {
         query: {
-            search: params?.search,
-            category_id: params?.category_id,
-            page: params?.page,
+            'filter[search]': params?.search,
+            'filter[category_id]': params?.category_id,
+            sort: 'name',
         },
     });
 }

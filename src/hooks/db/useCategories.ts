@@ -1,8 +1,8 @@
 import { useProductsRaw } from './useProducts';
 import type { POSCategory } from '@/types/pos';
 
-// No standalone categories endpoint exists in the given API collection —
-// categories are derived from the `category` object embedded on each product.
+// No standalone categories endpoint is used here — categories are derived
+// from the `category` object embedded on each POS product.
 export function useCategories() {
     const query = useProductsRaw();
     const categories: POSCategory[] = [];

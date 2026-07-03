@@ -82,6 +82,11 @@ DROP TABLE \`orders\`;--> statement-breakpoint
 DROP TABLE \`payment_methods\`;
 `;
 
+const m0002 = `
+DROP TABLE \`areas\`;--> statement-breakpoint
+DROP TABLE \`tables\`;
+`;
+
 export default {
     journal: {
         entries: [
@@ -97,10 +102,17 @@ export default {
                 tag: '0001_chilly_madelyne_pryor',
                 breakpoints: true,
             },
+            {
+                idx: 2,
+                when: 1783089957172,
+                tag: '0002_dry_blue_marvel',
+                breakpoints: true,
+            },
         ],
     },
     migrations: {
         m0000,
         m0001,
+        m0002,
     },
 };
