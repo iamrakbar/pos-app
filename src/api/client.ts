@@ -28,19 +28,36 @@ async function safeJson(res: Response): Promise<any> {
     }
 }
 
-let loggingOut = false;
-
-function handleUnauthorized(): void {
-    if (loggingOut) return;
-    loggingOut = true;
+function forceLogout(): void {
     useAuth.getState().logout();
     router.replace('/sign-in');
-    setTimeout(() => {
-        loggingOut = false;
-    }, 500);
 }
 
-export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+// POST /refresh takes no body — it authenticates via the current (possibly
+// stale but still parseable) access token in the Authorization header and
+// returns a fresh one. Calls fetch() directly rather than apiRequest() to
+// avoid recursing into this same 401 handling.
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+    const token = useAuth.getState().token;
+    if (!token) return null;
+    try {
+        const res = await fetch(`${API_BASE_URL}/refresh`, {
+            method: 'POST',
+            headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+        });
+        const json = await safeJson(res);
+        const newToken = json?.data?.access_token;
+        if (!res.ok || typeof newToken !== 'string') return null;
+        useAuth.getState().setToken(newToken);
+        return newToken;
+    } catch {
+        return null;
+    }
+}
+
+export async function apiRequest<T>(path: string, opts: RequestOptions = {}, isRetry = false): Promise<T> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
@@ -63,7 +80,14 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
         const json = await safeJson(res);
 
         if (!res.ok) {
-            if (res.status === 401) handleUnauthorized();
+            if (res.status === 401 && opts.auth !== false && !isRetry && path !== '/refresh' && path !== '/login') {
+                refreshPromise ??= refreshAccessToken().finally(() => {
+                    refreshPromise = null;
+                });
+                const newToken = await refreshPromise;
+                if (newToken) return apiRequest<T>(path, opts, true);
+                forceLogout();
+            }
             throw new ApiError({
                 status: res.status,
                 message: json?.message ?? `Request failed (${res.status})`,

@@ -7,6 +7,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 type AuthState = {
   token: string | null;
+  refreshToken: string | null;
   user: User | null;
   merchantId: string | null;
   activeMerchant: App.Data.Merchant.Auth.MerchantSummaryData | null;
@@ -46,6 +47,7 @@ export const useAuth = create<AuthState>()(
   persist(
     (set) => ({
       token: null,
+      refreshToken: null,
       user: null,
       merchantId: null,
       activeMerchant: null,
@@ -55,8 +57,13 @@ export const useAuth = create<AuthState>()(
       setUser: (user) => set({ user }),
       login: (payload) => {
         const activeMerchant = payload.merchants[0] ?? null;
+        // refresh_token isn't in the generated AuthTokenData type yet, but the
+        // login response does include it — capture it if present (unused for
+        // now: POST /refresh authenticates via the access token, not this).
+        const refreshToken = (payload as { refresh_token?: string }).refresh_token ?? null;
         set({
           token: payload.access_token,
+          refreshToken,
           user: payload.user,
           activeMerchant,
           merchantId: activeMerchant?.id ?? null,
@@ -65,7 +72,7 @@ export const useAuth = create<AuthState>()(
       logout: () => {
         // Clear React Query cache to prevent stale data after logout
         queryClientRef?.clear();
-        set({ token: null, user: null, merchantId: null, activeMerchant: null });
+        set({ token: null, refreshToken: null, user: null, merchantId: null, activeMerchant: null });
       },
     }),
     {
@@ -73,6 +80,7 @@ export const useAuth = create<AuthState>()(
       storage: createJSONStorage(() => platformStorage),
       partialize: (state) => ({
         token: state.token,
+        refreshToken: state.refreshToken,
         user: state.user,
         merchantId: state.merchantId,
         activeMerchant: state.activeMerchant,
