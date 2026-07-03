@@ -43,7 +43,8 @@ export type POSPayment = {
   id: string;
   code: string;
   name: string;
-  fee_rate: number;
+  fee_unit: 'fixed' | 'percentage';
+  fee_value: number;
 };
 
 export type POSPaymentGroup = {

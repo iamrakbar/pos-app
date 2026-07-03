@@ -135,8 +135,11 @@ export default function CheckoutModal(): JSX.Element {
     const subtotal = totalPrice();
     const allPayments = paymentGroups.flatMap((g) => g.payments);
     const selectedPayment = allPayments.find((p) => p.id === paymentId);
-    const feeRate = selectedPayment?.fee_rate ?? 0;
-    const paymentFee = Math.round(subtotal * feeRate);
+    const paymentFee = selectedPayment
+        ? selectedPayment.fee_unit === 'percentage'
+            ? Math.round(subtotal * (selectedPayment.fee_value / 100))
+            : selectedPayment.fee_value
+        : 0;
     const total = subtotal + paymentFee;
 
     const selectedTable = tablesList.find((t) => t.id === tableId);
@@ -526,7 +529,8 @@ export default function CheckoutModal(): JSX.Element {
                             {paymentFee > 0 && (
                                 <View className="flex-row justify-between px-4 py-3 border-b border-border">
                                     <Typography className="text-sm text-foreground">
-                                        Payment Fee ({(feeRate * 100).toFixed(1)}%)
+                                        Payment Fee
+                                        {selectedPayment?.fee_unit === 'percentage' ? ` (${selectedPayment.fee_value}%)` : ''}
                                     </Typography>
                                     <Typography className="text-sm text-foreground">{formatRupiah(paymentFee)}</Typography>
                                 </View>

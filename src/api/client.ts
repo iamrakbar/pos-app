@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useAuth } from '@/stores/useAuth';
-import { API_BASE_URL, API_ROOT_URL, API_TIMEOUT_MS } from './config';
+import { API_BASE_URL, API_TIMEOUT_MS } from './config';
 import { ApiError } from './ApiError';
 
 type RequestOptions = {
@@ -8,13 +8,10 @@ type RequestOptions = {
     body?: unknown;
     query?: Record<string, string | number | boolean | undefined>;
     auth?: boolean;
-    /** Use API_ROOT_URL instead of API_BASE_URL (for endpoints outside /merchant, e.g. /customer/payments). */
-    root?: boolean;
 };
 
-function buildUrl(path: string, query: RequestOptions['query'], root?: boolean): string {
-    const base = root ? API_ROOT_URL : API_BASE_URL;
-    const url = new URL(`${base}${path.startsWith('/') ? path : `/${path}`}`);
+function buildUrl(path: string, query: RequestOptions['query']): string {
+    const url = new URL(`${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`);
     if (query) {
         for (const [key, value] of Object.entries(query)) {
             if (value !== undefined) url.searchParams.set(key, String(value));
@@ -47,7 +44,7 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-    const url = buildUrl(path, opts.query, opts.root);
+    const url = buildUrl(path, opts.query);
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
     if (opts.auth !== false) {
