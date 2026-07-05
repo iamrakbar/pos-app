@@ -1,4 +1,5 @@
 import { Drawer } from 'expo-router/drawer';
+import AppDrawerContent from '@/components/navigation/AppDrawerContent';
 import { useThemeStore } from '@/stores/useThemeStore';
 import { getNavigationTheme } from '@/utils/navigationTheme';
 
@@ -8,9 +9,12 @@ export default function AppLayout() {
 
     return (
         <Drawer
+            drawerContent={(props) => <AppDrawerContent {...props} />}
             screenOptions={{
                 drawerStyle: {
                     backgroundColor: theme.background,
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
                 },
                 drawerContentStyle: {
                     backgroundColor: theme.background,
