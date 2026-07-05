@@ -37,7 +37,8 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to use your camera to take product photos."
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
