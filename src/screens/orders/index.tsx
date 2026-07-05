@@ -53,22 +53,22 @@ export default function OrdersScreen(): React.JSX.Element {
     return (
         <View className="flex-1 bg-background">
             {/* Status filter pills */}
-            <View className="flex-row items-center gap-2 px-4 py-3 flex-wrap">
+            <View className="flex-row items-center gap-2 px-5 py-4 flex-wrap">
                 {STATUS_FILTERS.map((f) => {
                     const isSelected = statusFilter === f.value;
                     return (
-                        <Pressable
+                        <Chip
                             key={f.value}
                             onPress={() => setStatusFilter(f.value)}
-                            className={`px-3 py-1.5 rounded-full border ${isSelected ? 'bg-primary border-primary' : 'bg-background border-border'}`}
+                            variant={isSelected ? 'primary' : 'secondary'}
+                            color={f.value === 'completed' ? 'success' : f.value === 'cancelled' || f.value === 'rejected' ? 'danger' : 'accent'}
+                            size="sm"
                         >
-                            <Typography className={`text-xs font-medium ${isSelected ? 'text-primary-foreground' : 'text-foreground'}`}>
-                                {f.label}
-                            </Typography>
-                        </Pressable>
+                            <Chip.Label>{f.label}</Chip.Label>
+                        </Chip>
                     );
                 })}
-                <Typography className="text-xs text-muted-foreground ml-auto">
+                <Typography type="body-xs" color="muted" className="ml-auto">
                     {orders.length} order{orders.length !== 1 ? 's' : ''}
                 </Typography>
             </View>
@@ -116,12 +116,12 @@ function OrderRow({
     const tableName = extractTableName(order.orderable);
 
     return (
-        <Pressable onPress={onPress} className="px-4 py-3 active:bg-muted/30">
+        <Pressable onPress={onPress} className="px-5 py-3 active:bg-surface-secondary">
             {/* Top row */}
             <View className="flex-row items-start justify-between gap-3">
                 <View className="gap-0.5 flex-1">
                     <View className="flex-row items-center gap-2">
-                        <Typography className="text-sm font-semibold text-foreground font-mono">
+                        <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
                             {order.code}
                         </Typography>
                         <Chip color={statusColor} size="sm" variant="soft">
@@ -132,25 +132,25 @@ function OrderRow({
                         <Ionicons
                             name={order.order_type === 'dine-in' ? 'restaurant-outline' : 'bag-outline'}
                             size={12}
-                            color="#9ca3af"
+                            color="hsl(var(--muted))"
                         />
-                        <Typography className="text-xs text-muted-foreground">
+                        <Typography type="body-xs" color="muted">
                             {order.order_type === 'dine-in' ? `Dine-in${tableName ? ` · ${tableName}` : ''}` : 'Takeaway'}
                         </Typography>
                         {customerName && (
                             <>
-                                <Typography className="text-xs text-muted-foreground">·</Typography>
-                                <Typography className="text-xs text-muted-foreground">{customerName}</Typography>
+                                <Typography type="body-xs" color="muted">·</Typography>
+                                <Typography type="body-xs" color="muted">{customerName}</Typography>
                             </>
                         )}
                     </View>
                 </View>
 
                 <View className="items-end gap-0.5">
-                    <Typography className="text-sm font-bold text-foreground">
+                    <Typography type="body-sm" weight="bold" className="tabular-nums">
                         {formatRupiah(order.total)}
                     </Typography>
-                    <Typography className="text-xs text-muted-foreground">
+                    <Typography type="body-xs" color="muted">
                         {formatTime(order.created_at)}
                     </Typography>
                 </View>
@@ -159,14 +159,14 @@ function OrderRow({
             {/* Bottom row */}
             <View className="flex-row items-center justify-between mt-1.5">
                 <View className="flex-row items-center gap-1.5">
-                    <Ionicons name="card-outline" size={12} color="#9ca3af" />
-                    <Typography className="text-xs text-muted-foreground">{paymentName}</Typography>
-                    <Typography className="text-xs text-muted-foreground">·</Typography>
-                    <Typography className="text-xs text-muted-foreground">
+                    <Ionicons name="card-outline" size={12} color="hsl(var(--muted))" />
+                    <Typography type="body-xs" color="muted">{paymentName}</Typography>
+                    <Typography type="body-xs" color="muted">·</Typography>
+                    <Typography type="body-xs" color="muted">
                         {order.products_count} item{order.products_count !== 1 ? 's' : ''}
                     </Typography>
                 </View>
-                <Ionicons name="chevron-forward" size={14} color="#9ca3af" />
+                <Ionicons name="chevron-forward" size={14} color="hsl(var(--muted))" />
             </View>
         </Pressable>
     );

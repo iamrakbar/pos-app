@@ -3,7 +3,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Button, Select, Separator, Typography } from 'heroui-native';
+import { Button, Input, Select, Separator, Switch, Typography } from 'heroui-native';
 import React from 'react';
 import {
     Alert,
@@ -12,9 +12,7 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Switch as RNSwitch,
     Text,
-    TextInput,
     View,
 } from 'react-native';
 import type { Alignment, InvoiceFormat, ReceiptSettings, SignatureType, TextSize } from '@/stores/useReceiptStore';
@@ -52,10 +50,10 @@ const SIGNATURE_OPTIONS = [
 ];
 
 const TABS: { id: Tab; icon: React.ComponentProps<typeof Ionicons>['name']; label: string }[] = [
-    { id: 'general', icon: 'settings-outline', label: 'GENERAL' },
-    { id: 'top', icon: 'arrow-up-outline', label: 'TOP' },
-    { id: 'bottom', icon: 'arrow-down-outline', label: 'BOTTOM' },
-    { id: 'preview', icon: 'scan-outline', label: 'PREVIEW' },
+    { id: 'general', icon: 'settings-outline', label: 'General' },
+    { id: 'top', icon: 'arrow-up-outline', label: 'Top' },
+    { id: 'bottom', icon: 'arrow-down-outline', label: 'Bottom' },
+    { id: 'preview', icon: 'scan-outline', label: 'Preview' },
 ];
 
 const TAB_ORDER: Tab[] = ['general', 'top', 'bottom', 'preview'];
@@ -93,7 +91,7 @@ const MOCK_ORDER = {
 
 function FieldLabel({ label }: { label: string }) {
     return (
-        <Typography className="text-sm font-semibold text-foreground mb-1.5">
+        <Typography type="body-sm" weight="semibold" className="mb-1.5">
             {label}
         </Typography>
     );
@@ -116,14 +114,14 @@ function ToggleRow({
             onPress={() => onToggle(!value)}
         >
             <View className="flex-1 mr-4">
-                <Typography className="text-sm font-semibold text-foreground">{label}</Typography>
+                <Typography type="body-sm" weight="semibold">{label}</Typography>
                 {description && (
-                    <Typography className="text-xs text-muted-foreground mt-0.5">
+                    <Typography type="body-xs" color="muted" className="mt-0.5">
                         {description}
                     </Typography>
                 )}
             </View>
-            <RNSwitch value={value} onValueChange={onToggle} />
+            <Switch isSelected={value} onSelectedChange={onToggle} />
         </Pressable>
     );
 }
@@ -137,8 +135,8 @@ function SectionHeader({
 }) {
     return (
         <View className="flex-row items-center gap-2 mt-3 mb-1">
-            <Ionicons name={icon} size={22} color="hsl(var(--foreground))" />
-            <Typography className="text-base font-bold text-foreground tracking-wider">
+            <Ionicons name={icon} size={18} color="hsl(var(--muted))" />
+            <Typography type="body-sm" weight="semibold">
                 {title}
             </Typography>
         </View>
@@ -193,11 +191,11 @@ function TabBar({
     onPress: (tab: Tab) => void;
 }) {
     return (
-        <View className="border-b border-border">
+        <View className="px-4 pt-4">
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerClassName="flex-row px-3 py-2 gap-1"
+                contentContainerClassName="flex-row gap-2"
             >
                 {TABS.map((tab) => {
                     const isActive = tab.id === active;
@@ -205,8 +203,8 @@ function TabBar({
                         <Pressable
                             key={tab.id}
                             onPress={() => onPress(tab.id)}
-                            className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-lg active:opacity-70 ${
-                                isActive ? 'bg-content1' : ''
+                            className={`flex-row items-center gap-1.5 px-3 py-2 rounded-full active:opacity-70 ${
+                                isActive ? 'bg-surface-secondary' : ''
                             }`}
                         >
                             <Ionicons
@@ -215,13 +213,13 @@ function TabBar({
                                 color={
                                     isActive
                                         ? 'hsl(var(--foreground))'
-                                        : 'hsl(var(--muted-foreground))'
+                                        : 'hsl(var(--muted))'
                                 }
                             />
                             <Typography
-                                className={`text-xs font-bold tracking-wide ${
-                                    isActive ? 'text-foreground' : 'text-muted-foreground'
-                                }`}
+                                type="body-xs"
+                                weight={isActive ? 'semibold' : 'medium'}
+                                color={isActive ? 'default' : 'muted'}
                             >
                                 {tab.label}
                             </Typography>
@@ -265,7 +263,7 @@ function GeneralTab({
                 onToggle={(v) => onChange({ compactMode: v })}
             />
 
-            <SectionHeader icon="people-outline" title="CUSTOMER" />
+            <SectionHeader icon="people-outline" title="Customer" />
 
             <ToggleRow
                 label="Print customer's name"
@@ -339,11 +337,11 @@ function TopTab({
             keyboardShouldPersistTaps="handled"
         >
             {/* Info banner */}
-            <View className="flex-row items-center gap-3 bg-primary/10 rounded-xl p-3">
-                <View className="w-10 h-10 rounded-lg bg-primary/20 items-center justify-center shrink-0">
-                    <Ionicons name="help-outline" size={20} color="hsl(var(--primary))" />
+            <View className="flex-row items-center gap-3 bg-accent-soft rounded-panel-inner p-3">
+                <View className="w-10 h-10 rounded-lg bg-background/70 items-center justify-center shrink-0">
+                    <Ionicons name="help-outline" size={20} color="hsl(var(--accent-soft-foreground))" />
                 </View>
-                <Typography className="flex-1 text-sm text-foreground">
+                <Typography type="body-sm" className="flex-1">
                     Your store information will be printed on the receipt.
                 </Typography>
             </View>
@@ -354,7 +352,7 @@ function TopTab({
                 <View className="flex-row gap-3 items-start">
                     <Pressable
                         onPress={handlePickLogo}
-                        className="w-36 h-20 bg-muted rounded-xl overflow-hidden active:opacity-70"
+                        className="w-36 h-20 bg-surface-secondary rounded-panel-inner overflow-hidden active:opacity-70"
                     >
                         {settings.storeLogo ? (
                             <>
@@ -371,12 +369,12 @@ function TopTab({
                             </>
                         ) : (
                             <View className="flex-1 items-center justify-center gap-1">
-                                <Ionicons name="camera-outline" size={24} color="#9ca3af" />
-                                <Typography className="text-xs text-muted-foreground">Add logo</Typography>
+                                <Ionicons name="camera-outline" size={24} color="hsl(var(--muted))" />
+                                <Typography type="body-xs" color="muted">Add logo</Typography>
                             </View>
                         )}
                     </Pressable>
-                    <Typography className="flex-1 text-xs text-muted-foreground mt-1">
+                    <Typography type="body-xs" color="muted" className="flex-1 mt-1">
                         The maximum size for the logo is 300 x 150 pixels.
                     </Typography>
                 </View>
@@ -385,44 +383,41 @@ function TopTab({
             {/* Store Name */}
             <View>
                 <FieldLabel label="Store Name" />
-                <TextInput
+                <Input
                     value={settings.storeName}
                     onChangeText={(v) => onChange({ storeName: v })}
                     placeholder="Store name"
-                    placeholderTextColor="hsl(var(--muted-foreground))"
-                    className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
+                    variant="secondary"
                 />
             </View>
 
             {/* Store Address */}
             <View>
                 <FieldLabel label="Store Address" />
-                <TextInput
+                <Input
                     value={settings.storeAddress1}
                     onChangeText={(v) => onChange({ storeAddress1: v })}
                     placeholder="Address line 1"
-                    placeholderTextColor="hsl(var(--muted-foreground))"
-                    className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1 mb-2"
+                    variant="secondary"
+                    className="mb-2"
                 />
-                <TextInput
+                <Input
                     value={settings.storeAddress2}
                     onChangeText={(v) => onChange({ storeAddress2: v })}
                     placeholder="Address line 2"
-                    placeholderTextColor="hsl(var(--muted-foreground))"
-                    className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
+                    variant="secondary"
                 />
             </View>
 
             {/* Store Phone */}
             <View>
                 <FieldLabel label="Store Phone Number" />
-                <TextInput
+                <Input
                     value={settings.storePhone}
                     onChangeText={(v) => onChange({ storePhone: v })}
                     placeholder="Phone number"
-                    placeholderTextColor="hsl(var(--muted-foreground))"
                     keyboardType="phone-pad"
-                    className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
+                    variant="secondary"
                 />
             </View>
         </ScrollView>
@@ -447,17 +442,17 @@ function BottomTab({
             {/* Footer text */}
             <View>
                 <FieldLabel label="Footer" />
-                <TextInput
+                <Input
                     value={settings.footer}
                     onChangeText={(v) => onChange({ footer: v })}
                     placeholder="Footer text"
-                    placeholderTextColor="hsl(var(--muted-foreground))"
                     multiline
                     numberOfLines={3}
                     textAlignVertical="top"
-                    className="border border-border rounded-2xl px-4 py-3 text-sm text-foreground bg-content1 min-h-[80px]"
+                    variant="secondary"
+                    className="min-h-20 py-3"
                 />
-                <Typography className="text-xs text-muted-foreground mt-1">
+                <Typography type="body-xs" color="muted" className="mt-1">
                     Displayed on the bottom of your receipt
                 </Typography>
             </View>
@@ -715,12 +710,12 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
             )}
             {activeTab === 'preview' && <PreviewTab settings={settings} />}
 
-            <View className="px-4 pb-6 pt-2 bg-background border-t border-border">
+            <View className="px-4 pb-6 pt-3 bg-surface-secondary">
                 <Button
                     className="w-full"
                     onPress={isLastTab ? () => router.back() : handleNext}
                 >
-                    <Button.Label>{isLastTab ? 'SAVE' : 'NEXT'}</Button.Label>
+                    <Button.Label>{isLastTab ? 'Save' : 'Next'}</Button.Label>
                 </Button>
             </View>
         </View>

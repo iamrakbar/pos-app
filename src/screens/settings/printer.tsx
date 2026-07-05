@@ -2,13 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
     Button,
+    Input,
     Select,
     Separator,
     Switch,
     Typography,
 } from 'heroui-native';
 import React from 'react';
-import { Pressable, ScrollView, Switch as RNSwitch, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import type { ConnectionType, PaperWidth } from '@/stores/usePrinterStore';
 import { usePrinterStore } from '@/stores/usePrinterStore';
 
@@ -37,7 +38,7 @@ const MOCK_BT_DEVICES: DiscoveredDevice[] = [
 
 function FieldLabel({ label }: { label: string }) {
     return (
-        <Typography className="text-sm font-semibold text-foreground mb-1.5">
+        <Typography type="body-sm" weight="semibold" className="mb-1.5">
             {label}
         </Typography>
     );
@@ -112,11 +113,11 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                 {/* Name */}
                 <View>
                     <FieldLabel label="Name" />
-                    <TextInput
+                    <Input
                         value={name}
                         onChangeText={(v) => updateSettings({ name: v })}
                         placeholder="Printer name"
-                        className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
+                        variant="secondary"
                     />
                 </View>
 
@@ -124,12 +125,12 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                 {connection === 'bluetooth' && (
                     <View>
                         <FieldLabel label="MAC Address" />
-                        <TextInput
+                        <Input
                             value={macAddress}
                             onChangeText={(v) => updateSettings({ macAddress: v })}
                             placeholder="00:00:00:00:00:00"
                             autoCapitalize="characters"
-                            className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
+                            variant="secondary"
                         />
                     </View>
                 )}
@@ -138,12 +139,12 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                 {connection === 'wifi' && (
                     <View>
                         <FieldLabel label="IP Address" />
-                        <TextInput
+                        <Input
                             value={ipAddress}
                             onChangeText={(v) => updateSettings({ ipAddress: v })}
                             placeholder="192.168.1.100"
                             keyboardType="decimal-pad"
-                            className="border border-border rounded-2xl h-12 px-4 text-sm text-foreground bg-content1"
+                            variant="secondary"
                         />
                     </View>
                 )}
@@ -182,16 +183,16 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                     onPress={() => updateSettings({ cutReceipt: !cutReceipt })}
                 >
                     <View className="flex-1 mr-4">
-                        <Typography className="text-sm font-semibold text-foreground">
+                        <Typography type="body-sm" weight="semibold">
                             Cut receipt after printing
                         </Typography>
-                        <Typography className="text-xs text-muted-foreground mt-0.5">
+                        <Typography type="body-xs" color="muted" className="mt-0.5">
                             Only enable this option if your printer supports it.
                         </Typography>
                     </View>
-                    <RNSwitch
-                        value={cutReceipt}
-                        onValueChange={(v) => updateSettings({ cutReceipt: v })}
+                    <Switch
+                        isSelected={cutReceipt}
+                        onSelectedChange={(v) => updateSettings({ cutReceipt: v })}
                     />
                 </Pressable>
 
@@ -201,16 +202,16 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                     onPress={() => updateSettings({ openDrawer: !openDrawer })}
                 >
                     <View className="flex-1 mr-4">
-                        <Typography className="text-sm font-semibold text-foreground">
+                        <Typography type="body-sm" weight="semibold">
                             Open drawer after printing
                         </Typography>
-                        <Typography className="text-xs text-muted-foreground mt-0.5">
+                        <Typography type="body-xs" color="muted" className="mt-0.5">
                             Only enable this option if your printer supports it.
                         </Typography>
                     </View>
-                    <RNSwitch
-                        value={openDrawer}
-                        onValueChange={(v) => updateSettings({ openDrawer: v })}
+                    <Switch
+                        isSelected={openDrawer}
+                        onSelectedChange={(v) => updateSettings({ openDrawer: v })}
                     />
                 </Pressable>
 
@@ -232,10 +233,10 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                             </Pressable>
                         </View>
 
-                        <View className="bg-content1 rounded-2xl overflow-hidden border border-border">
+                        <View className="bg-surface-secondary rounded-panel overflow-hidden">
                             {scanning ? (
                                 <View className="py-6 items-center">
-                                    <Typography className="text-sm text-muted-foreground">
+                                    <Typography type="body-sm" color="muted">
                                         Scanning…
                                     </Typography>
                                 </View>
@@ -243,22 +244,22 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                                 devices.map((device, i) => (
                                     <React.Fragment key={device.id}>
                                         <Pressable
-                                            className="flex-row items-center justify-between px-4 py-3.5 active:opacity-70"
+                                            className="flex-row items-center justify-between px-4 py-3.5 active:bg-surface-tertiary"
                                             onPress={() => updateSettings({ selectedDeviceId: device.id })}
                                         >
-                                            <Typography className="text-sm font-medium text-foreground">
+                                            <Typography type="body-sm" weight="medium">
                                                 {device.name}
                                             </Typography>
                                             {selectedDeviceId === device.id && (
                                                 <Ionicons
                                                     name="checkmark"
                                                     size={18}
-                                                    color="hsl(var(--foreground))"
+                                                    color="hsl(var(--accent))"
                                                 />
                                             )}
                                         </Pressable>
                                         {i < devices.length - 1 && (
-                                            <View className="h-px bg-border mx-4" />
+                                            <Separator className="mx-4" />
                                         )}
                                     </React.Fragment>
                                 ))
@@ -269,9 +270,9 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
             </ScrollView>
 
             {/* Save button */}
-            <View className="px-4 pb-6 pt-2 bg-background border-t border-border">
+            <View className="px-4 pb-6 pt-3 bg-surface-secondary">
                 <Button className="w-full" onPress={handleSave}>
-                    <Button.Label>SAVE</Button.Label>
+                    <Button.Label>Save</Button.Label>
                 </Button>
             </View>
         </View>

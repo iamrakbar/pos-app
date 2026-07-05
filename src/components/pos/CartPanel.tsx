@@ -18,34 +18,40 @@ export default function CartPanel(): JSX.Element {
     const subtotal = totalPrice();
 
     return (
-        <View className="flex-1 border-l border-border">
+        <View className="flex-1 bg-background border-l border-border">
             {/* Header */}
-            <View className="flex-row items-center justify-between h-18 px-4 border-b border-border">
-                <Typography className="text-base font-semibold text-foreground">
+            <View className="flex-row items-center justify-between h-18 px-5">
+                <Typography.Heading type="h6" className="text-foreground">
+                    Cart
+                </Typography.Heading>
+                <Typography type="body-sm" color="muted">
                     {itemCount} {itemCount === 1 ? 'item' : 'items'}
                 </Typography>
+            </View>
+            <View className="px-5 pb-3">
                 {products.length > 0 && (
                     <Button
-                        variant="outline"
+                        variant="danger-soft"
                         size="sm"
                         onPress={clearCart}
-                        className="border-danger"
+                        className="self-start"
                     >
-                        <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                        <Button.Label className="text-danger text-xs ml-1">Empty cart</Button.Label>
+                        <Ionicons name="trash-outline" size={16} color="hsl(var(--danger-soft-foreground))" />
+                        <Button.Label>Empty Cart</Button.Label>
                     </Button>
                 )}
             </View>
 
             {/* Cart items */}
             <ScrollView
-                className="flex-1 px-4"
+                className="flex-1 px-5"
+                contentContainerClassName="pb-3"
                 showsVerticalScrollIndicator={false}
             >
                 {products.length === 0 ? (
-                    <View className="flex-1 items-center justify-center py-12 gap-2">
-                        <Ionicons name="cart-outline" size={40} color="#9ca3af" />
-                        <Typography className="text-sm text-muted-foreground text-center">
+                    <View className="items-center justify-center py-16 gap-2">
+                        <Ionicons name="cart-outline" size={40} color="hsl(var(--muted))" />
+                        <Typography type="body-sm" color="muted" align="center">
                             Cart is empty.{'\n'}Add products to get started.
                         </Typography>
                     </View>
@@ -57,13 +63,19 @@ export default function CartPanel(): JSX.Element {
             </ScrollView>
 
             {/* Footer */}
-            <View className="px-4 py-4 border-t border-border gap-3">
+            <View className="px-5 py-4 bg-surface-secondary gap-3">
+                <View className="flex-row items-center justify-between">
+                    <Typography type="body-sm" color="muted">Subtotal</Typography>
+                    <Typography weight="semibold" className="tabular-nums">
+                        {formatRupiah(subtotal)}
+                    </Typography>
+                </View>
                 <Button
                     className="w-full"
                     onPress={openCheckoutModal}
                     isDisabled={products.length === 0}
                 >
-                    {products.length === 0 ? 'Checkout' : `Checkout ${formatRupiah(subtotal)}`}
+                    Checkout
                 </Button>
             </View>
         </View>

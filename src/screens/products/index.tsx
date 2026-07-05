@@ -43,23 +43,23 @@ export default function ProductsScreen(): React.JSX.Element {
     return (
         <View className="flex-1 bg-background">
             {/* Stats */}
-            <View className="flex-row gap-3 px-4 pt-4 pb-2">
-                <Surface className="flex-1 items-center py-3 gap-0.5">
-                    <Typography className="text-xl font-bold text-foreground">{totalProducts}</Typography>
-                    <Typography className="text-xs text-muted-foreground">Total</Typography>
+            <View className="flex-row gap-3 px-5 pt-5 pb-2">
+                <Surface variant="secondary" className="flex-1 items-start px-4 py-3 gap-0.5">
+                    <Typography type="h5" weight="bold" className="tabular-nums">{totalProducts}</Typography>
+                    <Typography type="body-xs" color="muted">Total</Typography>
                 </Surface>
-                <Surface className="flex-1 items-center py-3 gap-0.5">
-                    <Typography className="text-xl font-bold text-green-500">{activeCount}</Typography>
-                    <Typography className="text-xs text-muted-foreground">Active</Typography>
+                <Surface variant="secondary" className="flex-1 items-start px-4 py-3 gap-0.5">
+                    <Typography type="h5" weight="bold" className="text-success tabular-nums">{activeCount}</Typography>
+                    <Typography type="body-xs" color="muted">Active</Typography>
                 </Surface>
-                <Surface className="flex-1 items-center py-3 gap-0.5">
-                    <Typography className="text-xl font-bold text-foreground">{categoryCount}</Typography>
-                    <Typography className="text-xs text-muted-foreground">Categories</Typography>
+                <Surface variant="secondary" className="flex-1 items-start px-4 py-3 gap-0.5">
+                    <Typography type="h5" weight="bold" className="tabular-nums">{categoryCount}</Typography>
+                    <Typography type="body-xs" color="muted">Categories</Typography>
                 </Surface>
             </View>
 
             {/* Filters */}
-            <View className="px-4 py-3 gap-3">
+            <View className="px-5 py-3 gap-3">
                 <View className="flex-row gap-3">
                     <View className="flex-1">
                         <SearchField value={search} onChange={setSearch}>
@@ -92,29 +92,29 @@ export default function ProductsScreen(): React.JSX.Element {
                     </View>
                 </View>
 
-                <Button size="sm" onPress={() => router.push('/products/new' as never)}>
+                <Button className="self-start" onPress={() => router.push('/products/new' as never)}>
                     <Ionicons name="add" size={16} color="white" />
-                    <Button.Label className="ml-1">New</Button.Label>
+                    <Button.Label>New Product</Button.Label>
                 </Button>
 
                 {/* Active filter pills */}
-                <View className="flex-row items-center gap-2">
+                <View className="flex-row items-center gap-2 flex-wrap">
                     {(['all', 'active', 'inactive'] as const).map((f) => {
                         const isSelected = activeFilter === f;
                         const label = f === 'all' ? 'All' : f === 'active' ? 'Active' : 'Inactive';
                         return (
-                            <Pressable
+                            <Chip
                                 key={f}
                                 onPress={() => setActiveFilter(f)}
-                                className={`px-3 py-1.5 rounded-full border ${isSelected ? 'bg-primary border-primary' : 'bg-background border-border'}`}
+                                variant={isSelected ? 'primary' : 'secondary'}
+                                color={f === 'inactive' ? 'default' : f === 'active' ? 'success' : 'accent'}
+                                size="sm"
                             >
-                                <Typography className={`text-xs font-medium ${isSelected ? 'text-primary-foreground' : 'text-foreground'}`}>
-                                    {label}
-                                </Typography>
-                            </Pressable>
+                                <Chip.Label>{label}</Chip.Label>
+                            </Chip>
                         );
                     })}
-                    <Typography className="text-xs text-muted-foreground ml-auto">
+                    <Typography type="body-xs" color="muted" className="ml-auto">
                         {filtered.length} product{filtered.length !== 1 ? 's' : ''}
                     </Typography>
                 </View>
@@ -140,10 +140,10 @@ export default function ProductsScreen(): React.JSX.Element {
                             <View key={product.id}>
                                 <Pressable
                                     onPress={() => router.push(`/products/${product.id}` as never)}
-                                    className="flex-row items-center gap-4 px-4 py-3 active:bg-muted/30"
+                                    className="flex-row items-center gap-4 px-5 py-3 active:bg-surface-secondary"
                                 >
                                     {/* Thumbnail */}
-                                    <View className="w-14 h-14 rounded-xl bg-muted overflow-hidden items-center justify-center flex-shrink-0">
+                                    <View className="w-14 h-14 rounded-panel-inner bg-surface-secondary overflow-hidden items-center justify-center flex-shrink-0">
                                         {product.thumbnail_url ? (
                                             <Image
                                                 source={{ uri: product.thumbnail_url }}
@@ -151,14 +151,14 @@ export default function ProductsScreen(): React.JSX.Element {
                                                 resizeMode="cover"
                                             />
                                         ) : (
-                                            <Ionicons name="fast-food-outline" size={24} color="#9ca3af" />
+                                            <Ionicons name="fast-food-outline" size={24} color="hsl(var(--muted))" />
                                         )}
                                     </View>
 
                                     {/* Info */}
                                     <View className="flex-1 gap-1">
                                         <View className="flex-row items-center gap-2">
-                                            <Typography className="text-sm font-semibold text-foreground flex-1" numberOfLines={1}>
+                                            <Typography type="body-sm" weight="semibold" className="flex-1" numberOfLines={1}>
                                                 {product.name}
                                             </Typography>
                                             <Chip
@@ -172,15 +172,15 @@ export default function ProductsScreen(): React.JSX.Element {
 
                                         <View className="flex-row items-center gap-1.5">
                                             {category && (
-                                                <Typography className="text-xs text-muted-foreground">
+                                                <Typography type="body-xs" color="muted">
                                                     {category.name}
                                                 </Typography>
                                             )}
                                             {category && product.add_ons.length > 0 && (
-                                                <Typography className="text-xs text-muted-foreground">·</Typography>
+                                                <Typography type="body-xs" color="muted">·</Typography>
                                             )}
                                             {product.add_ons.length > 0 && (
-                                                <Typography className="text-xs text-muted-foreground">
+                                                <Typography type="body-xs" color="muted">
                                                     {product.add_ons.length} add-on group{product.add_ons.length !== 1 ? 's' : ''}
                                                 </Typography>
                                             )}
@@ -188,19 +188,19 @@ export default function ProductsScreen(): React.JSX.Element {
 
                                         <View className="flex-row items-center gap-2">
                                             {isDiscounted && (
-                                                <Typography className="text-xs text-muted line-through">
+                                                <Typography type="body-xs" color="muted" className="line-through">
                                                     {formatRupiah(product.original_price!)}
                                                 </Typography>
                                             )}
-                                            <Typography className={`text-sm font-semibold ${isDiscounted ? 'text-accent' : 'text-foreground'}`}>
+                                            <Typography type="body-sm" weight="semibold" className={`tabular-nums ${isDiscounted ? 'text-accent' : ''}`}>
                                                 {product.price === 0 ? 'Free' : formatRupiah(product.price)}
                                             </Typography>
                                         </View>
                                     </View>
 
-                                    <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+                                    <Ionicons name="chevron-forward" size={16} color="hsl(var(--muted))" />
                                 </Pressable>
-                                {index < filtered.length - 1 && <Separator className="mx-4" />}
+                                {index < filtered.length - 1 && <Separator className="mx-5" />}
                             </View>
                         );
                     })

@@ -9,7 +9,7 @@ import { FlatList, RefreshControl, useWindowDimensions } from 'react-native';
 import ProductCard from './ProductCard';
 
 const CART_PANEL_WIDTH = 400;
-const CARD_MIN_WIDTH = 400;
+const CARD_MIN_WIDTH = 180;
 
 type Props = {
     onSelectProduct: (product: POSProduct) => void;
@@ -22,7 +22,7 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
     const categoryId = usePOSStore((s) => s.categoryId);
 
     const availableWidth = width - CART_PANEL_WIDTH;
-    const numColumns = Math.max(4, Math.floor(availableWidth / CARD_MIN_WIDTH)) || CARD_MIN_WIDTH;
+    const numColumns = Math.max(2, Math.floor(availableWidth / CARD_MIN_WIDTH));
     const cardWidth = Math.floor(availableWidth / numColumns);
 
     const { data: allProducts, isLoading, isError, error, refetch, isRefetching } = useProducts(
@@ -42,7 +42,7 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
             renderItem={({ item }) => (
                 <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
             )}
-            contentContainerClassName="flex-grow gap-1 px-2 py-3"
+            contentContainerClassName="flex-grow gap-2 px-3 py-4"
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={

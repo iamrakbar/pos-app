@@ -10,13 +10,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
     Button,
     Card,
+    Input,
     Select,
     Separator,
+    Switch,
     Typography,
 } from 'heroui-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ActionSheetIOS, Alert, Image, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActionSheetIOS, Alert, Image, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import type { AddOnGroup } from '@/types/pos';
@@ -37,7 +39,7 @@ function addonConstraintLabel(group: AddOnGroup): string {
 
 function FieldLabel({ label, required }: { label: string; required?: boolean }) {
     return (
-        <Typography className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <Typography type="body-sm" weight="semibold">
             {label}{required && <Typography className="text-danger"> *</Typography>}
         </Typography>
     );
@@ -45,7 +47,7 @@ function FieldLabel({ label, required }: { label: string; required?: boolean }) 
 
 function FieldError({ message }: { message?: string }) {
     if (!message) return null;
-    return <Typography className="text-xs text-danger mt-0.5">{message}</Typography>;
+    return <Typography type="body-xs" className="text-danger mt-0.5">{message}</Typography>;
 }
 
 type ProcessedImage = { imageUrl: string; thumbnailUrl: string };
@@ -135,7 +137,7 @@ function ImagePickerField({
 
     return (
         <Pressable onPress={openPicker} className="active:opacity-80">
-            <View className="w-full aspect-video rounded-xl overflow-hidden bg-muted">
+            <View className="w-full aspect-video rounded-panel overflow-hidden bg-surface-secondary">
                 {value ? (
                     <>
                         <Image source={{ uri: value }} className="w-full h-full" resizeMode="cover" />
@@ -147,21 +149,21 @@ function ImagePickerField({
                     </>
                 ) : (
                     <View className="flex-1 items-center justify-center gap-3">
-                        <View className="w-16 h-16 rounded-full bg-muted-foreground/10 items-center justify-center">
-                            <Ionicons name="camera-outline" size={28} color="#9ca3af" />
+                        <View className="w-16 h-16 rounded-full bg-accent-soft items-center justify-center">
+                            <Ionicons name="camera-outline" size={28} color="hsl(var(--accent-soft-foreground))" />
                         </View>
                         <View className="items-center gap-1">
-                            <Typography className="text-sm font-medium text-foreground">Add product image</Typography>
-                            <Typography className="text-xs text-muted-foreground">Tap to choose from library or camera</Typography>
+                            <Typography type="body-sm" weight="medium">Add product image</Typography>
+                            <Typography type="body-xs" color="muted">Tap to choose from library or camera</Typography>
                         </View>
                         <View className="flex-row gap-3 mt-1">
-                            <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted-foreground/10">
-                                <Ionicons name="images-outline" size={14} color="#9ca3af" />
-                                <Typography className="text-xs text-muted-foreground">Library</Typography>
+                            <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-tertiary">
+                                <Ionicons name="images-outline" size={14} color="hsl(var(--muted))" />
+                                <Typography type="body-xs" color="muted">Library</Typography>
                             </View>
-                            <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted-foreground/10">
-                                <Ionicons name="camera-outline" size={14} color="#9ca3af" />
-                                <Typography className="text-xs text-muted-foreground">Camera</Typography>
+                            <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-tertiary">
+                                <Ionicons name="camera-outline" size={14} color="hsl(var(--muted))" />
+                                <Typography type="body-xs" color="muted">Camera</Typography>
                             </View>
                         </View>
                     </View>
@@ -180,25 +182,16 @@ function StyledInput({ value, onChangeText, placeholder, keyboardType, multiline
     error?: boolean;
 }) {
     return (
-        <TextInput
+        <Input
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
-            placeholderTextColor="#9ca3af"
             keyboardType={keyboardType ?? 'default'}
             multiline={multiline}
-            style={{
-                borderWidth: 1,
-                borderColor: error ? '#ef4444' : 'hsl(var(--border))',
-                borderRadius: 12,
-                minHeight: multiline ? 80 : 44,
-                paddingHorizontal: 12,
-                paddingVertical: multiline ? 10 : 0,
-                fontSize: 14,
-                color: 'hsl(var(--foreground))',
-                backgroundColor: 'hsl(var(--background))',
-                textAlignVertical: multiline ? 'top' : 'center',
-            }}
+            isInvalid={error}
+            variant="secondary"
+            className={multiline ? 'min-h-20 py-3' : undefined}
+            textAlignVertical={multiline ? 'top' : 'center'}
         />
     );
 }
@@ -297,18 +290,18 @@ export default function ProductFormScreen(): React.JSX.Element {
                     onPress={() => router.back()}
                     className="flex-row items-center gap-1 self-start active:opacity-70"
                 >
-                    <Ionicons name="chevron-back" size={18} color="hsl(var(--primary))" />
-                    <Typography className="text-sm text-primary">Products</Typography>
+                    <Ionicons name="chevron-back" size={18} color="hsl(var(--accent))" />
+                    <Typography type="body-sm" className="text-accent">Products</Typography>
                 </Pressable>
 
-                <Typography className="text-xl font-bold text-foreground">
+                <Typography.Heading type="h4">
                     {isNew ? 'New Product' : 'Edit Product'}
-                </Typography>
+                </Typography.Heading>
 
                 <View className="rounded-xl bg-warning/10 border border-warning/30 px-3 py-2.5">
-                    <Typography className="text-xs text-warning-foreground">
-                        Product editing is not yet connected to the live API — changes here won&apos;t be saved.
-                    </Typography>
+                        <Typography type="body-xs" className="text-warning-foreground">
+                            Product editing is not yet connected to the live API — changes here won&apos;t be saved.
+                        </Typography>
                 </View>
 
                 {/* ── Image picker ── */}
@@ -424,8 +417,8 @@ export default function ProductFormScreen(): React.JSX.Element {
                         {/* Active toggle */}
                         <View className="flex-row items-center justify-between">
                             <View className="gap-0.5">
-                                <Typography className="text-sm font-medium text-foreground">Active</Typography>
-                                <Typography className="text-xs text-muted-foreground">
+                                <Typography type="body-sm" weight="medium">Active</Typography>
+                                <Typography type="body-xs" color="muted">
                                     {isActive ? 'Product is visible on POS' : 'Product is hidden from POS'}
                                 </Typography>
                             </View>
@@ -433,31 +426,10 @@ export default function ProductFormScreen(): React.JSX.Element {
                                 control={control}
                                 name="is_active"
                                 render={({ field }) => (
-                                    <Pressable
-                                        onPress={() => field.onChange(!field.value)}
-                                        style={{
-                                            width: 48,
-                                            height: 28,
-                                            borderRadius: 14,
-                                            backgroundColor: field.value ? '#22c55e' : '#e5e7eb',
-                                            padding: 2,
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <View
-                                            style={{
-                                                width: 24,
-                                                height: 24,
-                                                borderRadius: 12,
-                                                backgroundColor: 'white',
-                                                shadowColor: '#000',
-                                                shadowOpacity: 0.15,
-                                                shadowRadius: 2,
-                                                shadowOffset: { width: 0, height: 1 },
-                                                alignSelf: field.value ? 'flex-end' : 'flex-start',
-                                            }}
-                                        />
-                                    </Pressable>
+                                    <Switch
+                                        isSelected={field.value}
+                                        onSelectedChange={field.onChange}
+                                    />
                                 )}
                             />
                         </View>
@@ -480,8 +452,8 @@ export default function ProductFormScreen(): React.JSX.Element {
                                 className="flex-row items-center gap-1 active:opacity-70"
                                 onPress={() => {/* no-op */}}
                             >
-                                <Ionicons name="add-circle-outline" size={18} color="hsl(var(--primary))" />
-                                <Typography className="text-sm text-primary">Add group</Typography>
+                                <Ionicons name="add-circle-outline" size={18} color="hsl(var(--accent))" />
+                                <Typography type="body-sm" className="text-accent">Add group</Typography>
                             </Pressable>
                         </View>
                     </Card.Header>
@@ -495,19 +467,19 @@ export default function ProductFormScreen(): React.JSX.Element {
                                         {index > 0 && <Separator />}
                                         <Pressable
                                             onPress={() => setExpandedGroupId(isExpanded ? null : group.id)}
-                                            className="flex-row items-center gap-3 px-4 py-3 active:bg-muted/30"
+                                            className="flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary"
                                         >
                                             <View className="flex-1 gap-0.5">
-                                                <Typography className="text-sm font-semibold text-foreground">
+                                                <Typography type="body-sm" weight="semibold">
                                                     {group.name}
                                                 </Typography>
-                                                <Typography className="text-xs text-muted-foreground">
+                                                <Typography type="body-xs" color="muted">
                                                     {addonConstraintLabel(group)} · {group.options.length} option{group.options.length !== 1 ? 's' : ''}
                                                 </Typography>
                                             </View>
                                             <View className="flex-row items-center gap-2">
                                                 <Pressable onPress={() => {}} className="p-1.5 active:opacity-70">
-                                                    <Ionicons name="pencil-outline" size={16} color="hsl(var(--muted-foreground))" />
+                                                    <Ionicons name="pencil-outline" size={16} color="hsl(var(--muted))" />
                                                 </Pressable>
                                                 <Pressable onPress={() => setAddOnGroups((prev) => prev.filter((g) => g.id !== group.id))} className="p-1.5 active:opacity-70">
                                                     <Ionicons name="trash-outline" size={16} color="#ef4444" />
@@ -515,17 +487,17 @@ export default function ProductFormScreen(): React.JSX.Element {
                                                 <Ionicons
                                                     name={isExpanded ? 'chevron-up' : 'chevron-down'}
                                                     size={14}
-                                                    color="#9ca3af"
+                                                    color="hsl(var(--muted))"
                                                 />
                                             </View>
                                         </Pressable>
 
                                         {isExpanded && (
-                                            <View className="bg-muted/20 px-4 pb-3 gap-1">
+                                            <View className="bg-surface-secondary px-4 pb-3 gap-1">
                                                 {group.options.map((opt) => (
                                                     <View key={opt.id} className="flex-row items-center justify-between py-1.5">
-                                                        <Typography className="text-sm text-foreground">{opt.name}</Typography>
-                                                        <Typography className="text-sm font-semibold text-foreground">
+                                                        <Typography type="body-sm">{opt.name}</Typography>
+                                                        <Typography type="body-sm" weight="semibold" className="tabular-nums">
                                                             {opt.price === 0 ? 'Free' : `+${formatRupiah(opt.price)}`}
                                                         </Typography>
                                                     </View>

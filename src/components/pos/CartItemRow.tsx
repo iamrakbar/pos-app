@@ -5,7 +5,7 @@ import { formatRupiah } from '@/utils/format';
 import { MOCK_PRODUCTS } from '@/data/pos-mock';
 import { Button, Typography } from 'heroui-native';
 import type { JSX } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 type Props = {
@@ -44,56 +44,59 @@ export default function CartItemRow({ item }: Props): JSX.Element {
     return (
         <View className="gap-3 py-3 border-b border-border">
             <Pressable className="flex-1 gap-1 active:opacity-70" onPress={handleEdit}>
-                <View className="flex-row justify-between">
-                    <Typography className="" numberOfLines={2}>
+                <View className="flex-row justify-between gap-3">
+                    <Typography weight="medium" numberOfLines={2} className="flex-1">
                         {item.name}
                     </Typography>
 
-                    <Typography className="text-sm font-semibold">
+                    <Typography type="body-sm" weight="semibold" className="tabular-nums">
                         {formatRupiah(item.price)}
                     </Typography>
                 </View>
 
                 {(modifierSummary || addOnTotal > 0) && (
-                    <Typography.Paragraph className="text-sm text-muted" numberOfLines={2}>
+                    <Typography.Paragraph type="body-sm" color="muted" numberOfLines={2}>
                         {modifierSummary}
                         {addOnTotal > 0 ? ` (+${formatRupiah(addOnTotal)})` : ''}
                     </Typography.Paragraph>
                 )}
             </Pressable>
 
-            <View className="flex-row items-center gap-4">
-                <View className="flex-1 flex-row items-center justify-end gap-2">
+            <View className="flex-row items-center justify-between gap-4">
+                <View>
+                    <Button
+                        variant="danger-soft"
+                        size="sm"
+                        isIconOnly
+                        onPress={() => removeItem(item.id)}
+                        accessibilityLabel={`Remove ${item.name}`}
+                    >
+                        <Ionicons name="trash-outline" size={17} color="hsl(var(--danger-soft-foreground))" />
+                    </Button>
+                </View>
+                <View className="flex-row items-center gap-2 rounded-full bg-surface-secondary p-1">
                     <Button
                         variant="ghost"
                         size="sm"
                         isIconOnly
-                        onPress={() => removeItem(item.id)}
-                    >
-                        <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                    </Button>
-                </View>
-                <View className="flex-row items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        isIconOnly
                         onPress={handleDecrement}
+                        accessibilityLabel={`Decrease ${item.name} quantity`}
                     >
-                        <Ionicons name="remove" size={18} color="#6b7280" />
+                        <Ionicons name="remove" size={17} color="hsl(var(--foreground))" />
                     </Button>
                     <View className="w-8">
-                        <Typography className="text-sm font-semibold text-center text-foreground">
+                        <Typography type="body-sm" weight="semibold" align="center" className="tabular-nums">
                             {item.qty}
                         </Typography>
                     </View>
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         isIconOnly
                         onPress={() => updateQty(item.id, item.qty + 1)}
+                        accessibilityLabel={`Increase ${item.name} quantity`}
                     >
-                        <Ionicons name="add" size={18} color="#6b7280" />
+                        <Ionicons name="add" size={17} color="hsl(var(--foreground))" />
                     </Button>
                 </View>
             </View>

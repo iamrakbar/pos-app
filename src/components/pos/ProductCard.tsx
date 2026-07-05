@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 type Props = {
     product: POSProduct;
     onPress: (product: POSProduct) => void;
-    width: number
+    width: number;
 };
 
 export default function ProductCard({ product, onPress, width }: Props): JSX.Element {
@@ -19,12 +19,14 @@ export default function ProductCard({ product, onPress, width }: Props): JSX.Ele
         <Pressable
             onPress={() => onPress(product)}
             style={{
-                maxWidth: width - 16
+                maxWidth: width - 12,
             }}
-            className="flex-1 m-2"
+            className="flex-1 m-1.5 active:opacity-85"
+            accessibilityRole="button"
+            accessibilityLabel={`Add ${product.name}`}
         >
-            <Card className='flex-1 p-0 rounded-xl'>
-                <View className="aspect-square bg-muted items-center justify-center">
+            <Card className="flex-1 overflow-hidden p-0">
+                <View className="aspect-square bg-surface-secondary items-center justify-center">
                     {product.image_url ? (
                         <Image
                             source={{ uri: product.image_url }}
@@ -32,28 +34,28 @@ export default function ProductCard({ product, onPress, width }: Props): JSX.Ele
                             resizeMode="cover"
                         />
                     ) : (
-                        <Ionicons name="fast-food-outline" size={32} color="#9ca3af" />
+                        <Ionicons name="fast-food-outline" size={30} color="hsl(var(--muted))" />
                     )}
                 </View>
-                <View className="px-4 py-3 gap-0.5">
-                    <Typography numberOfLines={1}>
+                <Card.Body className="min-h-[82px] justify-between px-3.5 py-3">
+                    <Typography weight="medium" truncate>
                         {product.name}
                     </Typography>
-                    {isDiscounted ? (
-                        <>
-                            <Typography className="text-xs text-muted line-through">
+                    <View className="gap-0.5">
+                        {isDiscounted && (
+                            <Typography type="body-xs" color="muted" className="line-through">
                                 {formatRupiah(product.original_price!)}
                             </Typography>
-                            <Typography className="text-sm font-semibold text-accent">
-                                {formatRupiah(effectivePrice)}
-                            </Typography>
-                        </>
-                    ) : (
-                        <Typography className="text-sm font-semibold">
+                        )}
+                        <Typography
+                            type="body-sm"
+                            weight="semibold"
+                            className={isDiscounted ? 'text-accent tabular-nums' : 'tabular-nums'}
+                        >
                             {formatRupiah(effectivePrice)}
                         </Typography>
-                    )}
-                </View>
+                    </View>
+                </Card.Body>
             </Card>
         </Pressable>
     );
