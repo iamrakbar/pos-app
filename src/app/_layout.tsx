@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
@@ -50,6 +51,12 @@ export default function RootLayout(): JSX.Element {
                 <HeroUINativeProvider>
                     <QueryClientProvider client={queryClient}>
                         <DatabaseProvider>
+                            {Platform.OS === 'android' && (
+                                <NavigationBar
+                                    style={isDarkMode ? 'dark' : 'light'}
+                                    hidden={false}
+                                />
+                            )}
                             <ExpoStatusBar
                                 style={isDarkMode ? 'light' : 'dark'}
                             />
