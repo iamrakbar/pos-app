@@ -36,7 +36,8 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to set product images.",
           "cameraPermission": "Allow $(PRODUCT_NAME) to use your camera to take product photos."
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,

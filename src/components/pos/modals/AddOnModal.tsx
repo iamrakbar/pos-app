@@ -18,7 +18,7 @@ import {
 } from 'heroui-native';
 import type { JSX } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
 function constraintLabel(group: AddOnGroup): string {
@@ -48,6 +48,7 @@ export default function AddOnModal(): JSX.Element {
 
     const dialogMaxHeight = windowHeight * 0.88;
     const scrollMaxHeight = dialogMaxHeight - 220;
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const schema = useMemo(
         () => createAddOnSchema(product?.add_ons ?? []),
@@ -108,13 +109,13 @@ export default function AddOnModal(): JSX.Element {
     };
 
     const onSubmit = (values: AddOnFormValues) => {
+        setSubmitError(null);
         const addOns = buildCartAddOns(values);
-        const addOnTotal = addOns.flatMap((ao) => ao.options).reduce((sum, o) => sum + o.price, 0);
         if (editingCartItemId) removeItem(editingCartItemId);
         addItem({
             product_id: product.id,
             name: product.name,
-            price: product.price + addOnTotal,
+            price: product.price,
             qty: 1,
             notes: values.notes.trim() || null,
             add_ons: addOns,
@@ -122,8 +123,20 @@ export default function AddOnModal(): JSX.Element {
         closeModal();
     };
 
+    const onInvalid = () => {
+        setSubmitError('Lengkapi pilihan add-on yang wajib diisi sebelum menambahkan produk.');
+    };
+
     return (
-        <Dialog isOpen={isOpen} onOpenChange={(open) => !open && closeModal()}>
+        <Dialog
+            isOpen={isOpen}
+            onOpenChange={(open) => {
+                if (!open) {
+                    setSubmitError(null);
+                    closeModal();
+                }
+            }}
+        >
             <Dialog.Portal>
                 <Dialog.Overlay />
                 <Dialog.Content
@@ -149,6 +162,12 @@ export default function AddOnModal(): JSX.Element {
                         style={{ maxHeight: scrollMaxHeight }}
                         contentContainerClassName='p-4 gap-4 bg-background'
                     >
+                        {submitError && (
+                            <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
+                                <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
+                            </View>
+                        )}
+
                         {product.add_ons.map((group) => (
                             <View key={group.id} className="gap-4">
                                 <Typography className="text-sm font-semibold text-foreground">
@@ -248,7 +267,7 @@ export default function AddOnModal(): JSX.Element {
                         <Button variant="outline" onPress={closeModal}>
                             Batal
                         </Button>
-                        <Button className="flex-1" onPress={handleSubmit(onSubmit)}>
+                        <Button className="flex-1" onPress={handleSubmit(onSubmit, onInvalid)}>
                             {editingCartItemId ? 'Simpan perubahan' : 'Tambahkan ke keranjang'}
                         </Button>
                     </View>

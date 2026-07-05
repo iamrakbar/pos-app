@@ -1,6 +1,12 @@
 import { useOrder, useUpdateOrderStatus } from '@/hooks/db/useOrders';
 import { usePaymentStatus } from '@/hooks/db/usePaymentStatus';
 import {
+    extractPaymentDetailsRows,
+    extractPaymentExpiry,
+    extractPaymentQrUrl,
+    isExpired,
+} from '@/api/mappers/checkout';
+import {
     extractCustomerName,
     extractNumber,
     extractOrderItems,
@@ -11,12 +17,14 @@ import {
 } from '@/api/mappers/order';
 import LoadingState from '@/components/common/LoadingState';
 import ErrorState from '@/components/common/ErrorState';
+import Countdown from '@/components/common/Countdown';
 import { formatRupiah } from '@/utils/format';
 import { getErrorMessage } from '@/api/ApiError';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Chip, Surface, Typography } from 'heroui-native';
+import { Button, Chip, Dialog, Separator, Surface, Typography } from 'heroui-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, View, ScrollView, Pressable } from 'react-native';
+import { ActivityIndicator, Image, View, ScrollView, Pressable } from 'react-native';
+import { useState } from 'react';
 
 function formatDateTime(iso: string): string {
     const d = new Date(iso);
@@ -32,6 +40,7 @@ function formatDateTime(iso: string): string {
 export default function OrderDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
+    const [isQrOpen, setIsQrOpen] = useState(false);
 
     const { data: order, isLoading, isError, error, refetch } = useOrder(id);
     const paymentStatus = usePaymentStatus(id);
@@ -59,6 +68,12 @@ export default function OrderDetailScreen() {
     const paymentStatusColor = extractStatusColor(order.payment_status);
     const customerName = extractCustomerName(order.customer);
     const paymentName = extractPaymentName(order.payment);
+    const paymentDetailsRows = extractPaymentDetailsRows(order.payment_details);
+    const paymentExpiresAt = extractPaymentExpiry(order.payment_details);
+    const paymentQrUrl = extractPaymentQrUrl({ payment_details: order.payment_details, payment: order.payment });
+    const paymentExpired = isExpired(paymentExpiresAt);
+    const isQrisPayment = paymentName.toLowerCase().includes('qris') || !!paymentQrUrl;
+    const canShowQr = !!paymentQrUrl && !paymentExpired && isQrisPayment;
     const tableName = extractTableName(order.orderable);
     const items = extractOrderItems(order.products);
     const feeAmount = extractNumber(order.payment_fee);
@@ -200,6 +215,45 @@ export default function OrderDetailScreen() {
                     </View>
                 )}
 
+                {/* ── Payment details ── */}
+                {(paymentDetailsRows.length > 0 || canShowQr) && (
+                    <View className="gap-2">
+                        <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            Payment Details
+                        </Typography>
+                        <Surface className="w-full overflow-hidden">
+                            {paymentDetailsRows.map((row, index) => (
+                                <View
+                                    key={`${row.label}-${index}`}
+                                    className={`flex-row justify-between gap-4 px-4 py-3 ${index < paymentDetailsRows.length - 1 || canShowQr ? 'border-b border-border' : ''}`}
+                                >
+                                    <Typography className="text-sm text-muted-foreground">{row.label}</Typography>
+                                    <Typography className="text-sm font-semibold text-foreground text-right flex-1">
+                                        {row.value}
+                                    </Typography>
+                                </View>
+                            ))}
+                            {paymentExpiresAt && !paymentExpired && (
+                                <View className={`px-4 py-3 ${canShowQr ? 'border-b border-border' : ''}`}>
+                                    <Countdown
+                                        expiresAt={paymentExpiresAt}
+                                        prefix="Payment expires in"
+                                        className="text-xs text-warning font-semibold"
+                                    />
+                                </View>
+                            )}
+                            {canShowQr && (
+                                <View className="px-4 py-3">
+                                    <Button variant="outline" onPress={() => setIsQrOpen(true)}>
+                                        <Ionicons name="qr-code-outline" size={16} color="hsl(var(--foreground))" />
+                                        <Button.Label className="ml-1.5">Show QRIS QR</Button.Label>
+                                    </Button>
+                                </View>
+                            )}
+                        </Surface>
+                    </View>
+                )}
+
                 {/* ── Status actions ── */}
                 {/* cancelled is not a merchant-settable transition via this endpoint
                     (it's system/customer-initiated) — display only, no action. */}
@@ -242,6 +296,9 @@ export default function OrderDetailScreen() {
                         {updateStatus.isError && (
                             <Typography className="text-xs text-danger">{getErrorMessage(updateStatus.error)}</Typography>
                         )}
+                        {updateStatus.isSuccess && (
+                            <Typography className="text-xs text-success">Order status updated.</Typography>
+                        )}
                     </View>
                 )}
 
@@ -280,6 +337,36 @@ export default function OrderDetailScreen() {
                     Close
                 </Button>
             </View>
+
+            <Dialog isOpen={isQrOpen && canShowQr} onOpenChange={setIsQrOpen}>
+                <Dialog.Portal>
+                    <Dialog.Overlay />
+                    <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center bg-background p-0">
+                        <View className="flex-row justify-between gap-4 bg-surface p-4">
+                            <View className="gap-0.5">
+                                <Dialog.Title>QRIS Payment</Dialog.Title>
+                                <Typography className="text-sm text-muted-foreground">{order.code}</Typography>
+                            </View>
+                            <Dialog.Close />
+                        </View>
+                        <Separator />
+                        <View className="items-center gap-3 p-6">
+                            <View className="w-64 h-64 bg-white rounded-lg border border-border items-center justify-center">
+                                <Image source={{ uri: paymentQrUrl! }} className="w-60 h-60" resizeMode="contain" />
+                            </View>
+                            <Typography className="text-base font-semibold text-foreground">
+                                {formatRupiah(order.total)}
+                            </Typography>
+                            <Countdown
+                                expiresAt={paymentExpiresAt}
+                                prefix="QR berlaku"
+                                className="text-xs text-warning font-semibold"
+                                onExpire={() => setIsQrOpen(false)}
+                            />
+                        </View>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog>
         </View>
     );
 }

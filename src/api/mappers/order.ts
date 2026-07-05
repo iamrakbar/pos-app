@@ -28,6 +28,7 @@ export function extractCustomerName(customer: unknown): string | null {
 export function extractTableName(orderable: unknown): string | null {
     const rec = asRecord(orderable);
     if (!rec) return null;
+    if (typeof rec.table_name === 'string') return rec.table_name;
     if (typeof rec.name === 'string') return rec.name;
     const table = asRecord(rec.table);
     if (table && typeof table.name === 'string') return table.name;

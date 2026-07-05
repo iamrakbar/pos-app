@@ -57,7 +57,7 @@ export type CheckoutFormState = {
   order_type: 'dine-in' | 'takeaway';
   table_id: string | null;
   pickup_time: string | null;
-  payment_group: 'e-money' | 'cash';
+  payment_group: string;
   payment_id: string | null;
   customer_type: 'guest' | 'customer' | 'anonymous';
   guest_id: string | null;
@@ -71,5 +71,6 @@ export type PaymentSession = {
   transaction_id: string;
   payment_type: string;
   qr_url: string | null;
+  expires_at: string | null;
   amount: number;
 };

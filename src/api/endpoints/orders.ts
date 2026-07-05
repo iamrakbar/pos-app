@@ -1,6 +1,8 @@
 import { apiRequest } from '../client';
 
-type OrderResponse = { data: App.Data.Merchant.Order.OrderData };
+export type MerchantOrderData = App.Data.Merchant.Order.OrderData;
+
+type OrderResponse = { data: MerchantOrderData };
 type OrdersResponse = {
     data: App.Data.Merchant.Order.OrderListData[];
     meta?: { current_page: number; last_page: number; per_page: number; total: number };
@@ -41,7 +43,10 @@ export function getPaymentStatus(orderId: string): Promise<PaymentStatusResponse
 
 export function updateOrderStatus(
     orderId: string,
-    body: App.Requests.Merchant.Order.UpdateOrderStatusRequest,
+    body: App.Requests.Merchant.Order.UpdateOrderStatusRequest
 ): Promise<UpdateOrderStatusResponse> {
-    return apiRequest<UpdateOrderStatusResponse>(`/orders/${orderId}/status`, { method: 'PATCH', body });
+    return apiRequest<UpdateOrderStatusResponse>(`/orders/${orderId}/status`, {
+        method: 'PATCH',
+        body,
+    });
 }

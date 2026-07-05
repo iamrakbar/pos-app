@@ -2,9 +2,12 @@ import { usePOSStore } from '@/stores/usePOSStore';
 import { usePaymentStatus } from '@/hooks/db/usePaymentStatus';
 import { formatRupiah } from '@/utils/format';
 import { getErrorMessage } from '@/api/ApiError';
+import { isExpired } from '@/api/mappers/checkout';
+import Countdown from '@/components/common/Countdown';
 import { Button, Dialog, Separator, Surface, Typography } from 'heroui-native';
 import type { JSX } from 'react';
-import { ActivityIndicator, View, useWindowDimensions } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Image, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function PaymentModal(): JSX.Element {
@@ -13,6 +16,7 @@ export default function PaymentModal(): JSX.Element {
     const closeModal = usePOSStore((s) => s.closeModal);
     const openPaymentSuccessModal = usePOSStore((s) => s.openPaymentSuccessModal);
     const { height: windowHeight } = useWindowDimensions();
+    const [expiredSessionKey, setExpiredSessionKey] = useState<string | null>(null);
 
     const paymentStatus = usePaymentStatus(paymentSession?.order_id);
 
@@ -21,6 +25,10 @@ export default function PaymentModal(): JSX.Element {
     if (!paymentSession) return <></>;
 
     const dialogMaxHeight = windowHeight * 0.88;
+    const sessionKey = `${paymentSession.order_id}:${paymentSession.expires_at ?? ''}`;
+    const canShowQr =
+        !!paymentSession.qr_url && !isExpired(paymentSession.expires_at) && expiredSessionKey !== sessionKey;
+    const handleQrExpire = () => setExpiredSessionKey(sessionKey);
 
     const handleCheckPayment = () => {
         paymentStatus.mutate(undefined, {
@@ -59,15 +67,37 @@ export default function PaymentModal(): JSX.Element {
                             {paymentSession.transaction_id}
                         </Typography>
 
-                        <View className="w-48 h-48 bg-foreground rounded-lg items-center justify-center">
-                            <View className="w-44 h-44 bg-background items-center justify-center rounded">
-                                <Ionicons name="qr-code-outline" size={160} color="#000" />
+                        {canShowQr ? (
+                            <View className="w-56 h-56 bg-white rounded-lg items-center justify-center border border-border">
+                                <Image
+                                    source={{ uri: paymentSession.qr_url! }}
+                                    className="w-52 h-52"
+                                    resizeMode="contain"
+                                />
                             </View>
-                        </View>
+                        ) : (
+                            <View className="w-56 h-56 bg-muted rounded-lg items-center justify-center border border-border px-4">
+                                <Ionicons name="qr-code-outline" size={64} color="#9ca3af" />
+                                <Typography className="text-xs text-muted-foreground text-center mt-3">
+                                    {paymentSession.expires_at && isExpired(paymentSession.expires_at)
+                                        ? 'QR pembayaran sudah kedaluwarsa'
+                                        : 'QR pembayaran tidak tersedia'}
+                                </Typography>
+                            </View>
+                        )}
 
                         <Typography className="text-base font-semibold text-foreground">
                             {formatRupiah(paymentSession.amount)}
                         </Typography>
+
+                        {canShowQr && (
+                            <Countdown
+                                expiresAt={paymentSession.expires_at}
+                                prefix="QR berlaku"
+                                className="text-xs text-warning font-semibold"
+                                onExpire={handleQrExpire}
+                            />
+                        )}
 
                         {paymentStatus.isSuccess && !paymentStatus.data.is_successful && (
                             <Typography className="text-xs text-warning">

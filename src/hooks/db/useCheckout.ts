@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { checkout } from '@/api/endpoints/checkout';
 import { useAuth } from '@/stores/useAuth';
-import { useCartStore } from '@/stores/useCartStore';
-import { buildCartProducts } from './useCart';
 import type { CheckoutFormValues } from '@/schemas/checkout';
 
 export function useCheckout() {
@@ -11,8 +9,6 @@ export function useCheckout() {
 
     return useMutation({
         mutationFn: async (form: CheckoutFormValues) => {
-            const products = buildCartProducts(useCartStore.getState().products);
-
             const body: App.Requests.Merchant.Checkout.CheckoutRequest = {
                 customer_type: form.customer_type,
                 guest_id: form.customer_type === 'guest' ? form.guest_id : undefined,
@@ -22,7 +18,7 @@ export function useCheckout() {
                 pickup_time: form.order_type === 'takeaway' ? form.pickup_time : undefined,
                 payment_id: form.payment_id!,
                 notes: form.notes || undefined,
-                products,
+                products: form.products,
             };
 
             const res = await checkout(merchantId!, body);

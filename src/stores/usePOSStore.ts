@@ -1,4 +1,5 @@
 import type { CheckoutFormState, PaymentSession, POSProduct } from '@/types/pos';
+import type { MerchantCheckoutData } from '@/api/endpoints/checkout';
 import { create } from 'zustand';
 
 type POSModal = 'addon' | 'checkout' | 'payment' | 'payment-success' | null;
@@ -8,7 +9,7 @@ type POSState = {
   selectedProduct: POSProduct | null;
   editingCartItemId: string | null;
   paymentSession: PaymentSession | null;
-  checkoutResult: App.Data.Merchant.Checkout.CheckoutData | null;
+  checkoutResult: MerchantCheckoutData | null;
   searchQuery: string;
   categoryId: string | null;
   checkoutForm: CheckoutFormState;
@@ -17,7 +18,7 @@ type POSState = {
 type POSAction = {
   openAddonModal: (product: POSProduct, editingCartItemId?: string) => void;
   openCheckoutModal: () => void;
-  openPaymentModal: (session: PaymentSession, result: App.Data.Merchant.Checkout.CheckoutData) => void;
+  openPaymentModal: (session: PaymentSession, result: MerchantCheckoutData) => void;
   openPaymentSuccessModal: () => void;
   closeModal: () => void;
   setSearchQuery: (q: string) => void;

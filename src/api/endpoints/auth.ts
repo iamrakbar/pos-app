@@ -1,11 +1,13 @@
-import { apiRequest } from '../client';
+import { apiRequest } from "../client";
 
-export function login(
-    body: App.Requests.Merchant.Auth.LoginRequest,
-): Promise<App.Data.Merchant.Auth.AuthTokenData> {
-    return apiRequest<App.Data.Merchant.Auth.AuthTokenData>('/login', {
-        method: 'POST',
-        body,
-        auth: false,
-    });
+type LoginResponse = {
+  data: App.Data.Merchant.Auth.AuthTokenData;
+};
+
+export function login(body: App.Requests.Merchant.Auth.LoginRequest): Promise<LoginResponse> {
+  return apiRequest<LoginResponse>("/login", {
+    method: "POST",
+    body,
+    auth: false,
+  });
 }

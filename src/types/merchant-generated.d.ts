@@ -206,6 +206,7 @@ order_status: string;
 can_cancel: boolean;
 requires_approval: boolean;
 pending_request: Array<any> | null;
+fee_preview: Array<any> | null;
 };
 export type OrderListData = {
 id: string;
@@ -313,7 +314,7 @@ product_id: string;
 name: string;
 min: number;
 max: number;
-options: Array<any>;
+options: Array<App.Data.Merchant.AddOn.OptionData>;
 options_count: number;
 created_at: string;
 updated_at: string;
@@ -402,23 +403,72 @@ updated_at: string;
 };
 }
 declare namespace App.Data.Merchant.Checkout {
+export type CheckoutCouponData = {
+code: string;
+discount_amount: number;
+};
+export type CheckoutCustomerData = {
+id: string | null;
+name: string | null;
+email: string | null;
+phone: string | null;
+type: string | null;
+};
 export type CheckoutData = {
 id: string;
 code: string;
 merchant_id: string;
-merchant: Array<any>;
-customer: Array<any> | null;
+merchant: App.Data.Merchant.Checkout.CheckoutMerchantData;
+customer: App.Data.Merchant.Checkout.CheckoutCustomerData | null;
 order_type: string;
-order_status: Array<any>;
-table: Array<any> | null;
+order_status: App.Data.Merchant.Checkout.CheckoutOrderStatusData;
+table: App.Data.Merchant.Checkout.CheckoutTableData | null;
 pickup_time: string | null;
 payment_id: string;
-payment: Array<any>;
+payment: App.Data.Merchant.Order.OrderPaymentData;
 notes: string | null;
-products: Array<any>;
-pricing: Array<any>;
-coupons: Array<any>;
+products: Array<App.Data.Merchant.Checkout.CheckoutProductData>;
+pricing: App.Data.Merchant.Checkout.CheckoutPricingData;
+coupons: Array<App.Data.Merchant.Checkout.CheckoutCouponData>;
+payment_details: App.Data.Merchant.Order.OrderPaymentDetailsData;
 created_at: string;
+};
+export type CheckoutMerchantData = {
+id: string | null;
+name: string;
+image: App.Data.Merchant.Checkout.CheckoutMerchantImageData | null;
+};
+export type CheckoutMerchantImageData = {
+default: string | null;
+thumbnail: string | null;
+};
+export type CheckoutOrderStatusData = {
+value: string;
+label: string;
+color: string;
+};
+export type CheckoutPricingData = {
+subtotal: number;
+fees: Array<App.Data.Merchant.Checkout.CheckoutPricingFeeData>;
+total: number;
+};
+export type CheckoutPricingFeeData = {
+type: string;
+name: string;
+amount: number;
+};
+export type CheckoutProductData = {
+product_id: string;
+name: string;
+price: number;
+qty: number;
+notes: string | null;
+add_ons: Array<App.Data.Merchant.Order.OrderProductAddOnData>;
+subtotal: number;
+};
+export type CheckoutTableData = {
+id: string | null;
+name: string | null;
 };
 }
 declare namespace App.Data.Merchant.Coupon {
@@ -577,25 +627,37 @@ updated_at: string;
 };
 }
 declare namespace App.Data.Merchant.Order {
+export type OrderCustomerData = {
+name: string | null;
+email: string | null;
+phone: string | null;
+type: string | null;
+};
 export type OrderData = {
 id: string;
 code: string;
 merchant: App.Data.Merchant.Auth.MerchantSummaryData;
-customer: Array<any>;
-payment: Array<any>;
+customer: App.Data.Merchant.Order.OrderCustomerData;
+payment: App.Data.Merchant.Order.OrderPaymentData;
 order_type: string;
-order_status: Array<any>;
-payment_status: Array<any>;
+order_status: App.Data.Merchant.Order.OrderStatusDetailData;
+payment_status: App.Data.Merchant.Order.OrderPaymentStatusDetailData;
 notes: string | null;
-products: Array<any>;
+products: Array<App.Data.Merchant.Order.OrderProductData>;
 subtotal: number;
-tax: Array<any> | null;
-delivery_fee: Array<any> | null;
-payment_fee: Array<any> | null;
+tax: App.Data.Merchant.Order.OrderTaxData;
+delivery_fee: App.Data.Merchant.Order.OrderDeliveryFeeData | null;
+payment_fee: App.Data.Merchant.Order.OrderPaymentFeeData;
 total_tax_and_fee: number;
 total: number;
-orderable: Array<any> | null;
+orderable: App.Data.Merchant.Order.OrderOrderableData | null;
+payment_instruction: App.Data.Merchant.Order.OrderPaymentInstructionData | null;
+payment_details: App.Data.Merchant.Order.OrderPaymentDetailsData;
 created_at: string;
+};
+export type OrderDeliveryFeeData = {
+name: string;
+amount: number;
 };
 export type OrderListData = {
 id: string;
@@ -611,12 +673,112 @@ products_count: number;
 orderable: Array<any> | null;
 created_at: string;
 };
+export type OrderOrderableAddressData = {
+id: string | null;
+name: string | null;
+address: string | null;
+province: string | null;
+city: string | null;
+district: string | null;
+postcode: string | null;
+lat: string | number | null;
+lng: string | number | null;
+};
+export type OrderOrderableCourierData = {
+code: string | null;
+name: string | null;
+service: string | null;
+description: string | null;
+rate: number | null;
+insurance_fee: number | null;
+must_use_insurance: boolean | null;
+};
+export type OrderOrderableData = {
+pickup_time: string | null;
+table_id: string | null;
+table_name: string | null;
+address: App.Data.Merchant.Order.OrderOrderableAddressData | null;
+courier: App.Data.Merchant.Order.OrderOrderableCourierData | null;
+tracking_status: App.Data.Merchant.Order.OrderOrderableTrackingStatusData | null;
+waybill_id: string | null;
+};
+export type OrderOrderableTrackingStatusData = {
+value: string;
+label: string;
+color: string;
+is_delivered: boolean;
+};
+export type OrderPaymentData = {
+id: string | null;
+name: string;
+code: string;
+group_type: string;
+};
+export type OrderPaymentDetailsData = {
+code: string | null;
+extra: string | null;
+expiry_time: string | null;
+};
+export type OrderPaymentFeeData = {
+name: string;
+unit: string | null;
+value: number | null;
+amount: number | null;
+};
+export type OrderPaymentInstructionData = {
+en: string | null;
+id: string | null;
+};
+export type OrderPaymentStatusDetailData = {
+value: string;
+label: string;
+color: string;
+is_successful: boolean;
+};
+export type OrderProductAddOnData = {
+id: string;
+name: string;
+options: Array<App.Data.Merchant.Order.OrderProductOptionData>;
+};
+export type OrderProductData = {
+product_id: string;
+name: string;
+price: number;
+discount: App.Data.Merchant.Order.OrderProductDiscountData | null;
+qty: number;
+notes: string | null;
+add_ons: Array<App.Data.Merchant.Order.OrderProductAddOnData>;
+subtotal: number;
+};
+export type OrderProductDiscountData = {
+unit: string | null;
+value: number | null;
+price: number | null;
+};
+export type OrderProductOptionData = {
+id: string;
+name: string;
+price: number;
+};
 export type OrderStatusData = {
 id: string;
 code: string;
 order_status: Array<any>;
 cancelled_at: string | null;
 updated_at: string;
+};
+export type OrderStatusDetailData = {
+value: string;
+label: string;
+color: string;
+is_final: boolean;
+can_be_cancelled: boolean;
+next_status: string | null;
+};
+export type OrderTaxData = {
+name: string | null;
+value: number | null;
+amount: number | null;
 };
 export type PaymentStatusData = {
 order_id: string;
@@ -636,6 +798,11 @@ area_id: string;
 area_name: string;
 pax: number;
 };
+export type ProductCategoryData = {
+id: string;
+name: string;
+slug: string | null;
+};
 export type ProductData = {
 id: string;
 merchant_id: string;
@@ -643,19 +810,42 @@ name: string;
 slug: string | null;
 description: string | null;
 price: number;
-discount: Array<any> | null;
-stock: Array<any> | null;
-image: Array<any> | null;
-category: Array<any> | null;
+discount: App.Data.Merchant.Pos.ProductDiscountData | null;
+stock: App.Data.Merchant.Pos.ProductStockData;
+image: App.Data.Merchant.Pos.ProductImageData;
+category: App.Data.Merchant.Pos.ProductCategoryData | null;
 add_ons: Array<App.Data.Customer.Product.AddOnData>;
 is_active: boolean;
 is_po: boolean;
-po_availability: Array<any> | null;
+po_availability: App.Data.Merchant.Pos.ProductPoAvailabilityData | null;
 created_at: string;
 updated_at: string;
 };
+export type ProductDiscountData = {
+unit: string | null;
+value: number | null;
+price: number | null;
+};
+export type ProductImageData = {
+default: string | null;
+thumbnail: string | null;
+};
+export type ProductPoAvailabilityData = {
+value: number;
+unit: string | null;
+in_days: number | null;
+};
+export type ProductStockData = {
+enabled: boolean;
+qty: number;
+};
 }
 declare namespace App.Data.Merchant.Product {
+export type ProductCategoryData = {
+id: string;
+name: string;
+slug: string | null;
+};
 export type ProductData = {
 id: string;
 merchant_id: string;
@@ -672,7 +862,7 @@ stock_alert: number | null;
 active: boolean;
 image_url: string | null;
 thumbnail_url: string | null;
-category: Array<any> | null;
+category: App.Data.Merchant.Product.ProductCategoryData | null;
 created_at: string;
 updated_at: string;
 };

@@ -4,27 +4,18 @@ import { useTables } from '@/hooks/db/useTables';
 import { usePaymentGroups } from '@/hooks/db/usePayments';
 import { useGuests, useCreateGuest } from '@/hooks/db/useGuests';
 import { useCustomerSearch } from '@/hooks/db/useCustomers';
-import { useValidateCart } from '@/hooks/db/useCart';
+import { buildCartProducts, useValidateCart } from '@/hooks/db/useCart';
 import { useCheckout } from '@/hooks/db/useCheckout';
 import { checkoutSchema, type CheckoutFormValues } from '@/schemas/checkout';
 import { guestSchema, type GuestFormValues } from '@/schemas/guest';
 import { formatRupiah } from '@/utils/format';
 import { getErrorMessage, isApiError } from '@/api/ApiError';
-import { extractQrUrl, extractTotal } from '@/api/mappers/checkout';
+import { extractCheckoutTotal, extractPaymentExpiry, extractPaymentQrUrl } from '@/api/mappers/checkout';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-    Button,
-    Dialog,
-    SearchField,
-    Select,
-    Separator,
-    Surface,
-    TextArea,
-    Typography,
-} from 'heroui-native';
+import { Button, Dialog, SearchField, Select, Separator, Surface, TextArea, Typography } from 'heroui-native';
 import type { JSX } from 'react';
-import { useState } from 'react';
-import { Pressable, ScrollView, TextInput, View, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, TextInput, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { PaymentSession } from '@/types/pos';
 import { useForm, Controller, useWatch } from 'react-hook-form';
@@ -94,19 +85,21 @@ export default function CheckoutModal(): JSX.Element {
     const [newGuest, setNewGuest] = useState<GuestFormValues>({ name: '', email: '', phone: '' });
     const [cartError, setCartError] = useState<string | null>(null);
 
-    const defaultPaymentId = paymentGroups.find((g) => g.group_type === 'e-money')?.payments[0]?.id ?? '';
+    const defaultPaymentGroup = paymentGroups.find((g) => g.group_type === 'e-money') ?? paymentGroups[0];
+    const defaultPaymentId = defaultPaymentGroup?.payments[0]?.id ?? '';
 
     const DEFAULT_VALUES: CheckoutFormValues = {
         order_type: 'dine-in',
         table_id: null,
         pickup_time: null,
-        payment_group: 'e-money',
+        payment_group: defaultPaymentGroup?.group_type ?? 'e-money',
         payment_id: defaultPaymentId,
         customer_type: 'anonymous',
         guest_id: null,
         customer_id: null,
         customer_search: '',
         notes: '',
+        products: buildCartProducts(cartProducts),
     };
 
     const isOpen = modal === 'checkout';
@@ -131,6 +124,31 @@ export default function CheckoutModal(): JSX.Element {
     const customerSearch = useWatch({ control, name: 'customer_search' });
 
     const { data: customerResults = [] } = useCustomerSearch(customerSearch);
+
+    useEffect(() => {
+        if (paymentGroups.length === 0) return;
+
+        const selectedGroup = paymentGroups.find((g) => g.group_type === paymentGroup);
+        const fallbackGroup =
+            selectedGroup ?? paymentGroups.find((g) => g.group_type === 'e-money') ?? paymentGroups[0];
+        const firstPayment = fallbackGroup.payments[0];
+
+        if (!selectedGroup) {
+            setValue('payment_group', fallbackGroup.group_type, {
+                shouldValidate: true,
+            });
+        }
+
+        if (!fallbackGroup.payments.some((payment) => payment.id === paymentId)) {
+            setValue('payment_id', firstPayment?.id ?? '', { shouldValidate: true });
+        }
+    }, [paymentGroups, paymentGroup, paymentId, setValue]);
+
+    useEffect(() => {
+        setValue('products', buildCartProducts(cartProducts), {
+            shouldValidate: true,
+        });
+    }, [cartProducts, setValue]);
 
     const subtotal = totalPrice();
     const allPayments = paymentGroups.flatMap((g) => g.payments);
@@ -162,6 +180,7 @@ export default function CheckoutModal(): JSX.Element {
 
     const onSubmit = async (values: CheckoutFormValues) => {
         setCartError(null);
+
         try {
             await validateCart.mutateAsync();
         } catch (error) {
@@ -180,13 +199,18 @@ export default function CheckoutModal(): JSX.Element {
                 order_id: result.id,
                 transaction_id: result.code,
                 payment_type: payment?.name ?? 'Unknown',
-                qr_url: extractQrUrl(result.payment),
-                amount: extractTotal(result.pricing, total),
+                qr_url: extractPaymentQrUrl(result),
+                expires_at: extractPaymentExpiry(result.payment_details),
+                amount: extractCheckoutTotal(result, total),
             };
             openPaymentModal(session, result);
         } catch (error) {
             setCartError(getErrorMessage(error));
         }
+    };
+
+    const onInvalid = () => {
+        setCartError('Lengkapi data checkout yang wajib diisi.');
     };
 
     const dialogMaxHeight = windowHeight * 0.88;
@@ -258,7 +282,11 @@ export default function CheckoutModal(): JSX.Element {
                                         <Typography className="text-xs text-muted-foreground">Opsional</Typography>
                                     </View>
                                     <Select
-                                        value={selectedTable ? { value: selectedTable.id, label: selectedTable.name } : undefined}
+                                        value={
+                                            selectedTable
+                                                ? { value: selectedTable.id, label: selectedTable.name }
+                                                : undefined
+                                        }
                                         onValueChange={(opt) => setValue('table_id', opt?.value ?? null)}
                                     >
                                         <Select.Trigger className="border border-border rounded-xl h-11 px-3 flex-row items-center justify-between bg-background">
@@ -270,7 +298,11 @@ export default function CheckoutModal(): JSX.Element {
                                             <Select.Content presentation="popover" width="full">
                                                 <Select.Item value="" label="Tidak ada" />
                                                 {tablesList.map((t) => (
-                                                    <Select.Item key={t.id} value={t.id} label={`${t.name} (${t.area_name})`} />
+                                                    <Select.Item
+                                                        key={t.id}
+                                                        value={t.id}
+                                                        label={`${t.name} (${t.area_name})`}
+                                                    />
                                                 ))}
                                             </Select.Content>
                                         </Select.Portal>
@@ -279,7 +311,9 @@ export default function CheckoutModal(): JSX.Element {
                             ) : (
                                 <View className="flex-1 gap-1.5">
                                     <View className="flex-row justify-between">
-                                        <Typography className="text-sm font-semibold text-foreground">Waktu ambil</Typography>
+                                        <Typography className="text-sm font-semibold text-foreground">
+                                            Waktu ambil
+                                        </Typography>
                                         <Typography className="text-xs text-muted-foreground">Opsional</Typography>
                                     </View>
                                     <Controller
@@ -308,7 +342,7 @@ export default function CheckoutModal(): JSX.Element {
                                             key={group.group_type}
                                             onPress={() => {
                                                 const firstPayment = group.payments[0];
-                                                setValue('payment_group', group.group_type as 'e-money' | 'cash');
+                                                setValue('payment_group', group.group_type);
                                                 setValue('payment_id', firstPayment?.id ?? '');
                                             }}
                                             className={`px-4 py-2 rounded-full border ${isActive ? 'bg-accent border-accent' : 'bg-background border-border'}`}
@@ -333,8 +367,9 @@ export default function CheckoutModal(): JSX.Element {
                                 <Typography className="text-xs text-danger">{errors.payment_id.message}</Typography>
                             )}
                             <Surface className="py-3 w-full flex-row flex-wrap gap-2">
-                                {paymentGroups.find((g) => g.group_type === paymentGroup)?.payments.map(
-                                    (payment) => {
+                                {paymentGroups
+                                    .find((g) => g.group_type === paymentGroup)
+                                    ?.payments.map((payment) => {
                                         const isActive = paymentId === payment.id;
                                         return (
                                             <Pressable
@@ -349,8 +384,7 @@ export default function CheckoutModal(): JSX.Element {
                                                 </Typography>
                                             </Pressable>
                                         );
-                                    },
-                                )}
+                                    })}
                             </Surface>
                         </View>
 
@@ -400,7 +434,9 @@ export default function CheckoutModal(): JSX.Element {
                                                         onPress={() => setValue('guest_id', g.id)}
                                                         className={`px-3 py-2 rounded-lg border ${guestId === g.id ? 'bg-accent/10 border-accent' : 'bg-background border-border'}`}
                                                     >
-                                                        <Typography className="text-sm text-foreground">{g.name}</Typography>
+                                                        <Typography className="text-sm text-foreground">
+                                                            {g.name}
+                                                        </Typography>
                                                         {(g.email || g.phone) && (
                                                             <Typography className="text-xs text-muted-foreground">
                                                                 {[g.email, g.phone].filter(Boolean).join(' · ')}
@@ -445,7 +481,11 @@ export default function CheckoutModal(): JSX.Element {
                                                         {getErrorMessage(createGuest.error)}
                                                     </Typography>
                                                 )}
-                                                <Button size="sm" onPress={handleCreateGuest} isDisabled={createGuest.isPending}>
+                                                <Button
+                                                    size="sm"
+                                                    onPress={handleCreateGuest}
+                                                    isDisabled={createGuest.isPending}
+                                                >
                                                     Simpan guest
                                                 </Button>
                                             </View>
@@ -457,7 +497,9 @@ export default function CheckoutModal(): JSX.Element {
                                             </Typography>
                                         )}
                                         {errors.guest_id && (
-                                            <Typography className="text-xs text-danger">{errors.guest_id.message}</Typography>
+                                            <Typography className="text-xs text-danger">
+                                                {errors.guest_id.message}
+                                            </Typography>
                                         )}
                                     </View>
                                 )}
@@ -485,7 +527,9 @@ export default function CheckoutModal(): JSX.Element {
                                                         onPress={() => setValue('customer_id', c.id)}
                                                         className={`px-3 py-2 rounded-lg border ${customerId === c.id ? 'bg-accent/10 border-accent' : 'bg-background border-border'}`}
                                                     >
-                                                        <Typography className="text-sm text-foreground">{c.name}</Typography>
+                                                        <Typography className="text-sm text-foreground">
+                                                            {c.name}
+                                                        </Typography>
                                                         {(c.email || c.phone) && (
                                                             <Typography className="text-xs text-muted-foreground">
                                                                 {[c.email, c.phone].filter(Boolean).join(' · ')}
@@ -496,7 +540,9 @@ export default function CheckoutModal(): JSX.Element {
                                             </View>
                                         )}
                                         {errors.customer_id && (
-                                            <Typography className="text-xs text-danger">{errors.customer_id.message}</Typography>
+                                            <Typography className="text-xs text-danger">
+                                                {errors.customer_id.message}
+                                            </Typography>
                                         )}
                                     </View>
                                 )}
@@ -530,14 +576,20 @@ export default function CheckoutModal(): JSX.Element {
                                 <View className="flex-row justify-between px-4 py-3 border-b border-border">
                                     <Typography className="text-sm text-foreground">
                                         Payment Fee
-                                        {selectedPayment?.fee_unit === 'percentage' ? ` (${selectedPayment.fee_value}%)` : ''}
+                                        {selectedPayment?.fee_unit === 'percentage'
+                                            ? ` (${selectedPayment.fee_value}%)`
+                                            : ''}
                                     </Typography>
-                                    <Typography className="text-sm text-foreground">{formatRupiah(paymentFee)}</Typography>
+                                    <Typography className="text-sm text-foreground">
+                                        {formatRupiah(paymentFee)}
+                                    </Typography>
                                 </View>
                             )}
                             <View className="flex-row justify-between px-4 py-3">
                                 <Typography className="text-sm font-semibold text-foreground">Total</Typography>
-                                <Typography className="text-sm font-semibold text-foreground">{formatRupiah(total)}</Typography>
+                                <Typography className="text-sm font-semibold text-foreground">
+                                    {formatRupiah(total)}
+                                </Typography>
                             </View>
                         </Surface>
                     </ScrollView>
@@ -550,11 +602,20 @@ export default function CheckoutModal(): JSX.Element {
                         </Button>
                         <Button
                             className="flex-1 bg-green-500 border-green-500"
-                            onPress={handleSubmit(onSubmit)}
+                            onPress={handleSubmit(onSubmit, onInvalid)}
                             isDisabled={validateCart.isPending || checkout.isPending || cartProducts.length === 0}
                         >
-                            <Ionicons name="checkmark-circle-outline" size={18} color="white" />
-                            <Button.Label className="ml-2 font-semibold tracking-wider">BAYAR</Button.Label>
+                            {validateCart.isPending || checkout.isPending ? (
+                                <>
+                                    <ActivityIndicator color="#fff" />
+                                    <Button.Label className="ml-2 font-semibold tracking-wider">MEMPROSES</Button.Label>
+                                </>
+                            ) : (
+                                <>
+                                    <Ionicons name="checkmark-circle-outline" size={18} color="white" />
+                                    <Button.Label className="ml-2 font-semibold tracking-wider">BAYAR</Button.Label>
+                                </>
+                            )}
                         </Button>
                     </View>
                 </Dialog.Content>
