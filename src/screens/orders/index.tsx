@@ -11,7 +11,7 @@ import ErrorState from '@/components/common/ErrorState';
 import EmptyState from '@/components/common/EmptyState';
 import { formatRupiah } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
-import { Chip, Separator, Typography } from 'heroui-native';
+import { Chip, Separator, Typography, useThemeColor } from 'heroui-native';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -62,7 +62,6 @@ export default function OrdersScreen(): React.JSX.Element {
                             onPress={() => setStatusFilter(f.value)}
                             variant={isSelected ? 'primary' : 'secondary'}
                             color={f.value === 'completed' ? 'success' : f.value === 'cancelled' || f.value === 'rejected' ? 'danger' : 'accent'}
-                            size="sm"
                         >
                             <Chip.Label>{f.label}</Chip.Label>
                         </Chip>
@@ -109,6 +108,7 @@ function OrderRow({
     order: App.Data.Merchant.Order.OrderListData;
     onPress: () => void;
 }) {
+    const themeColorMuted = useThemeColor('muted');
     const statusLabel = extractStatusLabel(order.order_status);
     const statusColor = extractStatusColor(order.order_status);
     const customerName = extractCustomerName(order.customer);
@@ -132,7 +132,7 @@ function OrderRow({
                         <Ionicons
                             name={order.order_type === 'dine-in' ? 'restaurant-outline' : 'bag-outline'}
                             size={12}
-                            color="hsl(var(--muted))"
+                            color={themeColorMuted}
                         />
                         <Typography type="body-xs" color="muted">
                             {order.order_type === 'dine-in' ? `Dine-in${tableName ? ` · ${tableName}` : ''}` : 'Takeaway'}
@@ -159,14 +159,14 @@ function OrderRow({
             {/* Bottom row */}
             <View className="flex-row items-center justify-between mt-1.5">
                 <View className="flex-row items-center gap-1.5">
-                    <Ionicons name="card-outline" size={12} color="hsl(var(--muted))" />
+                    <Ionicons name="card-outline" size={12} color={themeColorMuted} />
                     <Typography type="body-xs" color="muted">{paymentName}</Typography>
                     <Typography type="body-xs" color="muted">·</Typography>
                     <Typography type="body-xs" color="muted">
                         {order.products_count} item{order.products_count !== 1 ? 's' : ''}
                     </Typography>
                 </View>
-                <Ionicons name="chevron-forward" size={14} color="hsl(var(--muted))" />
+                <Ionicons name="chevron-forward" size={14} color={themeColorMuted} />
             </View>
         </Pressable>
     );

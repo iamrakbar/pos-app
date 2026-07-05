@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Button, Card, Switch, Typography } from 'heroui-native';
+import { Button, Card, Switch, Typography, useThemeColor } from 'heroui-native';
 import { Select } from 'heroui-native';
 import type { JSX } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -36,6 +36,11 @@ const SETTINGS_ITEMS: SettingsItem[] = [
 
 export default function SettingsScreen(): JSX.Element {
     const router = useRouter();
+    const [themeColorMuted, themeColorAccentSoftForeground, themeColorDangerSoftForeground] = useThemeColor([
+        'muted',
+        'accent-soft-foreground',
+        'danger-soft-foreground',
+    ]);
     const logout = useAuth((s) => s.logout);
     const isDarkMode = useThemeStore((s) => s.isDarkMode);
     const setDarkMode = useThemeStore((s) => s.setDarkMode);
@@ -56,7 +61,7 @@ export default function SettingsScreen(): JSX.Element {
                                 className="flex-row items-center gap-4 px-4 py-4 active:bg-surface-secondary"
                             >
                                 <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
-                                    <Ionicons name={item.icon} size={20} color="hsl(var(--accent-soft-foreground))" />
+                                    <Ionicons name={item.icon} size={20} color={themeColorAccentSoftForeground} />
                                 </View>
                                 <View className="flex-1 gap-0.5">
                                     <Typography type="body-sm" weight="semibold">
@@ -66,7 +71,7 @@ export default function SettingsScreen(): JSX.Element {
                                         {item.description}
                                     </Typography>
                                 </View>
-                                <Ionicons name="chevron-forward" size={18} color="hsl(var(--muted))" />
+                                <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
                             </Pressable>
                         </Card>
                     ))}
@@ -74,7 +79,7 @@ export default function SettingsScreen(): JSX.Element {
                     <Card className="p-0 overflow-hidden">
                         <View className="flex-row items-center gap-4 px-4 py-4">
                             <View className="w-10 h-10 rounded-panel-inner bg-surface-secondary items-center justify-center">
-                                <Ionicons name="moon-outline" size={20} color="hsl(var(--muted))" />
+                                <Ionicons name="moon-outline" size={20} color={themeColorMuted} />
                             </View>
                             <View className="flex-1 gap-0.5">
                                 <Typography type="body-sm" weight="semibold">
@@ -91,7 +96,7 @@ export default function SettingsScreen(): JSX.Element {
                     <Card className="p-0 overflow-hidden">
                         <View className="flex-row items-center gap-4 px-4 py-4">
                             <View className="w-10 h-10 rounded-panel-inner bg-surface-secondary items-center justify-center">
-                                <Ionicons name="language-outline" size={20} color="hsl(var(--muted))" />
+                                <Ionicons name="language-outline" size={20} color={themeColorMuted} />
                             </View>
                             <View className="flex-1 gap-0.5">
                                 <Typography type="body-sm" weight="semibold">
@@ -121,7 +126,7 @@ export default function SettingsScreen(): JSX.Element {
                 </View>
 
                 <Button variant="danger-soft" onPress={logout} className="w-full">
-                    <Ionicons name="log-out-outline" size={18} color="hsl(var(--danger-soft-foreground))" />
+                    <Ionicons name="log-out-outline" size={18} color={themeColorDangerSoftForeground} />
                     <Button.Label>{t('settings.logout')}</Button.Label>
                 </Button>
             </View>

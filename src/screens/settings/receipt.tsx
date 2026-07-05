@@ -3,7 +3,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Button, Input, Select, Separator, Switch, Typography } from 'heroui-native';
+import { Button, Input, Select, Separator, Switch, Typography, useThemeColor } from 'heroui-native';
 import React from 'react';
 import {
     Alert,
@@ -133,9 +133,11 @@ function SectionHeader({
     icon: React.ComponentProps<typeof Ionicons>['name'];
     title: string;
 }) {
+    const themeColorMuted = useThemeColor('muted');
+
     return (
         <View className="flex-row items-center gap-2 mt-3 mb-1">
-            <Ionicons name={icon} size={18} color="hsl(var(--muted))" />
+            <Ionicons name={icon} size={18} color={themeColorMuted} />
             <Typography type="body-sm" weight="semibold">
                 {title}
             </Typography>
@@ -190,6 +192,8 @@ function TabBar({
     active: Tab;
     onPress: (tab: Tab) => void;
 }) {
+    const [themeColorForeground, themeColorMuted] = useThemeColor(['foreground', 'muted']);
+
     return (
         <View className="px-4 pt-4">
             <ScrollView
@@ -212,8 +216,8 @@ function TabBar({
                                 size={14}
                                 color={
                                     isActive
-                                        ? 'hsl(var(--foreground))'
-                                        : 'hsl(var(--muted))'
+                                        ? themeColorForeground
+                                        : themeColorMuted
                                 }
                             />
                             <Typography
@@ -325,6 +329,11 @@ function TopTab({
     settings: ReceiptSettings;
     onChange: (patch: Partial<ReceiptSettings>) => void;
 }) {
+    const [themeColorMuted, themeColorAccentSoftForeground] = useThemeColor([
+        'muted',
+        'accent-soft-foreground',
+    ]);
+
     const handlePickLogo = async () => {
         const uri = await pickAndSaveLogo();
         if (uri) onChange({ storeLogo: uri });
@@ -339,7 +348,7 @@ function TopTab({
             {/* Info banner */}
             <View className="flex-row items-center gap-3 bg-accent-soft rounded-panel-inner p-3">
                 <View className="w-10 h-10 rounded-lg bg-background/70 items-center justify-center shrink-0">
-                    <Ionicons name="help-outline" size={20} color="hsl(var(--accent-soft-foreground))" />
+                    <Ionicons name="help-outline" size={20} color={themeColorAccentSoftForeground} />
                 </View>
                 <Typography type="body-sm" className="flex-1">
                     Your store information will be printed on the receipt.
@@ -369,7 +378,7 @@ function TopTab({
                             </>
                         ) : (
                             <View className="flex-1 items-center justify-center gap-1">
-                                <Ionicons name="camera-outline" size={24} color="hsl(var(--muted))" />
+                                <Ionicons name="camera-outline" size={24} color={themeColorMuted} />
                                 <Typography type="body-xs" color="muted">Add logo</Typography>
                             </View>
                         )}

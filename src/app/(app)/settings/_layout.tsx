@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { useThemeStore } from '@/stores/useThemeStore';
 import { getNavigationTheme } from '@/utils/navigationTheme';
+import DrawerMenuButton from '@/components/navigation/DrawerMenuButton';
 
 export default function SettingsLayout() {
     const isDarkMode = useThemeStore((s) => s.isDarkMode);
@@ -22,7 +23,10 @@ export default function SettingsLayout() {
                 },
             }}
         >
-            <Stack.Screen name="index" options={{ title: 'Settings' }} />
+            <Stack.Screen name="index" options={{
+                title: 'Settings',
+                headerLeft: () => <DrawerMenuButton />,
+            }} />
             <Stack.Screen name="printer" options={{ title: 'Printer' }} />
             <Stack.Screen name="receipt" options={{ title: 'Receipt Setup' }} />
         </Stack>

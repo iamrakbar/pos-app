@@ -12,7 +12,7 @@ import { formatRupiah } from '@/utils/format';
 import { getErrorMessage, isApiError } from '@/api/ApiError';
 import { extractCheckoutTotal, extractPaymentExpiry, extractPaymentQrUrl } from '@/api/mappers/checkout';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Dialog, SearchField, Select, Separator, Surface, TextArea, Typography } from 'heroui-native';
+import { Button, Dialog, SearchField, Select, Separator, Surface, TextArea, Typography, useThemeColor } from 'heroui-native';
 import type { JSX } from 'react';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View, useWindowDimensions } from 'react-native';
@@ -42,29 +42,37 @@ function MiniInput({
     placeholder?: string;
     keyboardType?: 'default' | 'email-address' | 'phone-pad';
 }) {
+    const [themeColorBackground, themeColorBorder, themeColorForeground, themeColorFieldPlaceholder] = useThemeColor([
+        'background',
+        'border',
+        'foreground',
+        'field-placeholder',
+    ]);
+
     return (
         <TextInput
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={themeColorFieldPlaceholder}
             keyboardType={keyboardType ?? 'default'}
             autoCapitalize="none"
             style={{
                 borderWidth: 1,
-                borderColor: 'hsl(var(--border))',
+                borderColor: themeColorBorder,
                 borderRadius: 12,
                 height: 40,
                 paddingHorizontal: 12,
                 fontSize: 14,
-                color: 'hsl(var(--foreground))',
-                backgroundColor: 'hsl(var(--background))',
+                color: themeColorForeground,
+                backgroundColor: themeColorBackground,
             }}
         />
     );
 }
 
 export default function CheckoutModal(): JSX.Element {
+    const themeColorPrimary = useThemeColor('link');
     const modal = usePOSStore((s) => s.modal);
     const closeModal = usePOSStore((s) => s.closeModal);
     const openPaymentModal = usePOSStore((s) => s.openPaymentModal);
@@ -451,7 +459,7 @@ export default function CheckoutModal(): JSX.Element {
                                             onPress={() => setShowNewGuestForm((v) => !v)}
                                             className="flex-row items-center gap-1 self-start active:opacity-70"
                                         >
-                                            <Ionicons name="add-circle-outline" size={16} color="hsl(var(--primary))" />
+                                            <Ionicons name="add-circle-outline" size={16} color={themeColorPrimary} />
                                             <Typography className="text-sm text-primary">
                                                 {showNewGuestForm ? 'Batal' : 'Guest baru'}
                                             </Typography>

@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { useThemeStore } from '@/stores/useThemeStore';
 import { getNavigationTheme } from '@/utils/navigationTheme';
+import DrawerMenuButton from '@/components/navigation/DrawerMenuButton';
 
 export default function OrdersLayout() {
     const isDarkMode = useThemeStore((s) => s.isDarkMode);
@@ -22,7 +23,7 @@ export default function OrdersLayout() {
                 },
             }}
         >
-            <Stack.Screen name="index" options={{ title: 'Orders' }} />
+            <Stack.Screen name="index" options={{ title: 'Orders', headerLeft: () => <DrawerMenuButton /> }} />
             <Stack.Screen name="[id]" options={{ title: 'Order Detail' }} />
         </Stack>
     );

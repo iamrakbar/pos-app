@@ -1,17 +1,11 @@
 import { usePOSStore } from '@/stores/usePOSStore';
 import { useCategories } from '@/hooks/db/useCategories';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
-import { Button, SearchField, Select } from 'heroui-native';
+import DrawerMenuButton from '@/components/navigation/DrawerMenuButton';
+import { SearchField, Select } from 'heroui-native';
 import type { JSX } from 'react';
 import { View } from 'react-native';
 
-type DrawerNavigation = {
-    openDrawer: () => void;
-};
-
 export default function SearchBar(): JSX.Element {
-    const navigation = useNavigation<DrawerNavigation>();
     const searchQuery = usePOSStore((s) => s.searchQuery);
     const categoryId = usePOSStore((s) => s.categoryId);
     const setSearchQuery = usePOSStore((s) => s.setSearchQuery);
@@ -28,14 +22,7 @@ export default function SearchBar(): JSX.Element {
 
     return (
         <View className="flex-row items-center gap-4 px-5 py-4 bg-background">
-            <Button
-                variant="ghost"
-                isIconOnly
-                onPress={() => navigation.openDrawer()}
-                accessibilityLabel="Open navigation"
-            >
-                <Ionicons name="menu-outline" size={20} color="hsl(var(--foreground))" />
-            </Button>
+            <DrawerMenuButton />
             <View className="flex-1">
                 <SearchField value={searchQuery} onChange={setSearchQuery}>
                     <SearchField.Group>

@@ -1,9 +1,10 @@
 import { Stack } from "expo-router";
+import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { HeroUINativeProvider } from "heroui-native";
 import { useEffect, type JSX } from "react";
-import { ActivityIndicator, StatusBar, View } from "react-native";
+import { ActivityIndicator, Platform, StatusBar as NativeStatusBar, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DatabaseProvider } from '@/db';
@@ -36,15 +37,21 @@ export default function RootLayout(): JSX.Element {
         setQueryClientRef(queryClient);
     }, []);
 
+    useEffect(() => {
+        if (Platform.OS === 'android') {
+            NativeStatusBar.setBackgroundColor(navigationTheme.background, true);
+            NativeStatusBar.setTranslucent(false);
+        }
+    }, [navigationTheme.background]);
+
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: navigationTheme.background }}>
             <KeyboardProvider>
                 <HeroUINativeProvider>
                     <QueryClientProvider client={queryClient}>
                         <DatabaseProvider>
-                            <StatusBar
-                                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-                                backgroundColor={navigationTheme.background}
+                            <ExpoStatusBar
+                                style={isDarkMode ? 'light' : 'dark'}
                             />
                             <ErrorBoundary>
                                 {!hasHydrated ? (

@@ -15,6 +15,7 @@ import {
     Separator,
     Switch,
     Typography,
+    useThemeColor,
 } from 'heroui-native';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -114,6 +115,11 @@ function ImagePickerField({
     value: string | null;
     onChange: (result: ProcessedImage | null) => void;
 }) {
+    const [themeColorMuted, themeColorAccentSoftForeground] = useThemeColor([
+        'muted',
+        'accent-soft-foreground',
+    ]);
+
     const openPicker = () => {
         if (Platform.OS === 'ios') {
             ActionSheetIOS.showActionSheetWithOptions(
@@ -150,7 +156,7 @@ function ImagePickerField({
                 ) : (
                     <View className="flex-1 items-center justify-center gap-3">
                         <View className="w-16 h-16 rounded-full bg-accent-soft items-center justify-center">
-                            <Ionicons name="camera-outline" size={28} color="hsl(var(--accent-soft-foreground))" />
+                            <Ionicons name="camera-outline" size={28} color={themeColorAccentSoftForeground} />
                         </View>
                         <View className="items-center gap-1">
                             <Typography type="body-sm" weight="medium">Add product image</Typography>
@@ -158,11 +164,11 @@ function ImagePickerField({
                         </View>
                         <View className="flex-row gap-3 mt-1">
                             <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-tertiary">
-                                <Ionicons name="images-outline" size={14} color="hsl(var(--muted))" />
+                                <Ionicons name="images-outline" size={14} color={themeColorMuted} />
                                 <Typography type="body-xs" color="muted">Library</Typography>
                             </View>
                             <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-tertiary">
-                                <Ionicons name="camera-outline" size={14} color="hsl(var(--muted))" />
+                                <Ionicons name="camera-outline" size={14} color={themeColorMuted} />
                                 <Typography type="body-xs" color="muted">Camera</Typography>
                             </View>
                         </View>
@@ -202,6 +208,11 @@ export default function ProductFormScreen(): React.JSX.Element {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const queryClient = useQueryClient();
+    const [themeColorMuted, themeColorAccent, themeColorDanger] = useThemeColor([
+        'muted',
+        'accent',
+        'danger',
+    ]);
     const isNew = id === 'new';
 
     const { data: existingProduct } = useProduct(id);
@@ -285,23 +296,15 @@ export default function ProductFormScreen(): React.JSX.Element {
                 contentContainerClassName="p-4 gap-4 pb-10"
                 keyboardShouldPersistTaps="handled"
             >
-                {/* Back row */}
-                <Pressable
-                    onPress={() => router.back()}
-                    className="flex-row items-center gap-1 self-start active:opacity-70"
-                >
-                    <Ionicons name="chevron-back" size={18} color="hsl(var(--accent))" />
-                    <Typography type="body-sm" className="text-accent">Products</Typography>
-                </Pressable>
 
                 <Typography.Heading type="h4">
                     {isNew ? 'New Product' : 'Edit Product'}
                 </Typography.Heading>
 
                 <View className="rounded-xl bg-warning/10 border border-warning/30 px-3 py-2.5">
-                        <Typography type="body-xs" className="text-warning-foreground">
-                            Product editing is not yet connected to the live API — changes here won&apos;t be saved.
-                        </Typography>
+                    <Typography type="body-xs" className="text-warning-foreground">
+                        Product editing is not yet connected to the live API — changes here won&apos;t be saved.
+                    </Typography>
                 </View>
 
                 {/* ── Image picker ── */}
@@ -450,9 +453,9 @@ export default function ProductFormScreen(): React.JSX.Element {
                             </View>
                             <Pressable
                                 className="flex-row items-center gap-1 active:opacity-70"
-                                onPress={() => {/* no-op */}}
+                                onPress={() => {/* no-op */ }}
                             >
-                                <Ionicons name="add-circle-outline" size={18} color="hsl(var(--accent))" />
+                                <Ionicons name="add-circle-outline" size={18} color={themeColorAccent} />
                                 <Typography type="body-sm" className="text-accent">Add group</Typography>
                             </Pressable>
                         </View>
@@ -478,16 +481,16 @@ export default function ProductFormScreen(): React.JSX.Element {
                                                 </Typography>
                                             </View>
                                             <View className="flex-row items-center gap-2">
-                                                <Pressable onPress={() => {}} className="p-1.5 active:opacity-70">
-                                                    <Ionicons name="pencil-outline" size={16} color="hsl(var(--muted))" />
+                                                <Pressable onPress={() => { }} className="p-1.5 active:opacity-70">
+                                                    <Ionicons name="pencil-outline" size={16} color={themeColorMuted} />
                                                 </Pressable>
                                                 <Pressable onPress={() => setAddOnGroups((prev) => prev.filter((g) => g.id !== group.id))} className="p-1.5 active:opacity-70">
-                                                    <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                                                    <Ionicons name="trash-outline" size={16} color={themeColorDanger} />
                                                 </Pressable>
                                                 <Ionicons
                                                     name={isExpanded ? 'chevron-up' : 'chevron-down'}
                                                     size={14}
-                                                    color="hsl(var(--muted))"
+                                                    color={themeColorMuted}
                                                 />
                                             </View>
                                         </Pressable>

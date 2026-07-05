@@ -1,7 +1,7 @@
 import { useCartStore } from '@/stores/useCartStore';
 import { usePOSStore } from '@/stores/usePOSStore';
 import { formatRupiah } from '@/utils/format';
-import { Button, Dialog, Separator, Surface, Typography } from 'heroui-native';
+import { Button, Dialog, Separator, Surface, Typography, useThemeColor } from 'heroui-native';
 import type { JSX } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,7 @@ function formatDateTime(date: Date): string {
 }
 
 export default function PaymentSuccessModal(): JSX.Element {
+    const themeColorForeground = useThemeColor('foreground');
     const modal = usePOSStore((s) => s.modal);
     const paymentSession = usePOSStore((s) => s.paymentSession);
     const closeModal = usePOSStore((s) => s.closeModal);
@@ -159,7 +160,7 @@ export default function PaymentSuccessModal(): JSX.Element {
                     {/* Actions */}
                     <View className="flex-row gap-3 bg-surface p-4">
                         <Button variant="outline" className="flex-1" onPress={handlePrintReceipt}>
-                            <Ionicons name="print-outline" size={16} color="hsl(var(--foreground))" />
+                            <Ionicons name="print-outline" size={16} color={themeColorForeground} />
                             <Button.Label className="ml-2">Print Receipt</Button.Label>
                         </Button>
                         <Button className="flex-1 bg-green-500 border-green-500" onPress={handleNewOrder}>

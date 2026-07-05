@@ -21,7 +21,7 @@ import Countdown from '@/components/common/Countdown';
 import { formatRupiah } from '@/utils/format';
 import { getErrorMessage } from '@/api/ApiError';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Chip, Dialog, Separator, Surface, Typography } from 'heroui-native';
+import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from 'heroui-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Image, View, ScrollView, Pressable } from 'react-native';
 import { useState } from 'react';
@@ -41,6 +41,11 @@ export default function OrderDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const [isQrOpen, setIsQrOpen] = useState(false);
+    const [themeColorForeground, themeColorMuted, themeColorDanger] = useThemeColor([
+        'foreground',
+        'muted',
+        'danger',
+    ]);
 
     const { data: order, isLoading, isError, error, refetch } = useOrder(id);
     const paymentStatus = usePaymentStatus(id);
@@ -52,7 +57,7 @@ export default function OrderDetailScreen() {
     if (!order) {
         return (
             <View className="flex-1 items-center justify-center bg-background gap-3">
-                <Ionicons name="receipt-outline" size={40} color="#9ca3af" />
+                <Ionicons name="receipt-outline" size={40} color={themeColorMuted} />
                 <Typography className="text-sm text-muted-foreground">Order not found</Typography>
                 <Pressable onPress={() => router.back()} className="active:opacity-70">
                     <Typography className="text-sm text-primary">← Back</Typography>
@@ -81,14 +86,6 @@ export default function OrderDetailScreen() {
     return (
         <View className="flex-1 bg-background">
             <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4 pb-10">
-                {/* Back row */}
-                <Pressable
-                    onPress={() => router.back()}
-                    className="flex-row items-center gap-1 self-start active:opacity-70"
-                >
-                    <Ionicons name="chevron-back" size={18} color="hsl(var(--primary))" />
-                    <Typography className="text-sm text-primary">Orders</Typography>
-                </Pressable>
 
                 {/* ── Header ── */}
                 <View className="gap-2">
@@ -111,7 +108,7 @@ export default function OrderDetailScreen() {
                         <Ionicons
                             name={order.order_type === 'dine-in' ? 'restaurant-outline' : 'bag-outline'}
                             size={16}
-                            color="#9ca3af"
+                            color={themeColorMuted}
                         />
                         <View className="flex-1">
                             <Typography className="text-xs text-muted-foreground">Order type</Typography>
@@ -123,7 +120,7 @@ export default function OrderDetailScreen() {
 
                     {tableName && (
                         <View className="flex-row items-center gap-3 px-4 py-3 border-b border-border">
-                            <Ionicons name="grid-outline" size={16} color="#9ca3af" />
+                            <Ionicons name="grid-outline" size={16} color={themeColorMuted} />
                             <View className="flex-1">
                                 <Typography className="text-xs text-muted-foreground">Table</Typography>
                                 <Typography className="text-sm font-semibold text-foreground">{tableName}</Typography>
@@ -132,7 +129,7 @@ export default function OrderDetailScreen() {
                     )}
 
                     <View className="flex-row items-center gap-3 px-4 py-3 border-b border-border">
-                        <Ionicons name="card-outline" size={16} color="#9ca3af" />
+                        <Ionicons name="card-outline" size={16} color={themeColorMuted} />
                         <View className="flex-1">
                             <Typography className="text-xs text-muted-foreground">Payment</Typography>
                             <Typography className="text-sm font-semibold text-foreground">{paymentName}</Typography>
@@ -143,7 +140,7 @@ export default function OrderDetailScreen() {
                     </View>
 
                     <View className="flex-row items-center gap-3 px-4 py-3">
-                        <Ionicons name="person-outline" size={16} color="#9ca3af" />
+                        <Ionicons name="person-outline" size={16} color={themeColorMuted} />
                         <View className="flex-1">
                             <Typography className="text-xs text-muted-foreground">Customer</Typography>
                             <Typography className="text-sm font-semibold text-foreground">
@@ -245,7 +242,7 @@ export default function OrderDetailScreen() {
                             {canShowQr && (
                                 <View className="px-4 py-3">
                                     <Button variant="outline" onPress={() => setIsQrOpen(true)}>
-                                        <Ionicons name="qr-code-outline" size={16} color="hsl(var(--foreground))" />
+                                        <Ionicons name="qr-code-outline" size={16} color={themeColorForeground} />
                                         <Button.Label className="ml-1.5">Show QRIS QR</Button.Label>
                                     </Button>
                                 </View>
@@ -289,7 +286,7 @@ export default function OrderDetailScreen() {
                                 onPress={() => updateStatus.mutate({ id: order.id, status: 'rejected' })}
                                 isDisabled={updateStatus.isPending}
                             >
-                                <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
+                                <Ionicons name="close-circle-outline" size={16} color={themeColorDanger} />
                                 <Button.Label className="ml-1.5 text-danger">Reject</Button.Label>
                             </Button>
                         </View>
@@ -316,7 +313,7 @@ export default function OrderDetailScreen() {
                             <ActivityIndicator />
                         ) : (
                             <>
-                                <Ionicons name="refresh-outline" size={16} color="hsl(var(--foreground))" />
+                                <Ionicons name="refresh-outline" size={16} color={themeColorForeground} />
                                 <Button.Label className="ml-1.5">Refresh payment status</Button.Label>
                             </>
                         )}
@@ -329,8 +326,8 @@ export default function OrderDetailScreen() {
 
             {/* ── Footer ── */}
             <View className="flex-row gap-3 bg-surface p-4 border-t border-border">
-                <Button variant="outline" className="flex-1" onPress={() => {}}>
-                    <Ionicons name="print-outline" size={16} color="hsl(var(--foreground))" />
+                <Button variant="outline" className="flex-1" onPress={() => { }}>
+                    <Ionicons name="print-outline" size={16} color={themeColorForeground} />
                     <Button.Label className="ml-1.5">Print Receipt</Button.Label>
                 </Button>
                 <Button variant="outline" onPress={() => router.back()}>

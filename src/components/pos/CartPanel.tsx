@@ -1,13 +1,17 @@
 import { useCartStore } from '@/stores/useCartStore';
 import { usePOSStore } from '@/stores/usePOSStore';
 import { formatRupiah } from '@/utils/format';
-import { Button, Typography } from 'heroui-native';
+import { Button, Typography, useThemeColor } from 'heroui-native';
 import type { JSX } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CartItemRow from './CartItemRow';
 
 export default function CartPanel(): JSX.Element {
+    const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
+        'muted',
+        'danger-soft-foreground',
+    ]);
     const products = useCartStore((s) => s.products);
     const totalQty = useCartStore((s) => s.totalQty);
     const totalPrice = useCartStore((s) => s.totalPrice);
@@ -36,7 +40,7 @@ export default function CartPanel(): JSX.Element {
                         onPress={clearCart}
                         className="self-start"
                     >
-                        <Ionicons name="trash-outline" size={16} color="hsl(var(--danger-soft-foreground))" />
+                        <Ionicons name="trash-outline" size={16} color={themeColorDangerSoftForeground} />
                         <Button.Label>Empty Cart</Button.Label>
                     </Button>
                 )}
@@ -50,7 +54,7 @@ export default function CartPanel(): JSX.Element {
             >
                 {products.length === 0 ? (
                     <View className="items-center justify-center py-16 gap-2">
-                        <Ionicons name="cart-outline" size={40} color="hsl(var(--muted))" />
+                        <Ionicons name="cart-outline" size={40} color={themeColorMuted} />
                         <Typography type="body-sm" color="muted" align="center">
                             Cart is empty.{'\n'}Add products to get started.
                         </Typography>

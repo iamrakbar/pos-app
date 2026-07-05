@@ -3,7 +3,7 @@ import { usePOSStore } from '@/stores/usePOSStore';
 import type { CartItem } from '@/types/cart';
 import { formatRupiah } from '@/utils/format';
 import { MOCK_PRODUCTS } from '@/data/pos-mock';
-import { Button, Typography } from 'heroui-native';
+import { Button, Typography, useThemeColor } from 'heroui-native';
 import type { JSX } from 'react';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +13,10 @@ type Props = {
 };
 
 export default function CartItemRow({ item }: Props): JSX.Element {
+    const [themeColorForeground, themeColorDangerSoftForeground] = useThemeColor([
+        'foreground',
+        'danger-soft-foreground',
+    ]);
     const removeItem = useCartStore((s) => s.removeItem);
     const updateQty = useCartStore((s) => s.updateQty);
     const openAddonModal = usePOSStore((s) => s.openAddonModal);
@@ -71,7 +75,7 @@ export default function CartItemRow({ item }: Props): JSX.Element {
                         onPress={() => removeItem(item.id)}
                         accessibilityLabel={`Remove ${item.name}`}
                     >
-                        <Ionicons name="trash-outline" size={17} color="hsl(var(--danger-soft-foreground))" />
+                        <Ionicons name="trash-outline" size={17} color={themeColorDangerSoftForeground} />
                     </Button>
                 </View>
                 <View className="flex-row items-center gap-2 rounded-full bg-surface-secondary p-1">
@@ -82,7 +86,7 @@ export default function CartItemRow({ item }: Props): JSX.Element {
                         onPress={handleDecrement}
                         accessibilityLabel={`Decrease ${item.name} quantity`}
                     >
-                        <Ionicons name="remove" size={17} color="hsl(var(--foreground))" />
+                        <Ionicons name="remove" size={17} color={themeColorForeground} />
                     </Button>
                     <View className="w-8">
                         <Typography type="body-sm" weight="semibold" align="center" className="tabular-nums">
@@ -96,7 +100,7 @@ export default function CartItemRow({ item }: Props): JSX.Element {
                         onPress={() => updateQty(item.id, item.qty + 1)}
                         accessibilityLabel={`Increase ${item.name} quantity`}
                     >
-                        <Ionicons name="add" size={17} color="hsl(var(--foreground))" />
+                        <Ionicons name="add" size={17} color={themeColorForeground} />
                     </Button>
                 </View>
             </View>

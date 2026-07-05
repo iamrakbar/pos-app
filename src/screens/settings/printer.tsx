@@ -7,6 +7,7 @@ import {
     Separator,
     Switch,
     Typography,
+    useThemeColor,
 } from 'heroui-native';
 import React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -48,6 +49,7 @@ function FieldLabel({ label }: { label: string }) {
 
 export default function PrinterSettingsScreen(): React.JSX.Element {
     const router = useRouter();
+    const [themeColorForeground, themeColorAccent] = useThemeColor(['foreground', 'accent']);
 
     const settings = usePrinterStore((s) => s.settings);
     const updateSettings = usePrinterStore((s) => s.updateSettings);
@@ -228,7 +230,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                                 <Ionicons
                                     name="refresh"
                                     size={18}
-                                    color="hsl(var(--foreground))"
+                                    color={themeColorForeground}
                                 />
                             </Pressable>
                         </View>
@@ -254,7 +256,7 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                                                 <Ionicons
                                                     name="checkmark"
                                                     size={18}
-                                                    color="hsl(var(--accent))"
+                                                    color={themeColorAccent}
                                                 />
                                             )}
                                         </Pressable>

@@ -1,6 +1,6 @@
 import type { POSProduct } from '@/types/pos';
 import { formatRupiah } from '@/utils/format';
-import { Card, Typography } from 'heroui-native';
+import { Card, Typography, useThemeColor } from 'heroui-native';
 import type { JSX } from 'react';
 import { Image, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +12,7 @@ type Props = {
 };
 
 export default function ProductCard({ product, onPress, width }: Props): JSX.Element {
+    const themeColorMuted = useThemeColor('muted');
     const isDiscounted = product.original_price !== null;
     const effectivePrice = product.price;
 
@@ -34,7 +35,7 @@ export default function ProductCard({ product, onPress, width }: Props): JSX.Ele
                             resizeMode="cover"
                         />
                     ) : (
-                        <Ionicons name="fast-food-outline" size={30} color="hsl(var(--muted))" />
+                        <Ionicons name="fast-food-outline" size={30} color={themeColorMuted} />
                     )}
                 </View>
                 <Card.Body className="min-h-[82px] justify-between px-3.5 py-3">
