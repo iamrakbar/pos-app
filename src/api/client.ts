@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { useAuth } from '@/stores/useAuth';
 import { API_BASE_URL, API_TIMEOUT_MS } from './config';
 import { ApiError } from './ApiError';
+import { useNetworkStore } from '@/stores/useNetworkStore';
+import { t } from '@/locales';
 
 type RequestOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -78,6 +80,7 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}, isR
         });
 
         const json = await safeJson(res);
+        useNetworkStore.getState().setOnline();
 
         if (!res.ok) {
             if (res.status === 401 && opts.auth !== false && !isRetry && path !== '/refresh' && path !== '/login') {
@@ -101,9 +104,16 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}, isR
     } catch (error) {
         if (error instanceof ApiError) throw error;
         if ((error as Error)?.name === 'AbortError') {
-            throw new ApiError({ status: 0, message: 'Request timed out' });
+            useNetworkStore.getState().setOffline();
+            throw new ApiError({ status: 0, message: t('offline.timeoutMessage'), code: 'NETWORK_TIMEOUT' });
         }
-        throw new ApiError({ status: 0, message: (error as Error)?.message ?? 'Network error' });
+        useNetworkStore.getState().setOffline();
+        throw new ApiError({
+            status: 0,
+            message: t('offline.errorMessage'),
+            code: 'NETWORK_ERROR',
+            raw: error,
+        });
     } finally {
         clearTimeout(timeout);
     }

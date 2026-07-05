@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import * as Localization from 'expo-localization';
-import { i18n } from '@/locales';
-
-type Locale = 'id' | 'en';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import { i18n, type Locale } from '@/locales';
 
 // Default: detect from device; fallback to 'id'
 function detectLocale(): Locale {
   const tag = Localization.getLocales()[0]?.languageTag ?? '';
-  return tag.startsWith('en') ? 'en' : 'id';
+  return tag.startsWith('id') ? 'id' : 'en';
 }
 
 interface UseLocaleState {
@@ -16,10 +16,18 @@ interface UseLocaleState {
   setLocale: (locale: Locale) => void;
 }
 
+const localeStorage =
+  Platform.OS === 'web'
+    ? createJSONStorage(() => localStorage)
+    : createJSONStorage(() => AsyncStorage);
+
+const initialLocale = detectLocale();
+i18n.locale = initialLocale;
+
 export const useLocale = create<UseLocaleState>()(
   persist(
     (set) => ({
-      locale: detectLocale(),
+      locale: initialLocale,
       setLocale: (locale: Locale) => {
         i18n.locale = locale;
         set({ locale });
@@ -27,7 +35,7 @@ export const useLocale = create<UseLocaleState>()(
     }),
     {
       name: 'soeat-locale',
-      storage: createJSONStorage(() => localStorage),
+      storage: localeStorage,
       onRehydrateStorage: () => (state) => {
         if (state) {
           i18n.locale = state.locale;

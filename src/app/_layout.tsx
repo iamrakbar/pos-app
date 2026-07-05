@@ -1,16 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
 import { Stack } from "expo-router";
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { HeroUINativeProvider } from "heroui-native";
 import { useEffect, type JSX } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, StatusBar, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DatabaseProvider } from '@/db';
 import { useAuth, setQueryClientRef } from '@/stores/useAuth';
+import { useThemeStore } from '@/stores/useThemeStore';
 import { isApiError } from '@/api/ApiError';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { getNavigationTheme } from '@/utils/navigationTheme';
+import OfflineBanner from '@/components/common/OfflineBanner';
 
 import "../global.css";
 
@@ -26,7 +28,9 @@ const queryClient = new QueryClient({
 export default function RootLayout(): JSX.Element {
     const token = useAuth((s) => s.token);
     const hasHydrated = useAuth((s) => s.hasHydrated);
+    const isDarkMode = useThemeStore((s) => s.isDarkMode);
     const session = !!token;
+    const navigationTheme = getNavigationTheme(isDarkMode);
 
     useEffect(() => {
         setQueryClientRef(queryClient);
@@ -38,7 +42,10 @@ export default function RootLayout(): JSX.Element {
                 <HeroUINativeProvider>
                     <QueryClientProvider client={queryClient}>
                         <DatabaseProvider>
-                            <StatusBar />
+                            <StatusBar
+                                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                                backgroundColor={navigationTheme.background}
+                            />
                             <ErrorBoundary>
                                 {!hasHydrated ? (
                                     <View className="flex-1 items-center justify-center bg-background">
@@ -54,6 +61,7 @@ export default function RootLayout(): JSX.Element {
                                         </Stack.Protected>
                                     </Stack>
                                 )}
+                                <OfflineBanner />
                             </ErrorBoundary>
                         </DatabaseProvider>
                     </QueryClientProvider>
