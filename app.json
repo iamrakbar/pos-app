@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "pos-app",
-    "slug": "pos-app",
-    "version": "1.0.0",
+    "name": "SOEAT POS",
+    "slug": "soeat-pos",
+    "version": "0.0.1",
     "orientation": "landscape",
     "icon": "./assets/images/icon.png",
-    "scheme": "heroui-native-app",
+    "scheme": "soeat-pos",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
