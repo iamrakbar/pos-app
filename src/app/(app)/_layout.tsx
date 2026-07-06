@@ -1,11 +1,9 @@
 import { Drawer } from 'expo-router/drawer';
 import AppDrawerContent from '@/components/navigation/AppDrawerContent';
-import { useThemeStore } from '@/stores/useThemeStore';
-import { getNavigationTheme } from '@/utils/navigationTheme';
+import { useNavigationTheme } from '@/utils/navigationTheme';
 
 export default function AppLayout() {
-    const isDarkMode = useThemeStore((s) => s.isDarkMode);
-    const theme = getNavigationTheme(isDarkMode);
+    const theme = useNavigationTheme();
 
     return (
         <Drawer
@@ -23,7 +21,7 @@ export default function AppLayout() {
                 drawerActiveTintColor: theme.foreground,
                 drawerInactiveTintColor: theme.muted,
                 headerStyle: {
-                    backgroundColor: theme.background,
+                    backgroundColor: theme.surface,
                 },
                 headerTintColor: theme.foreground,
                 sceneStyle: {

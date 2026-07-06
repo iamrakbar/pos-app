@@ -22,7 +22,7 @@ export default function CartPanel(): JSX.Element {
     const subtotal = totalPrice();
 
     return (
-        <View className="flex-1 bg-background border-l border-border">
+        <View className="flex-1 bg-surface border-l border-border">
             {/* Header */}
             <View className="flex-row items-center justify-between h-18 px-5">
                 <Typography.Heading type="h6" className="text-foreground">
@@ -67,7 +67,7 @@ export default function CartPanel(): JSX.Element {
             </ScrollView>
 
             {/* Footer */}
-            <View className="px-5 py-4 bg-surface-secondary gap-3">
+            <View className="px-5 py-4 gap-3">
                 <View className="flex-row items-center justify-between">
                     <Typography type="body-sm" color="muted">Subtotal</Typography>
                     <Typography weight="semibold" className="tabular-nums">

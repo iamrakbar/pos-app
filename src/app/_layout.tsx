@@ -13,7 +13,7 @@ import { useAuth, setQueryClientRef } from '@/stores/useAuth';
 import { useThemeStore } from '@/stores/useThemeStore';
 import { isApiError } from '@/api/ApiError';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { getNavigationTheme } from '@/utils/navigationTheme';
+import { useNavigationTheme } from '@/utils/navigationTheme';
 import OfflineBanner from '@/components/common/OfflineBanner';
 
 import "../global.css";
@@ -32,7 +32,7 @@ export default function RootLayout(): JSX.Element {
     const hasHydrated = useAuth((s) => s.hasHydrated);
     const isDarkMode = useThemeStore((s) => s.isDarkMode);
     const session = !!token;
-    const navigationTheme = getNavigationTheme(isDarkMode);
+    const navigationTheme = useNavigationTheme();
 
     useEffect(() => {
         setQueryClientRef(queryClient);

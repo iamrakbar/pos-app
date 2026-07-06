@@ -21,13 +21,13 @@ export default function SearchBar(): JSX.Element {
         : undefined;
 
     return (
-        <View className="flex-row items-center gap-4 px-5 py-4 bg-background">
+        <View className="flex-row items-center gap-4 px-5 py-4 bg-surface border-b border-border">
             <DrawerMenuButton />
             <View className="flex-1">
                 <SearchField value={searchQuery} onChange={setSearchQuery}>
                     <SearchField.Group>
                         <SearchField.SearchIcon />
-                        <SearchField.Input placeholder="Search products" />
+                        <SearchField.Input placeholder="Search products" className="bg-background" />
                         <SearchField.ClearButton />
                     </SearchField.Group>
                 </SearchField>
@@ -37,7 +37,7 @@ export default function SearchBar(): JSX.Element {
                     value={selectedCategoryOption}
                     onValueChange={(opt) => setCategoryId(opt?.value ?? null)}
                 >
-                    <Select.Trigger>
+                    <Select.Trigger className="bg-background">
                         <Select.Value placeholder="Select category" />
                         <Select.TriggerIndicator />
                     </Select.Trigger>

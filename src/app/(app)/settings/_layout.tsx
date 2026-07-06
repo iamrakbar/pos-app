@@ -1,18 +1,16 @@
 import { Stack } from 'expo-router';
-import { useThemeStore } from '@/stores/useThemeStore';
-import { getNavigationTheme } from '@/utils/navigationTheme';
+import { useNavigationTheme } from '@/utils/navigationTheme';
 import DrawerMenuButton from '@/components/navigation/DrawerMenuButton';
 
 export default function SettingsLayout() {
-    const isDarkMode = useThemeStore((s) => s.isDarkMode);
-    const theme = getNavigationTheme(isDarkMode);
+    const theme = useNavigationTheme();
 
     return (
         <Stack
             screenOptions={{
                 headerBackTitle: '',
                 headerStyle: {
-                    backgroundColor: theme.background,
+                    backgroundColor: theme.surface,
                 },
                 headerTintColor: theme.foreground,
                 headerTitleStyle: {

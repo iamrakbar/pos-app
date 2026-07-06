@@ -32,10 +32,10 @@ export default function SignInScreen(): JSX.Element {
         <>
             <KeyboardAwareScrollView bottomOffset={62} contentContainerClassName="flex-1">
                 <View className="flex-1 bg-background justify-center px-4">
-                    <Card className="items-center gap-4 md:gap-6 w-full max-w-md self-center">
+                    <Card className="items-center py-10 gap-4 md:gap-6 w-full max-w-md self-center">
                         <Logo tintColor={themeColorAccent} />
 
-                        <View className="w-full gap-1">
+                        <View className="w-full gap-1 mt-5">
                             <Controller
                                 control={control}
                                 name="email"
