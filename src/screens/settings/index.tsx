@@ -32,6 +32,13 @@ const SETTINGS_ITEMS: SettingsItem[] = [
         label: t('settings.receipt'),
         description: t('settings.receiptDescription'),
     },
+    {
+        id: 'updates',
+        href: '/settings/updates',
+        icon: 'cloud-download-outline',
+        label: t('settings.updates'),
+        description: t('settings.updatesDescription'),
+    },
 ];
 
 export default function SettingsScreen(): JSX.Element {

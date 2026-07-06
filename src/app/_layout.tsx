@@ -15,6 +15,7 @@ import { isApiError } from '@/api/ApiError';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useNavigationTheme } from '@/utils/navigationTheme';
 import OfflineBanner from '@/components/common/OfflineBanner';
+import AppUpdateManager from '@/components/common/AppUpdateManager';
 
 import "../global.css";
 
@@ -76,6 +77,7 @@ export default function RootLayout(): JSX.Element {
                                     </Stack>
                                 )}
                                 <OfflineBanner />
+                                <AppUpdateManager mode="banner" />
                             </ErrorBoundary>
                         </DatabaseProvider>
                     </QueryClientProvider>

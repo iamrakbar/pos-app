@@ -13,6 +13,8 @@ export const en = {
         printerDescription: 'Configure thermal printer connection and paper size',
         receipt: 'Receipt',
         receiptDescription: 'Customize receipt layout, store info, and footer',
+        updates: 'App Updates',
+        updatesDescription: 'Check for app updates and restart when a new version is ready',
         darkMode: 'Dark Mode',
         darkModeDescription: 'Use the dark color theme on this device',
         language: 'Language',

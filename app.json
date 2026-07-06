@@ -60,7 +60,9 @@
     },
     "owner": "soeat",
     "updates": {
-      "url": "https://u.expo.dev/0757ac22-4f65-452c-a376-ffdd8b4e290e"
+      "url": "https://u.expo.dev/0757ac22-4f65-452c-a376-ffdd8b4e290e",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   }
 }

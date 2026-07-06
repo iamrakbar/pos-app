@@ -27,6 +27,7 @@ export default function SettingsLayout() {
             }} />
             <Stack.Screen name="printer" options={{ title: 'Printer' }} />
             <Stack.Screen name="receipt" options={{ title: 'Receipt Setup' }} />
+            <Stack.Screen name="updates" options={{ title: 'App Updates' }} />
         </Stack>
     );
 }
