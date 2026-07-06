@@ -269,7 +269,7 @@ export default function CheckoutModal(): JSX.Element {
                                         if (opt) setValue('order_type', opt.value as 'dine-in' | 'takeaway');
                                     }}
                                 >
-                                    <Select.Trigger className="border border-border rounded-xl h-11 px-3 flex-row items-center justify-between bg-background">
+                                    <Select.Trigger>
                                         <Select.Value placeholder="Pilih jenis" />
                                         <Select.TriggerIndicator />
                                     </Select.Trigger>
@@ -297,7 +297,7 @@ export default function CheckoutModal(): JSX.Element {
                                         }
                                         onValueChange={(opt) => setValue('table_id', opt?.value ?? null)}
                                     >
-                                        <Select.Trigger className="border border-border rounded-xl h-11 px-3 flex-row items-center justify-between bg-background">
+                                        <Select.Trigger>
                                             <Select.Value placeholder="Pilih salah satu opsi" />
                                             <Select.TriggerIndicator />
                                         </Select.Trigger>

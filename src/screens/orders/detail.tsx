@@ -338,7 +338,7 @@ export default function OrderDetailScreen() {
             <Dialog isOpen={isQrOpen && canShowQr} onOpenChange={setIsQrOpen}>
                 <Dialog.Portal>
                     <Dialog.Overlay />
-                    <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center bg-background p-0">
+                    <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center bg-background p-0 overflow-hidden">
                         <View className="flex-row justify-between gap-4 bg-surface p-4">
                             <View className="gap-0.5">
                                 <Dialog.Title>QRIS Payment</Dialog.Title>
