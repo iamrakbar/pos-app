@@ -1,0 +1,212 @@
+{
+  "name": "heroui-native-pro",
+  "version": "1.0.0-beta.5",
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/src/index.d.ts",
+      "default": "./lib/module/index.js"
+    },
+    "./styles": "./lib/module/styles/index.css",
+    "./package.json": "./package.json",
+    "./hooks": {
+      "types": "./lib/typescript/src/helpers/external/hooks/index.d.ts",
+      "default": "./lib/module/helpers/external/hooks/index.js"
+    },
+    "./utils": {
+      "types": "./lib/typescript/src/helpers/external/utils/index.d.ts",
+      "default": "./lib/module/helpers/external/utils/index.js"
+    },
+    "./area-chart": {
+      "types": "./lib/typescript/src/components/area-chart/index.d.ts",
+      "default": "./lib/module/components/area-chart/index.js"
+    },
+    "./badge": {
+      "types": "./lib/typescript/src/components/badge/index.d.ts",
+      "default": "./lib/module/components/badge/index.js"
+    },
+    "./bar-chart": {
+      "types": "./lib/typescript/src/components/bar-chart/index.d.ts",
+      "default": "./lib/module/components/bar-chart/index.js"
+    },
+    "./calendar": {
+      "types": "./lib/typescript/src/components/calendar/index.d.ts",
+      "default": "./lib/module/components/calendar/index.js"
+    },
+    "./calendar-year-picker": {
+      "types": "./lib/typescript/src/components/calendar-year-picker/index.d.ts",
+      "default": "./lib/module/components/calendar-year-picker/index.js"
+    },
+    "./chart-crosshair": {
+      "types": "./lib/typescript/src/components/chart-crosshair/index.d.ts",
+      "default": "./lib/module/components/chart-crosshair/index.js"
+    },
+    "./chart-indicator": {
+      "types": "./lib/typescript/src/components/chart-indicator/index.d.ts",
+      "default": "./lib/module/components/chart-indicator/index.js"
+    },
+    "./chart-tooltip": {
+      "types": "./lib/typescript/src/components/chart-tooltip/index.d.ts",
+      "default": "./lib/module/components/chart-tooltip/index.js"
+    },
+    "./composed-chart": {
+      "types": "./lib/typescript/src/components/composed-chart/index.d.ts",
+      "default": "./lib/module/components/composed-chart/index.js"
+    },
+    "./date-field": {
+      "types": "./lib/typescript/src/components/date-field/index.d.ts",
+      "default": "./lib/module/components/date-field/index.js"
+    },
+    "./date-picker": {
+      "types": "./lib/typescript/src/components/date-picker/index.d.ts",
+      "default": "./lib/module/components/date-picker/index.js"
+    },
+    "./date-range-picker": {
+      "types": "./lib/typescript/src/components/date-range-picker/index.d.ts",
+      "default": "./lib/module/components/date-range-picker/index.js"
+    },
+    "./date-time-picker": {
+      "types": "./lib/typescript/src/components/date-time-picker/index.d.ts",
+      "default": "./lib/module/components/date-time-picker/index.js"
+    },
+    "./empty-state": {
+      "types": "./lib/typescript/src/components/empty-state/index.d.ts",
+      "default": "./lib/module/components/empty-state/index.js"
+    },
+    "./line-chart": {
+      "types": "./lib/typescript/src/components/line-chart/index.d.ts",
+      "default": "./lib/module/components/line-chart/index.js"
+    },
+    "./number-field": {
+      "types": "./lib/typescript/src/components/number-field/index.d.ts",
+      "default": "./lib/module/components/number-field/index.js"
+    },
+    "./number-pad": {
+      "types": "./lib/typescript/src/components/number-pad/index.d.ts",
+      "default": "./lib/module/components/number-pad/index.js"
+    },
+    "./number-stepper": {
+      "types": "./lib/typescript/src/components/number-stepper/index.d.ts",
+      "default": "./lib/module/components/number-stepper/index.js"
+    },
+    "./number-value": {
+      "types": "./lib/typescript/src/components/number-value/index.d.ts",
+      "default": "./lib/module/components/number-value/index.js"
+    },
+    "./pie-chart": {
+      "types": "./lib/typescript/src/components/pie-chart/index.d.ts",
+      "default": "./lib/module/components/pie-chart/index.js"
+    },
+    "./progress-bar": {
+      "types": "./lib/typescript/src/components/progress-bar/index.d.ts",
+      "default": "./lib/module/components/progress-bar/index.js"
+    },
+    "./progress-button": {
+      "types": "./lib/typescript/src/components/progress-button/index.d.ts",
+      "default": "./lib/module/components/progress-button/index.js"
+    },
+    "./progress-circle": {
+      "types": "./lib/typescript/src/components/progress-circle/index.d.ts",
+      "default": "./lib/module/components/progress-circle/index.js"
+    },
+    "./radar-chart": {
+      "types": "./lib/typescript/src/components/radar-chart/index.d.ts",
+      "default": "./lib/module/components/radar-chart/index.js"
+    },
+    "./radial-chart": {
+      "types": "./lib/typescript/src/components/radial-chart/index.d.ts",
+      "default": "./lib/module/components/radial-chart/index.js"
+    },
+    "./radio-button-group": {
+      "types": "./lib/typescript/src/components/radio-button-group/index.d.ts",
+      "default": "./lib/module/components/radio-button-group/index.js"
+    },
+    "./range-calendar": {
+      "types": "./lib/typescript/src/components/range-calendar/index.d.ts",
+      "default": "./lib/module/components/range-calendar/index.js"
+    },
+    "./rating": {
+      "types": "./lib/typescript/src/components/rating/index.d.ts",
+      "default": "./lib/module/components/rating/index.js"
+    },
+    "./segment": {
+      "types": "./lib/typescript/src/components/segment/index.d.ts",
+      "default": "./lib/module/components/segment/index.js"
+    },
+    "./slide-button": {
+      "types": "./lib/typescript/src/components/slide-button/index.d.ts",
+      "default": "./lib/module/components/slide-button/index.js"
+    },
+    "./social-auth-button": {
+      "types": "./lib/typescript/src/components/social-auth-button/index.d.ts",
+      "default": "./lib/module/components/social-auth-button/index.js"
+    },
+    "./split-view": {
+      "types": "./lib/typescript/src/components/split-view/index.d.ts",
+      "default": "./lib/module/components/split-view/index.js"
+    },
+    "./stepper": {
+      "types": "./lib/typescript/src/components/stepper/index.d.ts",
+      "default": "./lib/module/components/stepper/index.js"
+    },
+    "./time-picker": {
+      "types": "./lib/typescript/src/components/time-picker/index.d.ts",
+      "default": "./lib/module/components/time-picker/index.js"
+    },
+    "./toggle-button": {
+      "types": "./lib/typescript/src/components/toggle-button/index.d.ts",
+      "default": "./lib/module/components/toggle-button/index.js"
+    },
+    "./toggle-button-group": {
+      "types": "./lib/typescript/src/components/toggle-button-group/index.d.ts",
+      "default": "./lib/module/components/toggle-button-group/index.js"
+    },
+    "./trend-chip": {
+      "types": "./lib/typescript/src/components/trend-chip/index.d.ts",
+      "default": "./lib/module/components/trend-chip/index.js"
+    },
+    "./wheel-date-time-picker": {
+      "types": "./lib/typescript/src/components/wheel-date-time-picker/index.d.ts",
+      "default": "./lib/module/components/wheel-date-time-picker/index.js"
+    },
+    "./wheel-picker": {
+      "types": "./lib/typescript/src/components/wheel-picker/index.d.ts",
+      "default": "./lib/module/components/wheel-picker/index.js"
+    },
+    "./wheel-picker-group": {
+      "types": "./lib/typescript/src/components/wheel-picker-group/index.d.ts",
+      "default": "./lib/module/components/wheel-picker-group/index.js"
+    },
+    "./wheel-time-picker": {
+      "types": "./lib/typescript/src/components/wheel-time-picker/index.d.ts",
+      "default": "./lib/module/components/wheel-time-picker/index.js"
+    },
+    "./widget": {
+      "types": "./lib/typescript/src/components/widget/index.d.ts",
+      "default": "./lib/module/components/widget/index.js"
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@internationalized/date": "^3.12.0",
+    "@internationalized/number": "^3.6.6",
+    "@shopify/react-native-skia": ">=2.0.0",
+    "heroui-native": "^1.0.4",
+    "victory-native": "^41.20.2"
+  },
+  "peerDependenciesMeta": {
+    "@internationalized/date": {
+      "optional": true
+    },
+    "@internationalized/number": {
+      "optional": true
+    },
+    "@shopify/react-native-skia": {
+      "optional": true
+    },
+    "victory-native": {
+      "optional": true
+    }
+  }
+}
