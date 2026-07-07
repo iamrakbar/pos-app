@@ -33,7 +33,7 @@ export default function POSScreen(): JSX.Element {
     };
 
     return (
-        <View className="flex-1 flex-row">
+        <View className="flex-1 flex-row p-safe">
             {/* Product catalog */}
             <View className="flex-1 bg-background">
                 <SearchBar />

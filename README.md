@@ -1,44 +1,157 @@
-# Welcome to your HeroUI Native app 👋
+# Soeat POS
 
-This is an [Expo](https://expo.dev) project preconfigured with
-[HeroUI Native](https://heroui.com/docs/native), [Uniwind](https://docs.uniwind.dev)
-(Tailwind CSS for React Native), and [Expo Router](https://docs.expo.dev/router/introduction).
+Soeat POS is an Expo React Native point-of-sale app for Android and iOS. It uses Expo Router, HeroUI Native, Uniwind, local SQLite storage, and thermal printer integration for receipt printing.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- Expo SDK 57 with development client builds
+- React 19 and React Native 0.86
+- Expo Router for file-based navigation
+- HeroUI Native and HeroUI Native Pro for app UI
+- Uniwind and Tailwind CSS for styling
+- Drizzle ORM with Expo SQLite
+- Zustand for local state
+- `@haroldtran/react-native-thermal-printer` for BLE, USB, and network printers
+- EAS Build and Expo Updates for distribution
 
-   ```bash
-   npm install
-   ```
+## Setup
 
-2. Start the app
+Install dependencies:
 
-   ```bash
-   npx expo start
-   ```
+```sh
+npm install
+```
 
-In the output, you'll find options to open the app in a
+Create local env files from the examples:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+```sh
+cp .env.development.example .env.development
+cp .env.preview.example .env.preview
+cp .env.production.example .env.production
+```
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Local `.env.*` files are ignored by git. Keep real API hosts, credentials, and device-specific values in those files or in EAS environment variables.
 
-## What's preconfigured
+## Environment Variants
 
-- **HeroUI Native** (`heroui-native`) wrapped in `HeroUINativeProvider` and `GestureHandlerRootView` in `src/app/_layout.tsx`
-- **Uniwind** + **Tailwind CSS** wired through `metro.config.js` and `src/global.css`
-- All HeroUI Native mandatory peer dependencies: `react-native-reanimated`, `react-native-gesture-handler`, `react-native-worklets`, `react-native-safe-area-context`, `react-native-svg`, `react-native-screens`
-- `@gorhom/bottom-sheet` for bottom-sheet UIs
-- TypeScript with `strict: true` and `@/*` path alias to `./src/*`
-- React Compiler enabled
+The app supports three build variants:
 
-## Learn more
+| Variant     | App name            | Android package / iOS bundle ID | Scheme              |
+| ----------- | ------------------- | ------------------------------- | ------------------- |
+| development | Soeat POS (Dev)     | `id.soeat.pos.dev`              | `soeat-pos-dev`     |
+| preview     | Soeat POS (Preview) | `id.soeat.pos.preview`          | `soeat-pos-preview` |
+| production  | Soeat POS           | `id.soeat.pos`                  | `soeat-pos`         |
 
-- [HeroUI Native components](https://heroui.com/docs/native) — full component reference
-- [Expo documentation](https://docs.expo.dev/) — Expo fundamentals and guides
-- [Uniwind documentation](https://docs.uniwind.dev) — Tailwind for React Native
-- [Expo Router](https://docs.expo.dev/router/introduction) — file-based routing
+Variant config is resolved in `app.config.js` from `APP_VARIANT`.
+
+Env loading order for local scripts:
+
+1. `.env`
+2. `.env.<variant>`
+3. Existing shell or EAS env values
+
+This means explicit shell values and EAS profile values stay authoritative.
+
+## Run Locally
+
+Start the dev client bundler:
+
+```sh
+npm run start:dev
+npm run start:preview
+npm run start:prod
+```
+
+Run native builds locally:
+
+```sh
+npm run android:dev
+npm run android:preview
+npm run android:prod
+
+npm run ios:dev
+npm run ios:preview
+npm run ios:prod
+```
+
+Inspect resolved Expo config:
+
+```sh
+npm run config:dev
+npm run config:preview
+npm run config:prod
+```
+
+## EAS Builds
+
+Build Android:
+
+```sh
+npm run build:android:dev
+npm run build:android:preview
+npm run build:android:prod
+```
+
+Build iOS:
+
+```sh
+npm run build:ios:dev
+npm run build:ios:preview
+npm run build:ios:prod
+```
+
+Build both platforms:
+
+```sh
+npm run build:dev
+npm run build:preview
+npm run build:prod
+```
+
+Development and preview Android builds produce APKs for internal testing. Production Android builds produce an app bundle.
+
+## Printer Support
+
+The printer settings screen supports:
+
+- BLE, USB, and network printer modes
+- Permission request and recovery flows through HeroUI Native dialogs
+- Bluetooth settings deep link on Android through `expo-intent-launcher`
+- Saved printer selection and paper width
+- Test printing from settings
+- Receipt printing from order detail after printer setup is complete
+
+Bluetooth cannot be force-enabled directly by the app on modern Android. The app can request permissions and send the user to Bluetooth settings.
+
+Required native permissions and usage strings are configured in `app.config.js`.
+
+## Validation
+
+Run type checking:
+
+```sh
+npm run typecheck
+```
+
+Run linting:
+
+```sh
+npm run lint
+```
+
+Check formatting:
+
+```sh
+npm run format:check
+```
+
+## Project Layout
+
+- `src/app`: Expo Router routes and layouts
+- `src/screens`: screen-level UI and workflows
+- `src/stores`: Zustand stores
+- `src/db`: SQLite and Drizzle setup
+- `src/types`: local type declarations
+- `scripts/with-env.js`: variant-aware env loader for local commands
+- `app.config.js`: dynamic Expo app config
+- `eas.json`: EAS build profiles

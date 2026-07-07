@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
+      "@haroldtran/react-native-thermal-printer": ["./src/types/react-native-thermal-printer"],
       "@/*": ["./src/*"],
       "@/assets/*": ["./assets/*"]
     }
