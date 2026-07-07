@@ -5,26 +5,24 @@ const BUILD_VARIANTS = {
   development: {
     appName: "Soeat POS (Dev)",
     packageName: "id.soeat.pos.dev",
-    slug: "soeat-pos-dev",
     scheme: "soeat-pos-dev",
     backgroundColor: "#b91c1c",
   },
   preview: {
     appName: "Soeat POS (Preview)",
     packageName: "id.soeat.pos.preview",
-    slug: "soeat-pos-preview",
     scheme: "soeat-pos-preview",
     backgroundColor: "#64748b",
   },
   production: {
     appName: "Soeat POS",
     packageName: "id.soeat.pos",
-    slug: "soeat-pos",
     scheme: "soeat-pos",
     backgroundColor: "#0bb7cc",
   },
 };
 
+const EXPO_PROJECT_SLUG = "soeat-pos";
 const variantName = process.env.APP_VARIANT || "development";
 const resolvedVariantName = BUILD_VARIANTS[variantName] ? variantName : "development";
 const variant = BUILD_VARIANTS[resolvedVariantName];
@@ -63,7 +61,7 @@ loadEnvFile(`.env.${resolvedVariantName}`);
 module.exports = {
   expo: {
     name: variant.appName,
-    slug: variant.slug,
+    slug: EXPO_PROJECT_SLUG,
     version: "0.0.1",
     orientation: "landscape",
     icon: "./assets/images/icon.png",

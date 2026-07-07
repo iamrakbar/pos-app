@@ -19,7 +19,7 @@ Soeat POS is an Expo React Native point-of-sale app for Android and iOS. It uses
 Install dependencies:
 
 ```sh
-npm install
+bun install
 ```
 
 Create local env files from the examples:
@@ -43,6 +43,7 @@ The app supports three build variants:
 | production  | Soeat POS           | `id.soeat.pos`                  | `soeat-pos`         |
 
 Variant config is resolved in `app.config.js` from `APP_VARIANT`.
+All variants use the same Expo/EAS project slug, `soeat-pos`, because the configured `extra.eas.projectId` belongs to that Expo project. The installed app is separated by native package ID, display name, scheme, channel, and env values.
 
 Env loading order for local scripts:
 
@@ -57,29 +58,29 @@ This means explicit shell values and EAS profile values stay authoritative.
 Start the dev client bundler:
 
 ```sh
-npm run start:dev
-npm run start:preview
-npm run start:prod
+bun run start:dev
+bun run start:preview
+bun run start:prod
 ```
 
 Run native builds locally:
 
 ```sh
-npm run android:dev
-npm run android:preview
-npm run android:prod
+bun run android:dev
+bun run android:preview
+bun run android:prod
 
-npm run ios:dev
-npm run ios:preview
-npm run ios:prod
+bun run ios:dev
+bun run ios:preview
+bun run ios:prod
 ```
 
 Inspect resolved Expo config:
 
 ```sh
-npm run config:dev
-npm run config:preview
-npm run config:prod
+bun run config:dev
+bun run config:preview
+bun run config:prod
 ```
 
 ## EAS Builds
@@ -87,25 +88,25 @@ npm run config:prod
 Build Android:
 
 ```sh
-npm run build:android:dev
-npm run build:android:preview
-npm run build:android:prod
+bun run build:android:dev
+bun run build:android:preview
+bun run build:android:prod
 ```
 
 Build iOS:
 
 ```sh
-npm run build:ios:dev
-npm run build:ios:preview
-npm run build:ios:prod
+bun run build:ios:dev
+bun run build:ios:preview
+bun run build:ios:prod
 ```
 
 Build both platforms:
 
 ```sh
-npm run build:dev
-npm run build:preview
-npm run build:prod
+bun run build:dev
+bun run build:preview
+bun run build:prod
 ```
 
 Development and preview Android builds produce APKs for internal testing. Production Android builds produce an app bundle.
@@ -130,19 +131,19 @@ Required native permissions and usage strings are configured in `app.config.js`.
 Run type checking:
 
 ```sh
-npm run typecheck
+bun run typecheck
 ```
 
 Run linting:
 
 ```sh
-npm run lint
+bun run lint
 ```
 
 Check formatting:
 
 ```sh
-npm run format:check
+bun run format:check
 ```
 
 ## Project Layout
