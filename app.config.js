@@ -6,13 +6,13 @@ const BUILD_VARIANTS = {
     appName: "Soeat POS (Dev)",
     packageName: "id.soeat.pos.dev",
     scheme: "soeat-pos-dev",
-    backgroundColor: "#b91c1c",
+    backgroundColor: "#dc2626",
   },
   preview: {
     appName: "Soeat POS (Preview)",
     packageName: "id.soeat.pos.preview",
     scheme: "soeat-pos-preview",
-    backgroundColor: "#64748b",
+    backgroundColor: "#000000",
   },
   production: {
     appName: "Soeat POS",
@@ -104,6 +104,7 @@ module.exports = {
         "expo-splash-screen",
         {
           image: "./assets/images/splash-icon.png",
+          width: 200,
           resizeMode: "contain",
           backgroundColor: variant.backgroundColor,
         },
