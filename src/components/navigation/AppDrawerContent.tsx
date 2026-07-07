@@ -56,8 +56,8 @@ export default function AppDrawerContent({
     const isOffline = useNetworkStore((s) => s.isOffline);
 
     return (
-        <View className="flex-1 gap-4 py-4 px-3 bg-background">
-            <View className="px-3">
+        <View className="flex-1 gap-4 px-3 py-safe bg-background">
+            <View className="px-3 py-6">
                 <Logo tintColor={themeColorAccent} />
             </View>
 
