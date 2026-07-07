@@ -103,5 +103,15 @@
   },
   "trustedDependencies": [
     "@shopify/react-native-skia"
-  ]
+  ],
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "@haroldtran/react-native-thermal-printer",
+          "react-native-ping"
+        ]
+      }
+    }
+  }
 }
