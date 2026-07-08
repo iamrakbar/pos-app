@@ -1,9 +1,9 @@
-import { useCartStore } from '@/stores/useCartStore';
-import { usePOSStore } from '@/stores/usePOSStore';
-import { createAddOnSchema, type AddOnFormValues } from '@/schemas/addon';
-import type { AddOnGroup, AddOnOption } from '@/types/pos';
-import { formatRupiah } from '@/utils/format';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useCartStore } from "@/stores/useCartStore";
+import { usePOSStore } from "@/stores/usePOSStore";
+import { createAddOnSchema, type AddOnFormValues } from "@/schemas/addon";
+import type { AddOnGroup, AddOnOption } from "@/types/pos";
+import { formatRupiah } from "@/utils/format";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Button,
     Checkbox,
@@ -15,15 +15,17 @@ import {
     Surface,
     ControlField,
     Label,
-} from 'heroui-native';
-import type { JSX } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
-import React, { useMemo, useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+    FieldError,
+    Description,
+} from "heroui-native";
+import type { JSX } from "react";
+import { ScrollView, View, useWindowDimensions } from "react-native";
+import React, { useMemo, useEffect, useState } from "react";
+import { useForm, Controller, type Control } from "react-hook-form";
 
 function constraintLabel(group: AddOnGroup): string {
     if (!group.required) {
-        return `Opsional${group.max > 0 ? `, maks. ${group.max}` : ''}`;
+        return `Opsional${group.max > 0 ? `, maks. ${group.max}` : ""}`;
     }
     return `Wajib, min. ${group.min}, pilih ${group.max}`;
 }
@@ -31,6 +33,76 @@ function constraintLabel(group: AddOnGroup): string {
 function optionLabel(option: AddOnOption): string {
     if (option.price === 0) return `${option.name} +Rp0`;
     return `${option.name} +${formatRupiah(option.price)}`;
+}
+
+type AddOnSelectionControlProps = {
+    control: Control<AddOnFormValues>;
+    group: AddOnGroup;
+};
+
+function AddOnRadioGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
+    return (
+        <Controller
+            control={control}
+            name={`radioSelections.${group.id}`}
+            render={({ field }) => (
+                <ControlField>
+                    <Surface className="py-5 w-full">
+                        <RadioGroup value={field.value ?? ""} onValueChange={field.onChange}>
+                            {group.options.map((option, index) => (
+                                <React.Fragment key={option.id}>
+                                    {index > 0 && <Separator className="my-1" />}
+                                    <RadioGroup.Item value={option.id}>{optionLabel(option)}</RadioGroup.Item>
+                                </React.Fragment>
+                            ))}
+                        </RadioGroup>
+                    </Surface>
+                </ControlField>
+            )}
+        />
+    );
+}
+
+function AddOnCheckboxGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
+    return (
+        <Controller
+            control={control}
+            name={`checkboxSelections.${group.id}`}
+            render={({ field }) => {
+                const selected: string[] = field.value ?? [];
+                return (
+                    <Surface className="py-5 w-full">
+                        {group.options.map((option, index) => {
+                            const isSelected = selected.includes(option.id);
+                            const maxReached = !isSelected && selected.length >= group.max;
+                            return (
+                                <React.Fragment key={option.id}>
+                                    {index > 0 && <Separator className="my-4" />}
+                                    <ControlField
+                                        isSelected={isSelected}
+                                        isDisabled={maxReached}
+                                        onSelectedChange={() => {
+                                            const next = isSelected
+                                                ? selected.filter((id) => id !== option.id)
+                                                : [...selected, option.id];
+                                            field.onChange(next);
+                                        }}
+                                    >
+                                        <View className="flex-1">
+                                            <Label>{optionLabel(option)}</Label>
+                                        </View>
+                                        <ControlField.Indicator>
+                                            <Checkbox className="mt-0.5" />
+                                        </ControlField.Indicator>
+                                    </ControlField>
+                                </React.Fragment>
+                            );
+                        })}
+                    </Surface>
+                );
+            }}
+        />
+    );
 }
 
 export default function AddOnModal(): JSX.Element {
@@ -44,7 +116,7 @@ export default function AddOnModal(): JSX.Element {
     const removeItem = useCartStore((s) => s.removeItem);
 
     const { height: windowHeight } = useWindowDimensions();
-    const isOpen = modal === 'addon';
+    const isOpen = modal === "addon";
 
     const dialogMaxHeight = windowHeight * 0.88;
     const scrollMaxHeight = dialogMaxHeight - 220;
@@ -52,8 +124,7 @@ export default function AddOnModal(): JSX.Element {
 
     const schema = useMemo(
         () => createAddOnSchema(product?.add_ons ?? []),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [product?.id],
+        [product?.add_ons]
     );
 
     const {
@@ -63,12 +134,12 @@ export default function AddOnModal(): JSX.Element {
         formState: { errors },
     } = useForm<AddOnFormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { radioSelections: {}, checkboxSelections: {}, notes: '' },
+        defaultValues: { radioSelections: {}, checkboxSelections: {}, notes: "" },
     });
 
     useEffect(() => {
         if (!isOpen) {
-            reset({ radioSelections: {}, checkboxSelections: {}, notes: '' });
+            reset({ radioSelections: {}, checkboxSelections: {}, notes: "" });
             return;
         }
         if (editingCartItemId && product) {
@@ -86,7 +157,7 @@ export default function AddOnModal(): JSX.Element {
                         if (first) radioSelections[ao.id] = first.id;
                     }
                 });
-                reset({ radioSelections, checkboxSelections, notes: existing.notes ?? '' });
+                reset({ radioSelections, checkboxSelections, notes: existing.notes ?? "" });
             }
         }
     }, [isOpen, editingCartItemId, cartProducts, product, reset]);
@@ -124,7 +195,7 @@ export default function AddOnModal(): JSX.Element {
     };
 
     const onInvalid = () => {
-        setSubmitError('Lengkapi pilihan add-on yang wajib diisi sebelum menambahkan produk.');
+        setSubmitError("Lengkapi pilihan add-on yang wajib diisi sebelum menambahkan produk.");
     };
 
     return (
@@ -145,7 +216,7 @@ export default function AddOnModal(): JSX.Element {
                     style={{ maxHeight: dialogMaxHeight }}
                 >
                     <View className="flex-row justify-between gap-4 bg-surface p-4">
-                        <View >
+                        <View>
                             <Dialog.Title>{product.name}</Dialog.Title>
                             <Typography className="text-sm text-muted-foreground">
                                 {formatRupiah(product.price)}
@@ -160,7 +231,7 @@ export default function AddOnModal(): JSX.Element {
                         showsVerticalScrollIndicator
                         keyboardShouldPersistTaps="handled"
                         style={{ maxHeight: scrollMaxHeight }}
-                        contentContainerClassName='p-4 gap-4 bg-background'
+                        contentContainerClassName="p-4 gap-6 bg-background"
                     >
                         {submitError && (
                             <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
@@ -169,78 +240,26 @@ export default function AddOnModal(): JSX.Element {
                         )}
 
                         {product.add_ons.map((group) => (
-                            <View key={group.id} className="gap-4">
-                                <Typography className="text-sm font-semibold text-foreground">
-                                    {group.name}
-                                    {group.required && <Typography className="text-danger"> *</Typography>}
-                                </Typography>
-
+                            <View key={group.id} className="gap-2">
+                                <View className="flex-row items-center justify-between gap-2">
+                                    <Label isRequired={group.required}>
+                                        <Label.Text>{group.name}</Label.Text>
+                                    </Label>
+                                    <Description>{constraintLabel(group)}</Description>
+                                </View>
                                 {!group.multiple ? (
-                                    <Controller
-                                        control={control}
-                                        name={`radioSelections.${group.id}`}
-                                        render={({ field }) => (
-                                            <Surface className="py-5 w-full">
-                                                <RadioGroup value={field.value ?? ''} onValueChange={field.onChange}>
-                                                    {group.options.map((option, index) => (
-                                                        <React.Fragment key={option.id}>
-                                                            {index > 0 && <Separator className="my-1" />}
-                                                            <RadioGroup.Item value={option.id}>
-                                                                {optionLabel(option)}
-                                                            </RadioGroup.Item>
-                                                        </React.Fragment>
-                                                    ))}
-                                                </RadioGroup>
-                                            </Surface>
-
-                                        )}
-                                    />
+                                    <AddOnRadioGroup control={control} group={group} />
                                 ) : (
-                                    <Controller
-                                        control={control}
-                                        name={`checkboxSelections.${group.id}`}
-                                        render={({ field }) => {
-                                            const selected: string[] = field.value ?? [];
-                                            return (
-                                                <Surface className="py-5 w-full">
-                                                    {group.options.map((option, index) => {
-                                                        const isSelected = selected.includes(option.id);
-                                                        const maxReached = !isSelected && selected.length >= group.max;
-                                                        return (
-                                                            <React.Fragment key={option.id}>
-                                                                {index > 0 && <Separator className="my-4" />}
-                                                                <ControlField
-                                                                    isSelected={isSelected}
-                                                                    isDisabled={maxReached}
-                                                                    onSelectedChange={() => {
-                                                                        const next = isSelected
-                                                                            ? selected.filter((id) => id !== option.id)
-                                                                            : [...selected, option.id];
-                                                                        field.onChange(next);
-                                                                    }}>
-                                                                    <View className="flex-1">
-                                                                        <Label>{optionLabel(option)}</Label>
-                                                                    </View>
-                                                                    <ControlField.Indicator>
-                                                                        <Checkbox className="mt-0.5" />
-                                                                    </ControlField.Indicator>
-                                                                </ControlField>
-                                                            </React.Fragment>
-                                                        );
-                                                    })}
-                                                </Surface>
-                                            );
-                                        }}
-                                    />
+                                    <AddOnCheckboxGroup control={control} group={group} />
                                 )}
-
-                                <Typography className="text-xs text-muted-foreground">{constraintLabel(group)}</Typography>
-                                {(errors.radioSelections?.[group.id] || errors.checkboxSelections?.[group.id]) && (
-                                    <Typography className="text-xs text-danger">
-                                        {errors.radioSelections?.[group.id]?.message ??
-                                            errors.checkboxSelections?.[group.id]?.message}
-                                    </Typography>
-                                )}
+                                <FieldError
+                                    isInvalid={
+                                        !!(errors.radioSelections?.[group.id] || errors.checkboxSelections?.[group.id])
+                                    }
+                                >
+                                    {errors.radioSelections?.[group.id]?.message ??
+                                        errors.checkboxSelections?.[group.id]?.message}
+                                </FieldError>
                             </View>
                         ))}
 
@@ -268,7 +287,7 @@ export default function AddOnModal(): JSX.Element {
                             Batal
                         </Button>
                         <Button className="flex-1" onPress={handleSubmit(onSubmit, onInvalid)}>
-                            {editingCartItemId ? 'Simpan perubahan' : 'Tambahkan ke keranjang'}
+                            {editingCartItemId ? "Simpan perubahan" : "Tambahkan ke keranjang"}
                         </Button>
                     </View>
                 </Dialog.Content>
