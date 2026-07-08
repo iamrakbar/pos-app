@@ -5,293 +5,284 @@ import type { AddOnGroup, AddOnOption } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-    Button,
-    Checkbox,
-    Dialog,
-    RadioGroup,
-    Separator,
-    Typography,
-    TextArea,
-    Surface,
-    ControlField,
-    Label,
-    FieldError,
-    Description,
+  BottomSheet,
+  Button,
+  Checkbox,
+  RadioGroup,
+  Separator,
+  Typography,
+  TextArea,
+  Surface,
+  ControlField,
+  Label,
+  FieldError,
+  Description,
 } from "heroui-native";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import type { JSX } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import { View } from "react-native";
 import React, { useMemo, useEffect, useState } from "react";
 import { useForm, Controller, type Control } from "react-hook-form";
 
 function constraintLabel(group: AddOnGroup): string {
-    if (!group.required) {
-        return `Opsional${group.max > 0 ? `, maks. ${group.max}` : ""}`;
-    }
-    return `Wajib, min. ${group.min}, pilih ${group.max}`;
+  if (!group.required) {
+    return `Opsional${group.max > 0 ? `, maks. ${group.max}` : ""}`;
+  }
+  return `Wajib, min. ${group.min}, pilih ${group.max}`;
 }
 
 function optionLabel(option: AddOnOption): string {
-    if (option.price === 0) return `${option.name} +Rp0`;
-    return `${option.name} +${formatRupiah(option.price)}`;
+  if (option.price === 0) return `${option.name} +Rp0`;
+  return `${option.name} +${formatRupiah(option.price)}`;
 }
 
 type AddOnSelectionControlProps = {
-    control: Control<AddOnFormValues>;
-    group: AddOnGroup;
+  control: Control<AddOnFormValues>;
+  group: AddOnGroup;
 };
 
 function AddOnRadioGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
-    return (
-        <Controller
-            control={control}
-            name={`radioSelections.${group.id}`}
-            render={({ field }) => (
-                <ControlField>
-                    <Surface className="py-5 w-full">
-                        <RadioGroup value={field.value ?? ""} onValueChange={field.onChange}>
-                            {group.options.map((option, index) => (
-                                <React.Fragment key={option.id}>
-                                    {index > 0 && <Separator className="my-1" />}
-                                    <RadioGroup.Item value={option.id}>{optionLabel(option)}</RadioGroup.Item>
-                                </React.Fragment>
-                            ))}
-                        </RadioGroup>
-                    </Surface>
-                </ControlField>
-            )}
-        />
-    );
+  return (
+    <Controller
+      control={control}
+      name={`radioSelections.${group.id}`}
+      render={({ field }) => (
+        <ControlField>
+          <Surface variant="secondary" className="py-3 w-full">
+            <RadioGroup value={field.value ?? ""} onValueChange={field.onChange}>
+              {group.options.map((option, index) => (
+                <React.Fragment key={option.id}>
+                  {index > 0 && <Separator className="my-1 opacity-60" />}
+                  <RadioGroup.Item value={option.id}>{optionLabel(option)}</RadioGroup.Item>
+                </React.Fragment>
+              ))}
+            </RadioGroup>
+          </Surface>
+        </ControlField>
+      )}
+    />
+  );
 }
 
 function AddOnCheckboxGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
-    return (
-        <Controller
-            control={control}
-            name={`checkboxSelections.${group.id}`}
-            render={({ field }) => {
-                const selected: string[] = field.value ?? [];
-                return (
-                    <Surface className="py-5 w-full">
-                        {group.options.map((option, index) => {
-                            const isSelected = selected.includes(option.id);
-                            const maxReached = !isSelected && selected.length >= group.max;
-                            return (
-                                <React.Fragment key={option.id}>
-                                    {index > 0 && <Separator className="my-4" />}
-                                    <ControlField
-                                        isSelected={isSelected}
-                                        isDisabled={maxReached}
-                                        onSelectedChange={() => {
-                                            const next = isSelected
-                                                ? selected.filter((id) => id !== option.id)
-                                                : [...selected, option.id];
-                                            field.onChange(next);
-                                        }}
-                                    >
-                                        <View className="flex-1">
-                                            <Label>{optionLabel(option)}</Label>
-                                        </View>
-                                        <ControlField.Indicator>
-                                            <Checkbox className="mt-0.5" />
-                                        </ControlField.Indicator>
-                                    </ControlField>
-                                </React.Fragment>
-                            );
-                        })}
-                    </Surface>
-                );
-            }}
-        />
-    );
+  return (
+    <Controller
+      control={control}
+      name={`checkboxSelections.${group.id}`}
+      render={({ field }) => {
+        const selected: string[] = field.value ?? [];
+        return (
+          <Surface variant="secondary" className="py-3 w-full">
+            {group.options.map((option, index) => {
+              const isSelected = selected.includes(option.id);
+              const maxReached = !isSelected && selected.length >= group.max;
+              return (
+                <React.Fragment key={option.id}>
+                  {index > 0 && <Separator className="my-3 opacity-60" />}
+                  <ControlField
+                    isSelected={isSelected}
+                    isDisabled={maxReached}
+                    onSelectedChange={() => {
+                      const next = isSelected
+                        ? selected.filter((id) => id !== option.id)
+                        : [...selected, option.id];
+                      field.onChange(next);
+                    }}
+                  >
+                    <View className="flex-1">
+                      <Label>{optionLabel(option)}</Label>
+                    </View>
+                    <ControlField.Indicator>
+                      <Checkbox className="mt-0.5" />
+                    </ControlField.Indicator>
+                  </ControlField>
+                </React.Fragment>
+              );
+            })}
+          </Surface>
+        );
+      }}
+    />
+  );
 }
 
 export default function AddOnModal(): JSX.Element {
-    const modal = usePOSStore((s) => s.modal);
-    const product = usePOSStore((s) => s.selectedProduct);
-    const editingCartItemId = usePOSStore((s) => s.editingCartItemId);
-    const closeModal = usePOSStore((s) => s.closeModal);
+  const modal = usePOSStore((s) => s.modal);
+  const product = usePOSStore((s) => s.selectedProduct);
+  const editingCartItemId = usePOSStore((s) => s.editingCartItemId);
+  const closeModal = usePOSStore((s) => s.closeModal);
 
-    const cartProducts = useCartStore((s) => s.products);
-    const addItem = useCartStore((s) => s.addItem);
-    const removeItem = useCartStore((s) => s.removeItem);
+  const cartProducts = useCartStore((s) => s.products);
+  const addItem = useCartStore((s) => s.addItem);
+  const removeItem = useCartStore((s) => s.removeItem);
 
-    const { height: windowHeight } = useWindowDimensions();
-    const isOpen = modal === "addon";
+  const isOpen = modal === "addon";
 
-    const dialogMaxHeight = windowHeight * 0.88;
-    const scrollMaxHeight = dialogMaxHeight - 220;
-    const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const schema = useMemo(
-        () => createAddOnSchema(product?.add_ons ?? []),
-        [product?.add_ons]
-    );
+  const schema = useMemo(() => createAddOnSchema(product?.add_ons ?? []), [product?.add_ons]);
 
-    const {
-        control,
-        handleSubmit,
-        reset,
-        formState: { errors },
-    } = useForm<AddOnFormValues>({
-        resolver: zodResolver(schema),
-        defaultValues: { radioSelections: {}, checkboxSelections: {}, notes: "" },
-    });
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AddOnFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { radioSelections: {}, checkboxSelections: {}, notes: "" },
+  });
 
-    useEffect(() => {
-        if (!isOpen) {
-            reset({ radioSelections: {}, checkboxSelections: {}, notes: "" });
-            return;
-        }
-        if (editingCartItemId && product) {
-            const existing = cartProducts.find((i) => i.id === editingCartItemId);
-            if (existing) {
-                const radioSelections: Record<string, string> = {};
-                const checkboxSelections: Record<string, string[]> = {};
-                existing.add_ons.forEach((ao) => {
-                    const group = product.add_ons.find((g) => g.id === ao.id);
-                    if (!group) return;
-                    if (group.multiple) {
-                        checkboxSelections[ao.id] = ao.options.map((o) => o.id);
-                    } else {
-                        const first = ao.options[0];
-                        if (first) radioSelections[ao.id] = first.id;
-                    }
-                });
-                reset({ radioSelections, checkboxSelections, notes: existing.notes ?? "" });
-            }
-        }
-    }, [isOpen, editingCartItemId, cartProducts, product, reset]);
-
-    if (!product) return <></>;
-
-    const buildCartAddOns = (values: AddOnFormValues) => {
-        return product.add_ons
-            .map((group) => {
-                const selectedOptionIds = group.multiple
-                    ? (values.checkboxSelections[group.id] ?? [])
-                    : values.radioSelections[group.id]
-                        ? [values.radioSelections[group.id]]
-                        : [];
-                const options = group.options.filter((o) => selectedOptionIds.includes(o.id));
-                if (options.length === 0) return null;
-                return { id: group.id, name: group.name, options };
-            })
-            .filter(Boolean) as { id: string; name: string; options: AddOnOption[] }[];
-    };
-
-    const onSubmit = (values: AddOnFormValues) => {
-        setSubmitError(null);
-        const addOns = buildCartAddOns(values);
-        if (editingCartItemId) removeItem(editingCartItemId);
-        addItem({
-            product_id: product.id,
-            name: product.name,
-            price: product.price,
-            qty: 1,
-            notes: values.notes.trim() || null,
-            add_ons: addOns,
+  useEffect(() => {
+    if (!isOpen) {
+      reset({ radioSelections: {}, checkboxSelections: {}, notes: "" });
+      return;
+    }
+    if (editingCartItemId && product) {
+      const existing = cartProducts.find((i) => i.id === editingCartItemId);
+      if (existing) {
+        const radioSelections: Record<string, string> = {};
+        const checkboxSelections: Record<string, string[]> = {};
+        existing.add_ons.forEach((ao) => {
+          const group = product.add_ons.find((g) => g.id === ao.id);
+          if (!group) return;
+          if (group.multiple) {
+            checkboxSelections[ao.id] = ao.options.map((o) => o.id);
+          } else {
+            const first = ao.options[0];
+            if (first) radioSelections[ao.id] = first.id;
+          }
         });
-        closeModal();
-    };
+        reset({ radioSelections, checkboxSelections, notes: existing.notes ?? "" });
+      }
+    }
+  }, [isOpen, editingCartItemId, cartProducts, product, reset]);
 
-    const onInvalid = () => {
-        setSubmitError("Lengkapi pilihan add-on yang wajib diisi sebelum menambahkan produk.");
-    };
+  if (!product) return <></>;
 
-    return (
-        <Dialog
-            isOpen={isOpen}
-            onOpenChange={(open) => {
-                if (!open) {
-                    setSubmitError(null);
-                    closeModal();
-                }
-            }}
+  const buildCartAddOns = (values: AddOnFormValues) => {
+    return product.add_ons
+      .map((group) => {
+        const selectedOptionIds = group.multiple
+          ? (values.checkboxSelections[group.id] ?? [])
+          : values.radioSelections[group.id]
+            ? [values.radioSelections[group.id]]
+            : [];
+        const options = group.options.filter((o) => selectedOptionIds.includes(o.id));
+        if (options.length === 0) return null;
+        return { id: group.id, name: group.name, options };
+      })
+      .filter(Boolean) as { id: string; name: string; options: AddOnOption[] }[];
+  };
+
+  const onSubmit = (values: AddOnFormValues) => {
+    setSubmitError(null);
+    const addOns = buildCartAddOns(values);
+    if (editingCartItemId) removeItem(editingCartItemId);
+    addItem({
+      product_id: product.id,
+      name: product.name,
+      price: product.price,
+      qty: 1,
+      notes: values.notes.trim() || null,
+      add_ons: addOns,
+    });
+    closeModal();
+  };
+
+  const onInvalid = () => {
+    setSubmitError("Lengkapi pilihan add-on yang wajib diisi sebelum menambahkan produk.");
+  };
+
+  return (
+    <BottomSheet
+      isOpen={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          setSubmitError(null);
+          closeModal();
+        }
+      }}
+    >
+      <BottomSheet.Portal>
+        <BottomSheet.Overlay />
+        <BottomSheet.Content
+          snapPoints={["72%", "92%"]}
+          enableOverDrag={false}
+          enableDynamicSizing={false}
+          keyboardBehavior="extend"
+          contentContainerClassName="h-full"
+          backgroundClassName="bg-background"
         >
-            <Dialog.Portal>
-                <Dialog.Overlay />
-                <Dialog.Content
-                    isSwipeable={false}
-                    className="w-full max-w-3xl self-center bg-background p-0 overflow-hidden"
-                    style={{ maxHeight: dialogMaxHeight }}
+          <View className="flex-row items-start justify-between gap-4 px-5 pb-4 pt-2">
+            <View className="flex-1 gap-1">
+              <BottomSheet.Title>{product.name}</BottomSheet.Title>
+              <BottomSheet.Description>{formatRupiah(product.price)}</BottomSheet.Description>
+            </View>
+            <BottomSheet.Close />
+          </View>
+
+          <BottomSheetScrollView
+            showsVerticalScrollIndicator
+            keyboardShouldPersistTaps="handled"
+            contentContainerClassName="px-5 pb-5 gap-5 bg-background"
+          >
+            {submitError && (
+              <View className="rounded-lg bg-danger/10 px-3 py-3">
+                <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
+              </View>
+            )}
+
+            {product.add_ons.map((group) => (
+              <View key={group.id} className="gap-3">
+                <View className="flex-row items-center justify-between gap-2">
+                  <Label isRequired={group.required}>
+                    <Label.Text>{group.name}</Label.Text>
+                  </Label>
+                  <Description>{constraintLabel(group)}</Description>
+                </View>
+                {!group.multiple ? (
+                  <AddOnRadioGroup control={control} group={group} />
+                ) : (
+                  <AddOnCheckboxGroup control={control} group={group} />
+                )}
+                <FieldError
+                  isInvalid={
+                    !!(errors.radioSelections?.[group.id] || errors.checkboxSelections?.[group.id])
+                  }
                 >
-                    <View className="flex-row justify-between gap-4 bg-surface p-4">
-                        <View>
-                            <Dialog.Title>{product.name}</Dialog.Title>
-                            <Typography className="text-sm text-muted-foreground">
-                                {formatRupiah(product.price)}
-                            </Typography>
-                        </View>
-                        <Dialog.Close />
-                    </View>
+                  {errors.radioSelections?.[group.id]?.message ??
+                    errors.checkboxSelections?.[group.id]?.message}
+                </FieldError>
+              </View>
+            ))}
 
-                    <Separator />
+            <View className="gap-2">
+              <Typography className="text-sm font-semibold text-foreground">Catatan</Typography>
+              <Controller
+                control={control}
+                name="notes"
+                render={({ field }) => (
+                  <TextArea
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    placeholder=""
+                    className="min-h-24"
+                  />
+                )}
+              />
+            </View>
+          </BottomSheetScrollView>
 
-                    <ScrollView
-                        showsVerticalScrollIndicator
-                        keyboardShouldPersistTaps="handled"
-                        style={{ maxHeight: scrollMaxHeight }}
-                        contentContainerClassName="p-4 gap-6 bg-background"
-                    >
-                        {submitError && (
-                            <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
-                                <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
-                            </View>
-                        )}
-
-                        {product.add_ons.map((group) => (
-                            <View key={group.id} className="gap-2">
-                                <View className="flex-row items-center justify-between gap-2">
-                                    <Label isRequired={group.required}>
-                                        <Label.Text>{group.name}</Label.Text>
-                                    </Label>
-                                    <Description>{constraintLabel(group)}</Description>
-                                </View>
-                                {!group.multiple ? (
-                                    <AddOnRadioGroup control={control} group={group} />
-                                ) : (
-                                    <AddOnCheckboxGroup control={control} group={group} />
-                                )}
-                                <FieldError
-                                    isInvalid={
-                                        !!(errors.radioSelections?.[group.id] || errors.checkboxSelections?.[group.id])
-                                    }
-                                >
-                                    {errors.radioSelections?.[group.id]?.message ??
-                                        errors.checkboxSelections?.[group.id]?.message}
-                                </FieldError>
-                            </View>
-                        ))}
-
-                        <View className="gap-2">
-                            <Typography className="text-sm font-semibold text-foreground">Catatan</Typography>
-                            <Controller
-                                control={control}
-                                name="notes"
-                                render={({ field }) => (
-                                    <TextArea
-                                        value={field.value}
-                                        onChangeText={field.onChange}
-                                        placeholder=""
-                                        className="min-h-20"
-                                    />
-                                )}
-                            />
-                        </View>
-                    </ScrollView>
-
-                    <Separator />
-
-                    <View className="flex-row gap-3 bg-surface p-4">
-                        <Button variant="outline" onPress={closeModal}>
-                            Batal
-                        </Button>
-                        <Button className="flex-1" onPress={handleSubmit(onSubmit, onInvalid)}>
-                            {editingCartItemId ? "Simpan perubahan" : "Tambahkan ke keranjang"}
-                        </Button>
-                    </View>
-                </Dialog.Content>
-            </Dialog.Portal>
-        </Dialog>
-    );
+          <View className="flex-row gap-3 bg-surface px-5 py-4">
+            <Button variant="outline" onPress={closeModal}>
+              Batal
+            </Button>
+            <Button className="flex-1" onPress={handleSubmit(onSubmit, onInvalid)}>
+              {editingCartItemId ? "Simpan perubahan" : "Tambahkan ke keranjang"}
+            </Button>
+          </View>
+        </BottomSheet.Content>
+      </BottomSheet.Portal>
+    </BottomSheet>
+  );
 }

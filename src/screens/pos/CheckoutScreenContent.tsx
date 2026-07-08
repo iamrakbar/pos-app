@@ -243,9 +243,9 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
   return (
     <View className="flex-1 bg-background">
-      <View className="flex-row justify-between gap-4 bg-surface px-5 py-4">
+      <View className="bg-surface px-5 py-5">
         <View>
-          <Typography className="text-lg font-semibold text-foreground">Checkout</Typography>
+          <Typography className="text-xl font-semibold text-foreground">Checkout</Typography>
           <Typography className="text-sm text-muted-foreground">
             Review order details, customer, and payment method
           </Typography>
@@ -258,18 +258,18 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
         className="flex-1"
-        contentContainerClassName="p-5 gap-4 bg-background"
+        contentContainerClassName="w-full max-w-6xl self-center p-5 gap-5 bg-background"
       >
         {cartError && (
-          <View className="rounded-xl bg-danger/10 border border-danger/30 px-3 py-2.5">
-            <Typography className="text-xs text-danger">{cartError}</Typography>
+          <View className="rounded-lg bg-danger/10 px-3 py-2.5">
+            <Typography className="text-sm text-danger">{cartError}</Typography>
           </View>
         )}
 
         <View className={isWideLayout ? "flex-row items-start gap-5" : "gap-4"}>
           <View className="flex-1 gap-4">
             {/* Order type + Table/Pickup time */}
-            <Surface className="w-full gap-4 p-4">
+            <Surface className="w-full gap-4 p-5">
               <View>
                 <Typography className="text-base font-semibold text-foreground">Order</Typography>
                 <Typography className="text-xs text-muted-foreground">
@@ -361,7 +361,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
             </Surface>
 
             {/* Payment method group */}
-            <Surface className="w-full gap-4 p-4">
+            <Surface className="w-full gap-4 p-5">
               <View>
                 <Typography className="text-base font-semibold text-foreground">Payment</Typography>
                 <Typography className="text-xs text-muted-foreground">
@@ -381,7 +381,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                           setValue("payment_group", group.group_type);
                           setValue("payment_id", firstPayment?.id ?? "");
                         }}
-                        className={`px-4 py-2 rounded-full border ${isActive ? "bg-accent border-accent" : "bg-background border-border"}`}
+                        className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
                       >
                         <Typography
                           className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
@@ -400,7 +400,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                   Pembayaran <Typography className="text-danger">*</Typography>
                 </Typography>
                 {errors.payment_id && (
-                  <Typography className="text-xs text-danger">
+                  <Typography className="text-sm text-danger">
                     {errors.payment_id.message}
                   </Typography>
                 )}
@@ -413,7 +413,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                         <Pressable
                           key={payment.id}
                           onPress={() => setValue("payment_id", payment.id)}
-                          className={`px-4 py-2 rounded-full border ${isActive ? "bg-accent border-accent" : "bg-background border-border"}`}
+                          className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
                         >
                           <Typography
                             className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
@@ -428,7 +428,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
             </Surface>
 
             {/* Customer */}
-            <Surface className="w-full gap-4 p-4">
+            <Surface className="w-full gap-4 p-5">
               <View>
                 <Typography className="text-base font-semibold text-foreground">
                   Pelanggan
@@ -449,7 +449,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                         setValue("customer_id", null);
                         setValue("customer_search", "");
                       }}
-                      className={`px-4 py-2 rounded-full border ${isActive ? "bg-accent border-accent" : "bg-background border-border"}`}
+                      className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
                     >
                       <Typography
                         className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
@@ -477,7 +477,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                         <Pressable
                           key={g.id}
                           onPress={() => setValue("guest_id", g.id)}
-                          className={`px-3 py-2 rounded-lg border ${guestId === g.id ? "bg-accent/10 border-accent" : "bg-background border-border"}`}
+                          className={`px-3 py-2 rounded-lg ${guestId === g.id ? "bg-accent/10" : "bg-surface-secondary"}`}
                         >
                           <Typography className="text-sm text-foreground">{g.name}</Typography>
                           {(g.email || g.phone) && (
@@ -536,7 +536,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                   )}
 
                   {createGuest.isError && (
-                    <Typography className="text-xs text-danger">
+                    <Typography className="text-sm text-danger">
                       {getErrorMessage(createGuest.error)}
                     </Typography>
                   )}
@@ -546,7 +546,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                     </Typography>
                   )}
                   {errors.guest_id && (
-                    <Typography className="text-xs text-danger">
+                    <Typography className="text-sm text-danger">
                       {errors.guest_id.message}
                     </Typography>
                   )}
@@ -574,7 +574,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                         <Pressable
                           key={c.id}
                           onPress={() => setValue("customer_id", c.id)}
-                          className={`px-3 py-2 rounded-lg border ${customerId === c.id ? "bg-accent/10 border-accent" : "bg-background border-border"}`}
+                          className={`px-3 py-2 rounded-lg ${customerId === c.id ? "bg-accent/10" : "bg-surface-secondary"}`}
                         >
                           <Typography className="text-sm text-foreground">{c.name}</Typography>
                           {(c.email || c.phone) && (
@@ -587,7 +587,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                     </View>
                   )}
                   {errors.customer_id && (
-                    <Typography className="text-xs text-danger">
+                    <Typography className="text-sm text-danger">
                       {errors.customer_id.message}
                     </Typography>
                   )}
@@ -598,7 +598,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
           <View className={isWideLayout ? "w-[360px] gap-4" : "gap-4"}>
             {/* Notes */}
-            <Surface className="w-full gap-3 p-4">
+            <Surface variant="secondary" className="w-full gap-3 p-5">
               <Typography className="text-base font-semibold text-foreground">Catatan</Typography>
               <Controller
                 control={control}
@@ -656,19 +656,18 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           Batal
         </Button>
         <Button
-          className="flex-1 bg-green-500 border-green-500"
+          className="flex-1"
           onPress={handleSubmit(onSubmit, onInvalid)}
           isDisabled={validateCart.isPending || checkout.isPending || cartProducts.length === 0}
         >
           {validateCart.isPending || checkout.isPending ? (
             <>
               <ActivityIndicator color="#fff" />
-              <Button.Label className="ml-2 font-semibold tracking-wider">MEMPROSES</Button.Label>
+              <Button.Label className="ml-2">Memproses</Button.Label>
             </>
           ) : (
             <>
-              <Ionicons name="checkmark-circle-outline" size={18} color="white" />
-              <Button.Label className="ml-2 font-semibold tracking-wider">BAYAR</Button.Label>
+              <Button.Label>Bayar</Button.Label>
             </>
           )}
         </Button>

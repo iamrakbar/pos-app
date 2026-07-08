@@ -63,9 +63,9 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
     <>
       <View className="flex-1 bg-background">
         {/* Header */}
-        <View className="flex-row justify-between gap-4 bg-surface px-5 py-4">
+        <View className="bg-surface px-5 py-5">
           <View className="gap-0.5">
-            <Typography className="text-lg font-semibold text-foreground">
+            <Typography className="text-xl font-semibold text-foreground">
               Payment Success
             </Typography>
             <Typography className="text-sm text-muted-foreground">
@@ -79,19 +79,21 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         <ScrollView
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          contentContainerClassName="p-5 gap-5 bg-background"
+          contentContainerClassName="px-5 py-6 bg-background"
         >
-          <View className={isWideLayout ? "flex-row items-start gap-5" : "gap-5"}>
+          <View
+            className={`w-full max-w-6xl self-center ${isWideLayout ? "flex-row items-start gap-5" : "gap-5"}`}
+          >
             <View className={isWideLayout ? "w-[360px] gap-4" : "gap-4"}>
               {/* Success indicator */}
               <Surface className="items-center gap-4 p-6">
-                <View className="w-20 h-20 rounded-full bg-green-500/10 items-center justify-center">
-                  <View className="w-14 h-14 rounded-full bg-green-500 items-center justify-center">
+                <View className="w-20 h-20 rounded-full bg-success/10 items-center justify-center">
+                  <View className="w-14 h-14 rounded-full bg-success items-center justify-center">
                     <Ionicons name="checkmark" size={32} color="white" />
                   </View>
                 </View>
                 <View className="items-center gap-1">
-                  <Typography className="text-3xl font-bold text-green-500">
+                  <Typography className="text-3xl font-bold text-success tabular-nums">
                     {formatRupiah(paymentSession.amount)}
                   </Typography>
                   <Typography className="text-xs text-muted-foreground font-mono">
@@ -102,24 +104,26 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
 
               {/* Transaction details */}
               <Surface className="w-full overflow-hidden">
-                <View className="px-4 py-3 border-b border-border">
+                <View className="px-5 py-4">
                   <Typography className="text-base font-semibold text-foreground">
                     Transaction
                   </Typography>
                 </View>
-                <View className="flex-row justify-between px-4 py-3 border-b border-border">
+                <Separator className="opacity-60" />
+                <View className="flex-row justify-between px-5 py-3">
                   <Typography className="text-sm text-muted-foreground">Payment method</Typography>
                   <Typography className="text-sm font-semibold text-foreground">
                     {paymentSession.payment_type}
                   </Typography>
                 </View>
-                <View className="flex-row justify-between px-4 py-3 border-b border-border">
+                <View className="flex-row justify-between px-5 py-3">
                   <Typography className="text-sm text-muted-foreground">Date & time</Typography>
                   <Typography className="text-sm font-semibold text-foreground">
                     {formatDateTime(paidAt)}
                   </Typography>
                 </View>
-                <View className="flex-row justify-between px-4 py-3">
+                <Separator className="opacity-60" />
+                <View className="flex-row justify-between px-5 py-3">
                   <Typography className="text-sm text-muted-foreground">Items</Typography>
                   <Typography className="text-sm font-semibold text-foreground">
                     {totalQty()} {totalQty() === 1 ? "item" : "items"}
@@ -130,7 +134,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
 
             {/* Order items */}
             <View className="flex-1 gap-2">
-              <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <Typography className="text-sm font-semibold text-foreground">
                 Order summary
               </Typography>
               <Surface className="w-full overflow-hidden">
@@ -138,7 +142,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                   products.map((item, index) => (
                     <View
                       key={item.id}
-                      className={`flex-row items-start justify-between px-4 py-3 gap-4 ${index < products.length - 1 ? "border-b border-border" : ""}`}
+                      className={`flex-row items-start justify-between px-5 py-3 gap-4 ${index < products.length - 1 ? "border-b border-border" : ""}`}
                     >
                       <View className="flex-1 gap-0.5">
                         <Typography className="text-sm text-foreground" numberOfLines={1}>
@@ -183,26 +187,28 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         <Separator />
 
         {/* Actions */}
-        <View className="flex-row gap-3 bg-surface px-5 py-4">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onPress={handlePrintReceipt}
-            isDisabled={isPrinting}
-          >
-            {isPrinting ? (
-              <ActivityIndicator />
-            ) : (
-              <Ionicons name="print-outline" size={16} color={themeColorForeground} />
-            )}
-            <Button.Label className="ml-2">
-              {isPrinting ? "Printing…" : "Print Receipt"}
-            </Button.Label>
-          </Button>
-          <Button className="flex-1 bg-green-500 border-green-500" onPress={handleNewOrder}>
-            <Ionicons name="add-circle-outline" size={16} color="white" />
-            <Button.Label className="ml-2">New Order</Button.Label>
-          </Button>
+        <View className="bg-surface px-5 py-4">
+          <View className="w-full max-w-6xl self-center flex-row gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onPress={handlePrintReceipt}
+              isDisabled={isPrinting}
+            >
+              {isPrinting ? (
+                <ActivityIndicator />
+              ) : (
+                <Ionicons name="print-outline" size={16} color={themeColorForeground} />
+              )}
+              <Button.Label className="ml-2">
+                {isPrinting ? "Printing…" : "Print Receipt"}
+              </Button.Label>
+            </Button>
+            <Button className="flex-1" onPress={handleNewOrder}>
+              <Ionicons name="add-circle-outline" size={16} color="white" />
+              <Button.Label className="ml-2">New Order</Button.Label>
+            </Button>
+          </View>
         </View>
       </View>
 

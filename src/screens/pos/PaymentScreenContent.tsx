@@ -45,9 +45,9 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
   return (
     <View className="flex-1 bg-background">
-      <View className="flex-row justify-between gap-4 bg-surface px-5 py-4">
+      <View className="bg-surface px-5 py-5">
         <View className="gap-0.5">
-          <Typography className="text-lg font-semibold text-foreground">Payment</Typography>
+          <Typography className="text-xl font-semibold text-foreground">Payment</Typography>
           <Typography className="text-sm text-muted-foreground">
             Complete the transaction and verify payment status
           </Typography>
@@ -60,8 +60,8 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
         <Surface
           className={
             isWideLayout
-              ? "flex-1 flex-row items-center justify-center gap-10 p-8"
-              : "flex-1 items-center justify-center gap-5 p-5"
+              ? "w-full max-w-5xl flex-1 self-center flex-row items-center justify-center gap-10 p-8"
+              : "w-full flex-1 items-center justify-center gap-5 p-5"
           }
         >
           <View className="items-center gap-4">
@@ -87,10 +87,10 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
           <View className={isWideLayout ? "w-[360px] gap-4" : "w-full gap-4"}>
             <View className="gap-1">
-              <Typography className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              <Typography className="text-sm font-semibold text-muted-foreground">
                 {paymentSession.payment_type}
               </Typography>
-              <Typography className="text-3xl font-bold text-foreground">
+              <Typography className="text-3xl font-bold text-foreground tabular-nums">
                 {formatRupiah(paymentSession.amount)}
               </Typography>
               <Typography className="text-xs text-muted-foreground font-mono">
@@ -123,24 +123,26 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
       <Separator />
 
-      <View className="flex-row gap-3 bg-surface px-5 py-4">
-        <Button
-          className="flex-1 bg-green-500 border-green-500"
-          onPress={handleCheckPayment}
-          isDisabled={paymentStatus.isPending}
-        >
-          {paymentStatus.isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Ionicons name="refresh-outline" size={16} color="white" />
-              <Button.Label className="ml-2">Check Payment</Button.Label>
-            </>
-          )}
-        </Button>
-        <Button variant="outline" onPress={onClose ?? closeModal}>
-          Close
-        </Button>
+      <View className="bg-surface px-5 py-4">
+        <View className="w-full max-w-5xl self-center flex-row gap-3">
+          <Button
+            className="flex-1"
+            onPress={handleCheckPayment}
+            isDisabled={paymentStatus.isPending}
+          >
+            {paymentStatus.isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="refresh-outline" size={16} color="white" />
+                <Button.Label className="ml-2">Check Payment</Button.Label>
+              </>
+            )}
+          </Button>
+          <Button variant="outline" onPress={onClose ?? closeModal}>
+            Close
+          </Button>
+        </View>
       </View>
     </View>
   );
