@@ -22,6 +22,8 @@ export type POSProduct = {
   image_url: string | null;
   thumbnail_url: string | null;
   category_id: string | null;
+  stock_enabled?: boolean;
+  stock_qty?: number | null;
   add_ons: AddOnGroup[];
   is_active: boolean;
 };
@@ -43,7 +45,7 @@ export type POSPayment = {
   id: string;
   code: string;
   name: string;
-  fee_unit: 'fixed' | 'percentage';
+  fee_unit: "fixed" | "percentage";
   fee_value: number;
 };
 
@@ -54,12 +56,12 @@ export type POSPaymentGroup = {
 };
 
 export type CheckoutFormState = {
-  order_type: 'dine-in' | 'takeaway';
+  order_type: "dine-in" | "takeaway";
   table_id: string | null;
   pickup_time: string | null;
   payment_group: string;
   payment_id: string | null;
-  customer_type: 'guest' | 'customer' | 'anonymous';
+  customer_type: "guest" | "customer" | "anonymous";
   guest_id: string | null;
   customer_id: string | null;
   customer_search: string;
