@@ -1,8 +1,8 @@
-import type { CheckoutFormState, PaymentSession, POSProduct } from '@/types/pos';
-import type { MerchantCheckoutData } from '@/api/endpoints/checkout';
-import { create } from 'zustand';
+import type { CheckoutFormState, PaymentSession, POSProduct } from "@/types/pos";
+import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
+import { create } from "zustand";
 
-type POSModal = 'addon' | 'checkout' | 'payment' | 'payment-success' | null;
+type POSModal = "addon" | null;
 
 type POSState = {
   modal: POSModal;
@@ -17,9 +17,7 @@ type POSState = {
 
 type POSAction = {
   openAddonModal: (product: POSProduct, editingCartItemId?: string) => void;
-  openCheckoutModal: () => void;
-  openPaymentModal: (session: PaymentSession, result: MerchantCheckoutData) => void;
-  openPaymentSuccessModal: () => void;
+  setPaymentSession: (session: PaymentSession, result: MerchantCheckoutData) => void;
   closeModal: () => void;
   setSearchQuery: (q: string) => void;
   setCategoryId: (id: string | null) => void;
@@ -28,16 +26,16 @@ type POSAction = {
 };
 
 const DEFAULT_CHECKOUT_FORM: CheckoutFormState = {
-  order_type: 'dine-in',
+  order_type: "dine-in",
   table_id: null,
   pickup_time: null,
-  payment_group: 'e-money',
-  payment_id: 'pay-qris',
-  customer_type: 'anonymous',
+  payment_group: "e-money",
+  payment_id: "pay-qris",
+  customer_type: "anonymous",
   guest_id: null,
   customer_id: null,
-  customer_search: '',
-  notes: '',
+  customer_search: "",
+  notes: "",
 };
 
 export const usePOSStore = create<POSState & POSAction>()((set) => ({
@@ -46,22 +44,16 @@ export const usePOSStore = create<POSState & POSAction>()((set) => ({
   editingCartItemId: null,
   paymentSession: null,
   checkoutResult: null,
-  searchQuery: '',
+  searchQuery: "",
   categoryId: null,
   checkoutForm: { ...DEFAULT_CHECKOUT_FORM },
 
   openAddonModal: (product, editingCartItemId) =>
-    set({ modal: 'addon', selectedProduct: product, editingCartItemId: editingCartItemId ?? null }),
+    set({ modal: "addon", selectedProduct: product, editingCartItemId: editingCartItemId ?? null }),
 
-  openCheckoutModal: () => set({ modal: 'checkout' }),
+  setPaymentSession: (session, result) => set({ paymentSession: session, checkoutResult: result }),
 
-  openPaymentModal: (session, result) =>
-    set({ modal: 'payment', paymentSession: session, checkoutResult: result }),
-
-  openPaymentSuccessModal: () => set({ modal: 'payment-success' }),
-
-  closeModal: () =>
-    set({ modal: null, selectedProduct: null, editingCartItemId: null }),
+  closeModal: () => set({ modal: null, selectedProduct: null, editingCartItemId: null }),
 
   setSearchQuery: (searchQuery) => set({ searchQuery }),
 
