@@ -1,4 +1,4 @@
-import { PaymentSuccessContent } from "@/components/pos/screens/PaymentSuccessScreenContent";
+import { PaymentSuccessContent } from "@/screens/pos/PaymentSuccessScreenContent";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { View } from "react-native";

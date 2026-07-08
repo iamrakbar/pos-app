@@ -1,4 +1,4 @@
-import { CheckoutContent } from "@/components/pos/screens/CheckoutScreenContent";
+import { CheckoutContent } from "@/screens/pos/CheckoutScreenContent";
 import { usePOSStore } from "@/stores/usePOSStore";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import type { PaymentSession } from "@/types/pos";

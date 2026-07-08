@@ -1,4 +1,4 @@
-import { PaymentContent } from "@/components/pos/screens/PaymentScreenContent";
+import { PaymentContent } from "@/screens/pos/PaymentScreenContent";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { View } from "react-native";
