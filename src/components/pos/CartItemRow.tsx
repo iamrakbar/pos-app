@@ -22,13 +22,14 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
     const updateQty = useCartStore((s) => s.updateQty);
     const openAddonModal = usePOSStore((s) => s.openAddonModal);
 
-    const addOnOptions = item.add_ons.flatMap((ao) =>
-        ao.options.map((option) => ({
-            ...option,
-            groupId: ao.id,
-            groupName: ao.name,
-        }))
-    );
+    const addOnGroups = item.add_ons.map((addOn) => {
+        const unitTotal = addOn.options.reduce((sum, option) => sum + option.price, 0);
+        return {
+            ...addOn,
+            unitTotal,
+            subtotal: unitTotal * item.qty,
+        };
+    });
 
     const addOnUnitTotal = item.add_ons
         .flatMap((ao) => ao.options)
@@ -88,7 +89,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
                     </View>
                 </View>
 
-                {addOnOptions.length > 0 && (
+                {addOnGroups.length > 0 && (
                     <View className="gap-2 rounded-lg bg-surface-secondary px-3 py-2.5">
                         <View className="flex-row justify-between gap-3">
                             <Typography type="body-sm" weight="medium">
@@ -98,23 +99,40 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
                                 {formatRupiah(addOnSubtotal)}
                             </Typography>
                         </View>
-                        {addOnOptions.map((option) => (
-                            <View
-                                key={`${option.groupId}-${option.id}`}
-                                className="flex-row items-start justify-between gap-3"
-                            >
-                                <View className="flex-1">
-                                    <Typography type="body-sm" numberOfLines={1}>
-                                        {option.name}
-                                    </Typography>
-                                    <Typography type="body-xs" color="muted" numberOfLines={1}>
-                                        {option.groupName} · {item.qty} x {formatRupiah(option.price)}
+                        {addOnGroups.map((addOn) => (
+                            <View key={addOn.id} className="gap-1.5">
+                                <View className="flex-row items-start justify-between gap-3">
+                                    <View className="flex-1">
+                                        <Typography type="body-sm" weight="medium" numberOfLines={1}>
+                                            {addOn.name}
+                                        </Typography>
+                                        <Typography type="body-xs" color="muted" numberOfLines={1}>
+                                            {item.qty} x {formatRupiah(addOn.unitTotal)}
+                                        </Typography>
+                                    </View>
+                                    <Typography type="body-sm" color="muted" className="tabular-nums">
+                                        {formatRupiah(addOn.subtotal)}
                                     </Typography>
                                 </View>
-                                <View className="items-end">
-                                    <Typography type="body-sm" color="muted" className="tabular-nums">
-                                        {formatRupiah(option.price * item.qty)}
-                                    </Typography>
+                                <View className="gap-1 pl-3">
+                                    {addOn.options.map((option) => (
+                                        <View
+                                            key={`${addOn.id}-${option.id}`}
+                                            className="flex-row items-start justify-between gap-3"
+                                        >
+                                            <Typography
+                                                type="body-xs"
+                                                color="muted"
+                                                numberOfLines={1}
+                                                className="flex-1"
+                                            >
+                                                {option.name}
+                                            </Typography>
+                                            <Typography type="body-xs" color="muted" className="tabular-nums">
+                                                {formatRupiah(option.price)}
+                                            </Typography>
+                                        </View>
+                                    ))}
                                 </View>
                             </View>
                         ))}
