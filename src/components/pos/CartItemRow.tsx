@@ -1,12 +1,12 @@
-import { useCartStore } from '@/stores/useCartStore';
-import { usePOSStore } from '@/stores/usePOSStore';
-import type { CartItem } from '@/types/cart';
-import { formatRupiah } from '@/utils/format';
-import { MOCK_PRODUCTS } from '@/data/pos-mock';
-import { Button, Typography, useThemeColor } from 'heroui-native';
-import type { JSX } from 'react';
-import { Pressable, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { useCartStore } from "@/stores/useCartStore";
+import { usePOSStore } from "@/stores/usePOSStore";
+import type { CartItem } from "@/types/cart";
+import { formatRupiah } from "@/utils/format";
+import { MOCK_PRODUCTS } from "@/data/pos-mock";
+import { Button, Typography, useThemeColor } from "heroui-native";
+import type { JSX } from "react";
+import { Pressable, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
     item: CartItem;
@@ -14,8 +14,8 @@ type Props = {
 
 export default function CartItemRow({ item }: Props): JSX.Element {
     const [themeColorForeground, themeColorDangerSoftForeground] = useThemeColor([
-        'foreground',
-        'danger-soft-foreground',
+        "foreground",
+        "danger-soft-foreground",
     ]);
     const removeItem = useCartStore((s) => s.removeItem);
     const updateQty = useCartStore((s) => s.updateQty);
@@ -23,13 +23,21 @@ export default function CartItemRow({ item }: Props): JSX.Element {
 
     const product = MOCK_PRODUCTS.find((p) => p.id === item.product_id);
 
-    const modifierSummary = item.add_ons
-        .flatMap((ao) => ao.options.map((o) => o.name))
-        .join('. ');
+    const addOnOptions = item.add_ons.flatMap((ao) =>
+        ao.options.map((option) => ({
+            ...option,
+            groupId: ao.id,
+            groupName: ao.name,
+        }))
+    );
 
-    const addOnTotal = item.add_ons
+    const addOnUnitTotal = item.add_ons
         .flatMap((ao) => ao.options)
         .reduce((sum, o) => sum + o.price, 0);
+    const unitTotal = item.price + addOnUnitTotal;
+    const productSubtotal = item.price * item.qty;
+    const addOnSubtotal = addOnUnitTotal * item.qty;
+    const itemSubtotal = unitTotal * item.qty;
 
     const handleEdit = () => {
         if (product) {
@@ -47,23 +55,90 @@ export default function CartItemRow({ item }: Props): JSX.Element {
 
     return (
         <View className="gap-3 py-3 border-b border-border">
-            <Pressable className="flex-1 gap-1 active:opacity-70" onPress={handleEdit}>
+            <Pressable className="flex-1 gap-3 active:opacity-70" onPress={handleEdit}>
                 <View className="flex-row justify-between gap-3">
                     <Typography weight="medium" numberOfLines={2} className="flex-1">
                         {item.name}
                     </Typography>
 
                     <Typography type="body-sm" weight="semibold" className="tabular-nums">
-                        {formatRupiah(item.price)}
+                        {formatRupiah(itemSubtotal)}
                     </Typography>
                 </View>
 
-                {(modifierSummary || addOnTotal > 0) && (
-                    <Typography.Paragraph type="body-sm" color="muted" numberOfLines={2}>
-                        {modifierSummary}
-                        {addOnTotal > 0 ? ` (+${formatRupiah(addOnTotal)})` : ''}
-                    </Typography.Paragraph>
+                <View className="gap-1.5">
+                    <View className="flex-row justify-between gap-3">
+                        <Typography type="body-sm" color="muted">
+                            Product
+                        </Typography>
+                        <Typography type="body-sm" color="muted" className="tabular-nums">
+                            {formatRupiah(item.price)}
+                        </Typography>
+                    </View>
+                    <View className="flex-row justify-between gap-3">
+                        <Typography type="body-sm" color="muted">
+                            Product subtotal
+                        </Typography>
+                        <Typography type="body-sm" color="muted" className="tabular-nums">
+                            {item.qty} x {formatRupiah(item.price)} = {formatRupiah(productSubtotal)}
+                        </Typography>
+                    </View>
+                </View>
+
+                {addOnOptions.length > 0 && (
+                    <View className="gap-2 rounded-lg bg-surface-secondary px-3 py-2.5">
+                        <View className="flex-row justify-between gap-3">
+                            <Typography type="body-sm" weight="medium">
+                                Add-ons
+                            </Typography>
+                            <Typography type="body-sm" weight="medium" className="tabular-nums">
+                                {formatRupiah(addOnSubtotal)}
+                            </Typography>
+                        </View>
+                        {addOnOptions.map((option) => (
+                            <View
+                                key={`${option.groupId}-${option.id}`}
+                                className="flex-row items-start justify-between gap-3"
+                            >
+                                <View className="flex-1">
+                                    <Typography type="body-sm" numberOfLines={1}>
+                                        {option.name}
+                                    </Typography>
+                                    <Typography type="body-xs" color="muted" numberOfLines={1}>
+                                        {option.groupName} · {item.qty} x {formatRupiah(option.price)}
+                                    </Typography>
+                                </View>
+                                <View className="items-end">
+                                    <Typography type="body-sm" color="muted" className="tabular-nums">
+                                        {formatRupiah(option.price * item.qty)}
+                                    </Typography>
+                                </View>
+                            </View>
+                        ))}
+                    </View>
                 )}
+
+                <View className="gap-1.5">
+                    {addOnUnitTotal > 0 && (
+                        <View className="flex-row justify-between gap-3">
+                            <Typography type="body-sm" color="muted">
+                                Unit total
+                            </Typography>
+                            <Typography type="body-sm" color="muted" className="tabular-nums">
+                                {formatRupiah(item.price)} + {formatRupiah(addOnUnitTotal)} ={" "}
+                                {formatRupiah(unitTotal)}
+                            </Typography>
+                        </View>
+                    )}
+                    <View className="flex-row justify-between gap-3">
+                        <Typography type="body-sm" weight="semibold">
+                            Item subtotal
+                        </Typography>
+                        <Typography type="body-sm" weight="semibold" className="tabular-nums">
+                            {item.qty} x {formatRupiah(unitTotal)} = {formatRupiah(itemSubtotal)}
+                        </Typography>
+                    </View>
+                </View>
             </Pressable>
 
             <View className="flex-row items-center justify-between gap-4">
