@@ -2,6 +2,7 @@ import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { Card, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
+import { memo, useCallback } from "react";
 import { Image, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -11,15 +12,18 @@ type Props = {
   width: number;
 };
 
-export default function ProductCard({ product, onPress, width }: Props): JSX.Element {
+function ProductCard({ product, onPress, width }: Props): JSX.Element {
   const themeColorMuted = useThemeColor("muted");
   const isDiscounted = product.original_price !== null;
   const isOutOfStock = product.stock_enabled && (product.stock_qty ?? 0) <= 0;
   const effectivePrice = product.price;
+  const handlePress = useCallback(() => {
+    onPress(product);
+  }, [onPress, product]);
 
   return (
     <Pressable
-      onPress={() => onPress(product)}
+      onPress={handlePress}
       disabled={isOutOfStock}
       style={{
         maxWidth: width - 12,
@@ -72,3 +76,5 @@ export default function ProductCard({ product, onPress, width }: Props): JSX.Ele
     </Pressable>
   );
 }
+
+export default memo(ProductCard);

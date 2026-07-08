@@ -53,7 +53,7 @@ export const usePOSStore = create<POSState & POSAction>()((set) => ({
 
   setPaymentSession: (session, result) => set({ paymentSession: session, checkoutResult: result }),
 
-  closeModal: () => set({ modal: null, selectedProduct: null, editingCartItemId: null }),
+  closeModal: () => set({ modal: null }),
 
   setSearchQuery: (searchQuery) => set({ searchQuery }),
 

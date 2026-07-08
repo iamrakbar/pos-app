@@ -6,6 +6,7 @@ import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
+import { useCallback } from "react";
 import { View } from "react-native";
 
 const CART_PANEL_WIDTH = 400;
@@ -14,7 +15,7 @@ export default function POSScreen(): JSX.Element {
   const openAddonModal = usePOSStore((s) => s.openAddonModal);
   const addItem = useCartStore((s) => s.addItem);
 
-  const handleSelectProduct = (product: POSProduct) => {
+  const handleSelectProduct = useCallback((product: POSProduct) => {
     if (product.add_ons.length > 0) {
       openAddonModal(product);
     } else {
@@ -27,7 +28,7 @@ export default function POSScreen(): JSX.Element {
         add_ons: [],
       });
     }
-  };
+  }, [addItem, openAddonModal]);
 
   return (
     <View className="flex-1 flex-row p-safe">

@@ -5,6 +5,7 @@ import ErrorState from "@/components/common/ErrorState";
 import EmptyState from "@/components/common/EmptyState";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
+import { useCallback, useMemo } from "react";
 import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
 import ProductCard from "./ProductCard";
 
@@ -33,8 +34,19 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
     refetch,
     isRefetching,
   } = useProducts(searchQuery || undefined, categoryId || undefined);
-  const filtered = (allProducts ?? []).filter(
-    (p) => p.is_active && (!p.stock_enabled || (p.stock_qty ?? 0) > 0)
+  const filtered = useMemo(
+    () =>
+      (allProducts ?? []).filter(
+        (p) => p.is_active && (!p.stock_enabled || (p.stock_qty ?? 0) > 0)
+      ),
+    [allProducts]
+  );
+
+  const renderProduct = useCallback(
+    ({ item }: { item: POSProduct }) => (
+      <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
+    ),
+    [cardWidth, onSelectProduct]
   );
 
   if (isLoading) return <LoadingState message="Loading products…" />;
@@ -45,9 +57,7 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
       key={numColumns}
       numColumns={numColumns}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
-      )}
+      renderItem={renderProduct}
       contentContainerClassName="flex-grow gap-2 px-3 py-4"
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       showsVerticalScrollIndicator={false}
