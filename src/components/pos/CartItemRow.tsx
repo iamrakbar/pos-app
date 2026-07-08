@@ -1,8 +1,8 @@
 import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
 import type { CartItem } from "@/types/cart";
+import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
-import { MOCK_PRODUCTS } from "@/data/pos-mock";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
@@ -10,9 +10,10 @@ import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
     item: CartItem;
+    product?: POSProduct;
 };
 
-export default function CartItemRow({ item }: Props): JSX.Element {
+export default function CartItemRow({ item, product }: Props): JSX.Element {
     const [themeColorForeground, themeColorDangerSoftForeground] = useThemeColor([
         "foreground",
         "danger-soft-foreground",
@@ -20,8 +21,6 @@ export default function CartItemRow({ item }: Props): JSX.Element {
     const removeItem = useCartStore((s) => s.removeItem);
     const updateQty = useCartStore((s) => s.updateQty);
     const openAddonModal = usePOSStore((s) => s.openAddonModal);
-
-    const product = MOCK_PRODUCTS.find((p) => p.id === item.product_id);
 
     const addOnOptions = item.add_ons.flatMap((ao) =>
         ao.options.map((option) => ({
@@ -40,7 +39,7 @@ export default function CartItemRow({ item }: Props): JSX.Element {
     const itemSubtotal = unitTotal * item.qty;
 
     const handleEdit = () => {
-        if (product) {
+        if (product && product.add_ons.length > 0) {
             openAddonModal(product, item.id);
         }
     };
@@ -55,7 +54,11 @@ export default function CartItemRow({ item }: Props): JSX.Element {
 
     return (
         <View className="gap-3 py-3 border-b border-border">
-            <Pressable className="flex-1 gap-3 active:opacity-70" onPress={handleEdit}>
+            <Pressable
+                className="flex-1 gap-3 active:opacity-70"
+                disabled={!product || product.add_ons.length === 0}
+                onPress={handleEdit}
+            >
                 <View className="flex-row justify-between gap-3">
                     <Typography weight="medium" numberOfLines={2} className="flex-1">
                         {item.name}

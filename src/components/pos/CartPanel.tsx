@@ -1,8 +1,10 @@
 import { useCartStore } from "@/stores/useCartStore";
 import { formatRupiah } from "@/utils/format";
+import { useProducts } from "@/hooks/db/useProducts";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
+import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import CartItemRow from "./CartItemRow";
@@ -13,13 +15,18 @@ export default function CartPanel(): JSX.Element {
     "muted",
     "danger-soft-foreground",
   ]);
-  const products = useCartStore((s) => s.products);
+  const cartProducts = useCartStore((s) => s.products);
   const totalQty = useCartStore((s) => s.totalQty);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
+  const { data: catalogProducts } = useProducts();
 
   const itemCount = totalQty();
   const subtotal = totalPrice();
+  const productById = useMemo(
+    () => new Map((catalogProducts ?? []).map((product) => [product.id, product])),
+    [catalogProducts]
+  );
 
   return (
     <View className="flex-1 bg-surface border-l border-border">
@@ -33,7 +40,7 @@ export default function CartPanel(): JSX.Element {
         </Typography>
       </View>
       <View className="px-5 pb-3">
-        {products.length > 0 && (
+        {cartProducts.length > 0 && (
           <Button variant="danger-soft" size="sm" onPress={clearCart} className="self-start">
             <Ionicons name="trash-outline" size={16} color={themeColorDangerSoftForeground} />
             <Button.Label>Empty Cart</Button.Label>
@@ -47,7 +54,7 @@ export default function CartPanel(): JSX.Element {
         contentContainerClassName="pb-3"
         showsVerticalScrollIndicator={false}
       >
-        {products.length === 0 ? (
+        {cartProducts.length === 0 ? (
           <View className="items-center justify-center py-16 gap-2">
             <Ionicons name="cart-outline" size={40} color={themeColorMuted} />
             <Typography type="body-sm" color="muted" align="center">
@@ -55,7 +62,9 @@ export default function CartPanel(): JSX.Element {
             </Typography>
           </View>
         ) : (
-          products.map((item) => <CartItemRow key={item.id} item={item} />)
+          cartProducts.map((item) => (
+            <CartItemRow key={item.id} item={item} product={productById.get(item.product_id)} />
+          ))
         )}
       </ScrollView>
 
@@ -72,7 +81,7 @@ export default function CartPanel(): JSX.Element {
         <Button
           className="w-full"
           onPress={() => router.push("/pos/checkout" as never)}
-          isDisabled={products.length === 0}
+          isDisabled={cartProducts.length === 0}
         >
           Checkout
         </Button>
