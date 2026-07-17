@@ -9,6 +9,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { ActivityIndicator, Image, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 
 type PaymentContentProps = {
   onClose?: () => void;
@@ -22,6 +23,9 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
   const { width: windowWidth } = useWindowDimensions();
   const isWideLayout = windowWidth >= 760;
   const [expiredSessionKey, setExpiredSessionKey] = useState<string | null>(null);
+  const buildVariant = Constants.expoConfig?.extra?.buildVariant;
+  const showQrUrl =
+    (buildVariant === "development" || buildVariant === "preview") && !!paymentSession?.qr_url;
 
   const paymentStatus = usePaymentStatus(paymentSession?.order_id);
 
@@ -125,6 +129,17 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
                 onExpire={handleQrExpire}
               />
             )}
+
+            {showQrUrl ? (
+              <View className="gap-1.5 rounded-lg bg-surface-secondary px-3 py-2.5">
+                <Typography type="body-xs" weight="semibold" color="muted">
+                  QR image URL
+                </Typography>
+                <Typography selectable type="body-xs" className="text-foreground">
+                  {paymentSession.qr_url}
+                </Typography>
+              </View>
+            ) : null}
 
             {paymentStatus.isError && (
               <Typography type="body-xs" className="text-danger">
