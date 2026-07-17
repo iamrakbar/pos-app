@@ -25,10 +25,12 @@ import {
   Typography,
   useThemeColor,
 } from "heroui-native";
+import { TimePicker } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from "react-native";
-import type { PaymentSession } from "@/types/pos";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import type { PaymentSession, POSTable } from "@/types/pos";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 
@@ -47,6 +49,49 @@ const ORDER_TYPE_LABELS: Record<string, string> = {
 };
 
 const isEMoneyGroup = (groupType: string) => groupType.toLowerCase() === "e-money";
+
+const TIME_PICKER_INTERVAL_MINUTES = 5;
+
+function formatTimeValue(hour: number, minute: number): string {
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function getNextPickupTime(): string | null {
+  const now = new Date();
+  const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes() + 1;
+  const roundedMinutes =
+    Math.ceil(minutesSinceMidnight / TIME_PICKER_INTERVAL_MINUTES) * TIME_PICKER_INTERVAL_MINUTES;
+
+  if (roundedMinutes >= 24 * 60) return null;
+
+  return formatTimeValue(Math.floor(roundedMinutes / 60), roundedMinutes % 60);
+}
+
+function isPastPickupTime(value: string): boolean {
+  const [hour, minute] = value.split(":").map(Number);
+  const now = new Date();
+
+  return hour * 60 + minute <= now.getHours() * 60 + now.getMinutes();
+}
+
+function groupTablesByArea(tables: POSTable[]) {
+  const groups = new Map<string, { id: string; name: string; tables: POSTable[] }>();
+
+  tables.forEach((table) => {
+    const existingGroup = groups.get(table.area_id);
+    if (existingGroup) {
+      existingGroup.tables.push(table);
+    } else {
+      groups.set(table.area_id, {
+        id: table.area_id,
+        name: table.area_name,
+        tables: [table],
+      });
+    }
+  });
+
+  return Array.from(groups.values());
+}
 
 function MiniInput({
   value,
@@ -149,6 +194,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const guestId = useWatch({ control, name: "guest_id" });
   const customerId = useWatch({ control, name: "customer_id" });
   const customerSearch = useWatch({ control, name: "customer_search" });
+  const pickupTime = useWatch({ control, name: "pickup_time" });
 
   const { data: customerResults = [] } = useCustomerSearch(customerSearch);
 
@@ -197,6 +243,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   ).filter((amount) => amount >= total);
 
   const selectedTable = tablesList.find((t) => t.id === tableId);
+  const tablesByArea = groupTablesByArea(tablesList);
 
   const onSubmit = async (values: CheckoutFormValues) => {
     setCartError(null);
@@ -243,7 +290,8 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={80}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         className="flex-1"
@@ -304,12 +352,13 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                   <Select.Overlay />
                   <Select.Content presentation="popover" width="trigger">
                     <Select.Item value="" label="Tanpa meja" />
-                    {tablesList.map((table) => (
-                      <Select.Item
-                        key={table.id}
-                        value={table.id}
-                        label={`${table.name} · ${table.area_name}`}
-                      />
+                    {tablesByArea.map((area) => (
+                      <View key={area.id}>
+                        <Select.ListLabel>{area.name}</Select.ListLabel>
+                        {area.tables.map((table) => (
+                          <Select.Item key={table.id} value={table.id} label={table.name} />
+                        ))}
+                      </View>
                     ))}
                   </Select.Content>
                 </Select.Portal>
@@ -320,17 +369,51 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
               <Typography type="body-sm" weight="semibold">
                 Waktu ambil
               </Typography>
-              <Controller
-                control={control}
-                name="pickup_time"
-                render={({ field }) => (
-                  <MiniInput
-                    value={field.value ?? ""}
-                    onChangeText={(value) => field.onChange(value || null)}
-                    placeholder="HH:mm"
-                  />
-                )}
-              />
+              <TimePicker
+                hourFormat={24}
+                minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
+                locale="id-ID"
+                isRequired
+                isInvalid={Boolean(errors.pickup_time)}
+                value={pickupTime ? { value: `${pickupTime}:00`, label: pickupTime } : undefined}
+                onOpenChange={(isOpen) => {
+                  if (!isOpen || (pickupTime && !isPastPickupTime(pickupTime))) return;
+
+                  setValue("pickup_time", getNextPickupTime(), { shouldValidate: true });
+                }}
+                onValueChange={(option) => {
+                  const nextValue = option?.value.slice(0, 5) ?? null;
+                  if (nextValue && isPastPickupTime(nextValue)) return;
+
+                  setValue("pickup_time", nextValue, { shouldValidate: true });
+                }}
+              >
+                <TimePicker.Select>
+                  <TimePicker.Trigger>
+                    <TimePicker.Value placeholder="Pilih waktu" />
+                    <TimePicker.TriggerIndicator />
+                  </TimePicker.Trigger>
+                  <TimePicker.Portal>
+                    <TimePicker.Overlay />
+                    <TimePicker.Content
+                      presentation="popover"
+                      width="trigger"
+                      className="items-center justify-center"
+                    >
+                      <TimePicker.Wheel />
+                    </TimePicker.Content>
+                  </TimePicker.Portal>
+                </TimePicker.Select>
+              </TimePicker>
+              {errors.pickup_time ? (
+                <Typography type="body-xs" className="text-danger">
+                  {errors.pickup_time.message}
+                </Typography>
+              ) : (
+                <Typography type="body-xs" color="muted">
+                  Waktu yang sudah lewat tidak dapat dipilih.
+                </Typography>
+              )}
             </View>
           )}
         </View>
@@ -588,7 +671,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
             </Typography.Heading>
           </View>
         </Surface>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <Separator />
       <View className="flex-row gap-3 bg-surface px-5 py-3">

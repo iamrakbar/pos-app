@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const checkoutProductOptionSchema = z.object({
   id: z.string(),
@@ -23,33 +23,66 @@ const checkoutProductSchema = z.object({
   add_ons: z.array(checkoutProductAddOnSchema).optional().nullable(),
 });
 
-export const checkoutSchema = z.object({
-  order_type: z.enum(['dine-in', 'takeaway']),
-  table_id: z.string().nullable(),
-  pickup_time: z.string().nullable(),
-  payment_group: z.string().min(1, 'Pilih grup pembayaran'),
-  payment_id: z.string().min(1, 'Pilih metode pembayaran'),
-  customer_type: z.enum(['guest', 'customer', 'anonymous']),
-  guest_id: z.string().nullable(),
-  customer_id: z.string().nullable(),
-  customer_search: z.string(),
-  notes: z.string(),
-  products: z.array(checkoutProductSchema).min(1, 'Keranjang kosong'),
-}).superRefine((values, ctx) => {
-  if (values.customer_type === 'guest' && !values.guest_id) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['guest_id'],
-      message: 'Pilih atau buat guest terlebih dahulu',
-    });
-  }
-  if (values.customer_type === 'customer' && !values.customer_id) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['customer_id'],
-      message: 'Cari dan pilih pelanggan terlebih dahulu',
-    });
-  }
-});
+export const checkoutSchema = z
+  .object({
+    order_type: z.enum(["dine-in", "takeaway"]),
+    table_id: z.string().nullable(),
+    pickup_time: z.string().nullable(),
+    payment_group: z.string().min(1, "Pilih grup pembayaran"),
+    payment_id: z.string().min(1, "Pilih metode pembayaran"),
+    customer_type: z.enum(["guest", "customer", "anonymous"]),
+    guest_id: z.string().nullable(),
+    customer_id: z.string().nullable(),
+    customer_search: z.string(),
+    notes: z.string(),
+    products: z.array(checkoutProductSchema).min(1, "Keranjang kosong"),
+  })
+  .superRefine((values, ctx) => {
+    if (values.customer_type === "guest" && !values.guest_id) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["guest_id"],
+        message: "Pilih atau buat guest terlebih dahulu",
+      });
+    }
+    if (values.customer_type === "customer" && !values.customer_id) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["customer_id"],
+        message: "Cari dan pilih pelanggan terlebih dahulu",
+      });
+    }
+    if (values.order_type === "takeaway") {
+      if (!values.pickup_time) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["pickup_time"],
+          message: "Pilih waktu ambil",
+        });
+        return;
+      }
+
+      const timeParts = /^(\d{2}):(\d{2})$/.exec(values.pickup_time);
+      if (!timeParts) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["pickup_time"],
+          message: "Format waktu tidak valid",
+        });
+        return;
+      }
+
+      const hour = Number(timeParts[1]);
+      const minute = Number(timeParts[2]);
+      const now = new Date();
+      if (hour * 60 + minute <= now.getHours() * 60 + now.getMinutes()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["pickup_time"],
+          message: "Waktu ambil harus setelah waktu sekarang",
+        });
+      }
+    }
+  });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;
