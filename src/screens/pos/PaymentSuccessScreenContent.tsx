@@ -1,6 +1,7 @@
 import { usePOSStore } from "@/stores/usePOSStore";
 import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import { useReceiptStore } from "@/stores/useReceiptStore";
+import { usePrinterStore } from "@/stores/usePrinterStore";
 import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
 import { formatRupiah } from "@/utils/format";
 import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";
@@ -61,6 +62,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const receiptSettings = useReceiptStore((state) => state.settings);
+  const paperWidth = usePrinterStore((state) => state.settings.paperWidth);
   const closeModal = usePOSStore((s) => s.closeModal);
   const resetCheckoutForm = usePOSStore((s) => s.resetCheckoutForm);
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
@@ -192,7 +194,11 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
               </View>
               {checkoutResult ? (
                 <View className="rounded-lg bg-neutral-200 p-4 dark:bg-neutral-800">
-                  <ReceiptPaper settings={receiptSettings} data={toReceiptData(checkoutResult)} />
+                  <ReceiptPaper
+                    settings={receiptSettings}
+                    data={toReceiptData(checkoutResult)}
+                    paperWidth={paperWidth}
+                  />
                 </View>
               ) : (
                 <Surface className="items-center px-4 py-8">

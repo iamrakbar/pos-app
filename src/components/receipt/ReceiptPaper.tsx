@@ -1,4 +1,5 @@
 import type { ReceiptSettings } from "@/stores/useReceiptStore";
+import type { PaperWidth } from "@/stores/usePrinterStore";
 import { formatRupiah } from "@/utils/format";
 import type { JSX } from "react";
 import { Image, Platform, StyleSheet, Text, View } from "react-native";
@@ -74,9 +75,11 @@ function MetaRow({ label, value }: { label: string; value: string }): JSX.Elemen
 export function ReceiptPaper({
   settings,
   data,
+  paperWidth = "58mm",
 }: {
   settings: ReceiptSettings;
   data: ReceiptPreviewData;
+  paperWidth?: PaperWidth;
 }): JSX.Element {
   const headerLines = settings.header
     .split("\n")
@@ -85,7 +88,10 @@ export function ReceiptPaper({
   const totalQty = data.items.reduce((sum, item) => sum + item.qty, 0);
 
   return (
-    <View className="w-full max-w-md self-center bg-white px-6 py-7">
+    <View
+      className="max-w-full self-center bg-white px-6 py-7"
+      style={{ width: paperWidth === "58mm" ? 320 : 440 }}
+    >
       {settings.storeLogo ? (
         <Image
           source={{ uri: settings.storeLogo }}

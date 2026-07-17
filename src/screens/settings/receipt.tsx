@@ -2,6 +2,7 @@ import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/Rece
 import { useAuth } from "@/stores/useAuth";
 import { useMerchantProfile } from "@/hooks/db/useMerchantProfile";
 import { useReceiptStore } from "@/stores/useReceiptStore";
+import { usePrinterStore, type PaperWidth } from "@/stores/usePrinterStore";
 import { optimizeReceiptLogo } from "@/utils/receiptLogo";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
 import { useNavigationTheme } from "@/utils/navigationTheme";
@@ -11,6 +12,7 @@ import { Stack, useRouter } from "expo-router";
 import {
   Button,
   Input,
+  Select,
   Separator,
   Surface,
   Typography,
@@ -57,6 +59,8 @@ const SAMPLE_RECEIPT: ReceiptPreviewData = {
   total: 90300,
 };
 
+const PAPER_WIDTHS: PaperWidth[] = ["58mm", "80mm"];
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : null;
 }
@@ -92,11 +96,13 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const merchantProfile = useMerchantProfile();
   const settings = useReceiptStore((state) => state.settings);
   const updateSettings = useReceiptStore((state) => state.updateSettings);
+  const configuredPaperWidth = usePrinterStore((state) => state.settings.paperWidth);
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
   const themeColorMuted = useThemeColor("muted");
   const navigationTheme = useNavigationTheme();
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
+  const [previewPaperWidth, setPreviewPaperWidth] = useState<PaperWidth>(configuredPaperWidth);
 
   const merchantDefaults = useMemo(
     () => ({
@@ -307,16 +313,40 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
               <Typography className="text-sm font-semibold text-foreground">
                 Receipt preview
               </Typography>
-              <Typography type="body-xs" color="muted">
-                58 mm
-              </Typography>
+              <Select
+                value={{ value: previewPaperWidth, label: previewPaperWidth }}
+                onValueChange={(option) => {
+                  if (option?.value) setPreviewPaperWidth(option.value as PaperWidth);
+                }}
+              >
+                <Select.Trigger className="w-28">
+                  <Select.Value placeholder="Paper size" numberOfLines={1} />
+                  <Select.TriggerIndicator />
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Overlay />
+                  <Select.Content presentation="popover" width="trigger">
+                    <Select.ListLabel className="mb-2">Preview size</Select.ListLabel>
+                    {PAPER_WIDTHS.map((paperWidth, index) => (
+                      <React.Fragment key={paperWidth}>
+                        <Select.Item value={paperWidth} label={paperWidth} />
+                        {index < PAPER_WIDTHS.length - 1 ? <Separator /> : null}
+                      </React.Fragment>
+                    ))}
+                  </Select.Content>
+                </Select.Portal>
+              </Select>
             </View>
             <ScrollView
               className="flex-1 rounded-lg bg-neutral-200 dark:bg-neutral-800"
               contentContainerClassName="p-4"
               showsVerticalScrollIndicator={false}
             >
-              <ReceiptPaper settings={settings} data={SAMPLE_RECEIPT} />
+              <ReceiptPaper
+                settings={settings}
+                data={SAMPLE_RECEIPT}
+                paperWidth={previewPaperWidth}
+              />
             </ScrollView>
           </View>
         </View>
