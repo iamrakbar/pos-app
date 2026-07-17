@@ -88,13 +88,23 @@ function MiniInput({
   );
 }
 
+function PaymentButtonSkeleton({ widths }: { widths: number[] }) {
+  return (
+    <View className="min-h-8 flex-row flex-wrap gap-2" accessibilityRole="progressbar">
+      {widths.map((width) => (
+        <View key={width} className="h-8 rounded-lg bg-surface-secondary" style={{ width }} />
+      ))}
+    </View>
+  );
+}
+
 export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentProps): JSX.Element {
   const closeModal = usePOSStore((s) => s.closeModal);
 
   const cartProducts = useCartStore((s) => s.products);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
-  const { data: paymentGroups = [] } = usePaymentGroups();
+  const { data: paymentGroups = [], isPending: arePaymentGroupsPending } = usePaymentGroups();
   const { data: tablesList = [] } = useTables();
   const { data: guests = [] } = useGuests();
   const validateCart = useValidateCart();
@@ -329,25 +339,29 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           <Typography type="body-sm" weight="semibold">
             Metode pembayaran
           </Typography>
-          <View className="flex-row flex-wrap gap-2">
-            {paymentGroups.map((group) => {
-              const isActive = paymentGroup === group.group_type;
-              return (
-                <Button
-                  key={group.group_type}
-                  size="sm"
-                  variant={isActive ? "primary" : "outline"}
-                  onPress={() => {
-                    setValue("payment_group", group.group_type);
-                    setValue("payment_id", group.payments[0]?.id ?? "");
-                    setCashReceived("");
-                  }}
-                >
-                  <Button.Label>{group.group_label}</Button.Label>
-                </Button>
-              );
-            })}
-          </View>
+          {arePaymentGroupsPending ? (
+            <PaymentButtonSkeleton widths={[104, 88, 112]} />
+          ) : (
+            <View className="min-h-8 flex-row flex-wrap gap-2">
+              {paymentGroups.map((group) => {
+                const isActive = paymentGroup === group.group_type;
+                return (
+                  <Button
+                    key={group.group_type}
+                    size="sm"
+                    variant={isActive ? "primary" : "outline"}
+                    onPress={() => {
+                      setValue("payment_group", group.group_type);
+                      setValue("payment_id", group.payments[0]?.id ?? "");
+                      setCashReceived("");
+                    }}
+                  >
+                    <Button.Label>{group.group_label}</Button.Label>
+                  </Button>
+                );
+              })}
+            </View>
+          )}
         </View>
 
         {!isCashPayment ? (
@@ -355,20 +369,24 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
             <Typography type="body-sm" weight="semibold">
               Pembayaran
             </Typography>
-            <View className="flex-row flex-wrap gap-2">
-              {paymentGroups
-                .find((group) => group.group_type === paymentGroup)
-                ?.payments.map((payment) => (
-                  <Button
-                    key={payment.id}
-                    size="sm"
-                    variant={paymentId === payment.id ? "primary" : "outline"}
-                    onPress={() => setValue("payment_id", payment.id)}
-                  >
-                    <Button.Label>{payment.name}</Button.Label>
-                  </Button>
-                ))}
-            </View>
+            {arePaymentGroupsPending ? (
+              <PaymentButtonSkeleton widths={[96, 120, 88]} />
+            ) : (
+              <View className="min-h-8 flex-row flex-wrap gap-2">
+                {paymentGroups
+                  .find((group) => group.group_type === paymentGroup)
+                  ?.payments.map((payment) => (
+                    <Button
+                      key={payment.id}
+                      size="sm"
+                      variant={paymentId === payment.id ? "primary" : "outline"}
+                      onPress={() => setValue("payment_id", payment.id)}
+                    >
+                      <Button.Label>{payment.name}</Button.Label>
+                    </Button>
+                  ))}
+              </View>
+            )}
             {errors.payment_id ? (
               <Typography type="body-xs" className="text-danger">
                 {errors.payment_id.message}
@@ -583,6 +601,8 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           isDisabled={
             validateCart.isPending ||
             checkout.isPending ||
+            arePaymentGroupsPending ||
+            paymentGroups.length === 0 ||
             cartProducts.length === 0 ||
             (isCashPayment && cashReceivedAmount < total)
           }
