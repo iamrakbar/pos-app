@@ -13,14 +13,12 @@ import { useCallback } from "react";
 import { Platform, StatusBar, View, useWindowDimensions } from "react-native";
 import { useNavigationTheme } from "@/utils/navigationTheme";
 
-const CART_PANEL_WIDTH = 400;
-
 export default function POSScreen(): JSX.Element {
   const { width: viewportWidth } = useWindowDimensions();
   const openAddonModal = usePOSStore((s) => s.openAddonModal);
   const addItem = useCartStore((s) => s.addItem);
   const theme = useNavigationTheme();
-  const cartPanelWidth = Math.min(CART_PANEL_WIDTH, viewportWidth / 3);
+  const cartPanelWidth = Math.floor(viewportWidth / 3);
 
   useFocusEffect(
     useCallback(() => {

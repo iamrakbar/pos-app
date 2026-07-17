@@ -26,13 +26,13 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
       onPress={handlePress}
       disabled={isOutOfStock}
       style={{
-        maxWidth: width - 12,
+        width: width - 12,
       }}
-      className={`flex-1 m-1.5 active:opacity-85 ${isOutOfStock ? "opacity-50" : ""}`}
+      className={`m-1.5 active:opacity-85 ${isOutOfStock ? "opacity-50" : ""}`}
       accessibilityRole="button"
       accessibilityLabel={`Add ${product.name}`}
     >
-      <Card className="flex-1 overflow-hidden p-0">
+      <Card className="overflow-hidden p-0">
         <View className="aspect-square bg-surface-secondary items-center justify-center">
           {product.image_url ? (
             <Image

@@ -10,6 +10,7 @@ import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
 import ProductCard from "./ProductCard";
 
 const CARD_MIN_WIDTH = 180;
+const GRID_HORIZONTAL_PADDING = 24;
 
 type Props = {
   onSelectProduct: (product: POSProduct) => void;
@@ -23,7 +24,7 @@ export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props):
   const categoryId = usePOSStore((s) => s.categoryId);
   const productSort = usePOSStore((s) => s.productSort);
 
-  const availableWidth = width - cartPanelWidth;
+  const availableWidth = width - cartPanelWidth - GRID_HORIZONTAL_PADDING;
   const numColumns = Math.max(2, Math.floor(availableWidth / CARD_MIN_WIDTH));
   const cardWidth = Math.floor(availableWidth / numColumns);
 
