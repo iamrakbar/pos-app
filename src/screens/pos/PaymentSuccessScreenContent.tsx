@@ -1,13 +1,9 @@
 import { usePOSStore } from "@/stores/usePOSStore";
 import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import { useReceiptStore } from "@/stores/useReceiptStore";
-import { usePrinterStore } from "@/stores/usePrinterStore";
-import { ReceiptPaper } from "@/components/receipt/ReceiptPaper";
-import { toReceiptData } from "@/services/printer/receiptData";
 import { formatRupiah } from "@/utils/format";
 import {
   Button,
-  Chip,
   Dialog,
   Separator,
   Spinner,
@@ -16,8 +12,8 @@ import {
   Typography,
   useThemeColor,
 } from "heroui-native";
-import { useEffect, useRef, type JSX } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import { useEffect, useRef, useState, type JSX } from "react";
+import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 type PaymentSuccessContentProps = {
@@ -40,17 +36,14 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const receiptSettings = useReceiptStore((state) => state.settings);
   const updateReceiptSettings = useReceiptStore((state) => state.updateSettings);
-  const paperWidth = usePrinterStore((state) => state.settings.paperWidth);
-  const charactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const closeModal = usePOSStore((s) => s.closeModal);
   const resetCheckoutForm = usePOSStore((s) => s.resetCheckoutForm);
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
 
-  const { width: windowWidth } = useWindowDimensions();
-  const isWideLayout = windowWidth >= 900;
   const products = checkoutResult?.products ?? [];
   const totalQty = products.reduce((sum, product) => sum + product.qty, 0);
   const autoPrintedOrderRef = useRef<string | null>(null);
+  const [paidAt] = useState(() => new Date());
 
   const handleNewOrder = () => {
     closeModal();
@@ -88,123 +81,88 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
 
   if (!paymentSession) return <></>;
 
-  const paidAt = new Date();
-
   return (
     <>
-      <View className="flex-1 bg-background">
-        <View className="bg-surface px-5 py-5">
-          <View className="flex-row items-center justify-between gap-4">
-            <Typography className="text-xl font-semibold text-foreground">
-              Payment complete
-            </Typography>
-            <Chip color="success" variant="soft" size="sm">
-              <Chip.Label>Paid</Chip.Label>
-            </Chip>
-          </View>
-        </View>
-
-        <Separator />
-
+      <View className="flex-1 bg-background p-safe">
         <ScrollView
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          contentContainerClassName="px-5 py-6 bg-background"
+          contentContainerClassName="flex-grow px-5 py-8 bg-background"
         >
-          <View
-            className={`w-full max-w-6xl self-center ${isWideLayout ? "flex-row items-start gap-5" : "gap-5"}`}
-          >
-            <View className={isWideLayout ? "w-[340px] gap-4" : "gap-4"}>
-              <Surface className="items-center gap-3 p-5">
-                <View className="w-14 h-14 rounded-full bg-success/10 items-center justify-center">
-                  <View className="w-10 h-10 rounded-full bg-success items-center justify-center">
-                    <Ionicons name="checkmark" size={24} color="white" />
-                  </View>
-                </View>
-                <View className="items-center gap-1">
-                  <Typography className="text-sm font-medium text-muted-foreground">
-                    Amount paid
-                  </Typography>
-                  <Typography className="text-3xl font-bold text-foreground tabular-nums">
-                    {formatRupiah(paymentSession.amount)}
-                  </Typography>
-                  <Typography className="text-xs text-muted-foreground font-mono">
-                    {paymentSession.transaction_id}
-                  </Typography>
-                </View>
-              </Surface>
-
-              <Surface className="w-full overflow-hidden">
-                <View className="px-5 py-4">
-                  <Typography className="text-base font-semibold text-foreground">
-                    Transaction
-                  </Typography>
-                </View>
-                <View className="flex-row justify-between px-5 py-3">
-                  <Typography className="text-sm text-muted-foreground">Payment method</Typography>
-                  <Typography className="text-sm font-semibold text-foreground">
-                    {paymentSession.payment_type}
-                  </Typography>
-                </View>
-                {paymentSession.cash_received !== undefined ? (
-                  <>
-                    <View className="flex-row justify-between px-5 py-3">
-                      <Typography className="text-sm text-muted-foreground">
-                        Cash received
-                      </Typography>
-                      <Typography className="text-sm font-semibold text-foreground tabular-nums">
-                        {formatRupiah(paymentSession.cash_received)}
-                      </Typography>
-                    </View>
-                    <View className="flex-row justify-between px-5 py-3">
-                      <Typography className="text-sm text-muted-foreground">Change</Typography>
-                      <Typography className="text-sm font-semibold text-foreground tabular-nums">
-                        {formatRupiah(paymentSession.change ?? 0)}
-                      </Typography>
-                    </View>
-                  </>
-                ) : null}
-                <View className="flex-row justify-between px-5 py-3">
-                  <Typography className="text-sm text-muted-foreground">Date & time</Typography>
-                  <Typography className="text-sm font-semibold text-foreground">
-                    {formatDateTime(paidAt)}
-                  </Typography>
-                </View>
-                <View className="flex-row justify-between px-5 py-3">
-                  <Typography className="text-sm text-muted-foreground">Items</Typography>
-                  <Typography className="text-sm font-semibold text-foreground">
-                    {totalQty} {totalQty === 1 ? "item" : "items"}
-                  </Typography>
-                </View>
-              </Surface>
-            </View>
-
-            <View className="flex-1 gap-2">
-              <View className="flex-row items-center justify-between gap-3">
-                <Typography className="text-sm font-semibold text-foreground">
-                  Receipt preview
+          <View className="w-full max-w-xl self-center gap-6">
+            <View className="items-center gap-3 py-2">
+              <View className="w-14 h-14 rounded-full bg-success items-center justify-center">
+                <Ionicons name="checkmark" size={28} color="white" />
+              </View>
+              <View className="items-center gap-1.5">
+                <Typography type="h4" weight="bold">
+                  Payment Complete
                 </Typography>
-                <Typography className="text-xs text-muted-foreground">
-                  {checkoutResult?.code}
+                <Typography type="h2" weight="bold" className="tabular-nums">
+                  {formatRupiah(paymentSession.amount)}
+                </Typography>
+                <Typography type="body-xs" color="muted" className="font-mono">
+                  {checkoutResult?.code ?? paymentSession.transaction_id}
                 </Typography>
               </View>
-              {checkoutResult ? (
-                <View className="rounded-lg bg-neutral-200 p-4 dark:bg-neutral-800">
-                  <ReceiptPaper
-                    settings={receiptSettings}
-                    data={toReceiptData(checkoutResult)}
-                    paperWidth={paperWidth}
-                    charactersPerLine={charactersPerLine}
-                  />
-                </View>
-              ) : (
-                <Surface className="items-center px-4 py-8">
-                  <Typography className="text-sm text-muted-foreground">
-                    Receipt data unavailable.
-                  </Typography>
-                </Surface>
-              )}
             </View>
+
+            <Surface className="w-full p-5 gap-3">
+              <View className="flex-row justify-between gap-4">
+                <Typography type="body-sm" color="muted">
+                  Payment method
+                </Typography>
+                <Typography type="body-sm" weight="semibold">
+                  {paymentSession.payment_type}
+                </Typography>
+              </View>
+              {paymentSession.cash_received !== undefined ? (
+                <>
+                  <View className="flex-row justify-between gap-4">
+                    <Typography type="body-sm" color="muted">
+                      Cash received
+                    </Typography>
+                    <Typography type="body-sm" weight="semibold" className="tabular-nums">
+                      {formatRupiah(paymentSession.cash_received)}
+                    </Typography>
+                  </View>
+                  <View className="flex-row justify-between gap-4">
+                    <Typography type="body-sm" color="muted">
+                      Change
+                    </Typography>
+                    <Typography type="body-sm" weight="semibold" className="tabular-nums">
+                      {formatRupiah(paymentSession.change ?? 0)}
+                    </Typography>
+                  </View>
+                </>
+              ) : null}
+              <View className="flex-row justify-between gap-4">
+                <Typography type="body-sm" color="muted">
+                  Date & time
+                </Typography>
+                <Typography type="body-sm" weight="semibold" className="text-right">
+                  {formatDateTime(paidAt)}
+                </Typography>
+              </View>
+              <View className="flex-row justify-between gap-4">
+                <Typography type="body-sm" color="muted">
+                  Items
+                </Typography>
+                <Typography type="body-sm" weight="semibold">
+                  {totalQty} {totalQty === 1 ? "item" : "items"}
+                </Typography>
+              </View>
+              {checkoutResult?.code ? (
+                <View className="flex-row justify-between gap-4">
+                  <Typography type="body-sm" color="muted">
+                    Order
+                  </Typography>
+                  <Typography type="body-sm" weight="semibold" className="font-mono">
+                    {checkoutResult.code}
+                  </Typography>
+                </View>
+              ) : null}
+            </Surface>
           </View>
         </ScrollView>
 
@@ -212,7 +170,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
 
         {/* Actions */}
         <View className="bg-surface px-5 py-4">
-          <View className="w-full max-w-6xl self-center gap-3">
+          <View className="w-full max-w-xl self-center gap-3">
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1 gap-0.5">
                 <Typography type="body-sm" weight="semibold">
