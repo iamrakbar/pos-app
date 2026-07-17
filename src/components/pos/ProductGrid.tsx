@@ -33,13 +33,16 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
     error,
     refetch,
     isRefetching,
-  } = useProducts(searchQuery || undefined, categoryId || undefined);
+  } = useProducts(searchQuery || undefined);
   const filtered = useMemo(
     () =>
       (allProducts ?? []).filter(
-        (p) => p.is_active && (!p.stock_enabled || (p.stock_qty ?? 0) > 0)
+        (p) =>
+          (!categoryId || p.category_id === categoryId) &&
+          p.is_active &&
+          (!p.stock_enabled || (p.stock_qty ?? 0) > 0)
       ),
-    [allProducts]
+    [allProducts, categoryId]
   );
 
   const renderProduct = useCallback(

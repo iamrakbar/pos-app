@@ -27,17 +27,23 @@ export default function ProductsScreen(): React.JSX.Element {
         isError,
         error,
         refetch,
-    } = useProducts(deferredSearch || undefined, categoryId || undefined);
+    } = useProducts(deferredSearch || undefined);
     const allProducts = allProductsRaw ?? [];
     const { data: categoriesList = [] } = useCategories();
 
-    const filtered = allProducts.filter((p) => {
-        return (
-            activeFilter === 'all' ||
-            (activeFilter === 'active' && p.is_active) ||
-            (activeFilter === 'inactive' && !p.is_active)
-        );
-    });
+    const filtered = React.useMemo(
+        () =>
+            allProducts.filter((product) => {
+                const matchesCategory = !categoryId || product.category_id === categoryId;
+                const matchesStatus =
+                    activeFilter === 'all' ||
+                    (activeFilter === 'active' && product.is_active) ||
+                    (activeFilter === 'inactive' && !product.is_active);
+
+                return matchesCategory && matchesStatus;
+            }),
+        [activeFilter, allProducts, categoryId],
+    );
 
     const selectedCategory = categoriesList.find((c) => c.id === categoryId);
 
