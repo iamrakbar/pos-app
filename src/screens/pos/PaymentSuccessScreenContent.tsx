@@ -116,6 +116,24 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                     {paymentSession.payment_type}
                   </Typography>
                 </View>
+                {paymentSession.cash_received !== undefined ? (
+                  <>
+                    <View className="flex-row justify-between px-5 py-3">
+                      <Typography className="text-sm text-muted-foreground">
+                        Cash received
+                      </Typography>
+                      <Typography className="text-sm font-semibold text-foreground tabular-nums">
+                        {formatRupiah(paymentSession.cash_received)}
+                      </Typography>
+                    </View>
+                    <View className="flex-row justify-between px-5 py-3">
+                      <Typography className="text-sm text-muted-foreground">Change</Typography>
+                      <Typography className="text-sm font-semibold text-foreground tabular-nums">
+                        {formatRupiah(paymentSession.change ?? 0)}
+                      </Typography>
+                    </View>
+                  </>
+                ) : null}
                 <View className="flex-row justify-between px-5 py-3">
                   <Typography className="text-sm text-muted-foreground">Date & time</Typography>
                   <Typography className="text-sm font-semibold text-foreground">

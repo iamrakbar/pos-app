@@ -3,16 +3,29 @@ import { CheckoutContent } from "@/screens/pos/CheckoutScreenContent";
 import { usePOSStore } from "@/stores/usePOSStore";
 import type { PaymentSession } from "@/types/pos";
 import { Dialog } from "heroui-native";
+import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useWindowDimensions } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 
 export default function CheckoutModal(): JSX.Element {
   const { width, height } = useWindowDimensions();
+  const router = useRouter();
   const modal = usePOSStore((state) => state.modal);
   const closeModal = usePOSStore((state) => state.closeModal);
   const openPaymentModal = usePOSStore((state) => state.openPaymentModal);
+  const setPaymentSession = usePOSStore((state) => state.setPaymentSession);
 
-  const handlePaymentReady = (session: PaymentSession, result: MerchantCheckoutData) => {
+  const handlePaymentReady = (
+    session: PaymentSession,
+    result: MerchantCheckoutData,
+    options: { isCash: boolean }
+  ) => {
+    if (options.isCash) {
+      setPaymentSession(session, result);
+      closeModal();
+      router.push("/pos/payment-success" as never);
+      return;
+    }
     openPaymentModal(session, result);
   };
 
@@ -25,10 +38,14 @@ export default function CheckoutModal(): JSX.Element {
           accessibilityLabel="Checkout"
           className="overflow-hidden bg-background p-0"
           style={{
-            width: Math.min(width * 0.92, 1120),
-            height: height * 0.9,
+            width: Math.min(width * 0.9, 680),
+            height: Math.min(height * 0.86, 920),
           }}
         >
+          <View className="flex-row items-center justify-between px-5 py-4">
+            <Dialog.Title>Checkout</Dialog.Title>
+            <Dialog.Close />
+          </View>
           <CheckoutContent onCancel={closeModal} onPaymentReady={handlePaymentReady} />
         </Dialog.Content>
       </Dialog.Portal>

@@ -2,12 +2,10 @@ import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
 import { useTables } from "@/hooks/db/useTables";
 import { usePaymentGroups } from "@/hooks/db/usePayments";
-import { useGuests, useCreateGuest } from "@/hooks/db/useGuests";
 import { useCustomerSearch } from "@/hooks/db/useCustomers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/useCart";
 import { useCheckout } from "@/hooks/db/useCheckout";
 import { checkoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
-import { guestSchema, type GuestFormValues } from "@/schemas/guest";
 import { formatRupiah } from "@/utils/format";
 import { getErrorMessage, isApiError } from "@/api/ApiError";
 import {
@@ -28,22 +26,18 @@ import {
 } from "heroui-native";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from "react-native";
 import type { PaymentSession } from "@/types/pos";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 
 type CheckoutContentProps = {
   onCancel?: () => void;
-  onPaymentReady?: (session: PaymentSession, result: MerchantCheckoutData) => void;
+  onPaymentReady?: (
+    session: PaymentSession,
+    result: MerchantCheckoutData,
+    options: { isCash: boolean }
+  ) => void;
 };
 
 const ORDER_TYPE_LABELS: Record<string, string> = {
@@ -51,11 +45,7 @@ const ORDER_TYPE_LABELS: Record<string, string> = {
   takeaway: "Takeaway",
 };
 
-const CUSTOMER_TYPE_LABELS: Record<CheckoutFormValues["customer_type"], string> = {
-  guest: "Guest",
-  customer: "Pelanggan terdaftar",
-  anonymous: "Walk-in",
-};
+const isEMoneyGroup = (groupType: string) => groupType.toLowerCase() === "e-money";
 
 function MiniInput({
   value,
@@ -68,61 +58,57 @@ function MiniInput({
   placeholder?: string;
   keyboardType?: "default" | "email-address" | "phone-pad";
 }) {
-  const [themeColorBackground, themeColorBorder, themeColorForeground, themeColorFieldPlaceholder] =
-    useThemeColor(["background", "border", "foreground", "field-placeholder"]);
+  const [background, border, foreground, placeholderColor] = useThemeColor([
+    "background",
+    "border",
+    "foreground",
+    "field-placeholder",
+  ]);
 
   return (
     <TextInput
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
-      placeholderTextColor={themeColorFieldPlaceholder}
+      placeholderTextColor={placeholderColor}
       keyboardType={keyboardType ?? "default"}
       autoCapitalize="none"
       style={{
         borderWidth: 1,
-        borderColor: themeColorBorder,
-        borderRadius: 12,
+        borderColor: border,
+        borderRadius: 10,
         height: 40,
         paddingHorizontal: 12,
         fontSize: 14,
-        color: themeColorForeground,
-        backgroundColor: themeColorBackground,
+        color: foreground,
+        backgroundColor: background,
       }}
     />
   );
 }
 
 export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentProps): JSX.Element {
-  const themeColorPrimary = useThemeColor("link");
   const closeModal = usePOSStore((s) => s.closeModal);
 
   const cartProducts = useCartStore((s) => s.products);
   const totalPrice = useCartStore((s) => s.totalPrice);
-  const { width: windowWidth } = useWindowDimensions();
-  const isWideLayout = windowWidth >= 900;
-
   const { data: paymentGroups = [] } = usePaymentGroups();
   const { data: tablesList = [] } = useTables();
-  const { data: guestsList = [] } = useGuests();
-  const createGuest = useCreateGuest();
   const validateCart = useValidateCart();
   const checkout = useCheckout();
 
-  const [guestSearch, setGuestSearch] = useState("");
-  const [showNewGuestForm, setShowNewGuestForm] = useState(false);
-  const [newGuest, setNewGuest] = useState<GuestFormValues>({ name: "", email: "", phone: "" });
+  const [cashReceived, setCashReceived] = useState("");
   const [cartError, setCartError] = useState<string | null>(null);
 
   const defaultPaymentGroup =
-    paymentGroups.find((g) => g.group_type === "e-money") ?? paymentGroups[0];
+    paymentGroups.find((group) => isEMoneyGroup(group.group_type)) ?? paymentGroups[0];
   const defaultPaymentId = defaultPaymentGroup?.payments[0]?.id ?? "";
 
   const DEFAULT_VALUES: CheckoutFormValues = {
     order_type: "dine-in",
     table_id: null,
     pickup_time: null,
-    payment_group: defaultPaymentGroup?.group_type ?? "e-money",
+    payment_group: defaultPaymentGroup?.group_type ?? "E-Money",
     payment_id: defaultPaymentId,
     customer_type: "anonymous",
     guest_id: null,
@@ -147,7 +133,6 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const orderType = useWatch({ control, name: "order_type" });
   const tableId = useWatch({ control, name: "table_id" });
   const customerType = useWatch({ control, name: "customer_type" });
-  const guestId = useWatch({ control, name: "guest_id" });
   const customerId = useWatch({ control, name: "customer_id" });
   const customerSearch = useWatch({ control, name: "customer_search" });
 
@@ -158,7 +143,9 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
     const selectedGroup = paymentGroups.find((g) => g.group_type === paymentGroup);
     const fallbackGroup =
-      selectedGroup ?? paymentGroups.find((g) => g.group_type === "e-money") ?? paymentGroups[0];
+      selectedGroup ??
+      paymentGroups.find((group) => isEMoneyGroup(group.group_type)) ??
+      paymentGroups[0];
     const firstPayment = fallbackGroup.payments[0];
 
     if (!selectedGroup) {
@@ -187,27 +174,23 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
       : selectedPayment.fee_value
     : 0;
   const total = subtotal + paymentFee;
+  const isCashPayment =
+    paymentGroup.toLowerCase().includes("cash") || selectedPayment?.code === "cashier";
+  const cashReceivedAmount = Number(cashReceived.replace(/\D/g, "")) || 0;
+  const change = Math.max(0, cashReceivedAmount - total);
+  const cashPresets = Array.from(
+    new Set([total, 100_000, 150_000, 200_000, 250_000, 300_000, 500_000])
+  ).filter((amount) => amount >= total);
 
   const selectedTable = tablesList.find((t) => t.id === tableId);
-  const selectedGuest = guestsList.find((g) => g.id === guestId);
-  const filteredGuests = guestSearch.trim()
-    ? guestsList.filter((g) => g.name.toLowerCase().includes(guestSearch.trim().toLowerCase()))
-    : guestsList;
-
-  const handleCreateGuest = () => {
-    const parsed = guestSchema.safeParse(newGuest);
-    if (!parsed.success) return;
-    createGuest.mutate(parsed.data, {
-      onSuccess: (guest) => {
-        setValue("guest_id", guest.id);
-        setShowNewGuestForm(false);
-        setNewGuest({ name: "", email: "", phone: "" });
-      },
-    });
-  };
 
   const onSubmit = async (values: CheckoutFormValues) => {
     setCartError(null);
+
+    if (isCashPayment && cashReceivedAmount < total) {
+      setCartError("Nominal tunai kurang dari total pembayaran.");
+      return;
+    }
 
     try {
       await validateCart.mutateAsync();
@@ -230,8 +213,10 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
         qr_url: extractPaymentQrUrl(result),
         expires_at: extractPaymentExpiry(result.payment_details),
         amount: extractCheckoutTotal(result, total),
+        cash_received: isCashPayment ? cashReceivedAmount : undefined,
+        change: isCashPayment ? change : undefined,
       };
-      onPaymentReady?.(session, result);
+      onPaymentReady?.(session, result, { isCash: isCashPayment });
     } catch (error) {
       setCartError(getErrorMessage(error));
     }
@@ -243,433 +228,328 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
   return (
     <View className="flex-1 bg-background">
-      <View className="bg-surface px-5 py-5">
-        <View>
-          <Typography className="text-xl font-semibold text-foreground">Checkout</Typography>
-          <Typography className="text-sm text-muted-foreground">
-            Review order details, customer, and payment method
-          </Typography>
-        </View>
-      </View>
-
-      <Separator />
-
       <ScrollView
-        showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
         className="flex-1"
-        contentContainerClassName="w-full max-w-6xl self-center p-5 gap-5 bg-background"
+        contentContainerClassName="gap-4 px-5 py-4"
       >
-        {cartError && (
+        {cartError ? (
           <View className="rounded-lg bg-danger/10 px-3 py-2.5">
-            <Typography className="text-sm text-danger">{cartError}</Typography>
+            <Typography type="body-sm" className="text-danger">
+              {cartError}
+            </Typography>
           </View>
-        )}
+        ) : null}
 
-        <View className={isWideLayout ? "flex-row items-start gap-5" : "gap-4"}>
-          <View className="flex-1 gap-4">
-            {/* Order type + Table/Pickup time */}
-            <Surface className="w-full gap-4 p-5">
-              <View>
-                <Typography className="text-base font-semibold text-foreground">Order</Typography>
-                <Typography className="text-xs text-muted-foreground">
-                  Service type and table information
-                </Typography>
-              </View>
-              <View className={isWideLayout ? "flex-row gap-4" : "gap-4"}>
-                <View className="flex-1 gap-1.5">
-                  <Typography className="text-sm font-semibold text-foreground">
-                    Jenis pesanan <Typography className="text-danger">*</Typography>
-                  </Typography>
-                  <Select
-                    value={{ value: orderType, label: ORDER_TYPE_LABELS[orderType] ?? orderType }}
-                    onValueChange={(opt) => {
-                      if (opt) setValue("order_type", opt.value as "dine-in" | "takeaway");
-                    }}
-                  >
-                    <Select.Trigger>
-                      <Select.Value placeholder="Pilih jenis" />
-                      <Select.TriggerIndicator />
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Overlay />
-                      <Select.Content presentation="popover" width="full">
-                        <Select.Item value="dine-in" label="Dine-In" />
-                        <Select.Item value="takeaway" label="Takeaway" />
-                      </Select.Content>
-                    </Select.Portal>
-                  </Select>
-                </View>
-
-                {orderType === "dine-in" ? (
-                  <View className="flex-1 gap-1.5">
-                    <View className="flex-row justify-between">
-                      <Typography className="text-sm font-semibold text-foreground">
-                        Meja
-                      </Typography>
-                      <Typography className="text-xs text-muted-foreground">Opsional</Typography>
-                    </View>
-                    <Select
-                      value={
-                        selectedTable
-                          ? { value: selectedTable.id, label: selectedTable.name }
-                          : undefined
-                      }
-                      onValueChange={(opt) => setValue("table_id", opt?.value ?? null)}
-                    >
-                      <Select.Trigger>
-                        <Select.Value placeholder="Pilih salah satu opsi" />
-                        <Select.TriggerIndicator />
-                      </Select.Trigger>
-                      <Select.Portal>
-                        <Select.Overlay />
-                        <Select.Content presentation="popover" width="full">
-                          <Select.Item value="" label="Tidak ada" />
-                          {tablesList.map((t) => (
-                            <Select.Item
-                              key={t.id}
-                              value={t.id}
-                              label={`${t.name} (${t.area_name})`}
-                            />
-                          ))}
-                        </Select.Content>
-                      </Select.Portal>
-                    </Select>
-                  </View>
-                ) : (
-                  <View className="flex-1 gap-1.5">
-                    <View className="flex-row justify-between">
-                      <Typography className="text-sm font-semibold text-foreground">
-                        Waktu ambil
-                      </Typography>
-                      <Typography className="text-xs text-muted-foreground">Opsional</Typography>
-                    </View>
-                    <Controller
-                      control={control}
-                      name="pickup_time"
-                      render={({ field }) => (
-                        <MiniInput
-                          value={field.value ?? ""}
-                          onChangeText={(v) => field.onChange(v || null)}
-                          placeholder="HH:mm"
-                        />
-                      )}
-                    />
-                  </View>
-                )}
-              </View>
-            </Surface>
-
-            {/* Payment method group */}
-            <Surface className="w-full gap-4 p-5">
-              <View>
-                <Typography className="text-base font-semibold text-foreground">Payment</Typography>
-                <Typography className="text-xs text-muted-foreground">
-                  Choose payment category and provider
-                </Typography>
-              </View>
-              <View className="gap-2">
-                <Typography className="text-sm font-semibold text-foreground">Metode</Typography>
-                <View className="w-full flex-row flex-wrap gap-2">
-                  {paymentGroups.map((group) => {
-                    const isActive = paymentGroup === group.group_type;
-                    return (
-                      <Pressable
-                        key={group.group_type}
-                        onPress={() => {
-                          const firstPayment = group.payments[0];
-                          setValue("payment_group", group.group_type);
-                          setValue("payment_id", firstPayment?.id ?? "");
-                        }}
-                        className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
-                      >
-                        <Typography
-                          className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
-                        >
-                          {group.group_label}
-                        </Typography>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* Payment provider */}
-              <View className="gap-2">
-                <Typography className="text-sm font-semibold text-foreground">
-                  Pembayaran <Typography className="text-danger">*</Typography>
-                </Typography>
-                {errors.payment_id && (
-                  <Typography className="text-sm text-danger">
-                    {errors.payment_id.message}
-                  </Typography>
-                )}
-                <View className="w-full flex-row flex-wrap gap-2">
-                  {paymentGroups
-                    .find((g) => g.group_type === paymentGroup)
-                    ?.payments.map((payment) => {
-                      const isActive = paymentId === payment.id;
-                      return (
-                        <Pressable
-                          key={payment.id}
-                          onPress={() => setValue("payment_id", payment.id)}
-                          className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
-                        >
-                          <Typography
-                            className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
-                          >
-                            {payment.name}
-                          </Typography>
-                        </Pressable>
-                      );
-                    })}
-                </View>
-              </View>
-            </Surface>
-
-            {/* Customer */}
-            <Surface className="w-full gap-4 p-5">
-              <View>
-                <Typography className="text-base font-semibold text-foreground">
-                  Pelanggan
-                </Typography>
-                <Typography className="text-xs text-muted-foreground">
-                  Optional customer or guest identity
-                </Typography>
-              </View>
-              <View className="flex-row flex-wrap gap-2">
-                {(["guest", "customer", "anonymous"] as const).map((type) => {
-                  const isActive = customerType === type;
-                  return (
-                    <Pressable
-                      key={type}
-                      onPress={() => {
-                        setValue("customer_type", type);
-                        setValue("guest_id", null);
-                        setValue("customer_id", null);
-                        setValue("customer_search", "");
-                      }}
-                      className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
-                    >
-                      <Typography
-                        className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
-                      >
-                        {CUSTOMER_TYPE_LABELS[type]}
-                      </Typography>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              {customerType === "guest" && (
-                <View className="gap-2">
-                  <SearchField value={guestSearch} onChange={setGuestSearch}>
-                    <SearchField.Group>
-                      <SearchField.SearchIcon />
-                      <SearchField.Input placeholder="Cari nama guest" />
-                      <SearchField.ClearButton />
-                    </SearchField.Group>
-                  </SearchField>
-
-                  {filteredGuests.length > 0 && (
-                    <View className="gap-1">
-                      {filteredGuests.slice(0, 5).map((g) => (
-                        <Pressable
-                          key={g.id}
-                          onPress={() => setValue("guest_id", g.id)}
-                          className={`px-3 py-2 rounded-lg ${guestId === g.id ? "bg-accent/10" : "bg-surface-secondary"}`}
-                        >
-                          <Typography className="text-sm text-foreground">{g.name}</Typography>
-                          {(g.email || g.phone) && (
-                            <Typography className="text-xs text-muted-foreground">
-                              {[g.email, g.phone].filter(Boolean).join(" · ")}
-                            </Typography>
-                          )}
-                        </Pressable>
-                      ))}
-                    </View>
-                  )}
-
-                  <Pressable
-                    onPress={() => setShowNewGuestForm((v) => !v)}
-                    className="flex-row items-center gap-1 self-start active:opacity-70"
-                  >
-                    <Ionicons name="add-circle-outline" size={16} color={themeColorPrimary} />
-                    <Typography className="text-sm text-primary">
-                      {showNewGuestForm ? "Batal" : "Guest baru"}
-                    </Typography>
-                  </Pressable>
-
-                  {showNewGuestForm && (
-                    <View className={isWideLayout ? "flex-row items-start gap-2" : "gap-2"}>
-                      <View className="flex-1">
-                        <MiniInput
-                          value={newGuest.name}
-                          onChangeText={(v) => setNewGuest((g) => ({ ...g, name: v }))}
-                          placeholder="Nama"
-                        />
-                      </View>
-                      <View className="flex-1">
-                        <MiniInput
-                          value={newGuest.email ?? ""}
-                          onChangeText={(v) => setNewGuest((g) => ({ ...g, email: v }))}
-                          placeholder="Email (opsional)"
-                          keyboardType="email-address"
-                        />
-                      </View>
-                      <View className="flex-1">
-                        <MiniInput
-                          value={newGuest.phone ?? ""}
-                          onChangeText={(v) => setNewGuest((g) => ({ ...g, phone: v }))}
-                          placeholder="Nomor HP (opsional)"
-                          keyboardType="phone-pad"
-                        />
-                      </View>
-                      <Button
-                        size="sm"
-                        onPress={handleCreateGuest}
-                        isDisabled={createGuest.isPending}
-                      >
-                        Simpan guest
-                      </Button>
-                    </View>
-                  )}
-
-                  {createGuest.isError && (
-                    <Typography className="text-sm text-danger">
-                      {getErrorMessage(createGuest.error)}
-                    </Typography>
-                  )}
-                  {selectedGuest && (
-                    <Typography className="text-xs text-accent">
-                      Terpilih: {selectedGuest.name}
-                    </Typography>
-                  )}
-                  {errors.guest_id && (
-                    <Typography className="text-sm text-danger">
-                      {errors.guest_id.message}
-                    </Typography>
-                  )}
-                </View>
-              )}
-
-              {customerType === "customer" && (
-                <View className="gap-2">
-                  <Controller
-                    control={control}
-                    name="customer_search"
-                    render={({ field }) => (
-                      <SearchField value={field.value} onChange={field.onChange}>
-                        <SearchField.Group>
-                          <SearchField.SearchIcon />
-                          <SearchField.Input placeholder="Cari dengan mengetik email pelanggan" />
-                          <SearchField.ClearButton />
-                        </SearchField.Group>
-                      </SearchField>
-                    )}
-                  />
-                  {customerResults.length > 0 && (
-                    <View className="gap-1">
-                      {customerResults.map((c) => (
-                        <Pressable
-                          key={c.id}
-                          onPress={() => setValue("customer_id", c.id)}
-                          className={`px-3 py-2 rounded-lg ${customerId === c.id ? "bg-accent/10" : "bg-surface-secondary"}`}
-                        >
-                          <Typography className="text-sm text-foreground">{c.name}</Typography>
-                          {(c.email || c.phone) && (
-                            <Typography className="text-xs text-muted-foreground">
-                              {[c.email, c.phone].filter(Boolean).join(" · ")}
-                            </Typography>
-                          )}
-                        </Pressable>
-                      ))}
-                    </View>
-                  )}
-                  {errors.customer_id && (
-                    <Typography className="text-sm text-danger">
-                      {errors.customer_id.message}
-                    </Typography>
-                  )}
-                </View>
-              )}
-            </Surface>
+        <View className="flex-row gap-3">
+          <View className="flex-1 gap-1.5">
+            <Typography type="body-sm" weight="semibold">
+              Jenis pesanan <Typography className="text-danger">*</Typography>
+            </Typography>
+            <Select
+              value={{ value: orderType, label: ORDER_TYPE_LABELS[orderType] ?? orderType }}
+              onValueChange={(option) => {
+                if (option) setValue("order_type", option.value as "dine-in" | "takeaway");
+              }}
+            >
+              <Select.Trigger>
+                <Select.Value placeholder="Pilih jenis" />
+                <Select.TriggerIndicator />
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Overlay />
+                <Select.Content presentation="popover" width="trigger">
+                  <Select.Item value="dine-in" label="Dine-In" />
+                  <Select.Item value="takeaway" label="Takeaway" />
+                </Select.Content>
+              </Select.Portal>
+            </Select>
           </View>
 
-          <View className={isWideLayout ? "w-[360px] gap-4" : "gap-4"}>
-            {/* Notes */}
-            <Surface variant="secondary" className="w-full gap-3 p-5">
-              <Typography className="text-base font-semibold text-foreground">Catatan</Typography>
+          {orderType === "dine-in" ? (
+            <View className="flex-1 gap-1.5">
+              <Typography type="body-sm" weight="semibold">
+                Meja{" "}
+                <Typography type="body-xs" color="muted">
+                  (opsional)
+                </Typography>
+              </Typography>
+              <Select
+                value={
+                  selectedTable ? { value: selectedTable.id, label: selectedTable.name } : undefined
+                }
+                onValueChange={(option) => setValue("table_id", option?.value || null)}
+              >
+                <Select.Trigger>
+                  <Select.Value placeholder="Pilih meja" />
+                  <Select.TriggerIndicator />
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Overlay />
+                  <Select.Content presentation="popover" width="trigger">
+                    <Select.Item value="" label="Tanpa meja" />
+                    {tablesList.map((table) => (
+                      <Select.Item
+                        key={table.id}
+                        value={table.id}
+                        label={`${table.name} · ${table.area_name}`}
+                      />
+                    ))}
+                  </Select.Content>
+                </Select.Portal>
+              </Select>
+            </View>
+          ) : (
+            <View className="flex-1 gap-1.5">
+              <Typography type="body-sm" weight="semibold">
+                Waktu ambil
+              </Typography>
               <Controller
                 control={control}
-                name="notes"
+                name="pickup_time"
                 render={({ field }) => (
-                  <TextArea
-                    value={field.value}
-                    onChangeText={field.onChange}
-                    placeholder=""
-                    className="min-h-[96px]"
+                  <MiniInput
+                    value={field.value ?? ""}
+                    onChangeText={(value) => field.onChange(value || null)}
+                    placeholder="HH:mm"
                   />
                 )}
               />
-            </Surface>
+            </View>
+          )}
+        </View>
 
-            {/* Pricing summary */}
-            <Surface className="w-full overflow-hidden">
-              <View className="px-4 py-3 border-b border-border">
-                <Typography className="text-base font-semibold text-foreground">Summary</Typography>
-              </View>
-              <View className="flex-row justify-between px-4 py-3 border-b border-border">
-                <Typography className="text-sm text-foreground">Subtotal</Typography>
-                <Typography className="text-sm text-foreground">
-                  {formatRupiah(subtotal)}
-                </Typography>
-              </View>
-              {paymentFee > 0 && (
-                <View className="flex-row justify-between px-4 py-3 border-b border-border">
-                  <Typography className="text-sm text-foreground">
-                    Payment Fee
-                    {selectedPayment?.fee_unit === "percentage"
-                      ? ` (${selectedPayment.fee_value}%)`
-                      : ""}
-                  </Typography>
-                  <Typography className="text-sm text-foreground">
-                    {formatRupiah(paymentFee)}
-                  </Typography>
-                </View>
-              )}
-              <View className="flex-row justify-between px-4 py-3">
-                <Typography className="text-sm font-semibold text-foreground">Total</Typography>
-                <Typography className="text-lg font-bold text-foreground">
-                  {formatRupiah(total)}
-                </Typography>
-              </View>
-            </Surface>
+        <View className="gap-2">
+          <Typography type="body-sm" weight="semibold">
+            Metode pembayaran
+          </Typography>
+          <View className="flex-row flex-wrap gap-2">
+            {paymentGroups.map((group) => {
+              const isActive = paymentGroup === group.group_type;
+              return (
+                <Button
+                  key={group.group_type}
+                  size="sm"
+                  variant={isActive ? "primary" : "outline"}
+                  onPress={() => {
+                    setValue("payment_group", group.group_type);
+                    setValue("payment_id", group.payments[0]?.id ?? "");
+                    setCashReceived("");
+                  }}
+                >
+                  <Button.Label>{group.group_label}</Button.Label>
+                </Button>
+              );
+            })}
           </View>
         </View>
+
+        {!isCashPayment ? (
+          <View className="gap-2">
+            <Typography type="body-sm" weight="semibold">
+              Pembayaran
+            </Typography>
+            <View className="flex-row flex-wrap gap-2">
+              {paymentGroups
+                .find((group) => group.group_type === paymentGroup)
+                ?.payments.map((payment) => (
+                  <Button
+                    key={payment.id}
+                    size="sm"
+                    variant={paymentId === payment.id ? "primary" : "outline"}
+                    onPress={() => setValue("payment_id", payment.id)}
+                  >
+                    <Button.Label>{payment.name}</Button.Label>
+                  </Button>
+                ))}
+            </View>
+            {errors.payment_id ? (
+              <Typography type="body-xs" className="text-danger">
+                {errors.payment_id.message}
+              </Typography>
+            ) : null}
+          </View>
+        ) : (
+          <View className="gap-3">
+            <View className="gap-2">
+              <Typography type="body-sm" weight="semibold">
+                Nominal tunai
+              </Typography>
+              <View className="flex-row flex-wrap gap-2">
+                {cashPresets.map((amount, index) => (
+                  <Button
+                    key={amount}
+                    size="sm"
+                    variant={cashReceivedAmount === amount ? "primary" : "outline"}
+                    onPress={() => setCashReceived(String(amount))}
+                  >
+                    <Button.Label>
+                      {index === 0 ? `Uang pas · ${formatRupiah(amount)}` : formatRupiah(amount)}
+                    </Button.Label>
+                  </Button>
+                ))}
+              </View>
+            </View>
+            <View className="flex-row items-end gap-4">
+              <View className="min-w-48 flex-1 gap-1.5">
+                <Typography type="body-sm" weight="semibold">
+                  Nominal lain
+                </Typography>
+                <MiniInput
+                  value={cashReceived ? formatRupiah(cashReceivedAmount) : ""}
+                  onChangeText={(value) => setCashReceived(value.replace(/\D/g, ""))}
+                  placeholder="Rp0"
+                  keyboardType="phone-pad"
+                />
+              </View>
+              <View className="min-w-32 gap-1">
+                <Typography type="body-xs" color="muted">
+                  Kembalian
+                </Typography>
+                <Typography weight="semibold" className="tabular-nums">
+                  {formatRupiah(change)}
+                </Typography>
+              </View>
+            </View>
+          </View>
+        )}
+
+        <View className="gap-2">
+          <Typography type="body-sm" weight="semibold">
+            Pelanggan
+          </Typography>
+          <View className="flex-row gap-2">
+            {(
+              [
+                ["anonymous", "Merchant"],
+                ["customer", "Pelanggan terdaftar"],
+              ] as const
+            ).map(([type, label]) => (
+              <Button
+                key={type}
+                size="sm"
+                variant={customerType === type ? "primary" : "outline"}
+                onPress={() => {
+                  setValue("customer_type", type);
+                  setValue("customer_id", null);
+                  setValue("customer_search", "");
+                }}
+              >
+                <Button.Label>{label}</Button.Label>
+              </Button>
+            ))}
+          </View>
+
+          {customerType === "customer" ? (
+            <View className="gap-2">
+              <Controller
+                control={control}
+                name="customer_search"
+                render={({ field }) => (
+                  <SearchField value={field.value} onChange={field.onChange}>
+                    <SearchField.Group>
+                      <SearchField.SearchIcon />
+                      <SearchField.Input placeholder="Cari email pelanggan" />
+                      <SearchField.ClearButton />
+                    </SearchField.Group>
+                  </SearchField>
+                )}
+              />
+              {customerResults.map((customer) => (
+                <Pressable
+                  key={customer.id}
+                  onPress={() => setValue("customer_id", customer.id)}
+                  className={`rounded-lg px-3 py-2 ${customerId === customer.id ? "bg-accent/10" : "bg-surface-secondary"}`}
+                >
+                  <Typography type="body-sm" weight="semibold">
+                    {customer.name}
+                  </Typography>
+                  {customer.email || customer.phone ? (
+                    <Typography type="body-xs" color="muted">
+                      {[customer.email, customer.phone].filter(Boolean).join(" · ")}
+                    </Typography>
+                  ) : null}
+                </Pressable>
+              ))}
+              {errors.customer_id ? (
+                <Typography type="body-xs" className="text-danger">
+                  {errors.customer_id.message}
+                </Typography>
+              ) : null}
+            </View>
+          ) : null}
+        </View>
+
+        <View className="gap-1.5">
+          <Typography type="body-sm" weight="semibold">
+            Catatan
+          </Typography>
+          <Controller
+            control={control}
+            name="notes"
+            render={({ field }) => (
+              <TextArea
+                value={field.value}
+                onChangeText={field.onChange}
+                placeholder="Opsional"
+                className="min-h-14"
+              />
+            )}
+          />
+        </View>
+
+        <Surface variant="secondary" className="gap-2.5 p-4">
+          <View className="flex-row justify-between">
+            <Typography type="body-sm" color="muted">
+              Subtotal
+            </Typography>
+            <Typography type="body-sm" className="tabular-nums">
+              {formatRupiah(subtotal)}
+            </Typography>
+          </View>
+          {paymentFee > 0 ? (
+            <View className="flex-row justify-between">
+              <Typography type="body-sm" color="muted">
+                Biaya pembayaran
+                {selectedPayment?.fee_unit === "percentage"
+                  ? ` (${selectedPayment.fee_value}%)`
+                  : ""}
+              </Typography>
+              <Typography type="body-sm" className="tabular-nums">
+                {formatRupiah(paymentFee)}
+              </Typography>
+            </View>
+          ) : null}
+          <Separator />
+          <View className="flex-row items-center justify-between">
+            <Typography weight="semibold">Total</Typography>
+            <Typography.Heading type="h5" className="tabular-nums">
+              {formatRupiah(total)}
+            </Typography.Heading>
+          </View>
+        </Surface>
       </ScrollView>
 
       <Separator />
-
-      <View className="flex-row gap-3 bg-surface px-5 py-4">
+      <View className="flex-row gap-3 bg-surface px-5 py-3">
         <Button variant="outline" onPress={onCancel ?? closeModal}>
-          Batal
+          <Button.Label>Batal</Button.Label>
         </Button>
         <Button
           className="flex-1"
           onPress={handleSubmit(onSubmit, onInvalid)}
-          isDisabled={validateCart.isPending || checkout.isPending || cartProducts.length === 0}
+          isDisabled={
+            validateCart.isPending ||
+            checkout.isPending ||
+            cartProducts.length === 0 ||
+            (isCashPayment && cashReceivedAmount < total)
+          }
         >
-          {validateCart.isPending || checkout.isPending ? (
-            <>
-              <ActivityIndicator color="#fff" />
-              <Button.Label className="ml-2">Memproses</Button.Label>
-            </>
-          ) : (
-            <>
-              <Button.Label>Bayar</Button.Label>
-            </>
-          )}
+          {validateCart.isPending || checkout.isPending ? <ActivityIndicator color="#fff" /> : null}
+          <Button.Label>
+            {validateCart.isPending || checkout.isPending ? "Memproses" : "Bayar"}
+          </Button.Label>
         </Button>
       </View>
     </View>

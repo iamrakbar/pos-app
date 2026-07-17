@@ -75,4 +75,6 @@ export type PaymentSession = {
   qr_url: string | null;
   expires_at: string | null;
   amount: number;
+  cash_received?: number;
+  change?: number;
 };
