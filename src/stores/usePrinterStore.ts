@@ -13,6 +13,8 @@ export interface PrinterSettings {
   ipAddress: string;
   port: string;
   paperWidth: PaperWidth;
+  charactersPerLine: string;
+  logoWidthDots: string;
   cutReceipt: boolean;
   openDrawer: boolean;
   selectedDeviceId: string;
@@ -45,6 +47,8 @@ export const DEFAULT_PRINTER_SETTINGS: PrinterSettings = {
   ipAddress: "",
   port: "9100",
   paperWidth: "58mm",
+  charactersPerLine: "32",
+  logoWidthDots: "300",
   cutReceipt: false,
   openDrawer: false,
   selectedDeviceId: "",
@@ -62,6 +66,8 @@ const normalizePrinter = (printer: Partial<PrinterSettings>): PrinterSettings =>
   ...printer,
   port: printer.port || DEFAULT_PRINTER_SETTINGS.port,
   paperWidth: printer.paperWidth ?? DEFAULT_PRINTER_SETTINGS.paperWidth,
+  charactersPerLine: printer.charactersPerLine || (printer.paperWidth === "80mm" ? "46" : "32"),
+  logoWidthDots: printer.logoWidthDots || (printer.paperWidth === "80mm" ? "380" : "300"),
   connection: printer.connection ?? DEFAULT_PRINTER_SETTINGS.connection,
 });
 

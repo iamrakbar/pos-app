@@ -13,6 +13,7 @@ import {
   Input,
   Select,
   Separator,
+  Spinner,
   Switch,
   Typography,
   useThemeColor,
@@ -29,6 +30,7 @@ import {
   type PrinterSettings,
 } from "@/stores/usePrinterStore";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
+import { printCalibrationReceipt } from "@/services/printer/PrintService";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [
   { value: "bluetooth", label: "Bluetooth" },
@@ -93,6 +95,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
   const [devices, setDevices] = React.useState<DiscoveredDevice[]>([]);
   const [scanning, setScanning] = React.useState(false);
   const [connecting, setConnecting] = React.useState(false);
+  const [printingCalibration, setPrintingCalibration] = React.useState(false);
   const [prompt, setPrompt] = React.useState<PromptState | null>(null);
   const [deletePromptOpen, setDeletePromptOpen] = React.useState(false);
 
@@ -113,6 +116,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
   });
 
   const connection = watch("connection");
+  const paperWidth = watch("paperWidth");
   const selectedDeviceId = watch("selectedDeviceId");
   const currentName = watch("name");
 
@@ -250,8 +254,17 @@ export default function PrinterFormScreen(): React.JSX.Element {
     router.replace("/settings/printers" as never);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!printer) return;
+    try {
+      if (printer.connection === "bluetooth") {
+        await BLEPrinter.closeConn();
+      } else {
+        await NetPrinter.closeConn();
+      }
+    } catch {
+      // App-level removal must still succeed if the native socket is already gone.
+    }
     deletePrinter(printer.id);
     setDeletePromptOpen(false);
     router.replace("/settings/printers" as never);
@@ -267,6 +280,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
 
         const address = values.macAddress || values.selectedDeviceId;
         await BLEPrinter.init();
+        await BLEPrinter.closeConn();
         const connectedPrinter = await BLEPrinter.connectPrinter(address);
         setValue("macAddress", connectedPrinter.inner_mac_address || address, {
           shouldDirty: true,
@@ -284,6 +298,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
         const host = values.ipAddress.trim();
         const parsedPort = Number(values.port || PORT);
         await NetPrinter.init();
+        await NetPrinter.closeConn();
         const connectedPrinter: INetPrinter = await NetPrinter.connectPrinter(host, parsedPort);
         setValue("ipAddress", connectedPrinter.host || host, {
           shouldDirty: true,
@@ -322,6 +337,24 @@ export default function PrinterFormScreen(): React.JSX.Element {
     } finally {
       setConnecting(false);
     }
+  });
+
+  const handlePrintCalibration = handleSubmit(async (values) => {
+    setPrintingCalibration(true);
+    try {
+      await printCalibrationReceipt(toPrinterSettings(values));
+      setPrompt({
+        title: "Calibration sent",
+        message: "Check that the numbered ruler prints on one line without clipping or wrapping.",
+      });
+    } catch (error) {
+      setPrompt({
+        title: "Calibration failed",
+        message:
+          error instanceof Error ? error.message : "Could not print the calibration receipt.",
+      });
+    }
+    setPrintingCalibration(false);
   });
 
   const handlePromptAction = async () => {
@@ -541,7 +574,16 @@ export default function PrinterFormScreen(): React.JSX.Element {
                 <Select
                   value={PAPER_WIDTHS.find((item) => item.value === value)}
                   onValueChange={(option) => {
-                    if (option) onChange(option.value);
+                    if (!option) return;
+                    onChange(option.value);
+                    setValue("charactersPerLine", option.value === "80mm" ? "46" : "32", {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                    setValue("logoWidthDots", option.value === "80mm" ? "380" : "300", {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
                   }}
                 >
                   <Select.Trigger>
@@ -563,6 +605,48 @@ export default function PrinterFormScreen(): React.JSX.Element {
                 </Select>
               )}
             />
+          </View>
+
+          <View>
+            <FieldLabel label="Characters per line" required />
+            <Controller
+              control={control}
+              name="charactersPerLine"
+              render={({ field: { value, onChange } }) => (
+                <Input
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder={paperWidth === "80mm" ? "46" : "32"}
+                  keyboardType="number-pad"
+                  variant="secondary"
+                />
+              )}
+            />
+            <Typography type="body-xs" color="muted" className="mt-1">
+              Recommended: 32 for 58mm, 46 for 80mm. Use calibration to verify.
+            </Typography>
+            <FieldError message={errors.charactersPerLine?.message} />
+          </View>
+
+          <View>
+            <FieldLabel label="Logo width (dots)" required />
+            <Controller
+              control={control}
+              name="logoWidthDots"
+              render={({ field: { value, onChange } }) => (
+                <Input
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder={paperWidth === "80mm" ? "380" : "300"}
+                  keyboardType="number-pad"
+                  variant="secondary"
+                />
+              )}
+            />
+            <Typography type="body-xs" color="muted" className="mt-1">
+              Recommended: 300 for 58mm, 380 for 80mm.
+            </Typography>
+            <FieldError message={errors.logoWidthDots?.message} />
           </View>
 
           <Controller
@@ -610,6 +694,20 @@ export default function PrinterFormScreen(): React.JSX.Element {
           <Button variant="outline" onPress={handleTestConnection} isDisabled={connecting}>
             <Ionicons name="link-outline" size={16} color={themeColorForeground} />
             <Button.Label>{connecting ? "Connecting..." : "Test Connection"}</Button.Label>
+          </Button>
+          <Button
+            variant="outline"
+            onPress={handlePrintCalibration}
+            isDisabled={printingCalibration || connecting}
+          >
+            {printingCalibration ? (
+              <Spinner size="sm" />
+            ) : (
+              <Ionicons name="receipt-outline" size={16} color={themeColorForeground} />
+            )}
+            <Button.Label>
+              {printingCalibration ? "Printing calibration..." : "Print Calibration"}
+            </Button.Label>
           </Button>
         </ScrollView>
 

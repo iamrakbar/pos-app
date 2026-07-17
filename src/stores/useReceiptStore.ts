@@ -4,21 +4,27 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface ReceiptSettings {
+  layout: "standard" | "compact" | "customer" | "kitchen";
   storeLogo: string | null;
   storeName: string;
   header: string;
   footer: string;
   initializedMerchantId: string | null;
   headerInitializedMerchantId: string | null;
+  autoPrintOnSuccess: boolean;
+  lastAutoPrintedOrderId: string | null;
 }
 
 export const DEFAULT_RECEIPT_SETTINGS: ReceiptSettings = {
+  layout: "standard",
   storeLogo: null,
   storeName: "",
   header: "",
   footer: "Thank you!",
   initializedMerchantId: null,
   headerInitializedMerchantId: null,
+  autoPrintOnSuccess: false,
+  lastAutoPrintedOrderId: null,
 };
 
 interface ReceiptStore {
@@ -39,6 +45,12 @@ const normalizeSettings = (value: unknown): ReceiptSettings => {
     .join("\n");
 
   return {
+    layout:
+      persisted.layout === "compact" ||
+      persisted.layout === "customer" ||
+      persisted.layout === "kitchen"
+        ? persisted.layout
+        : "standard",
     storeLogo: typeof persisted.storeLogo === "string" ? persisted.storeLogo : null,
     storeName: typeof persisted.storeName === "string" ? persisted.storeName : "",
     header: typeof persisted.header === "string" ? persisted.header : legacyHeader,
@@ -48,6 +60,11 @@ const normalizeSettings = (value: unknown): ReceiptSettings => {
     headerInitializedMerchantId:
       typeof persisted.headerInitializedMerchantId === "string"
         ? persisted.headerInitializedMerchantId
+        : null,
+    autoPrintOnSuccess: persisted.autoPrintOnSuccess === true,
+    lastAutoPrintedOrderId:
+      typeof persisted.lastAutoPrintedOrderId === "string"
+        ? persisted.lastAutoPrintedOrderId
         : null,
   };
 };

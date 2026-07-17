@@ -22,9 +22,25 @@ import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/ApiError";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";
+import {
+  Button,
+  Chip,
+  Dialog,
+  Separator,
+  Spinner,
+  Surface,
+  Typography,
+  useThemeColor,
+} from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ActivityIndicator, Image, View, ScrollView, Pressable } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  View,
+  ScrollView,
+  Pressable,
+  useWindowDimensions,
+} from "react-native";
 import { useState } from "react";
 
 function formatDateTime(iso: string): string {
@@ -38,10 +54,62 @@ function formatDateTime(iso: string): string {
   });
 }
 
+function SectionTitle({ children }: { children: string }) {
+  return (
+    <Typography type="body-sm" weight="semibold">
+      {children}
+    </Typography>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="flex-row items-start justify-between gap-4">
+      <Typography type="body-sm" color="muted">
+        {label}
+      </Typography>
+      <Typography type="body-sm" weight="medium" className="flex-1 text-right">
+        {value}
+      </Typography>
+    </View>
+  );
+}
+
+function MoneyRow({
+  label,
+  value,
+  emphasized = false,
+}: {
+  label: string;
+  value: number;
+  emphasized?: boolean;
+}) {
+  return (
+    <View className="flex-row items-center justify-between gap-4">
+      <Typography
+        type={emphasized ? "body" : "body-sm"}
+        weight={emphasized ? "bold" : undefined}
+        color={emphasized ? undefined : "muted"}
+      >
+        {label}
+      </Typography>
+      <Typography
+        type={emphasized ? "body" : "body-sm"}
+        weight={emphasized ? "bold" : "medium"}
+        className="tabular-nums"
+      >
+        {formatRupiah(value)}
+      </Typography>
+    </View>
+  );
+}
+
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const { width } = useWindowDimensions();
+  const isWide = width >= 900;
   const [themeColorForeground, themeColorMuted, themeColorDanger] = useThemeColor([
     "foreground",
     "muted",
@@ -89,282 +157,236 @@ export default function OrderDetailScreen() {
   const feeAmount = extractNumber(order.payment_fee);
 
   const handlePrintReceipt = async () => {
-    await printReceipt(order);
+    await printReceipt(order, "reprint");
   };
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4 pb-10">
-        {/* ── Header ── */}
-        <View className="gap-2">
-          <View className="flex-row items-center justify-between">
-            <Typography className="text-xl font-bold text-foreground font-mono">
-              {order.code}
-            </Typography>
-            <Chip color={statusColor} size="sm" variant="soft">
-              <Chip.Label>{statusLabel}</Chip.Label>
-            </Chip>
-          </View>
-          <Typography className="text-xs text-muted-foreground">
-            {formatDateTime(order.created_at)}
-          </Typography>
-        </View>
-
-        {/* ── Order info ── */}
-        <Surface className="w-full overflow-hidden">
-          <View className="flex-row items-center gap-3 px-4 py-3 border-b border-border">
-            <Ionicons
-              name={order.order_type === "dine-in" ? "restaurant-outline" : "bag-outline"}
-              size={16}
-              color={themeColorMuted}
-            />
-            <View className="flex-1">
-              <Typography className="text-xs text-muted-foreground">Order type</Typography>
-              <Typography className="text-sm font-semibold text-foreground capitalize">
-                {order.order_type === "dine-in" ? "Dine-in" : "Takeaway"}
-              </Typography>
-            </View>
-          </View>
-
-          {tableName && (
-            <View className="flex-row items-center gap-3 px-4 py-3 border-b border-border">
-              <Ionicons name="grid-outline" size={16} color={themeColorMuted} />
-              <View className="flex-1">
-                <Typography className="text-xs text-muted-foreground">Table</Typography>
-                <Typography className="text-sm font-semibold text-foreground">
-                  {tableName}
-                </Typography>
-              </View>
-            </View>
-          )}
-
-          <View className="flex-row items-center gap-3 px-4 py-3 border-b border-border">
-            <Ionicons name="card-outline" size={16} color={themeColorMuted} />
-            <View className="flex-1">
-              <Typography className="text-xs text-muted-foreground">Payment</Typography>
-              <Typography className="text-sm font-semibold text-foreground">
-                {paymentName}
-              </Typography>
-            </View>
-            <Chip color={paymentStatusColor} size="sm" variant="soft">
-              <Chip.Label>{paymentStatusLabel}</Chip.Label>
-            </Chip>
-          </View>
-
-          <View className="flex-row items-center gap-3 px-4 py-3">
-            <Ionicons name="person-outline" size={16} color={themeColorMuted} />
-            <View className="flex-1">
-              <Typography className="text-xs text-muted-foreground">Customer</Typography>
-              <Typography className="text-sm font-semibold text-foreground">
-                {customerName ?? "Walk-in"}
-              </Typography>
-            </View>
-          </View>
-        </Surface>
-
-        {/* ── Order items ── */}
-        <View className="gap-2">
-          <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            Order Items
-          </Typography>
-          <Surface className="w-full overflow-hidden">
-            {items.map((item, index) => (
-              <View
-                key={index}
-                className={`flex-row items-center justify-between px-4 py-3 ${index < items.length - 1 ? "border-b border-border" : ""}`}
-              >
-                <View className="flex-1 gap-0.5">
-                  <Typography className="text-sm font-medium text-foreground" numberOfLines={1}>
-                    {item.name}
+      <ScrollView className="flex-1" contentContainerClassName="p-4 pb-8">
+        <View className="w-full max-w-6xl self-center gap-4">
+          <Surface className="w-full p-5">
+            <View className="flex-row items-start justify-between gap-4">
+              <View className="flex-1 gap-2">
+                <View className="flex-row items-center gap-2 flex-wrap">
+                  <Typography type="h4" weight="bold" className="font-mono tabular-nums">
+                    {order.code}
                   </Typography>
-                  <Typography className="text-xs text-muted-foreground">
-                    {item.qty} × {formatRupiah(item.price)}
-                  </Typography>
+                  <Chip color={statusColor} size="sm" variant="soft">
+                    <Chip.Label>{statusLabel}</Chip.Label>
+                  </Chip>
                 </View>
-                <Typography className="text-sm font-semibold text-foreground">
-                  {formatRupiah(item.price * item.qty)}
+                <Typography type="body-sm" color="muted">
+                  {formatDateTime(order.created_at)}
                 </Typography>
               </View>
-            ))}
-          </Surface>
-        </View>
-
-        {/* ── Pricing summary ── */}
-        <View className="gap-2">
-          <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            Summary
-          </Typography>
-          <Surface className="w-full overflow-hidden">
-            <View className="flex-row justify-between px-4 py-3 border-b border-border">
-              <Typography className="text-sm text-muted-foreground">Subtotal</Typography>
-              <Typography className="text-sm text-foreground">
-                {formatRupiah(order.subtotal)}
-              </Typography>
-            </View>
-            {feeAmount > 0 && (
-              <View className="flex-row justify-between px-4 py-3 border-b border-border">
-                <Typography className="text-sm text-muted-foreground">Payment fee</Typography>
-                <Typography className="text-sm text-foreground">
-                  {formatRupiah(feeAmount)}
+              <View className="items-end gap-1">
+                <Typography type="body-xs" color="muted">
+                  Total
+                </Typography>
+                <Typography type="h4" weight="bold" className="tabular-nums">
+                  {formatRupiah(order.total)}
                 </Typography>
               </View>
-            )}
-            <View className="flex-row justify-between px-4 py-3">
-              <Typography className="text-sm font-bold text-foreground">Total</Typography>
-              <Typography className="text-sm font-bold text-foreground">
-                {formatRupiah(order.total)}
-              </Typography>
             </View>
           </Surface>
-        </View>
 
-        {/* ── Notes ── */}
-        {order.notes && (
-          <View className="gap-2">
-            <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Notes
-            </Typography>
-            <Surface className="w-full px-4 py-3">
-              <Typography className="text-sm text-foreground italic">{order.notes}</Typography>
-            </Surface>
-          </View>
-        )}
-
-        {/* ── Payment details ── */}
-        {(paymentDetailsRows.length > 0 || canShowQr) && (
-          <View className="gap-2">
-            <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Payment Details
-            </Typography>
-            <Surface className="w-full overflow-hidden">
-              {paymentDetailsRows.map((row, index) => (
-                <View
-                  key={`${row.label}-${index}`}
-                  className={`flex-row justify-between gap-4 px-4 py-3 ${index < paymentDetailsRows.length - 1 || canShowQr ? "border-b border-border" : ""}`}
-                >
-                  <Typography className="text-sm text-muted-foreground">{row.label}</Typography>
-                  <Typography className="text-sm font-semibold text-foreground text-right flex-1">
-                    {row.value}
+          <View className={isWide ? "flex-row items-start gap-4" : "gap-4"}>
+            <View className="flex-1 gap-4">
+              <View className="gap-2">
+                <View className="flex-row items-center justify-between">
+                  <SectionTitle>Order Items</SectionTitle>
+                  <Typography type="body-xs" color="muted">
+                    {items.length} item{items.length === 1 ? "" : "s"}
                   </Typography>
                 </View>
-              ))}
-              {paymentExpiresAt && !paymentExpired && (
-                <View className={`px-4 py-3 ${canShowQr ? "border-b border-border" : ""}`}>
-                  <Countdown
-                    expiresAt={paymentExpiresAt}
-                    prefix="Payment expires in"
-                    className="text-xs text-warning font-semibold"
+                <Surface className="w-full overflow-hidden">
+                  {items.map((item, index) => (
+                    <View
+                      key={`${order.products[index]?.product_id}-${item.name}-${item.subtotal}`}
+                      className={`gap-2 px-4 py-3.5 ${index < items.length - 1 ? "border-b border-border" : ""}`}
+                    >
+                      <View className="flex-row items-start justify-between gap-4">
+                        <View className="flex-1 gap-0.5">
+                          <Typography type="body-sm" weight="semibold">
+                            {item.name}
+                          </Typography>
+                          <Typography type="body-xs" color="muted" className="tabular-nums">
+                            {item.qty} x {formatRupiah(item.price)}
+                          </Typography>
+                        </View>
+                        <Typography type="body-sm" weight="semibold" className="tabular-nums">
+                          {formatRupiah(item.subtotal)}
+                        </Typography>
+                      </View>
+                      {item.addOns.flatMap((addOn) =>
+                        addOn.options.map((option, optionIndex) => (
+                          <View
+                            key={`${addOn.name}-${option.name}-${optionIndex}`}
+                            className="flex-row items-start justify-between gap-3 pl-2"
+                          >
+                            <Typography type="body-xs" color="muted" className="flex-1">
+                              + {addOn.name}: {option.name}
+                            </Typography>
+                            {option.price > 0 ? (
+                              <Typography type="body-xs" color="muted" className="tabular-nums">
+                                {formatRupiah(option.price)}
+                              </Typography>
+                            ) : null}
+                          </View>
+                        ))
+                      )}
+                      {order.products[index]?.notes ? (
+                        <Typography type="body-xs" color="muted" className="italic">
+                          Note: {order.products[index].notes}
+                        </Typography>
+                      ) : null}
+                    </View>
+                  ))}
+                </Surface>
+              </View>
+
+              {order.notes ? (
+                <View className="gap-2">
+                  <SectionTitle>Order Notes</SectionTitle>
+                  <Surface className="w-full p-4">
+                    <Typography type="body-sm">{order.notes}</Typography>
+                  </Surface>
+                </View>
+              ) : null}
+            </View>
+
+            <View className={isWide ? "w-96 gap-4" : "gap-4"}>
+              <View className="gap-2">
+                <SectionTitle>Order Information</SectionTitle>
+                <Surface className="w-full p-4 gap-3">
+                  <DetailRow
+                    label="Type"
+                    value={order.order_type === "dine-in" ? "Dine-in" : "Takeaway"}
                   />
+                  {tableName ? <DetailRow label="Table" value={tableName} /> : null}
+                  <DetailRow label="Customer" value={customerName ?? "Walk-in"} />
+                </Surface>
+              </View>
+
+              <View className="gap-2">
+                <View className="flex-row items-center justify-between gap-3">
+                  <SectionTitle>Payment</SectionTitle>
+                  <Chip color={paymentStatusColor} size="sm" variant="soft">
+                    <Chip.Label>{paymentStatusLabel}</Chip.Label>
+                  </Chip>
                 </View>
-              )}
-              {canShowQr && (
-                <View className="px-4 py-3">
-                  <Button variant="outline" onPress={() => setIsQrOpen(true)}>
-                    <Ionicons name="qr-code-outline" size={16} color={themeColorForeground} />
-                    <Button.Label className="ml-1.5">Show QRIS QR</Button.Label>
+                <Surface className="w-full p-4 gap-3">
+                  <DetailRow label="Method" value={paymentName} />
+                  {paymentDetailsRows.map((row) => (
+                    <DetailRow key={row.label} label={row.label} value={row.value} />
+                  ))}
+                  {paymentExpiresAt && !paymentExpired ? (
+                    <Countdown
+                      expiresAt={paymentExpiresAt}
+                      prefix="Expires in"
+                      className="text-sm text-warning font-semibold"
+                    />
+                  ) : null}
+                  {canShowQr ? (
+                    <Button variant="outline" onPress={() => setIsQrOpen(true)}>
+                      <Ionicons name="qr-code-outline" size={16} color={themeColorForeground} />
+                      <Button.Label>Show QRIS</Button.Label>
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    onPress={() => paymentStatus.mutate()}
+                    isDisabled={paymentStatus.isPending}
+                  >
+                    {paymentStatus.isPending ? (
+                      <ActivityIndicator />
+                    ) : (
+                      <Ionicons name="refresh-outline" size={16} color={themeColorForeground} />
+                    )}
+                    <Button.Label>Refresh Status</Button.Label>
                   </Button>
+                  {paymentStatus.isError ? (
+                    <Typography type="body-xs" className="text-danger">
+                      {getErrorMessage(paymentStatus.error)}
+                    </Typography>
+                  ) : null}
+                </Surface>
+              </View>
+
+              <View className="gap-2">
+                <SectionTitle>Summary</SectionTitle>
+                <Surface className="w-full p-4 gap-3">
+                  <MoneyRow label="Subtotal" value={order.subtotal} />
+                  {feeAmount > 0 ? <MoneyRow label="Payment fee" value={feeAmount} /> : null}
+                  <Separator />
+                  <MoneyRow label="Total" value={order.total} emphasized />
+                </Surface>
+              </View>
+
+              {/* ── Status actions ── */}
+              {/* cancelled is not a merchant-settable transition via this endpoint
+                    (it's system/customer-initiated) — display only, no action. */}
+              {(statusCode === "new" || statusCode === "process") && (
+                <View className="gap-2">
+                  <SectionTitle>Update Status</SectionTitle>
+                  <View className="flex-row gap-3">
+                    {statusCode === "new" && (
+                      <Button
+                        className="flex-1"
+                        onPress={() => updateStatus.mutate({ id: order.id, status: "process" })}
+                        isDisabled={updateStatus.isPending}
+                      >
+                        <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+                        <Button.Label className="ml-1.5">Accept</Button.Label>
+                      </Button>
+                    )}
+                    {statusCode === "process" && (
+                      <Button
+                        className="flex-1"
+                        onPress={() => updateStatus.mutate({ id: order.id, status: "completed" })}
+                        isDisabled={updateStatus.isPending}
+                      >
+                        <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+                        <Button.Label className="ml-1.5">Mark Completed</Button.Label>
+                      </Button>
+                    )}
+                    <Button
+                      variant="danger-soft"
+                      onPress={() => updateStatus.mutate({ id: order.id, status: "rejected" })}
+                      isDisabled={updateStatus.isPending}
+                    >
+                      <Ionicons name="close-circle-outline" size={16} color={themeColorDanger} />
+                      <Button.Label>Reject</Button.Label>
+                    </Button>
+                  </View>
+                  {updateStatus.isError && (
+                    <Typography className="text-xs text-danger">
+                      {getErrorMessage(updateStatus.error)}
+                    </Typography>
+                  )}
+                  {updateStatus.isSuccess && (
+                    <Typography className="text-xs text-success">Order status updated.</Typography>
+                  )}
                 </View>
               )}
-            </Surface>
-          </View>
-        )}
-
-        {/* ── Status actions ── */}
-        {/* cancelled is not a merchant-settable transition via this endpoint
-                    (it's system/customer-initiated) — display only, no action. */}
-        {(statusCode === "new" || statusCode === "process") && (
-          <View className="gap-2">
-            <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Update Status
-            </Typography>
-            <View className="flex-row gap-3">
-              {statusCode === "new" && (
-                <Button
-                  className="flex-1 bg-green-500 border-green-500"
-                  onPress={() => updateStatus.mutate({ id: order.id, status: "process" })}
-                  isDisabled={updateStatus.isPending}
-                >
-                  <Ionicons name="checkmark-circle-outline" size={16} color="white" />
-                  <Button.Label className="ml-1.5">Accept</Button.Label>
-                </Button>
-              )}
-              {statusCode === "process" && (
-                <Button
-                  className="flex-1 bg-green-500 border-green-500"
-                  onPress={() => updateStatus.mutate({ id: order.id, status: "completed" })}
-                  isDisabled={updateStatus.isPending}
-                >
-                  <Ionicons name="checkmark-circle-outline" size={16} color="white" />
-                  <Button.Label className="ml-1.5">Mark Completed</Button.Label>
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                className="border-danger"
-                onPress={() => updateStatus.mutate({ id: order.id, status: "rejected" })}
-                isDisabled={updateStatus.isPending}
-              >
-                <Ionicons name="close-circle-outline" size={16} color={themeColorDanger} />
-                <Button.Label className="ml-1.5 text-danger">Reject</Button.Label>
-              </Button>
             </View>
-            {updateStatus.isError && (
-              <Typography className="text-xs text-danger">
-                {getErrorMessage(updateStatus.error)}
-              </Typography>
-            )}
-            {updateStatus.isSuccess && (
-              <Typography className="text-xs text-success">Order status updated.</Typography>
-            )}
           </View>
-        )}
-
-        {/* ── Payment status refresh ── */}
-        <View className="gap-2">
-          <Typography className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            Payment status
-          </Typography>
-          <Button
-            variant="outline"
-            onPress={() => paymentStatus.mutate()}
-            isDisabled={paymentStatus.isPending}
-          >
-            {paymentStatus.isPending ? (
-              <ActivityIndicator />
-            ) : (
-              <>
-                <Ionicons name="refresh-outline" size={16} color={themeColorForeground} />
-                <Button.Label className="ml-1.5">Refresh payment status</Button.Label>
-              </>
-            )}
-          </Button>
-          {paymentStatus.isError && (
-            <Typography className="text-xs text-danger">
-              {getErrorMessage(paymentStatus.error)}
-            </Typography>
-          )}
         </View>
       </ScrollView>
 
       {/* ── Footer ── */}
-      <View className="flex-row gap-3 bg-surface p-4 border-t border-border">
+      <View className="bg-surface p-4 border-t border-border">
         <Button
-          variant="outline"
-          className="flex-1"
+          className="w-full max-w-6xl self-center"
           onPress={handlePrintReceipt}
           isDisabled={isPrinting}
         >
           {isPrinting ? (
-            <ActivityIndicator />
+            <Spinner size="sm" />
           ) : (
             <Ionicons name="print-outline" size={16} color={themeColorForeground} />
           )}
-          <Button.Label className="ml-1.5">
-            {isPrinting ? "Printing…" : "Print Receipt"}
-          </Button.Label>
-        </Button>
-        <Button variant="outline" onPress={() => router.back()}>
-          Close
+          <Button.Label className="ml-1.5">{isPrinting ? "Printing…" : "Reprint"}</Button.Label>
         </Button>
       </View>
 

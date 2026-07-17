@@ -11,6 +11,16 @@ export const printerSchema = z
       .trim()
       .refine((value) => value === "" || /^\d+$/.test(value), "Port must be numeric"),
     paperWidth: z.enum(["58mm", "80mm"]),
+    charactersPerLine: z
+      .string()
+      .trim()
+      .regex(/^\d+$/, "Characters per line must be numeric")
+      .refine((value) => Number(value) >= 24 && Number(value) <= 64, "Use 24 to 64 characters"),
+    logoWidthDots: z
+      .string()
+      .trim()
+      .regex(/^\d+$/, "Logo width must be numeric")
+      .refine((value) => Number(value) >= 100 && Number(value) <= 576, "Use 100 to 576 dots"),
     cutReceipt: z.boolean(),
     openDrawer: z.boolean(),
     selectedDeviceId: z.string().trim(),

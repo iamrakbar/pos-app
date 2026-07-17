@@ -36,6 +36,7 @@ const SAMPLE_RECEIPT: ReceiptPreviewData = {
   orderType: "Dine-in",
   table: "A-04",
   payment: "QRIS",
+  paymentStatus: "Paid",
   items: [
     {
       id: "sample-1",
@@ -55,9 +56,18 @@ const SAMPLE_RECEIPT: ReceiptPreviewData = {
     },
   ],
   subtotal: 86000,
+  discounts: [{ id: "promo", name: "Discount", amount: 5000 }],
   fees: [{ id: "service", name: "Service", amount: 4300 }],
-  total: 90300,
+  tax: { name: "PB1 (10%)", amount: 8600 },
+  total: 93900,
 };
+
+const RECEIPT_LAYOUTS = [
+  { value: "standard", label: "Standard" },
+  { value: "compact", label: "Compact" },
+  { value: "customer", label: "Customer" },
+  { value: "kitchen", label: "Kitchen" },
+] as const;
 
 const PAPER_WIDTHS: PaperWidth[] = ["58mm", "80mm"];
 
@@ -97,6 +107,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const settings = useReceiptStore((state) => state.settings);
   const updateSettings = useReceiptStore((state) => state.updateSettings);
   const configuredPaperWidth = usePrinterStore((state) => state.settings.paperWidth);
+  const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
   const themeColorMuted = useThemeColor("muted");
@@ -159,7 +170,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsEditing: true,
-      aspect: [2, 1],
       quality: 1,
     });
     if (result.canceled) return;
@@ -219,6 +229,32 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
               showsVerticalScrollIndicator={false}
             >
               <View className="gap-5">
+                <View>
+                  <FieldLabel>Receipt layout</FieldLabel>
+                  <Select
+                    value={RECEIPT_LAYOUTS.find((item) => item.value === settings.layout)}
+                    onValueChange={(option) => {
+                      if (option) {
+                        updateSettings({
+                          layout: option.value as "standard" | "compact" | "customer" | "kitchen",
+                        });
+                      }
+                    }}
+                  >
+                    <Select.Trigger>
+                      <Select.Value placeholder="Select layout" />
+                      <Select.TriggerIndicator />
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Overlay />
+                      <Select.Content presentation="popover" width="trigger">
+                        {RECEIPT_LAYOUTS.map((item) => (
+                          <Select.Item key={item.value} value={item.value} label={item.label} />
+                        ))}
+                      </Select.Content>
+                    </Select.Portal>
+                  </Select>
+                </View>
                 <View>
                   <FieldLabel>Store logo</FieldLabel>
                   <Pressable
@@ -346,6 +382,13 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                 settings={settings}
                 data={SAMPLE_RECEIPT}
                 paperWidth={previewPaperWidth}
+                charactersPerLine={
+                  previewPaperWidth === configuredPaperWidth
+                    ? configuredCharactersPerLine
+                    : previewPaperWidth === "80mm"
+                      ? "46"
+                      : "32"
+                }
               />
             </ScrollView>
           </View>

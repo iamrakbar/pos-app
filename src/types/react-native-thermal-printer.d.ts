@@ -42,8 +42,11 @@ declare module "@haroldtran/react-native-thermal-printer" {
     getDeviceList: () => Promise<TDevice[]>;
     closeConn: () => Promise<void>;
     printText: (text: string, opts?: PrinterOptions) => void;
+    /** Sends an already base64-encoded ESC/POS byte payload. */
+    printRaw: (base64Payload: string) => void;
     printBill: (text: string, opts?: PrinterOptions) => void;
     printImage: (imgUrl: string, opts?: PrinterImageOptions) => void;
+    printImageBase64: (base64Image: string, opts?: PrinterImageOptions) => void;
     printColumnsText: (
       texts: string[],
       columnWidth: number[],

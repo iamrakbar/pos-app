@@ -2,11 +2,22 @@ import { usePOSStore } from "@/stores/usePOSStore";
 import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import { useReceiptStore } from "@/stores/useReceiptStore";
 import { usePrinterStore } from "@/stores/usePrinterStore";
-import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
+import { ReceiptPaper } from "@/components/receipt/ReceiptPaper";
+import { toReceiptData } from "@/services/printer/receiptData";
 import { formatRupiah } from "@/utils/format";
-import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";
-import type { JSX } from "react";
-import { ActivityIndicator, ScrollView, View, useWindowDimensions } from "react-native";
+import {
+  Button,
+  Chip,
+  Dialog,
+  Separator,
+  Spinner,
+  Surface,
+  Switch,
+  Typography,
+  useThemeColor,
+} from "heroui-native";
+import { useEffect, useRef, type JSX } from "react";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 type PaymentSuccessContentProps = {
@@ -14,7 +25,7 @@ type PaymentSuccessContentProps = {
 };
 
 function formatDateTime(date: Date): string {
-  return date.toLocaleDateString("id-ID", {
+  return date.toLocaleString("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -23,46 +34,14 @@ function formatDateTime(date: Date): string {
   });
 }
 
-function toReceiptData(order: App.Data.Merchant.Checkout.CheckoutData): ReceiptPreviewData {
-  return {
-    code: order.code,
-    date: formatDateTime(new Date(order.created_at)),
-    orderType: order.order_type === "dine-in" ? "Dine-in" : "Takeaway",
-    table: order.table?.name,
-    payment: order.payment.name,
-    items: order.products.map((item, index) => ({
-      id: `${item.product_id}-${index}`,
-      name: item.name,
-      qty: item.qty,
-      price: item.price,
-      subtotal: item.subtotal,
-      notes: item.notes,
-      addOns: item.add_ons.flatMap((addOn) =>
-        addOn.options.map((option) => ({
-          id: `${addOn.id}-${option.id}`,
-          group: addOn.name,
-          name: option.name,
-          price: option.price,
-        }))
-      ),
-    })),
-    subtotal: order.pricing.subtotal,
-    fees: order.pricing.fees.map((fee, index) => ({
-      id: `${fee.type}-${index}`,
-      name: fee.name,
-      amount: fee.amount,
-    })),
-    total: order.pricing.total,
-    notes: order.notes,
-  };
-}
-
 export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps): JSX.Element {
   const themeColorForeground = useThemeColor("foreground");
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const receiptSettings = useReceiptStore((state) => state.settings);
+  const updateReceiptSettings = useReceiptStore((state) => state.updateSettings);
   const paperWidth = usePrinterStore((state) => state.settings.paperWidth);
+  const charactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const closeModal = usePOSStore((s) => s.closeModal);
   const resetCheckoutForm = usePOSStore((s) => s.resetCheckoutForm);
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
@@ -71,6 +50,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
   const isWideLayout = windowWidth >= 900;
   const products = checkoutResult?.products ?? [];
   const totalQty = products.reduce((sum, product) => sum + product.qty, 0);
+  const autoPrintedOrderRef = useRef<string | null>(null);
 
   const handleNewOrder = () => {
     closeModal();
@@ -87,8 +67,24 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
       return;
     }
 
-    await printReceipt(checkoutResult);
+    await printReceipt(checkoutResult, "manual");
   };
+
+  useEffect(() => {
+    if (
+      !receiptSettings.autoPrintOnSuccess ||
+      !checkoutResult ||
+      receiptSettings.lastAutoPrintedOrderId === checkoutResult.id ||
+      autoPrintedOrderRef.current === checkoutResult.code
+    ) {
+      return;
+    }
+
+    autoPrintedOrderRef.current = checkoutResult.code;
+    void printReceipt(checkoutResult, "auto").then((printed) => {
+      if (printed) updateReceiptSettings({ lastAutoPrintedOrderId: checkoutResult.id });
+    });
+  }, [checkoutResult, printReceipt, receiptSettings, updateReceiptSettings]);
 
   if (!paymentSession) return <></>;
 
@@ -198,6 +194,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                     settings={receiptSettings}
                     data={toReceiptData(checkoutResult)}
                     paperWidth={paperWidth}
+                    charactersPerLine={charactersPerLine}
                   />
                 </View>
               ) : (
@@ -215,26 +212,48 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
 
         {/* Actions */}
         <View className="bg-surface px-5 py-4">
-          <View className="w-full max-w-6xl self-center flex-row gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onPress={handlePrintReceipt}
-              isDisabled={isPrinting}
-            >
-              {isPrinting ? (
-                <ActivityIndicator />
-              ) : (
-                <Ionicons name="print-outline" size={16} color={themeColorForeground} />
-              )}
-              <Button.Label className="ml-2">
-                {isPrinting ? "Printing…" : "Print Receipt"}
-              </Button.Label>
-            </Button>
-            <Button className="flex-1" onPress={handleNewOrder}>
-              <Ionicons name="add-circle-outline" size={16} color="white" />
-              <Button.Label className="ml-2">New Order</Button.Label>
-            </Button>
+          <View className="w-full max-w-6xl self-center gap-3">
+            <View className="flex-row items-center justify-between gap-4">
+              <View className="flex-1 gap-0.5">
+                <Typography type="body-sm" weight="semibold">
+                  Auto-print on success
+                </Typography>
+                <Typography type="body-xs" color="muted">
+                  Print completed payments automatically.
+                </Typography>
+              </View>
+              <Switch
+                isSelected={receiptSettings.autoPrintOnSuccess}
+                onSelectedChange={(isSelected) =>
+                  updateReceiptSettings({ autoPrintOnSuccess: isSelected })
+                }
+              >
+                <Switch.Thumb />
+              </Switch>
+            </View>
+            <View className="flex-row gap-3">
+              {!receiptSettings.autoPrintOnSuccess ? (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onPress={handlePrintReceipt}
+                  isDisabled={isPrinting}
+                >
+                  {isPrinting ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <Ionicons name="print-outline" size={16} color={themeColorForeground} />
+                  )}
+                  <Button.Label className="ml-2">
+                    {isPrinting ? "Printing…" : "Print Receipt"}
+                  </Button.Label>
+                </Button>
+              ) : null}
+              <Button className="flex-1" onPress={handleNewOrder}>
+                <Ionicons name="add-circle-outline" size={16} color="white" />
+                <Button.Label className="ml-2">New Order</Button.Label>
+              </Button>
+            </View>
           </View>
         </View>
       </View>
