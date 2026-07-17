@@ -51,16 +51,14 @@ const ORDER_TYPE_LABELS: Record<string, string> = {
 const isEMoneyGroup = (groupType: string) => groupType.toLowerCase() === "e-money";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
-const INDONESIAN_BANKNOTE_DENOMINATIONS = [1_000, 2_000, 5_000, 10_000, 20_000, 50_000, 100_000];
 
 function getCashPresets(total: number): number[] {
   if (total <= 0) return [];
 
-  const sufficientDenominations = INDONESIAN_BANKNOTE_DENOMINATIONS.filter(
-    (denomination) => denomination >= total
-  );
+  const roundingStep = total < 100_000 ? 10_000 : 50_000;
+  const nextRoundedAmount = Math.ceil(total / roundingStep) * roundingStep;
 
-  return Array.from(new Set([total, ...sufficientDenominations])).sort((a, b) => a - b);
+  return nextRoundedAmount === total ? [total] : [total, nextRoundedAmount];
 }
 
 function formatTimeValue(hour: number, minute: number): string {
