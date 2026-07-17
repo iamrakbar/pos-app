@@ -9,6 +9,7 @@ export interface ReceiptSettings {
   header: string;
   footer: string;
   initializedMerchantId: string | null;
+  headerInitializedMerchantId: string | null;
 }
 
 export const DEFAULT_RECEIPT_SETTINGS: ReceiptSettings = {
@@ -17,6 +18,7 @@ export const DEFAULT_RECEIPT_SETTINGS: ReceiptSettings = {
   header: "",
   footer: "Thank you!",
   initializedMerchantId: null,
+  headerInitializedMerchantId: null,
 };
 
 interface ReceiptStore {
@@ -43,6 +45,10 @@ const normalizeSettings = (value: unknown): ReceiptSettings => {
     footer: typeof persisted.footer === "string" ? persisted.footer : "Thank you!",
     initializedMerchantId:
       typeof persisted.initializedMerchantId === "string" ? persisted.initializedMerchantId : null,
+    headerInitializedMerchantId:
+      typeof persisted.headerInitializedMerchantId === "string"
+        ? persisted.headerInitializedMerchantId
+        : null,
   };
 };
 
@@ -56,7 +62,7 @@ export const useReceiptStore = create<ReceiptStore>()(
     {
       name: "soeat-receipt-settings",
       storage: receiptStorage,
-      version: 2,
+      version: 3,
       merge: (persisted, current) => {
         const persistedState = persisted as { settings?: unknown } | undefined;
         return {

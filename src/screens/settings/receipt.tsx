@@ -1,5 +1,6 @@
 import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
 import { useAuth } from "@/stores/useAuth";
+import { useMerchantProfile } from "@/hooks/db/useMerchantProfile";
 import { useReceiptStore } from "@/stores/useReceiptStore";
 import { optimizeReceiptLogo } from "@/utils/receiptLogo";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
@@ -87,6 +88,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
   const activeMerchant = useAuth((state) => state.activeMerchant);
+  const merchantProfile = useMerchantProfile();
   const settings = useReceiptStore((state) => state.settings);
   const updateSettings = useReceiptStore((state) => state.updateSettings);
   const { width } = useWindowDimensions();
@@ -98,11 +100,10 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const merchantDefaults = useMemo(
     () => ({
       id: activeMerchant?.id ?? null,
-      name: activeMerchant?.name ?? "",
-      logo: activeMerchant?.logo_url ?? null,
-      header: getMerchantHeader(activeMerchant),
+      name: merchantProfile.data?.name ?? activeMerchant?.name ?? "",
+      logo: merchantProfile.data?.logo_url ?? activeMerchant?.logo_url ?? null,
     }),
-    [activeMerchant]
+    [activeMerchant, merchantProfile.data]
   );
 
   useEffect(() => {
@@ -113,7 +114,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
       initializedMerchantId: merchantDefaults.id,
       storeName: settings.storeName || merchantDefaults.name,
       storeLogo: settings.storeLogo || merchantDefaults.logo,
-      header: settings.header || merchantDefaults.header,
       footer: settings.footer || "Thank you!",
     });
 
@@ -127,6 +127,16 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
         .catch(() => undefined);
     }
   }, [merchantDefaults, settings, updateSettings]);
+
+  useEffect(() => {
+    const merchantId = merchantProfile.data?.id;
+    if (!merchantId || settings.headerInitializedMerchantId === merchantId) return;
+
+    updateSettings({
+      header: settings.header || getMerchantHeader(merchantProfile.data),
+      headerInitializedMerchantId: merchantId,
+    });
+  }, [merchantProfile.data, settings.header, settings.headerInitializedMerchantId, updateSettings]);
 
   const handleSelectLogo = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
