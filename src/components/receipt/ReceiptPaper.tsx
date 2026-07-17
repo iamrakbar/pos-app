@@ -66,6 +66,15 @@ function PriceRow({
   );
 }
 
+function MetaRow({ label, value }: { label: string; value: string }): JSX.Element {
+  return (
+    <View className="flex-row items-start justify-between gap-4">
+      <Text style={styles.small}>{label}</Text>
+      <Text style={[styles.small, { flex: 1, textAlign: "right" }]}>{value}</Text>
+    </View>
+  );
+}
+
 export function ReceiptPaper({
   settings,
   data,
@@ -101,11 +110,13 @@ export function ReceiptPaper({
         <DashedLine />
       </View>
 
-      <Text style={styles.small}>Order : {data.code}</Text>
-      <Text style={styles.small}>Date : {data.date}</Text>
-      <Text style={styles.small}>Type : {data.orderType}</Text>
-      {data.table ? <Text style={styles.small}>Table : {data.table}</Text> : null}
-      <Text style={styles.small}>Payment : {data.payment}</Text>
+      <View className="gap-0.5">
+        <MetaRow label="Order" value={data.code} />
+        <MetaRow label="Date" value={data.date} />
+        <MetaRow label="Type" value={data.orderType} />
+        {data.table ? <MetaRow label="Table" value={data.table} /> : null}
+        <MetaRow label="Payment" value={data.payment} />
+      </View>
 
       <View className="my-3">
         <DashedLine />

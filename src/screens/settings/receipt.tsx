@@ -2,10 +2,20 @@ import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/Rece
 import { useAuth } from "@/stores/useAuth";
 import { useReceiptStore } from "@/stores/useReceiptStore";
 import { optimizeReceiptLogo } from "@/utils/receiptLogo";
+import { getToolbarIcon } from "@/utils/toolbarIcons";
+import { useNavigationTheme } from "@/utils/navigationTheme";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import { Button, Input, Surface, Typography, useThemeColor, useToast } from "heroui-native";
+import { Stack, useRouter } from "expo-router";
+import {
+  Button,
+  Input,
+  Separator,
+  Surface,
+  Typography,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -82,6 +92,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
   const themeColorMuted = useThemeColor("muted");
+  const navigationTheme = useNavigationTheme();
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
 
   const merchantDefaults = useMemo(
@@ -153,137 +164,151 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   };
 
   return (
-    <View className="flex-1 bg-background p-4">
-      <View
-        className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row items-stretch gap-6" : "gap-4"}`}
-      >
-        <Surface
-          className={
-            isWide
-              ? "w-[380px] min-h-0 overflow-hidden p-0"
-              : "w-full flex-[1.1] min-h-0 overflow-hidden p-0"
-          }
+    <>
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          {...getToolbarIcon("printer")}
+          tintColor={navigationTheme.foreground}
+          accessibilityLabel="Setup printers"
+          onPress={() => router.push("/settings/printers")}
+        />
+      </Stack.Toolbar>
+
+      <View className="flex-1 bg-background p-4">
+        <View
+          className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row-reverse items-stretch gap-6" : "gap-4"}`}
         >
-          <View className="px-5 pt-5 pb-4 gap-1">
-            <Typography className="text-lg font-semibold text-foreground">
-              Receipt details
-            </Typography>
-            <Typography type="body-sm" color="muted">
-              Changes are saved automatically and used for future prints.
-            </Typography>
-          </View>
-
-          <ScrollView
-            className="flex-1"
-            contentContainerClassName="px-5 pb-5"
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
+          <Surface
+            className={
+              isWide
+                ? "w-[480px] min-h-0 overflow-hidden p-0"
+                : "w-full flex-[1.1] min-h-0 overflow-hidden p-0"
+            }
           >
-            <View className="gap-5">
-              <View>
-                <FieldLabel>Store logo</FieldLabel>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Change store logo"
-                  onPress={handleSelectLogo}
-                  disabled={isProcessingLogo}
-                  className="h-28 w-full items-center justify-center overflow-hidden rounded-lg bg-surface-secondary active:opacity-70"
-                >
-                  {isProcessingLogo ? (
-                    <View className="items-center gap-2">
-                      <ActivityIndicator />
-                      <Typography type="body-xs" color="muted">
-                        Optimizing logo
-                      </Typography>
-                    </View>
-                  ) : settings.storeLogo ? (
-                    <>
-                      <Image
-                        source={{ uri: settings.storeLogo }}
-                        className="h-20 w-40"
-                        resizeMode="contain"
-                      />
-                      <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
-                        <Ionicons name="camera" size={15} color="white" />
+            <View className="px-5 pt-5 pb-4 gap-1">
+              <Typography className="text-lg font-semibold text-foreground">
+                Receipt details
+              </Typography>
+              <Typography type="body-sm" color="muted">
+                Changes are saved automatically and used for future prints.
+              </Typography>
+            </View>
+
+            <ScrollView
+              className="flex-1"
+              contentContainerClassName="px-5 pb-5"
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View className="gap-5">
+                <View>
+                  <FieldLabel>Store logo</FieldLabel>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Change store logo"
+                    onPress={handleSelectLogo}
+                    disabled={isProcessingLogo}
+                    className="h-28 w-full items-center justify-center overflow-hidden rounded-lg bg-surface-secondary active:opacity-70"
+                  >
+                    {isProcessingLogo ? (
+                      <View className="items-center gap-2">
+                        <ActivityIndicator />
+                        <Typography type="body-xs" color="muted">
+                          Optimizing logo
+                        </Typography>
                       </View>
-                    </>
-                  ) : (
-                    <View className="items-center gap-1.5">
-                      <Ionicons name="image-outline" size={26} color={themeColorMuted} />
-                      <Typography type="body-xs" color="muted">
-                        Choose image
-                      </Typography>
-                    </View>
-                  )}
-                </Pressable>
-                <Typography type="body-xs" color="muted" className="mt-1.5">
-                  Stored locally as a grayscale image optimized for thermal printing.
-                </Typography>
-              </View>
+                    ) : settings.storeLogo ? (
+                      <>
+                        <Image
+                          source={{ uri: settings.storeLogo }}
+                          className="h-20 w-40"
+                          resizeMode="contain"
+                        />
+                        <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
+                          <Ionicons name="camera" size={15} color="white" />
+                        </View>
+                      </>
+                    ) : (
+                      <View className="items-center gap-1.5">
+                        <Ionicons name="image-outline" size={26} color={themeColorMuted} />
+                        <Typography type="body-xs" color="muted">
+                          Choose image
+                        </Typography>
+                      </View>
+                    )}
+                  </Pressable>
+                  <Typography type="body-xs" color="muted" className="mt-1.5">
+                    Stored locally as a grayscale image optimized for thermal printing.
+                  </Typography>
+                </View>
 
-              <View>
-                <FieldLabel>Store name</FieldLabel>
-                <Input
-                  value={settings.storeName}
-                  onChangeText={(storeName) => updateSettings({ storeName })}
-                  placeholder="Store name"
-                  variant="secondary"
-                />
-              </View>
+                <View>
+                  <FieldLabel>Store name</FieldLabel>
+                  <Input
+                    value={settings.storeName}
+                    onChangeText={(storeName) => updateSettings({ storeName })}
+                    placeholder="Store name"
+                    variant="secondary"
+                  />
+                </View>
 
-              <View>
-                <FieldLabel>Header</FieldLabel>
-                <Input
-                  value={settings.header}
-                  onChangeText={(header) => updateSettings({ header })}
-                  placeholder="Address and phone number"
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                  variant="secondary"
-                  className="min-h-24 py-3"
-                />
-              </View>
+                <View>
+                  <FieldLabel>Header</FieldLabel>
+                  <Input
+                    value={settings.header}
+                    onChangeText={(header) => updateSettings({ header })}
+                    placeholder="Address and phone number"
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
+                    variant="secondary"
+                    className="min-h-24 py-3"
+                  />
+                </View>
 
-              <View>
-                <FieldLabel>Footer</FieldLabel>
-                <Input
-                  value={settings.footer}
-                  onChangeText={(footer) => updateSettings({ footer })}
-                  placeholder="Thank you!"
-                  multiline
-                  numberOfLines={2}
-                  textAlignVertical="top"
-                  variant="secondary"
-                  className="min-h-20 py-3"
-                />
+                <View>
+                  <FieldLabel>Footer</FieldLabel>
+                  <Input
+                    value={settings.footer}
+                    onChangeText={(footer) => updateSettings({ footer })}
+                    placeholder="Thank you!"
+                    multiline
+                    numberOfLines={2}
+                    textAlignVertical="top"
+                    variant="secondary"
+                    className="min-h-20 py-3"
+                  />
+                </View>
               </View>
+            </ScrollView>
 
+            <Separator />
+            <View className="bg-surface px-5 py-4">
               <Button className="w-full" onPress={() => router.back()}>
                 <Button.Label>Done</Button.Label>
               </Button>
             </View>
-          </ScrollView>
-        </Surface>
+          </Surface>
 
-        <View className="flex-1 min-h-0 gap-2">
-          <View className="flex-row items-center justify-between gap-3">
-            <Typography className="text-sm font-semibold text-foreground">
-              Receipt preview
-            </Typography>
-            <Typography type="body-xs" color="muted">
-              58 mm
-            </Typography>
+          <View className="flex-1 min-h-0 gap-2">
+            <View className="flex-row items-center justify-between gap-3">
+              <Typography className="text-sm font-semibold text-foreground">
+                Receipt preview
+              </Typography>
+              <Typography type="body-xs" color="muted">
+                58 mm
+              </Typography>
+            </View>
+            <ScrollView
+              className="flex-1 rounded-lg bg-neutral-200 dark:bg-neutral-800"
+              contentContainerClassName="p-4"
+              showsVerticalScrollIndicator={false}
+            >
+              <ReceiptPaper settings={settings} data={SAMPLE_RECEIPT} />
+            </ScrollView>
           </View>
-          <ScrollView
-            className="flex-1 rounded-lg bg-neutral-200 dark:bg-neutral-800"
-            contentContainerClassName="p-4"
-            showsVerticalScrollIndicator={false}
-          >
-            <ReceiptPaper settings={settings} data={SAMPLE_RECEIPT} />
-          </ScrollView>
         </View>
       </View>
-    </View>
+    </>
   );
 }
