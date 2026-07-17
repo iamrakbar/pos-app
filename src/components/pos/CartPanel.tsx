@@ -30,15 +30,10 @@ export default function CartPanel(): JSX.Element {
       {/* Header */}
       <View className="flex-row items-center justify-between h-18 px-5">
         <Typography.Heading type="h6" className="text-foreground">
-          Cart
-        </Typography.Heading>
-        <Typography type="body-sm" color="muted">
           {itemCount} {itemCount === 1 ? "item" : "items"}
-        </Typography>
-      </View>
-      <View className="px-5 pb-3">
+        </Typography.Heading>
         {cartProducts.length > 0 && (
-          <Button variant="danger-soft" size="sm" onPress={clearCart} className="self-start">
+          <Button variant="danger-soft" size="sm" onPress={clearCart}>
             <Ionicons name="trash-outline" size={16} color={themeColorDangerSoftForeground} />
             <Button.Label>Empty Cart</Button.Label>
           </Button>
