@@ -23,7 +23,7 @@ export default function PaymentModal(): JSX.Element {
         <Dialog.Content
           isSwipeable={false}
           accessibilityLabel="Payment"
-          className="overflow-hidden bg-background p-0"
+          className="w-full max-w-3xl self-center bg-background p-0 overflow-hidden"
           style={{
             width: Math.min(width * 0.88, 960),
             height: height * 0.88,

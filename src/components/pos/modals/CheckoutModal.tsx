@@ -36,13 +36,13 @@ export default function CheckoutModal(): JSX.Element {
         <Dialog.Content
           isSwipeable={false}
           accessibilityLabel="Checkout"
-          className="overflow-hidden bg-background p-0"
+          className="w-full max-w-3xl self-center bg-background p-0 overflow-hidden"
           style={{
             width: Math.min(width * 0.9, 680),
             height: Math.min(height * 0.86, 920),
           }}
         >
-          <View className="flex-row items-center justify-between px-5 py-4">
+          <View className="flex-row items-center justify-between bg-surface px-5 py-4">
             <Dialog.Title>Checkout</Dialog.Title>
             <Dialog.Close />
           </View>
