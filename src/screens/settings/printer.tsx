@@ -151,6 +151,9 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
   const handleConnectionChange = (type: ConnectionType) => {
     updateSettings({ connection: type, selectedDeviceId: "" });
     setConnectionStatus("idle");
+    if (type === "wifi") {
+      setDevices([]);
+    }
   };
 
   const updatePrinterSettings = React.useCallback(
@@ -304,15 +307,10 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
   );
 
   React.useEffect(() => {
-    setConnectionStatus("idle");
-    if (connection === "bluetooth") {
-      void handleScan(false, false);
-      return;
+    if (connection === "wifi") {
+      void NetPrinter.init().catch(() => undefined);
     }
-
-    setDevices([]);
-    void NetPrinter.init().catch(() => undefined);
-  }, [connection, handleScan]);
+  }, [connection]);
 
   const handleConnect = async () => {
     setConnectionStatus("connecting");
