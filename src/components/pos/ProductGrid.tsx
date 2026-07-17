@@ -5,7 +5,7 @@ import ErrorState from "@/components/common/ErrorState";
 import EmptyState from "@/components/common/EmptyState";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
 import ProductCard from "./ProductCard";
 
@@ -21,6 +21,7 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
 
   const searchQuery = usePOSStore((s) => s.searchQuery);
   const categoryId = usePOSStore((s) => s.categoryId);
+  const productSort = usePOSStore((s) => s.productSort);
 
   const availableWidth = width - CART_PANEL_WIDTH;
   const numColumns = Math.max(2, Math.floor(availableWidth / CARD_MIN_WIDTH));
@@ -34,16 +35,19 @@ export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
     refetch,
     isRefetching,
   } = useProducts(searchQuery || undefined);
-  const filtered = useMemo(
-    () =>
-      (allProducts ?? []).filter(
-        (p) =>
-          (!categoryId || p.category_id === categoryId) &&
-          p.is_active &&
-          (!p.stock_enabled || (p.stock_qty ?? 0) > 0)
-      ),
-    [allProducts, categoryId]
-  );
+  const filtered = (allProducts ?? [])
+    .filter(
+      (product) =>
+        (!categoryId || product.category_id === categoryId) &&
+        product.is_active &&
+        (!product.stock_enabled || (product.stock_qty ?? 0) > 0)
+    )
+    .sort((left, right) => {
+      if (productSort === "name-asc") return left.name.localeCompare(right.name, "id");
+      if (productSort === "name-desc") return right.name.localeCompare(left.name, "id");
+      if (productSort === "price-asc") return left.price - right.price;
+      return right.price - left.price;
+    });
 
   const renderProduct = useCallback(
     ({ item }: { item: POSProduct }) => (
