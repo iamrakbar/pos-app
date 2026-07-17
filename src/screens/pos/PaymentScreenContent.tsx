@@ -7,7 +7,7 @@ import Countdown from "@/components/common/Countdown";
 import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
-import { ActivityIndicator, Image, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, Image, ScrollView, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 
@@ -70,12 +70,17 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
       <Separator />
 
-      <View className="flex-1 p-5">
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="flex-grow justify-center p-5"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <Surface
           className={
             isWideLayout
-              ? "w-full max-w-4xl flex-1 self-center flex-row items-center justify-center gap-8 p-6"
-              : "w-full flex-1 items-center justify-center gap-5 p-5"
+              ? "w-full max-w-4xl self-center flex-row items-center justify-center gap-8 p-6"
+              : "w-full self-center items-center justify-center gap-5 p-5"
           }
         >
           <View className="items-center gap-4">
@@ -148,7 +153,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
             )}
           </View>
         </Surface>
-      </View>
+      </ScrollView>
 
       <Separator />
 
