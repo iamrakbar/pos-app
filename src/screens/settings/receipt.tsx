@@ -153,26 +153,32 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="p-4 pb-8"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <View className="flex-1 bg-background p-4">
+      <View
+        className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row items-stretch gap-6" : "gap-4"}`}
       >
-        <View
-          className={`w-full max-w-6xl self-center ${isWide ? "flex-row items-start gap-6" : "gap-5"}`}
+        <Surface
+          className={
+            isWide
+              ? "w-[380px] min-h-0 overflow-hidden p-0"
+              : "w-full flex-[1.1] min-h-0 overflow-hidden p-0"
+          }
         >
-          <Surface className={isWide ? "w-[380px] p-5" : "w-full p-5"}>
-            <View className="mb-5 gap-1">
-              <Typography className="text-lg font-semibold text-foreground">
-                Receipt details
-              </Typography>
-              <Typography type="body-sm" color="muted">
-                Changes are saved automatically and used for future prints.
-              </Typography>
-            </View>
+          <View className="px-5 pt-5 pb-4 gap-1">
+            <Typography className="text-lg font-semibold text-foreground">
+              Receipt details
+            </Typography>
+            <Typography type="body-sm" color="muted">
+              Changes are saved automatically and used for future prints.
+            </Typography>
+          </View>
 
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName="px-5 pb-5"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
             <View className="gap-5">
               <View>
                 <FieldLabel>Store logo</FieldLabel>
@@ -252,29 +258,31 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   className="min-h-20 py-3"
                 />
               </View>
-            </View>
-          </Surface>
 
-          <View className="flex-1 gap-2">
-            <View className="flex-row items-center justify-between gap-3">
-              <Typography className="text-sm font-semibold text-foreground">
-                Receipt preview
-              </Typography>
-              <Typography type="body-xs" color="muted">
-                58 mm
-              </Typography>
+              <Button className="w-full" onPress={() => router.back()}>
+                <Button.Label>Done</Button.Label>
+              </Button>
             </View>
-            <View className="rounded-lg bg-neutral-200 p-4 dark:bg-neutral-800">
-              <ReceiptPaper settings={settings} data={SAMPLE_RECEIPT} />
-            </View>
+          </ScrollView>
+        </Surface>
+
+        <View className="flex-1 min-h-0 gap-2">
+          <View className="flex-row items-center justify-between gap-3">
+            <Typography className="text-sm font-semibold text-foreground">
+              Receipt preview
+            </Typography>
+            <Typography type="body-xs" color="muted">
+              58 mm
+            </Typography>
           </View>
+          <ScrollView
+            className="flex-1 rounded-lg bg-neutral-200 dark:bg-neutral-800"
+            contentContainerClassName="p-4"
+            showsVerticalScrollIndicator={false}
+          >
+            <ReceiptPaper settings={settings} data={SAMPLE_RECEIPT} />
+          </ScrollView>
         </View>
-      </ScrollView>
-
-      <View className="bg-surface px-4 py-3">
-        <Button className="w-full max-w-6xl self-center" onPress={() => router.back()}>
-          <Button.Label>Done</Button.Label>
-        </Button>
       </View>
     </View>
   );
