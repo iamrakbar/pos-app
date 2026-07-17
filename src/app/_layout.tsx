@@ -5,12 +5,11 @@ import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { HeroUINativeProvider } from "heroui-native";
-import { useCallback, useEffect, type JSX } from "react";
-import { Platform, StatusBar as NativeStatusBar, View } from "react-native";
+import { useEffect, type JSX } from "react";
+import { Platform, StatusBar as NativeStatusBar, View, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuth, setQueryClientRef } from "@/stores/useAuth";
-import { useThemeStore } from "@/stores/useThemeStore";
 import { isApiError } from "@/api/ApiError";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { useNavigationTheme } from "@/utils/navigationTheme";
@@ -33,16 +32,16 @@ const queryClient = new QueryClient({
 export default function RootLayout(): JSX.Element {
   const token = useAuth((s) => s.token);
   const hasHydrated = useAuth((s) => s.hasHydrated);
-  const isDarkMode = useThemeStore((s) => s.isDarkMode);
+  const isDarkMode = useColorScheme() === "dark";
   const session = !!token;
   const navigationTheme = useNavigationTheme();
   const isAppReady = hasHydrated;
 
-  const handleAppLayout = useCallback(() => {
+  const handleAppLayout = () => {
     if (isAppReady) {
       SplashScreen.hide();
     }
-  }, [isAppReady]);
+  };
 
   useEffect(() => {
     setQueryClientRef(queryClient);

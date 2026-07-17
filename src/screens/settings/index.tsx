@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Button, Card, Switch, Typography, useThemeColor } from "heroui-native";
-import { Select } from "heroui-native";
+import { Button, Card, Select, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useAuth } from "@/stores/useAuth";
-import { useThemeStore } from "@/stores/useThemeStore";
+import { useThemeStore, type ThemeMode } from "@/stores/useThemeStore";
 import { useLocale } from "@/stores/useLocale";
 import { t } from "@/locales";
 
@@ -41,18 +40,25 @@ const SETTINGS_ITEMS: SettingsItem[] = [
   },
 ];
 
+const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
+  { value: "system", label: t("settings.themeSystem") },
+  { value: "light", label: t("settings.themeLight") },
+  { value: "dark", label: t("settings.themeDark") },
+];
+
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
   const [themeColorMuted, themeColorAccentSoftForeground, themeColorDangerSoftForeground] =
     useThemeColor(["muted", "accent-soft-foreground", "danger-soft-foreground"]);
   const logout = useAuth((s) => s.logout);
-  const isDarkMode = useThemeStore((s) => s.isDarkMode);
-  const setDarkMode = useThemeStore((s) => s.setDarkMode);
+  const themeMode = useThemeStore((s) => s.mode);
+  const setThemeMode = useThemeStore((s) => s.setMode);
   const locale = useLocale((s) => s.locale);
   const localeOption = {
     value: locale,
     label: locale === "id" ? t("settings.indonesian") : t("settings.english"),
   };
+  const themeOption = THEME_OPTIONS.find((option) => option.value === themeMode) ?? THEME_OPTIONS[0];
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerClassName="flex-grow p-5">
@@ -83,17 +89,47 @@ export default function SettingsScreen(): JSX.Element {
           <Card className="p-0 overflow-hidden">
             <View className="flex-row items-center gap-4 px-4 py-4">
               <View className="w-10 h-10 rounded-panel-inner bg-surface-secondary items-center justify-center">
-                <Ionicons name="moon-outline" size={20} color={themeColorMuted} />
+                <Ionicons
+                  name={
+                    themeMode === "dark"
+                      ? "moon-outline"
+                      : themeMode === "light"
+                        ? "sunny-outline"
+                        : "contrast-outline"
+                  }
+                  size={20}
+                  color={themeColorMuted}
+                />
               </View>
               <View className="flex-1 gap-0.5">
                 <Typography type="body-sm" weight="semibold">
-                  {t("settings.darkMode")}
+                  {t("settings.appearance")}
                 </Typography>
                 <Typography type="body-xs" color="muted" numberOfLines={2}>
-                  {t("settings.darkModeDescription")}
+                  {t("settings.appearanceDescription")}
                 </Typography>
               </View>
-              <Switch isSelected={isDarkMode} onSelectedChange={setDarkMode} />
+              <View className="w-36">
+                <Select
+                  value={themeOption}
+                  onValueChange={(option) => {
+                    if (option?.value) setThemeMode(option.value as ThemeMode);
+                  }}
+                >
+                  <Select.Trigger>
+                    <Select.Value placeholder={t("settings.appearance")} />
+                    <Select.TriggerIndicator />
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Overlay />
+                    <Select.Content presentation="popover" width="trigger">
+                      {THEME_OPTIONS.map((option) => (
+                        <Select.Item key={option.value} value={option.value} label={option.label} />
+                      ))}
+                    </Select.Content>
+                  </Select.Portal>
+                </Select>
+              </View>
             </View>
           </Card>
 
