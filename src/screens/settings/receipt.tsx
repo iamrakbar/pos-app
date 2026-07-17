@@ -18,6 +18,7 @@ import {
   useToast,
 } from "heroui-native";
 import React, { useEffect, useMemo, useState } from "react";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   ActivityIndicator,
   Image,
@@ -204,9 +205,10 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
               </Typography>
             </View>
 
-            <ScrollView
+            <KeyboardAwareScrollView
               className="flex-1"
               contentContainerClassName="px-5 pb-5"
+              bottomOffset={88}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
@@ -290,7 +292,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   />
                 </View>
               </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
 
             <Separator />
             <View className="bg-surface px-5 py-4">
