@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storage } from "@/lib/storage";
 
 const STORAGE_KEY = "soeat-print-diagnostics";
 const MAX_ENTRIES = 100;
@@ -18,9 +18,9 @@ export type PrintDiagnostic = {
 
 export async function appendPrintDiagnostic(entry: PrintDiagnostic): Promise<void> {
   try {
-    const stored = await AsyncStorage.getItem(STORAGE_KEY);
+    const stored = storage.getString(STORAGE_KEY);
     const entries = stored ? (JSON.parse(stored) as PrintDiagnostic[]) : [];
-    await AsyncStorage.setItem(
+    storage.set(
       STORAGE_KEY,
       JSON.stringify([entry, ...entries].slice(0, MAX_ENTRIES))
     );
@@ -30,6 +30,6 @@ export async function appendPrintDiagnostic(entry: PrintDiagnostic): Promise<voi
 }
 
 export async function getPrintDiagnostics(): Promise<PrintDiagnostic[]> {
-  const stored = await AsyncStorage.getItem(STORAGE_KEY);
+  const stored = storage.getString(STORAGE_KEY);
   return stored ? (JSON.parse(stored) as PrintDiagnostic[]) : [];
 }

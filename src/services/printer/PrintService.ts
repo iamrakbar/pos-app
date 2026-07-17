@@ -124,7 +124,7 @@ async function connectNetwork(settings: PrinterSettings): Promise<RawPrinterDriv
 }
 
 async function performPrintReceipt(order: ReceiptOrder): Promise<number> {
-  // Zustand persistence is backed by AsyncStorage; hydration provides the local default printer.
+  // Zustand persistence is backed by MMKV; hydration provides the local default printer.
   const printerState = usePrinterStore.getState();
   if (!printerState.hasHydrated || printerState.printers.length === 0) {
     throw new PrintError("NOT_CONFIGURED", "Add and select a default printer before printing.");

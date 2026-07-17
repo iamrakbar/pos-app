@@ -1,9 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import * as Localization from 'expo-localization';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 import { i18n, type Locale } from '@/locales';
+import { zustandStorage } from '@/lib/storage';
 
 // Default: detect from device; fallback to 'id'
 function detectLocale(): Locale {
@@ -16,10 +15,7 @@ interface UseLocaleState {
   setLocale: (locale: Locale) => void;
 }
 
-const localeStorage =
-  Platform.OS === 'web'
-    ? createJSONStorage(() => localStorage)
-    : createJSONStorage(() => AsyncStorage);
+const localeStorage = createJSONStorage(() => zustandStorage);
 
 const initialLocale = detectLocale();
 i18n.locale = initialLocale;

@@ -1,12 +1,9 @@
 import { CartAddOn, Cart, CartAction, CartItem } from '@/types/cart';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { zustandStorage } from '@/lib/storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-const cartStorage = Platform.OS === 'web'
-  ? createJSONStorage(() => localStorage)
-  : createJSONStorage(() => AsyncStorage);
+const cartStorage = createJSONStorage(() => zustandStorage);
 
 // 🔑 Unique key generator
 function generateCartItemId(

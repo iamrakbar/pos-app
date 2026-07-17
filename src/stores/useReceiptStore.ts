@@ -1,5 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
+import { zustandStorage } from "@/lib/storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -33,10 +32,7 @@ interface ReceiptStore {
   resetSettings: () => void;
 }
 
-const receiptStorage =
-  Platform.OS === "web"
-    ? createJSONStorage(() => localStorage)
-    : createJSONStorage(() => AsyncStorage);
+const receiptStorage = createJSONStorage(() => zustandStorage);
 
 const normalizeSettings = (value: unknown): ReceiptSettings => {
   const persisted = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;

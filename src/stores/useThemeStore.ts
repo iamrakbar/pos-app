@@ -1,5 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { zustandStorage } from '@/lib/storage';
 import { Uniwind } from 'uniwind';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -9,10 +8,7 @@ type ThemeState = {
     setDarkMode: (isDarkMode: boolean) => void;
 };
 
-const themeStorage =
-    Platform.OS === 'web'
-        ? createJSONStorage(() => localStorage)
-        : createJSONStorage(() => AsyncStorage);
+const themeStorage = createJSONStorage(() => zustandStorage);
 
 function applyTheme(isDarkMode: boolean) {
     Uniwind.setTheme(isDarkMode ? 'dark' : 'light');

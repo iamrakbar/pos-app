@@ -1,5 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
+import { zustandStorage } from "@/lib/storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -54,10 +53,7 @@ export const DEFAULT_PRINTER_SETTINGS: PrinterSettings = {
   selectedDeviceId: "",
 };
 
-const printerStorage =
-  Platform.OS === "web"
-    ? createJSONStorage(() => localStorage)
-    : createJSONStorage(() => AsyncStorage);
+const printerStorage = createJSONStorage(() => zustandStorage);
 
 const createPrinterId = () => `printer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
