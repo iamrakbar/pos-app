@@ -10,15 +10,17 @@ import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
-import { Platform, StatusBar, View } from "react-native";
+import { Platform, StatusBar, View, useWindowDimensions } from "react-native";
 import { useNavigationTheme } from "@/utils/navigationTheme";
 
 const CART_PANEL_WIDTH = 400;
 
 export default function POSScreen(): JSX.Element {
+  const { width: viewportWidth } = useWindowDimensions();
   const openAddonModal = usePOSStore((s) => s.openAddonModal);
   const addItem = useCartStore((s) => s.addItem);
   const theme = useNavigationTheme();
+  const cartPanelWidth = Math.min(CART_PANEL_WIDTH, viewportWidth / 3);
 
   useFocusEffect(
     useCallback(() => {
@@ -52,11 +54,11 @@ export default function POSScreen(): JSX.Element {
       {/* Product catalog */}
       <View className="flex-1 bg-background">
         <SearchBar />
-        <ProductGrid onSelectProduct={handleSelectProduct} />
+        <ProductGrid onSelectProduct={handleSelectProduct} cartPanelWidth={cartPanelWidth} />
       </View>
 
       {/* Cart panel */}
-      <View style={{ width: CART_PANEL_WIDTH }}>
+      <View style={{ width: cartPanelWidth }}>
         <CartPanel />
       </View>
 

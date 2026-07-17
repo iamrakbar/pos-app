@@ -9,21 +9,21 @@ import { useCallback } from "react";
 import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
 import ProductCard from "./ProductCard";
 
-const CART_PANEL_WIDTH = 400;
 const CARD_MIN_WIDTH = 180;
 
 type Props = {
   onSelectProduct: (product: POSProduct) => void;
+  cartPanelWidth: number;
 };
 
-export default function ProductGrid({ onSelectProduct }: Props): JSX.Element {
+export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props): JSX.Element {
   const { width } = useWindowDimensions();
 
   const searchQuery = usePOSStore((s) => s.searchQuery);
   const categoryId = usePOSStore((s) => s.categoryId);
   const productSort = usePOSStore((s) => s.productSort);
 
-  const availableWidth = width - CART_PANEL_WIDTH;
+  const availableWidth = width - cartPanelWidth;
   const numColumns = Math.max(2, Math.floor(availableWidth / CARD_MIN_WIDTH));
   const cardWidth = Math.floor(availableWidth / numColumns);
 
