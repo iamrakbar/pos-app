@@ -1,6 +1,7 @@
 import { usePOSStore } from "@/stores/usePOSStore";
 import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import { useReceiptStore } from "@/stores/useReceiptStore";
+import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
 import { formatRupiah } from "@/utils/format";
 import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -21,152 +22,45 @@ function formatDateTime(date: Date): string {
   });
 }
 
-type CheckoutData = App.Data.Merchant.Checkout.CheckoutData;
-
-function ReceiptRow({
-  label,
-  value,
-  emphasized = false,
-}: {
-  label: string;
-  value: string;
-  emphasized?: boolean;
-}): JSX.Element {
-  return (
-    <View className="flex-row items-start justify-between gap-4">
-      <Typography
-        className={emphasized ? "text-base font-bold text-neutral-950" : "text-xs text-neutral-700"}
-      >
-        {label}
-      </Typography>
-      <Typography
-        className={
-          emphasized
-            ? "text-base font-bold text-neutral-950 tabular-nums"
-            : "text-xs text-neutral-900 tabular-nums"
-        }
-      >
-        {value}
-      </Typography>
-    </View>
-  );
-}
-
-function ReceiptPreview({ order }: { order: CheckoutData }): JSX.Element {
-  const settings = useReceiptStore((state) => state.settings);
-  const totalQty = order.products.reduce((sum, product) => sum + product.qty, 0);
-  const storeName = settings.storeName || order.merchant.name || "SOEAT POS";
-  const customerName = order.customer?.name || "Walk-in";
-  const orderType = order.order_type === "dine-in" ? "Dine-in" : "Takeaway";
-
-  return (
-    <View className="w-full max-w-xl self-center overflow-hidden rounded-lg bg-white">
-      <View className="items-center gap-1 px-5 pt-6 pb-4">
-        <Typography className="text-lg font-bold text-neutral-950 text-center">
-          {storeName}
-        </Typography>
-        {[settings.storeAddress1, settings.storeAddress2, settings.storePhone]
-          .filter(Boolean)
-          .map((line) => (
-            <Typography key={line} className="text-xs text-neutral-600 text-center">
-              {line}
-            </Typography>
-          ))}
-      </View>
-
-      <View className="mx-5 border-t border-dashed border-neutral-300" />
-
-      <View className="gap-1.5 px-5 py-4">
-        <ReceiptRow label="Order" value={order.code} />
-        <ReceiptRow label="Date" value={formatDateTime(new Date(order.created_at))} />
-        <ReceiptRow label="Type" value={orderType} />
-        {order.table?.name ? <ReceiptRow label="Table" value={order.table.name} /> : null}
-        {settings.printCustomerName ? <ReceiptRow label="Customer" value={customerName} /> : null}
-        <ReceiptRow label="Payment" value={order.payment.name} />
-      </View>
-
-      <View className="mx-5 border-t border-dashed border-neutral-300" />
-
-      <View className="gap-4 px-5 py-4">
-        {order.products.map((item, index) => (
-          <View key={`${item.product_id}-${index}`} className="gap-1">
-            <View className="flex-row items-start justify-between gap-4">
-              <Typography className="flex-1 text-sm font-semibold text-neutral-950">
-                {item.name}
-              </Typography>
-              <Typography className="text-sm font-semibold text-neutral-950 tabular-nums">
-                {formatRupiah(item.subtotal)}
-              </Typography>
-            </View>
-            <Typography className="text-xs text-neutral-600 tabular-nums">
-              {item.qty} x {formatRupiah(item.price)}
-            </Typography>
-            {item.add_ons.map((addOn) => (
-              <View key={addOn.id} className="gap-0.5 pl-3">
-                <Typography className="text-[11px] font-semibold text-neutral-500">
-                  {addOn.name}
-                </Typography>
-                {addOn.options.map((option) => (
-                  <View key={option.id} className="flex-row justify-between gap-3">
-                    <Typography className="flex-1 text-xs text-neutral-600">
-                      + {option.name}
-                    </Typography>
-                    <Typography className="text-xs text-neutral-600 tabular-nums">
-                      {option.price > 0 ? formatRupiah(option.price) : "Included"}
-                    </Typography>
-                  </View>
-                ))}
-              </View>
-            ))}
-            {item.notes ? (
-              <Typography className="text-xs italic text-neutral-500">
-                Note: {item.notes}
-              </Typography>
-            ) : null}
-          </View>
-        ))}
-      </View>
-
-      <View className="mx-5 border-t border-dashed border-neutral-300" />
-
-      <View className="gap-2 px-5 py-4">
-        <ReceiptRow label="Subtotal" value={formatRupiah(order.pricing.subtotal)} />
-        {order.pricing.fees.map((fee) => (
-          <ReceiptRow
-            key={`${fee.type}-${fee.name}`}
-            label={fee.name}
-            value={formatRupiah(fee.amount)}
-          />
-        ))}
-        {settings.showTotalQuantity ? (
-          <ReceiptRow label={`${order.products.length} items · ${totalQty} qty`} value="" />
-        ) : null}
-        <View className="pt-2">
-          <ReceiptRow label="Total" value={formatRupiah(order.pricing.total)} emphasized />
-        </View>
-      </View>
-
-      {order.notes ? (
-        <View className="mx-5 border-t border-dashed border-neutral-300 py-4">
-          <Typography className="text-xs text-neutral-600">Note: {order.notes}</Typography>
-        </View>
-      ) : null}
-
-      {settings.footer ? (
-        <View className="items-center px-5 pt-2 pb-6">
-          <Typography className="text-xs text-neutral-600 text-center">
-            {settings.footer}
-          </Typography>
-        </View>
-      ) : null}
-    </View>
-  );
+function toReceiptData(order: App.Data.Merchant.Checkout.CheckoutData): ReceiptPreviewData {
+  return {
+    code: order.code,
+    date: formatDateTime(new Date(order.created_at)),
+    orderType: order.order_type === "dine-in" ? "Dine-in" : "Takeaway",
+    table: order.table?.name,
+    payment: order.payment.name,
+    items: order.products.map((item, index) => ({
+      id: `${item.product_id}-${index}`,
+      name: item.name,
+      qty: item.qty,
+      price: item.price,
+      subtotal: item.subtotal,
+      notes: item.notes,
+      addOns: item.add_ons.flatMap((addOn) =>
+        addOn.options.map((option) => ({
+          id: `${addOn.id}-${option.id}`,
+          group: addOn.name,
+          name: option.name,
+          price: option.price,
+        }))
+      ),
+    })),
+    subtotal: order.pricing.subtotal,
+    fees: order.pricing.fees.map((fee, index) => ({
+      id: `${fee.type}-${index}`,
+      name: fee.name,
+      amount: fee.amount,
+    })),
+    total: order.pricing.total,
+    notes: order.notes,
+  };
 }
 
 export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps): JSX.Element {
   const themeColorForeground = useThemeColor("foreground");
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
+  const receiptSettings = useReceiptStore((state) => state.settings);
   const closeModal = usePOSStore((s) => s.closeModal);
   const resetCheckoutForm = usePOSStore((s) => s.resetCheckoutForm);
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
@@ -298,7 +192,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
               </View>
               {checkoutResult ? (
                 <View className="rounded-lg bg-neutral-200 p-4 dark:bg-neutral-800">
-                  <ReceiptPreview order={checkoutResult} />
+                  <ReceiptPaper settings={receiptSettings} data={toReceiptData(checkoutResult)} />
                 </View>
               ) : (
                 <Surface className="items-center px-4 py-8">

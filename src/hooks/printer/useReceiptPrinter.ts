@@ -28,10 +28,12 @@ const paperWidthConfig = {
   "58mm": {
     dottedLine: COMMANDS.HORIZONTAL_LINE.HR3_58MM.slice(0, 32),
     billColumnWidth: [20, 12] as [number, number],
+    logoWidth: 300,
   },
   "80mm": {
     dottedLine: COMMANDS.HORIZONTAL_LINE.HR3_80MM.slice(0, 46),
     billColumnWidth: [30, 16] as [number, number],
+    logoWidth: 380,
   },
 };
 
@@ -124,12 +126,6 @@ function getOrderFees(order: ReceiptOrder): { name: string; amount: number }[] {
 
   const paymentFee = extractNumber(rec?.payment_fee);
   return paymentFee > 0 ? [{ name: "Payment fee", amount: paymentFee }] : [];
-}
-
-function getCustomerName(order: ReceiptOrder): string | null {
-  const rec = asRecord(order);
-  const customer = asRecord(rec?.customer);
-  return typeof customer?.name === "string" ? customer.name : null;
 }
 
 export function useReceiptPrinter() {
@@ -253,19 +249,24 @@ export function useReceiptPrinter() {
       const fees = getOrderFees(order);
       const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
       const storeName = receiptSettings.storeName || "SOEAT POS";
-      const addressLines = [
-        receiptSettings.storeAddress1,
-        receiptSettings.storeAddress2,
-        receiptSettings.storePhone,
-      ].filter(Boolean);
+      const headerLines = receiptSettings.header
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
       const tableName = getCheckoutTableName(order);
-      const customerName = getCustomerName(order);
       const paymentName = extractPaymentName(order.payment);
 
+      if (receiptSettings.storeLogo) {
+        PrinterDriver.printImage(receiptSettings.storeLogo, {
+          imageWidth: paperConfig.logoWidth,
+          align: "center",
+          onError: reportPrintError,
+        });
+      }
       PrinterDriver.printText(`${center}${boldOn}${size2h}${storeName}${sizeNormal}${boldOff}\n`, {
         onError: reportPrintError,
       });
-      for (const line of addressLines) {
+      for (const line of headerLines) {
         PrinterDriver.printText(`${center}${line}`, { onError: reportPrintError });
       }
       PrinterDriver.printText(`${center}${paperConfig.dottedLine}`, { onError: reportPrintError });
@@ -279,11 +280,6 @@ export function useReceiptPrinter() {
       );
       if (tableName) {
         PrinterDriver.printText(`Table       : ${tableName}`, { onError: reportPrintError });
-      }
-      if (receiptSettings.printCustomerName) {
-        PrinterDriver.printText(`Pelanggan   : ${customerName ?? "Walk-in"}`, {
-          onError: reportPrintError,
-        });
       }
       PrinterDriver.printText(`Pembayaran  : ${paymentName}`, { onError: reportPrintError });
       PrinterDriver.printText(`${paperConfig.dottedLine}`, { onError: reportPrintError });
@@ -330,11 +326,9 @@ export function useReceiptPrinter() {
           { onError: reportPrintError }
         );
       }
-      if (receiptSettings.showTotalQuantity) {
-        PrinterDriver.printText(`Item = ${items.length} - Qty = ${totalQty}`, {
-          onError: reportPrintError,
-        });
-      }
+      PrinterDriver.printText(`Item = ${items.length} - Qty = ${totalQty}`, {
+        onError: reportPrintError,
+      });
       PrinterDriver.printText("TOTAL", { onError: reportPrintError });
       PrinterDriver.printText(
         `${boldOn}${size2h}${formatRupiah(getOrderTotal(order))}${sizeNormal}${boldOff}\n`,

@@ -1,77 +1,69 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type TextSize = 'small' | 'normal' | 'large';
-export type Alignment = 'left' | 'center' | 'right';
-export type InvoiceFormat = 'none' | 'text' | 'barcode' | 'qr';
-export type SignatureType = 'none' | 'customer' | 'cashier';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface ReceiptSettings {
-    textSize: TextSize;
-    compactMode: boolean;
-    printCustomerName: boolean;
-    printCustomerPhone: boolean;
-    printCustomerAddress: boolean;
-    storeLogo: string | null;
-    storeName: string;
-    storeAddress1: string;
-    storeAddress2: string;
-    storePhone: string;
-    footer: string;
-    alignment: Alignment;
-    invoiceFormat: InvoiceFormat;
-    signatureType: SignatureType;
-    showPrintDate: boolean;
-    showTotalQuantity: boolean;
+  storeLogo: string | null;
+  storeName: string;
+  header: string;
+  footer: string;
+  initializedMerchantId: string | null;
 }
 
 export const DEFAULT_RECEIPT_SETTINGS: ReceiptSettings = {
-    textSize: 'normal',
-    compactMode: false,
-    printCustomerName: false,
-    printCustomerPhone: false,
-    printCustomerAddress: false,
-    storeLogo: null,
-    storeName: '',
-    storeAddress1: '',
-    storeAddress2: '',
-    storePhone: '',
-    footer: 'Thank you!',
-    alignment: 'center',
-    invoiceFormat: 'text',
-    signatureType: 'none',
-    showPrintDate: true,
-    showTotalQuantity: true,
+  storeLogo: null,
+  storeName: "",
+  header: "",
+  footer: "Thank you!",
+  initializedMerchantId: null,
 };
 
-// ─── Store ────────────────────────────────────────────────────────────────────
-
 interface ReceiptStore {
-    settings: ReceiptSettings;
-    updateSettings: (patch: Partial<ReceiptSettings>) => void;
-    resetSettings: () => void;
+  settings: ReceiptSettings;
+  updateSettings: (patch: Partial<ReceiptSettings>) => void;
+  resetSettings: () => void;
 }
 
 const receiptStorage =
-    Platform.OS === 'web'
-        ? createJSONStorage(() => localStorage)
-        : createJSONStorage(() => AsyncStorage);
+  Platform.OS === "web"
+    ? createJSONStorage(() => localStorage)
+    : createJSONStorage(() => AsyncStorage);
+
+const normalizeSettings = (value: unknown): ReceiptSettings => {
+  const persisted = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  const legacyHeader = [persisted.storeAddress1, persisted.storeAddress2, persisted.storePhone]
+    .filter((line): line is string => typeof line === "string" && line.trim().length > 0)
+    .join("\n");
+
+  return {
+    storeLogo: typeof persisted.storeLogo === "string" ? persisted.storeLogo : null,
+    storeName: typeof persisted.storeName === "string" ? persisted.storeName : "",
+    header: typeof persisted.header === "string" ? persisted.header : legacyHeader,
+    footer: typeof persisted.footer === "string" ? persisted.footer : "Thank you!",
+    initializedMerchantId:
+      typeof persisted.initializedMerchantId === "string" ? persisted.initializedMerchantId : null,
+  };
+};
 
 export const useReceiptStore = create<ReceiptStore>()(
-    persist(
-        (set) => ({
-            settings: DEFAULT_RECEIPT_SETTINGS,
-            updateSettings: (patch) =>
-                set((state) => ({ settings: { ...state.settings, ...patch } })),
-            resetSettings: () => set({ settings: DEFAULT_RECEIPT_SETTINGS }),
-        }),
-        {
-            name: 'soeat-receipt-settings',
-            storage: receiptStorage,
-        }
-    )
+  persist(
+    (set) => ({
+      settings: DEFAULT_RECEIPT_SETTINGS,
+      updateSettings: (patch) => set((state) => ({ settings: { ...state.settings, ...patch } })),
+      resetSettings: () => set({ settings: DEFAULT_RECEIPT_SETTINGS }),
+    }),
+    {
+      name: "soeat-receipt-settings",
+      storage: receiptStorage,
+      version: 2,
+      merge: (persisted, current) => {
+        const persistedState = persisted as { settings?: unknown } | undefined;
+        return {
+          ...current,
+          settings: normalizeSettings(persistedState?.settings),
+        };
+      },
+    }
+  )
 );

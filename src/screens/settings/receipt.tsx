@@ -1,732 +1,281 @@
-import * as ImagePicker from 'expo-image-picker';
-import { Directory, File, Paths } from 'expo-file-system';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Button, Input, Select, Separator, Switch, Typography, useThemeColor } from 'heroui-native';
-import React from 'react';
+import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
+import { useAuth } from "@/stores/useAuth";
+import { useReceiptStore } from "@/stores/useReceiptStore";
+import { optimizeReceiptLogo } from "@/utils/receiptLogo";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
+import { Button, Input, Surface, Typography, useThemeColor, useToast } from "heroui-native";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-    Alert,
-    Image,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-} from 'react-native';
-import type { Alignment, InvoiceFormat, ReceiptSettings, SignatureType, TextSize } from '@/stores/useReceiptStore';
-import { useReceiptStore } from '@/stores/useReceiptStore';
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type Tab = 'general' | 'top' | 'bottom' | 'preview';
-
-// Re-export types used by sub-components (sourced from store)
-export type { TextSize, Alignment, InvoiceFormat, SignatureType, ReceiptSettings };
-
-// ─── Options ──────────────────────────────────────────────────────────────────
-
-const TEXT_SIZE_OPTIONS = [
-    { value: 'small', label: 'Small' },
-    { value: 'normal', label: 'Normal' },
-    { value: 'large', label: 'Large' },
-];
-const ALIGNMENT_OPTIONS = [
-    { value: 'left', label: 'Left' },
-    { value: 'center', label: 'Center' },
-    { value: 'right', label: 'Right' },
-];
-const INVOICE_OPTIONS = [
-    { value: 'none', label: 'None' },
-    { value: 'text', label: 'Text' },
-    { value: 'barcode', label: 'Barcode' },
-    { value: 'qr', label: 'QR Code' },
-];
-const SIGNATURE_OPTIONS = [
-    { value: 'none', label: 'None' },
-    { value: 'customer', label: 'Customer' },
-    { value: 'cashier', label: 'Cashier' },
-];
-
-const TABS: { id: Tab; icon: React.ComponentProps<typeof Ionicons>['name']; label: string }[] = [
-    { id: 'general', icon: 'settings-outline', label: 'General' },
-    { id: 'top', icon: 'arrow-up-outline', label: 'Top' },
-    { id: 'bottom', icon: 'arrow-down-outline', label: 'Bottom' },
-    { id: 'preview', icon: 'scan-outline', label: 'Preview' },
-];
-
-const TAB_ORDER: Tab[] = ['general', 'top', 'bottom', 'preview'];
-
-// ─── Mock order for preview ───────────────────────────────────────────────────
-
-const MOCK_ORDER = {
-    date: 'Feb 14, 2009 06:31',
-    notes: 'No chilli sauce',
-    items: [
-        {
-            name: 'FRENCH FRIES',
-            qty: 2,
-            price: 100,
-            total: 200,
-            addons: [
-                { name: 'SIZE: JUMBO', charge: 6 },
-                { name: 'EXTRA: KETCHUP', charge: 0 },
-            ],
-        },
-        { name: 'HAMBURGER', qty: 1, price: 2000, total: 2000, addons: [] },
-        { name: 'CHOCOLATE PUDDING', qty: 80, price: 15, total: 1200, addons: [] },
-    ],
-    subtotal: 3400,
-    delivery: 5,
-    serviceRate: 5,
-    taxRate: 10,
-    grandTotal: 3933,
-    queue: 42,
-    invoiceNumber: 'IN/200902142/GE8-B3D',
-    printDate: 'Jun 30, 2026 19:35',
+const SAMPLE_RECEIPT: ReceiptPreviewData = {
+  code: "ORD-2026-0142",
+  date: "17 Jul 2026, 14:32",
+  orderType: "Dine-in",
+  table: "A-04",
+  payment: "QRIS",
+  items: [
+    {
+      id: "sample-1",
+      name: "Cafe Latte",
+      qty: 2,
+      price: 28000,
+      subtotal: 62000,
+      addOns: [{ id: "sample-addon-1", group: "Milk", name: "Oat milk", price: 3000 }],
+    },
+    {
+      id: "sample-2",
+      name: "Butter Croissant",
+      qty: 1,
+      price: 24000,
+      subtotal: 24000,
+      addOns: [],
+    },
+  ],
+  subtotal: 86000,
+  fees: [{ id: "service", name: "Service", amount: 4300 }],
+  total: 90300,
 };
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
-function FieldLabel({ label }: { label: string }) {
-    return (
-        <Typography type="body-sm" weight="semibold" className="mb-1.5">
-            {label}
-        </Typography>
-    );
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : null;
 }
 
-function ToggleRow({
-    label,
-    description,
-    value,
-    onToggle,
-}: {
-    label: string;
-    description?: string;
-    value: boolean;
-    onToggle: (v: boolean) => void;
-}) {
-    return (
-        <Pressable
-            className="flex-row items-center justify-between py-3"
-            onPress={() => onToggle(!value)}
-        >
-            <View className="flex-1 mr-4">
-                <Typography type="body-sm" weight="semibold">{label}</Typography>
-                {description && (
-                    <Typography type="body-xs" color="muted" className="mt-0.5">
-                        {description}
-                    </Typography>
-                )}
-            </View>
-            <Switch isSelected={value} onSelectedChange={onToggle} />
-        </Pressable>
-    );
+function getMerchantHeader(merchant: unknown): string {
+  const record = asRecord(merchant);
+  const address = asRecord(record?.address);
+  const addressLine = [
+    address?.address,
+    address?.district,
+    address?.city,
+    address?.province,
+    address?.postcode,
+  ]
+    .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+    .join(", ");
+  const phone = typeof record?.phone === "string" ? record.phone : "";
+  return [addressLine, phone].filter(Boolean).join("\n");
 }
 
-function SectionHeader({
-    icon,
-    title,
-}: {
-    icon: React.ComponentProps<typeof Ionicons>['name'];
-    title: string;
-}) {
-    const themeColorMuted = useThemeColor('muted');
-
-    return (
-        <View className="flex-row items-center gap-2 mt-3 mb-1">
-            <Ionicons name={icon} size={18} color={themeColorMuted} />
-            <Typography type="body-sm" weight="semibold">
-                {title}
-            </Typography>
-        </View>
-    );
+function FieldLabel({ children }: { children: string }) {
+  return (
+    <Typography type="body-sm" weight="semibold" className="mb-1.5">
+      {children}
+    </Typography>
+  );
 }
 
-function SelectField<T extends string>({
-    value,
-    options,
-    listLabel,
-    onValueChange,
-}: {
-    value: T;
-    options: { value: string; label: string }[];
-    listLabel: string;
-    onValueChange: (v: T) => void;
-}) {
-    return (
-        <Select
-            value={options.find((o) => o.value === value)}
-            onValueChange={(opt) => {
-                if (opt) onValueChange(opt.value as T);
-            }}
-        >
-            <Select.Trigger>
-                <Select.Value placeholder="Select…" numberOfLines={1} />
-                <Select.TriggerIndicator />
-            </Select.Trigger>
-            <Select.Portal>
-                <Select.Overlay />
-                <Select.Content presentation="popover" width="trigger">
-                    <Select.ListLabel className="mb-2">{listLabel}</Select.ListLabel>
-                    {options.map((o, i, arr) => (
-                        <React.Fragment key={o.value}>
-                            <Select.Item value={o.value} label={o.label} />
-                            {i < arr.length - 1 && <Separator />}
-                        </React.Fragment>
-                    ))}
-                </Select.Content>
-            </Select.Portal>
-        </Select>
-    );
-}
+export default function ReceiptSetupScreen(): React.JSX.Element {
+  const router = useRouter();
+  const { toast } = useToast();
+  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const settings = useReceiptStore((state) => state.settings);
+  const updateSettings = useReceiptStore((state) => state.updateSettings);
+  const { width } = useWindowDimensions();
+  const isWide = width >= 900;
+  const themeColorMuted = useThemeColor("muted");
+  const [isProcessingLogo, setIsProcessingLogo] = useState(false);
 
-// ─── Tab bar ──────────────────────────────────────────────────────────────────
+  const merchantDefaults = useMemo(
+    () => ({
+      id: activeMerchant?.id ?? null,
+      name: activeMerchant?.name ?? "",
+      logo: activeMerchant?.logo_url ?? null,
+      header: getMerchantHeader(activeMerchant),
+    }),
+    [activeMerchant]
+  );
 
-function TabBar({
-    active,
-    onPress,
-}: {
-    active: Tab;
-    onPress: (tab: Tab) => void;
-}) {
-    const [themeColorForeground, themeColorMuted] = useThemeColor(['foreground', 'muted']);
+  useEffect(() => {
+    if (!merchantDefaults.id || settings.initializedMerchantId === merchantDefaults.id) return;
 
-    return (
-        <View className="px-4 pt-4">
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="flex-row gap-2"
-            >
-                {TABS.map((tab) => {
-                    const isActive = tab.id === active;
-                    return (
-                        <Pressable
-                            key={tab.id}
-                            onPress={() => onPress(tab.id)}
-                            className={`flex-row items-center gap-1.5 px-3 py-2 rounded-full active:opacity-70 ${
-                                isActive ? 'bg-surface-secondary' : ''
-                            }`}
-                        >
-                            <Ionicons
-                                name={tab.icon}
-                                size={14}
-                                color={
-                                    isActive
-                                        ? themeColorForeground
-                                        : themeColorMuted
-                                }
-                            />
-                            <Typography
-                                type="body-xs"
-                                weight={isActive ? 'semibold' : 'medium'}
-                                color={isActive ? 'default' : 'muted'}
-                            >
-                                {tab.label}
-                            </Typography>
-                        </Pressable>
-                    );
-                })}
-            </ScrollView>
-        </View>
-    );
-}
+    const shouldOptimizeMerchantLogo = !settings.storeLogo && !!merchantDefaults.logo;
+    updateSettings({
+      initializedMerchantId: merchantDefaults.id,
+      storeName: settings.storeName || merchantDefaults.name,
+      storeLogo: settings.storeLogo || merchantDefaults.logo,
+      header: settings.header || merchantDefaults.header,
+      footer: settings.footer || "Thank you!",
+    });
 
-// ─── General tab ─────────────────────────────────────────────────────────────
+    if (shouldOptimizeMerchantLogo && merchantDefaults.logo) {
+      optimizeReceiptLogo(merchantDefaults.logo)
+        .then((storeLogo) => {
+          if (useReceiptStore.getState().settings.storeLogo === merchantDefaults.logo) {
+            updateSettings({ storeLogo });
+          }
+        })
+        .catch(() => undefined);
+    }
+  }, [merchantDefaults, settings, updateSettings]);
 
-function GeneralTab({
-    settings,
-    onChange,
-}: {
-    settings: ReceiptSettings;
-    onChange: (patch: Partial<ReceiptSettings>) => void;
-}) {
-    return (
-        <ScrollView
-            className="flex-1"
-            contentContainerClassName="px-4 pt-4 pb-6"
-            keyboardShouldPersistTaps="handled"
-        >
-            <View className="mb-4">
-                <FieldLabel label="Text Size" />
-                <SelectField
-                    value={settings.textSize}
-                    options={TEXT_SIZE_OPTIONS}
-                    listLabel="Text size"
-                    onValueChange={(v) => onChange({ textSize: v })}
-                />
-            </View>
-
-            <ToggleRow
-                label="Compact Mode"
-                description="Less information will be shown"
-                value={settings.compactMode}
-                onToggle={(v) => onChange({ compactMode: v })}
-            />
-
-            <SectionHeader icon="people-outline" title="Customer" />
-
-            <ToggleRow
-                label="Print customer's name"
-                value={settings.printCustomerName}
-                onToggle={(v) => onChange({ printCustomerName: v })}
-            />
-            <ToggleRow
-                label="Print customer's phone"
-                value={settings.printCustomerPhone}
-                onToggle={(v) => onChange({ printCustomerPhone: v })}
-            />
-            <ToggleRow
-                label="Print customer's address"
-                value={settings.printCustomerAddress}
-                onToggle={(v) => onChange({ printCustomerAddress: v })}
-            />
-        </ScrollView>
-    );
-}
-
-// ─── Top tab ──────────────────────────────────────────────────────────────────
-
-async function pickAndSaveLogo(): Promise<string | null> {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-        Alert.alert('Permission required', 'Photo library access is needed to select images.');
-        return null;
+  const handleSelectLogo = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      toast.show({
+        variant: "warning",
+        label: "Photo access required",
+        description: "Allow photo access to select a receipt logo.",
+      });
+      return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'images',
-        allowsEditing: true,
-        aspect: [2, 1],
-        quality: 1,
+      mediaTypes: "images",
+      allowsEditing: true,
+      aspect: [2, 1],
+      quality: 1,
     });
-    const rawUri = result.canceled ? null : result.assets[0].uri;
+    if (result.canceled) return;
 
-    if (!rawUri) return null;
+    setIsProcessingLogo(true);
+    try {
+      const storeLogo = await optimizeReceiptLogo(result.assets[0].uri);
+      updateSettings({ storeLogo });
+      toast.show({ variant: "success", label: "Receipt logo updated" });
+    } catch (error: unknown) {
+      toast.show({
+        variant: "danger",
+        label: "Logo processing failed",
+        description: error instanceof Error ? error.message : "Choose another image and try again.",
+      });
+    } finally {
+      setIsProcessingLogo(false);
+    }
+  };
 
-    const processed = await manipulateAsync(
-        rawUri,
-        [{ resize: { width: 600 } }],
-        { compress: 0.85, format: SaveFormat.JPEG },
-    );
-
-    const dir = new Directory(Paths.document, 'store-images');
-    if (!dir.exists) dir.create({ intermediates: true });
-
-    const dest = new File(dir, `logo_${Date.now()}.jpg`);
-    await new File(processed.uri).move(dest);
-
-    return dest.uri;
-}
-
-function TopTab({
-    settings,
-    onChange,
-}: {
-    settings: ReceiptSettings;
-    onChange: (patch: Partial<ReceiptSettings>) => void;
-}) {
-    const [themeColorMuted, themeColorAccentSoftForeground] = useThemeColor([
-        'muted',
-        'accent-soft-foreground',
-    ]);
-
-    const handlePickLogo = async () => {
-        const uri = await pickAndSaveLogo();
-        if (uri) onChange({ storeLogo: uri });
-    };
-
-    return (
-        <ScrollView
-            className="flex-1"
-            contentContainerClassName="px-4 pt-4 pb-6 gap-4"
-            keyboardShouldPersistTaps="handled"
+  return (
+    <View className="flex-1 bg-background">
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="p-4 pb-8"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          className={`w-full max-w-6xl self-center ${isWide ? "flex-row items-start gap-6" : "gap-5"}`}
         >
-            {/* Info banner */}
-            <View className="flex-row items-center gap-3 bg-accent-soft rounded-panel-inner p-3">
-                <View className="w-10 h-10 rounded-lg bg-background/70 items-center justify-center shrink-0">
-                    <Ionicons name="help-outline" size={20} color={themeColorAccentSoftForeground} />
-                </View>
-                <Typography type="body-sm" className="flex-1">
-                    Your store information will be printed on the receipt.
-                </Typography>
+          <Surface className={isWide ? "w-[380px] p-5" : "w-full p-5"}>
+            <View className="mb-5 gap-1">
+              <Typography className="text-lg font-semibold text-foreground">
+                Receipt details
+              </Typography>
+              <Typography type="body-sm" color="muted">
+                Changes are saved automatically and used for future prints.
+              </Typography>
             </View>
 
-            {/* Store Logo */}
-            <View>
-                <FieldLabel label="Store Logo" />
-                <View className="flex-row gap-3 items-start">
-                    <Pressable
-                        onPress={handlePickLogo}
-                        className="w-36 h-20 bg-surface-secondary rounded-panel-inner overflow-hidden active:opacity-70"
-                    >
-                        {settings.storeLogo ? (
-                            <>
-                                <Image
-                                    source={{ uri: settings.storeLogo }}
-                                    style={{ width: 144, height: 80 }}
-                                    resizeMode="contain"
-                                />
-                                <View className="absolute inset-0 items-end justify-end p-2">
-                                    <View className="bg-black/50 rounded-full p-1.5">
-                                        <Ionicons name="camera" size={14} color="white" />
-                                    </View>
-                                </View>
-                            </>
-                        ) : (
-                            <View className="flex-1 items-center justify-center gap-1">
-                                <Ionicons name="camera-outline" size={24} color={themeColorMuted} />
-                                <Typography type="body-xs" color="muted">Add logo</Typography>
-                            </View>
-                        )}
-                    </Pressable>
-                    <Typography type="body-xs" color="muted" className="flex-1 mt-1">
-                        The maximum size for the logo is 300 x 150 pixels.
-                    </Typography>
-                </View>
-            </View>
-
-            {/* Store Name */}
-            <View>
-                <FieldLabel label="Store Name" />
-                <Input
-                    value={settings.storeName}
-                    onChangeText={(v) => onChange({ storeName: v })}
-                    placeholder="Store name"
-                    variant="secondary"
-                />
-            </View>
-
-            {/* Store Address */}
-            <View>
-                <FieldLabel label="Store Address" />
-                <Input
-                    value={settings.storeAddress1}
-                    onChangeText={(v) => onChange({ storeAddress1: v })}
-                    placeholder="Address line 1"
-                    variant="secondary"
-                    className="mb-2"
-                />
-                <Input
-                    value={settings.storeAddress2}
-                    onChangeText={(v) => onChange({ storeAddress2: v })}
-                    placeholder="Address line 2"
-                    variant="secondary"
-                />
-            </View>
-
-            {/* Store Phone */}
-            <View>
-                <FieldLabel label="Store Phone Number" />
-                <Input
-                    value={settings.storePhone}
-                    onChangeText={(v) => onChange({ storePhone: v })}
-                    placeholder="Phone number"
-                    keyboardType="phone-pad"
-                    variant="secondary"
-                />
-            </View>
-        </ScrollView>
-    );
-}
-
-// ─── Bottom tab ───────────────────────────────────────────────────────────────
-
-function BottomTab({
-    settings,
-    onChange,
-}: {
-    settings: ReceiptSettings;
-    onChange: (patch: Partial<ReceiptSettings>) => void;
-}) {
-    return (
-        <ScrollView
-            className="flex-1"
-            contentContainerClassName="px-4 pt-4 pb-6 gap-4"
-            keyboardShouldPersistTaps="handled"
-        >
-            {/* Footer text */}
-            <View>
-                <FieldLabel label="Footer" />
-                <Input
-                    value={settings.footer}
-                    onChangeText={(v) => onChange({ footer: v })}
-                    placeholder="Footer text"
-                    multiline
-                    numberOfLines={3}
-                    textAlignVertical="top"
-                    variant="secondary"
-                    className="min-h-20 py-3"
-                />
-                <Typography type="body-xs" color="muted" className="mt-1">
-                    Displayed on the bottom of your receipt
-                </Typography>
-            </View>
-
-            {/* Alignment */}
-            <View>
-                <FieldLabel label="Alignment" />
-                <SelectField
-                    value={settings.alignment}
-                    options={ALIGNMENT_OPTIONS}
-                    listLabel="Text alignment"
-                    onValueChange={(v) => onChange({ alignment: v })}
-                />
-            </View>
-
-            {/* Invoice Number */}
-            <View>
-                <FieldLabel label="Invoice Number" />
-                <SelectField
-                    value={settings.invoiceFormat}
-                    options={INVOICE_OPTIONS}
-                    listLabel="Invoice number format"
-                    onValueChange={(v) => onChange({ invoiceFormat: v })}
-                />
-            </View>
-
-            {/* Signature */}
-            <View>
-                <FieldLabel label="Signature" />
-                <SelectField
-                    value={settings.signatureType}
-                    options={SIGNATURE_OPTIONS}
-                    listLabel="Signature"
-                    onValueChange={(v) => onChange({ signatureType: v })}
-                />
-            </View>
-
-            <ToggleRow
-                label="Show print date"
-                value={settings.showPrintDate}
-                onToggle={(v) => onChange({ showPrintDate: v })}
-            />
-            <ToggleRow
-                label="Show total quantity"
-                description="Will be hidden if the quantity is zero"
-                value={settings.showTotalQuantity}
-                onToggle={(v) => onChange({ showTotalQuantity: v })}
-            />
-        </ScrollView>
-    );
-}
-
-// ─── Receipt preview ──────────────────────────────────────────────────────────
-
-function ReceiptPreview({ settings }: { settings: ReceiptSettings }) {
-    const order = MOCK_ORDER;
-    const service = Math.round(order.subtotal * (order.serviceRate / 100));
-    const tax = Math.round((order.subtotal + order.delivery + service) * (order.taxRate / 100));
-    const grandTotal = order.subtotal + order.delivery + service + tax;
-    const totalQty = order.items.reduce((sum, item) => sum + item.qty, 0);
-
-    const baseFontSize = settings.textSize === 'small' ? 11 : settings.textSize === 'large' ? 15 : 13;
-    const smallFontSize = baseFontSize - 1;
-    const textAlign = settings.alignment;
-
-    const rt = StyleSheet.create({
-        base: {
-            fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-            color: '#111',
-            fontSize: baseFontSize,
-        },
-        small: {
-            fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-            color: '#111',
-            fontSize: smallFontSize,
-        },
-    });
-
-    const Dash = () => (
-        <Text style={[rt.small, { marginVertical: 5, color: '#555' }]}>
-            {'- - - - - - - - - - - - - - - - - - - - - - -'}
-        </Text>
-    );
-
-    return (
-        <View className="bg-neutral-200 rounded-xl p-4">
-            {/* Logo */}
-            {settings.storeLogo && (
-                <View className="items-center mb-3">
-                    <Image
-                        source={{ uri: settings.storeLogo }}
-                        style={{ width: 150, height: 75 }}
-                        resizeMode="contain"
-                    />
-                </View>
-            )}
-
-            {/* Store header */}
-            {!!settings.storeName && (
-                <Text style={[rt.base, { fontWeight: 'bold', textAlign: 'center', marginBottom: 1 }]}>
-                    {settings.storeName}
-                </Text>
-            )}
-            {!!settings.storeAddress1 && (
-                <Text style={[rt.small, { textAlign: 'center' }]}>{settings.storeAddress1}</Text>
-            )}
-            {!!settings.storeAddress2 && (
-                <Text style={[rt.small, { textAlign: 'center' }]}>{settings.storeAddress2}</Text>
-            )}
-            {!!settings.storePhone && (
-                <Text style={[rt.small, { textAlign: 'center', marginBottom: 2 }]}>
-                    {settings.storePhone}
-                </Text>
-            )}
-
-            <Dash />
-
-            {/* Order info */}
-            <Text style={rt.small}>Date: {order.date}</Text>
-            {!settings.compactMode && (
-                <Text style={[rt.small, { marginBottom: 2 }]}>Notes: {order.notes}</Text>
-            )}
-
-            <Dash />
-
-            {/* Items */}
-            {order.items.map((item, i) => (
-                <View key={i} className="mb-0.5">
-                    <Text style={[rt.base, { fontWeight: 'bold' }]}>{item.name}</Text>
-                    <View className="flex-row justify-between">
-                        <Text style={rt.small}>{item.qty}pcs</Text>
-                        <View className="flex-row gap-4">
-                            <Text style={rt.small}>{item.price.toLocaleString()}</Text>
-                            <Text style={[rt.base, { fontWeight: 'bold' }]}>
-                                {item.total.toLocaleString()}
-                            </Text>
-                        </View>
-                    </View>
-                    {!settings.compactMode &&
-                        item.addons.map((addon, j) => (
-                            <View key={j} className="flex-row justify-between pl-2">
-                                <Text style={[rt.small, { fontWeight: 'bold' }]}>{addon.name}</Text>
-                                {addon.charge > 0 && (
-                                    <Text style={[rt.small, { fontWeight: 'bold' }]}>
-                                        {addon.charge}
-                                    </Text>
-                                )}
-                            </View>
-                        ))}
-                </View>
-            ))}
-
-            <Dash />
-
-            {/* Subtotals */}
-            {[
-                { label: 'Subtotal', value: order.subtotal.toLocaleString() },
-                { label: 'Delivery', value: order.delivery.toLocaleString() },
-                { label: `Service (${order.serviceRate}%)`, value: service.toLocaleString() },
-                { label: `Tax (${order.taxRate}%)`, value: tax.toLocaleString() },
-            ].map(({ label, value }) => (
-                <View key={label} className="flex-row justify-between">
-                    <Text style={rt.small}>{label}</Text>
-                    <Text style={rt.small}>{value}</Text>
-                </View>
-            ))}
-
-            <View className="h-2" />
-
-            {/* Grand total block */}
-            {[
-                { label: 'Grand Total', value: `Rp${grandTotal.toLocaleString()}` },
-                { label: 'Payment', value: `Rp${grandTotal.toLocaleString()}` },
-                { label: 'Change', value: 'Rp0' },
-            ].map(({ label, value }) => (
-                <View key={label} className="flex-row justify-between">
-                    <Text style={[rt.base, { fontWeight: 'bold' }]}>{label}</Text>
-                    <Text style={[rt.base, { fontWeight: 'bold' }]}>{value}</Text>
-                </View>
-            ))}
-
-            <Text
-                style={[
-                    rt.base,
-                    { fontWeight: 'bold', fontSize: baseFontSize + 3, textAlign: 'right', marginTop: 4 },
-                ]}
-            >
-                PAID
-            </Text>
-
-            {settings.showTotalQuantity && totalQty > 0 && (
-                <Text style={[rt.small, { marginTop: 8 }]}>Total Quantity: {totalQty}</Text>
-            )}
-
-            {!!settings.footer && (
-                <Text style={[rt.small, { textAlign, marginTop: 8 }]}>{settings.footer}</Text>
-            )}
-
-            {/* Footer meta */}
-            {settings.invoiceFormat !== 'none' && (
-                <>
-                    <Text style={[rt.small, { textAlign: 'center', marginTop: 6 }]}>
-                        Queue: {order.queue}
-                    </Text>
-                    {settings.invoiceFormat === 'text' && (
-                        <Text style={[rt.small, { textAlign: 'center' }]}>{order.invoiceNumber}</Text>
-                    )}
-                </>
-            )}
-            {settings.showPrintDate && (
-                <Text style={[rt.small, { textAlign: 'center' }]}>{order.printDate}</Text>
-            )}
-        </View>
-    );
-}
-
-function PreviewTab({ settings }: { settings: ReceiptSettings }) {
-    return (
-        <ScrollView className="flex-1" contentContainerClassName="px-4 pt-4 pb-6">
-            <ReceiptPreview settings={settings} />
-        </ScrollView>
-    );
-}
-
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
-export default function ReceiptSetupScreen(): React.JSX.Element {
-    const router = useRouter();
-    const [activeTab, setActiveTab] = React.useState<Tab>('general');
-
-    const settings = useReceiptStore((s) => s.settings);
-    const updateSettings = useReceiptStore((s) => s.updateSettings);
-
-    const isLastTab = activeTab === 'preview';
-
-    const handleNext = () => {
-        const idx = TAB_ORDER.indexOf(activeTab);
-        if (idx < TAB_ORDER.length - 1) {
-            setActiveTab(TAB_ORDER[idx + 1]);
-        }
-    };
-
-    return (
-        <View className="flex-1 bg-background">
-            <TabBar active={activeTab} onPress={setActiveTab} />
-
-            {activeTab === 'general' && (
-                <GeneralTab settings={settings} onChange={updateSettings} />
-            )}
-            {activeTab === 'top' && (
-                <TopTab settings={settings} onChange={updateSettings} />
-            )}
-            {activeTab === 'bottom' && (
-                <BottomTab settings={settings} onChange={updateSettings} />
-            )}
-            {activeTab === 'preview' && <PreviewTab settings={settings} />}
-
-            <View className="px-4 pb-6 pt-3 bg-surface-secondary">
-                <Button
-                    className="w-full"
-                    onPress={isLastTab ? () => router.back() : handleNext}
+            <View className="gap-5">
+              <View>
+                <FieldLabel>Store logo</FieldLabel>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Change store logo"
+                  onPress={handleSelectLogo}
+                  disabled={isProcessingLogo}
+                  className="h-28 w-full items-center justify-center overflow-hidden rounded-lg bg-surface-secondary active:opacity-70"
                 >
-                    <Button.Label>{isLastTab ? 'Save' : 'Next'}</Button.Label>
-                </Button>
+                  {isProcessingLogo ? (
+                    <View className="items-center gap-2">
+                      <ActivityIndicator />
+                      <Typography type="body-xs" color="muted">
+                        Optimizing logo
+                      </Typography>
+                    </View>
+                  ) : settings.storeLogo ? (
+                    <>
+                      <Image
+                        source={{ uri: settings.storeLogo }}
+                        className="h-20 w-40"
+                        resizeMode="contain"
+                      />
+                      <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
+                        <Ionicons name="camera" size={15} color="white" />
+                      </View>
+                    </>
+                  ) : (
+                    <View className="items-center gap-1.5">
+                      <Ionicons name="image-outline" size={26} color={themeColorMuted} />
+                      <Typography type="body-xs" color="muted">
+                        Choose image
+                      </Typography>
+                    </View>
+                  )}
+                </Pressable>
+                <Typography type="body-xs" color="muted" className="mt-1.5">
+                  Stored locally as a grayscale image optimized for thermal printing.
+                </Typography>
+              </View>
+
+              <View>
+                <FieldLabel>Store name</FieldLabel>
+                <Input
+                  value={settings.storeName}
+                  onChangeText={(storeName) => updateSettings({ storeName })}
+                  placeholder="Store name"
+                  variant="secondary"
+                />
+              </View>
+
+              <View>
+                <FieldLabel>Header</FieldLabel>
+                <Input
+                  value={settings.header}
+                  onChangeText={(header) => updateSettings({ header })}
+                  placeholder="Address and phone number"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  variant="secondary"
+                  className="min-h-24 py-3"
+                />
+              </View>
+
+              <View>
+                <FieldLabel>Footer</FieldLabel>
+                <Input
+                  value={settings.footer}
+                  onChangeText={(footer) => updateSettings({ footer })}
+                  placeholder="Thank you!"
+                  multiline
+                  numberOfLines={2}
+                  textAlignVertical="top"
+                  variant="secondary"
+                  className="min-h-20 py-3"
+                />
+              </View>
             </View>
+          </Surface>
+
+          <View className="flex-1 gap-2">
+            <View className="flex-row items-center justify-between gap-3">
+              <Typography className="text-sm font-semibold text-foreground">
+                Receipt preview
+              </Typography>
+              <Typography type="body-xs" color="muted">
+                58 mm
+              </Typography>
+            </View>
+            <View className="rounded-lg bg-neutral-200 p-4 dark:bg-neutral-800">
+              <ReceiptPaper settings={settings} data={SAMPLE_RECEIPT} />
+            </View>
+          </View>
         </View>
-    );
+      </ScrollView>
+
+      <View className="bg-surface px-4 py-3">
+        <Button className="w-full max-w-6xl self-center" onPress={() => router.back()}>
+          <Button.Label>Done</Button.Label>
+        </Button>
+      </View>
+    </View>
+  );
 }
