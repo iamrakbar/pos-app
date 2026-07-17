@@ -40,11 +40,7 @@ const styles = StyleSheet.create({
 });
 
 function DashedLine(): JSX.Element {
-  return (
-    <Text style={[styles.small, { color: "#a3a3a3" }]}>
-      ------------------------------------------
-    </Text>
-  );
+  return <View className="w-full border-t border-dashed border-neutral-400" />;
 }
 
 function PriceRow({
