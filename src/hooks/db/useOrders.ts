@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { InfiniteData, QueryKey } from "@tanstack/react-query";
 import { getOrder, getOrders, updateOrderStatus } from "@/api/endpoints/orders";
+import { getOrderStatus } from "@/api/mappers/order";
 
 const ORDERS_PER_PAGE = 20;
 const ORDER_DETAIL_STALE_TIME_MS = 30 * 1000;
@@ -11,17 +12,12 @@ type OrderStatusValue = App.Requests.Merchant.Order.UpdateOrderStatusRequest["st
 function getOptimisticStatus(
   status: OrderStatusValue
 ): App.Data.Merchant.Order.OrderStatusDetailData {
-  const labels: Record<OrderStatusValue, string> = {
-    new: "New",
-    process: "Process",
-    completed: "Completed",
-    rejected: "Rejected",
-  };
+  const presentation = getOrderStatus(status);
 
   return {
     value: status,
-    label: labels[status] ?? status,
-    color: status === "rejected" ? "danger" : "success",
+    label: presentation.label,
+    color: presentation.color,
     is_final: status === "completed" || status === "rejected",
     can_be_cancelled: status !== "completed" && status !== "rejected",
     next_status: status === "process" ? "completed" : null,

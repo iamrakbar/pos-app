@@ -3,6 +3,7 @@ import { usePaymentStatus } from "@/hooks/db/usePaymentStatus";
 import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/ApiError";
 import { isExpired } from "@/api/mappers/checkout";
+import { getPaymentStatus } from "@/api/mappers/order";
 import Countdown from "@/components/common/Countdown";
 import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -46,21 +47,18 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
     });
   };
 
+  const apiPaymentStatus = paymentStatus.isSuccess
+    ? getPaymentStatus(paymentStatus.data.payment_status)
+    : null;
   const status = paymentStatus.isPending
     ? { label: "Checking payment", color: "warning" as const }
     : paymentStatus.isError
       ? { label: "Status check failed", color: "danger" as const }
       : paymentStatus.isSuccess && paymentStatus.data.is_successful
-        ? { label: "Payment confirmed", color: "success" as const }
+        ? (apiPaymentStatus ?? { label: "Payment confirmed", color: "success" as const })
         : sessionExpired
           ? { label: "Payment expired", color: "danger" as const }
-          : {
-              label:
-                paymentStatus.isSuccess && paymentStatus.data.payment_status_label
-                  ? paymentStatus.data.payment_status_label
-                  : "Waiting for payment",
-              color: "warning" as const,
-            };
+          : (apiPaymentStatus ?? { label: "Waiting for payment", color: "warning" as const });
 
   return (
     <View className="flex-1 bg-background">

@@ -11,9 +11,9 @@ import {
   extractNumber,
   extractOrderItems,
   extractPaymentName,
-  extractStatusColor,
-  extractStatusLabel,
   extractTableName,
+  getOrderStatus,
+  getPaymentStatus,
 } from "@/api/mappers/order";
 import LoadingState from "@/components/common/LoadingState";
 import ErrorState from "@/components/common/ErrorState";
@@ -136,11 +136,9 @@ export default function OrderDetailScreen() {
     );
   }
 
-  const statusLabel = extractStatusLabel(order.order_status);
-  const statusColor = extractStatusColor(order.order_status);
-  const statusCode = statusLabel.toLowerCase();
-  const paymentStatusLabel = extractStatusLabel(order.payment_status);
-  const paymentStatusColor = extractStatusColor(order.payment_status);
+  const orderStatus = getOrderStatus(order.order_status);
+  const paymentStatusPresentation = getPaymentStatus(order.payment_status);
+  const statusCode = orderStatus.value;
   const customerName = extractCustomerName(order.customer);
   const paymentName = extractPaymentName(order.payment);
   const paymentDetailsRows = extractPaymentDetailsRows(order.payment_details);
@@ -171,8 +169,8 @@ export default function OrderDetailScreen() {
                   <Typography type="h4" weight="bold" className="font-mono tabular-nums">
                     {order.code}
                   </Typography>
-                  <Chip color={statusColor} size="sm" variant="soft">
-                    <Chip.Label>{statusLabel}</Chip.Label>
+                  <Chip color={orderStatus.color} size="sm" variant="soft">
+                    <Chip.Label>{orderStatus.label}</Chip.Label>
                   </Chip>
                 </View>
                 <Typography type="body-sm" color="muted">
@@ -271,8 +269,8 @@ export default function OrderDetailScreen() {
               <View className="gap-2">
                 <View className="flex-row items-center justify-between gap-3">
                   <SectionTitle>Payment</SectionTitle>
-                  <Chip color={paymentStatusColor} size="sm" variant="soft">
-                    <Chip.Label>{paymentStatusLabel}</Chip.Label>
+                  <Chip color={paymentStatusPresentation.color} size="sm" variant="soft">
+                    <Chip.Label>{paymentStatusPresentation.label}</Chip.Label>
                   </Chip>
                 </View>
                 <Surface className="w-full p-4 gap-3">

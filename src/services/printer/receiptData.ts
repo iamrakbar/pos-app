@@ -2,8 +2,8 @@ import {
   extractNumber,
   extractOrderItems,
   extractPaymentName,
-  extractStatusLabel,
   extractTableName,
+  getPaymentStatus,
 } from "@/api/mappers/order";
 import type { ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
 import type { ReceiptOrder } from "./escpos";
@@ -71,7 +71,8 @@ export function toReceiptData(order: ReceiptOrder): ReceiptPreviewData {
         ? checkoutTable.name
         : extractTableName(root.orderable),
     payment: extractPaymentName(order.payment),
-    paymentStatus: "payment_status" in order ? extractStatusLabel(order.payment_status) : "Paid",
+    paymentStatus:
+      "payment_status" in order ? getPaymentStatus(order.payment_status).label : "Paid",
     items: items.map((item, itemIndex) => ({
       id: `${order.code}-item-${itemIndex}`,
       ...item,
