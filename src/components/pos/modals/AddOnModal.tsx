@@ -208,13 +208,13 @@ export default function AddOnModal(): JSX.Element {
         product_id: product.id,
         name: product.name,
         price: product.price,
-        qty: 1,
+        qty: editingCartItem?.qty ?? 1,
         notes: values.notes.trim() || null,
         add_ons: addOns,
       });
       closeModal();
     },
-    [addItem, buildCartAddOns, closeModal, editingCartItemId, product, removeItem]
+    [addItem, buildCartAddOns, closeModal, editingCartItem, editingCartItemId, product, removeItem]
   );
 
   const onInvalid = useCallback(() => {

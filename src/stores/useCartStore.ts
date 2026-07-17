@@ -1,31 +1,27 @@
-import { CartAddOn, Cart, CartAction, CartItem } from '@/types/cart';
-import { zustandStorage } from '@/lib/storage';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { CartAddOn, Cart, CartAction, CartItem } from "@/types/cart";
+import { zustandStorage } from "@/lib/storage";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 const cartStorage = createJSONStorage(() => zustandStorage);
 
 // 🔑 Unique key generator
-function generateCartItemId(
-  product_id: string,
-  add_ons?: CartAddOn[],
-  notes?: string
-): string {
+function generateCartItemId(product_id: string, add_ons?: CartAddOn[], notes?: string): string {
   const addOnKey = (add_ons || [])
     .map((add_on) => {
       const optionIds = (add_on.options || [])
         .map((opt) => opt.id)
         .sort()
-        .join(',');
+        .join(",");
 
       return `${add_on.id}[${optionIds}]`;
     })
     .sort()
-    .join('|');
+    .join("|");
 
-  const notesKey = notes?.trim() ? `notes:${notes.trim()}` : '';
+  const notesKey = notes?.trim() ? `notes:${notes.trim()}` : "";
 
-  return [product_id, addOnKey, notesKey].join('-');
+  return [product_id, addOnKey, notesKey].join("-");
 }
 
 // 🧮 Compute subtotal for a single product
@@ -37,10 +33,7 @@ function computeItemSubtotal(product: {
   const optionsTotal = (product.add_ons || []).reduce((sum, opt) => {
     return (
       sum +
-      (opt.options || []).reduce(
-        (nestedSum, nestedOpt) => nestedSum + (nestedOpt.price || 0),
-        0
-      )
+      (opt.options || []).reduce((nestedSum, nestedOpt) => nestedSum + (nestedOpt.price || 0), 0)
     );
   }, 0);
 
@@ -53,7 +46,7 @@ export const useCartStore = create<Cart & CartAction>()(
       merchant_id: null,
       table_id: null,
       products: [],
-      notes: '', // 🧾 Cart-level notes
+      notes: "", // 🧾 Cart-level notes
 
       // 📌 Set merchant & table
       setMerchantId: (merchant_id: string) => set({ merchant_id }),
@@ -67,8 +60,7 @@ export const useCartStore = create<Cart & CartAction>()(
       setCartNotes: (notes: string) => set({ notes }),
 
       // 🧮 Totals
-      totalQty: () =>
-        get().products.reduce((acc, product) => acc + product.qty, 0),
+      totalQty: () => get().products.reduce((acc, product) => acc + product.qty, 0),
 
       getItemTotal: (id: string) => {
         const product = get().products.find((i) => i.id === id);
@@ -77,10 +69,7 @@ export const useCartStore = create<Cart & CartAction>()(
       },
 
       totalPrice: () =>
-        get().products.reduce(
-          (total, product) => total + get().getItemTotal(product.id),
-          0
-        ),
+        get().products.reduce((total, product) => total + get().getItemTotal(product.id), 0),
 
       // ➕ Add item (handles notes per product)
       addItem: (product) => {
@@ -95,10 +84,12 @@ export const useCartStore = create<Cart & CartAction>()(
 
         if (existingIndex > -1) {
           const updated = [...products];
-          updated[existingIndex].qty += product.qty;
-          updated[existingIndex].subtotal = computeItemSubtotal(
-            updated[existingIndex]
-          );
+          const existing = updated[existingIndex];
+          const nextItem = { ...existing, qty: existing.qty + product.qty };
+          updated[existingIndex] = {
+            ...nextItem,
+            subtotal: computeItemSubtotal(nextItem),
+          };
           set({ products: updated });
         } else {
           const newProduct: CartItem = {
@@ -116,9 +107,7 @@ export const useCartStore = create<Cart & CartAction>()(
       updateQty: (id, qty) => {
         set({
           products: get().products.map((i) =>
-            i.id === id
-              ? { ...i, qty, subtotal: computeItemSubtotal({ ...i, qty }) }
-              : i
+            i.id === id ? { ...i, qty, subtotal: computeItemSubtotal({ ...i, qty }) } : i
           ),
         });
       },
@@ -130,11 +119,7 @@ export const useCartStore = create<Cart & CartAction>()(
         if (!existing) return;
 
         // Generate a new ID since notes affect uniqueness
-        const newId = generateCartItemId(
-          existing.product_id,
-          existing.add_ons,
-          notes
-        );
+        const newId = generateCartItemId(existing.product_id, existing.add_ons, notes);
 
         const updated = products.map((i) => {
           if (i.id !== id) return i;
@@ -160,11 +145,11 @@ export const useCartStore = create<Cart & CartAction>()(
           products: [],
           merchant_id: null,
           table_id: null,
-          notes: '',
+          notes: "",
         }),
     }),
     {
-      name: 'soeat-order-cart',
+      name: "soeat-order-cart",
       storage: cartStorage,
     }
   )

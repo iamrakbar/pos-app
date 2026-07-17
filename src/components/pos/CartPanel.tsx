@@ -4,7 +4,6 @@ import { useProducts } from "@/hooks/db/useProducts";
 import { usePOSStore } from "@/stores/usePOSStore";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
-import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import CartItemRow from "./CartItemRow";
@@ -15,18 +14,16 @@ export default function CartPanel(): JSX.Element {
     "danger-soft-foreground",
   ]);
   const cartProducts = useCartStore((s) => s.products);
-  const totalQty = useCartStore((s) => s.totalQty);
+  const itemCount = useCartStore((s) =>
+    s.products.reduce((total, product) => total + product.qty, 0)
+  );
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
   const openCheckoutModal = usePOSStore((s) => s.openCheckoutModal);
   const { data: catalogProducts } = useProducts();
 
-  const itemCount = totalQty();
   const subtotal = totalPrice();
-  const productById = useMemo(
-    () => new Map((catalogProducts ?? []).map((product) => [product.id, product])),
-    [catalogProducts]
-  );
+  const productById = new Map((catalogProducts ?? []).map((product) => [product.id, product]));
 
   return (
     <View className="flex-1 bg-surface border-l border-border">
