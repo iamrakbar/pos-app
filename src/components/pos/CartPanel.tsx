@@ -1,8 +1,8 @@
 import { useCartStore } from "@/stores/useCartStore";
 import { formatRupiah } from "@/utils/format";
 import { useProducts } from "@/hooks/db/useProducts";
+import { usePOSStore } from "@/stores/usePOSStore";
 import { Button, Typography, useThemeColor } from "heroui-native";
-import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
@@ -10,7 +10,6 @@ import { Ionicons } from "@expo/vector-icons";
 import CartItemRow from "./CartItemRow";
 
 export default function CartPanel(): JSX.Element {
-  const router = useRouter();
   const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
     "muted",
     "danger-soft-foreground",
@@ -19,6 +18,7 @@ export default function CartPanel(): JSX.Element {
   const totalQty = useCartStore((s) => s.totalQty);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
+  const openCheckoutModal = usePOSStore((s) => s.openCheckoutModal);
   const { data: catalogProducts } = useProducts();
 
   const itemCount = totalQty();
@@ -80,7 +80,7 @@ export default function CartPanel(): JSX.Element {
         </View>
         <Button
           className="w-full"
-          onPress={() => router.push("/pos/checkout" as never)}
+          onPress={openCheckoutModal}
           isDisabled={cartProducts.length === 0}
         >
           Checkout
