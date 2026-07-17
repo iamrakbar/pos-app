@@ -51,6 +51,17 @@ const ORDER_TYPE_LABELS: Record<string, string> = {
 const isEMoneyGroup = (groupType: string) => groupType.toLowerCase() === "e-money";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
+const INDONESIAN_BANKNOTE_DENOMINATIONS = [1_000, 2_000, 5_000, 10_000, 20_000, 50_000, 100_000];
+
+function getCashPresets(total: number): number[] {
+  if (total <= 0) return [];
+
+  const sufficientDenominations = INDONESIAN_BANKNOTE_DENOMINATIONS.filter(
+    (denomination) => denomination >= total
+  );
+
+  return Array.from(new Set([total, ...sufficientDenominations])).sort((a, b) => a - b);
+}
 
 function formatTimeValue(hour: number, minute: number): string {
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
@@ -238,9 +249,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
     paymentGroup.toLowerCase().includes("cash") || selectedPayment?.code === "cashier";
   const cashReceivedAmount = Number(cashReceived.replace(/\D/g, "")) || 0;
   const change = Math.max(0, cashReceivedAmount - total);
-  const cashPresets = Array.from(
-    new Set([total, 100_000, 150_000, 200_000, 250_000, 300_000, 500_000])
-  ).filter((amount) => amount >= total);
+  const cashPresets = getCashPresets(total);
 
   const selectedTable = tablesList.find((t) => t.id === tableId);
   const tablesByArea = groupTablesByArea(tablesList);
