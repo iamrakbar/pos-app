@@ -25,7 +25,7 @@ import {
   Typography,
   useThemeColor,
 } from "heroui-native";
-import { TimePicker } from "heroui-native-pro";
+import { SlideButton, TimePicker } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
@@ -287,6 +287,14 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const onInvalid = () => {
     setCartError("Lengkapi data checkout yang wajib diisi.");
   };
+
+  const isCheckoutPending = validateCart.isPending || checkout.isPending;
+  const isCheckoutDisabled =
+    isCheckoutPending ||
+    arePaymentGroupsPending ||
+    paymentGroups.length === 0 ||
+    cartProducts.length === 0 ||
+    (isCashPayment && cashReceivedAmount < total);
 
   return (
     <View className="flex-1 bg-background">
@@ -641,60 +649,67 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           />
         </View>
 
-        <Surface variant="secondary" className="gap-2.5 p-4">
+        <Surface variant="secondary" className="gap-2 p-3">
           <View className="flex-row justify-between">
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-xs" color="muted">
               Subtotal
             </Typography>
-            <Typography type="body-sm" className="tabular-nums">
+            <Typography type="body-xs" className="tabular-nums">
               {formatRupiah(subtotal)}
             </Typography>
           </View>
           {paymentFee > 0 ? (
             <View className="flex-row justify-between">
-              <Typography type="body-sm" color="muted">
+              <Typography type="body-xs" color="muted">
                 Biaya pembayaran
                 {selectedPayment?.fee_unit === "percentage"
                   ? ` (${selectedPayment.fee_value}%)`
                   : ""}
               </Typography>
-              <Typography type="body-sm" className="tabular-nums">
+              <Typography type="body-xs" className="tabular-nums">
                 {formatRupiah(paymentFee)}
               </Typography>
             </View>
           ) : null}
-          <Separator />
-          <View className="flex-row items-center justify-between">
-            <Typography weight="semibold">Total</Typography>
-            <Typography.Heading type="h5" className="tabular-nums">
-              {formatRupiah(total)}
-            </Typography.Heading>
-          </View>
         </Surface>
       </KeyboardAwareScrollView>
 
       <Separator />
-      <View className="flex-row gap-3 bg-surface px-5 py-3">
-        <Button variant="outline" onPress={onCancel ?? closeModal}>
-          <Button.Label>Batal</Button.Label>
-        </Button>
-        <Button
-          className="flex-1"
-          onPress={handleSubmit(onSubmit, onInvalid)}
-          isDisabled={
-            validateCart.isPending ||
-            checkout.isPending ||
-            arePaymentGroupsPending ||
-            paymentGroups.length === 0 ||
-            cartProducts.length === 0 ||
-            (isCashPayment && cashReceivedAmount < total)
-          }
-        >
-          {validateCart.isPending || checkout.isPending ? <ActivityIndicator color="#fff" /> : null}
-          <Button.Label>
-            {validateCart.isPending || checkout.isPending ? "Memproses" : "Bayar"}
-          </Button.Label>
-        </Button>
+      <View className="bg-surface px-5 pb-3 pt-2.5">
+        <View className="flex-row items-center justify-between pb-2.5">
+          <Typography type="body-sm" color="muted">
+            Total
+          </Typography>
+          <Typography.Heading type="h5" className="tabular-nums">
+            {formatRupiah(total)}
+          </Typography.Heading>
+        </View>
+        <View className="flex-row items-center gap-3">
+          <Button variant="outline" onPress={onCancel ?? closeModal}>
+            <Button.Label>Batal</Button.Label>
+          </Button>
+          <SlideButton
+            variant="accent"
+            className="flex-1"
+            classNames={{ container: "h-12" }}
+            isDisabled={isCheckoutDisabled}
+            autoReset
+            autoResetDelay={600}
+            onComplete={handleSubmit(onSubmit, onInvalid)}
+          >
+            <SlideButton.UnderlayContent>
+              <SlideButton.Label>
+                {isCheckoutPending ? "Memproses" : "Geser untuk bayar"}
+              </SlideButton.Label>
+            </SlideButton.UnderlayContent>
+            <SlideButton.OverlayContent>
+              <SlideButton.Label>Bayar</SlideButton.Label>
+            </SlideButton.OverlayContent>
+            <SlideButton.Thumb>
+              {isCheckoutPending ? <ActivityIndicator size="small" /> : null}
+            </SlideButton.Thumb>
+          </SlideButton>
+        </View>
       </View>
     </View>
   );
