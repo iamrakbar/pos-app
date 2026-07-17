@@ -2,6 +2,7 @@ import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
 import { useTables } from "@/hooks/db/useTables";
 import { usePaymentGroups } from "@/hooks/db/usePayments";
+import { useGuests } from "@/hooks/db/useGuests";
 import { useCustomerSearch } from "@/hooks/db/useCustomers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/useCart";
 import { useCheckout } from "@/hooks/db/useCheckout";
@@ -92,8 +93,10 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
   const cartProducts = useCartStore((s) => s.products);
   const totalPrice = useCartStore((s) => s.totalPrice);
+  const clearCart = useCartStore((s) => s.clearCart);
   const { data: paymentGroups = [] } = usePaymentGroups();
   const { data: tablesList = [] } = useTables();
+  const { data: guests = [] } = useGuests();
   const validateCart = useValidateCart();
   const checkout = useCheckout();
 
@@ -133,6 +136,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const orderType = useWatch({ control, name: "order_type" });
   const tableId = useWatch({ control, name: "table_id" });
   const customerType = useWatch({ control, name: "customer_type" });
+  const guestId = useWatch({ control, name: "guest_id" });
   const customerId = useWatch({ control, name: "customer_id" });
   const customerSearch = useWatch({ control, name: "customer_search" });
 
@@ -216,6 +220,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
         cash_received: isCashPayment ? cashReceivedAmount : undefined,
         change: isCashPayment ? change : undefined,
       };
+      clearCart();
       onPaymentReady?.(session, result, { isCash: isCashPayment });
     } catch (error) {
       setCartError(getErrorMessage(error));
@@ -422,8 +427,9 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           <View className="flex-row gap-2">
             {(
               [
-                ["anonymous", "Merchant"],
+                ["guest", "Merchant"],
                 ["customer", "Pelanggan terdaftar"],
+                ["anonymous", "Walk-in"],
               ] as const
             ).map(([type, label]) => (
               <Button
@@ -432,6 +438,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                 variant={customerType === type ? "primary" : "outline"}
                 onPress={() => {
                   setValue("customer_type", type);
+                  setValue("guest_id", null);
                   setValue("customer_id", null);
                   setValue("customer_search", "");
                 }}
@@ -440,6 +447,40 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
               </Button>
             ))}
           </View>
+
+          {customerType === "guest" ? (
+            <View className="gap-2">
+              <Select
+                value={
+                  guestId
+                    ? {
+                        value: guestId,
+                        label: guests.find((guest) => guest.id === guestId)?.name ?? "Merchant",
+                      }
+                    : undefined
+                }
+                onValueChange={(option) => setValue("guest_id", option?.value || null)}
+              >
+                <Select.Trigger>
+                  <Select.Value placeholder="Pilih merchant customer" />
+                  <Select.TriggerIndicator />
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Overlay />
+                  <Select.Content presentation="popover" width="trigger">
+                    {guests.map((guest) => (
+                      <Select.Item key={guest.id} value={guest.id} label={guest.name} />
+                    ))}
+                  </Select.Content>
+                </Select.Portal>
+              </Select>
+              {errors.guest_id ? (
+                <Typography type="body-xs" className="text-danger">
+                  {errors.guest_id.message}
+                </Typography>
+              ) : null}
+            </View>
+          ) : null}
 
           {customerType === "customer" ? (
             <View className="gap-2">

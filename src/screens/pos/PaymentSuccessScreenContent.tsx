@@ -1,4 +1,3 @@
-import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
 import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import { formatRupiah } from "@/utils/format";
@@ -29,16 +28,13 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
   const resetCheckoutForm = usePOSStore((s) => s.resetCheckoutForm);
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
 
-  const products = useCartStore((s) => s.products);
-  const totalQty = useCartStore((s) => s.totalQty);
-  const clearCart = useCartStore((s) => s.clearCart);
-
   const { width: windowWidth } = useWindowDimensions();
   const isWideLayout = windowWidth >= 900;
+  const products = checkoutResult?.products ?? [];
+  const totalQty = products.reduce((sum, product) => sum + product.qty, 0);
 
   const handleNewOrder = () => {
     closeModal();
-    clearCart();
     resetCheckoutForm();
     onNewOrder?.();
   };
@@ -144,7 +140,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                 <View className="flex-row justify-between px-5 py-3">
                   <Typography className="text-sm text-muted-foreground">Items</Typography>
                   <Typography className="text-sm font-semibold text-foreground">
-                    {totalQty()} {totalQty() === 1 ? "item" : "items"}
+                    {totalQty} {totalQty === 1 ? "item" : "items"}
                   </Typography>
                 </View>
               </Surface>
@@ -159,7 +155,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                 {products.length > 0 ? (
                   products.map((item, index) => (
                     <View
-                      key={item.id}
+                      key={`${item.product_id}-${index}`}
                       className={`flex-row items-start justify-between px-5 py-3 gap-4 ${index < products.length - 1 ? "border-b border-border" : ""}`}
                     >
                       <View className="flex-1 gap-0.5">
@@ -182,7 +178,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                       </View>
                       <View className="items-end gap-0.5">
                         <Typography className="text-sm font-semibold text-foreground">
-                          {formatRupiah(item.price * item.qty)}
+                          {formatRupiah(item.subtotal)}
                         </Typography>
                         <Typography className="text-xs text-muted-foreground">
                           {item.qty} × {formatRupiah(item.price)}
