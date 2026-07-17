@@ -68,6 +68,8 @@ export default function AppDrawerContent({
                 {state.routes.map((route, index) => {
                     const focused = state.index === index;
                     const routeName = route.name as DrawerRouteName;
+                    if (!(routeName in DRAWER_ICONS)) return null;
+
                     const descriptor = descriptors[route.key];
                     const label =
                         typeof descriptor?.options.drawerLabel === 'string'
@@ -90,8 +92,8 @@ export default function AppDrawerContent({
 
                                 if (event.defaultPrevented) return;
 
-                                navigation.navigate(route.name, route.params);
                                 navigation.closeDrawer();
+                                if (!focused) navigation.navigate(route.name, route.params);
                             }}
                         >
                             <Surface
