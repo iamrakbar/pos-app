@@ -104,12 +104,15 @@ module.exports = {
         "expo-splash-screen",
         {
           image: "./assets/images/splash-icon.png",
-          width: 200,
+          imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: variant.backgroundColor,
+          dark: {
+            image: "./assets/images/splash-icon.png",
+            backgroundColor: variant.backgroundColor,
+          },
         },
       ],
-      "expo-sqlite",
       "expo-secure-store",
       "expo-localization",
       [

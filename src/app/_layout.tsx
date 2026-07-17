@@ -1,14 +1,14 @@
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { HeroUINativeProvider } from "heroui-native";
-import { useEffect, type JSX } from "react";
-import { ActivityIndicator, Platform, StatusBar as NativeStatusBar, View } from "react-native";
+import { useCallback, useEffect, type JSX } from "react";
+import { Platform, StatusBar as NativeStatusBar, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { DatabaseProvider } from "@/db";
 import { useAuth, setQueryClientRef } from "@/stores/useAuth";
 import { useThemeStore } from "@/stores/useThemeStore";
 import { isApiError } from "@/api/ApiError";
@@ -18,6 +18,9 @@ import OfflineBanner from "@/components/common/OfflineBanner";
 import AppUpdateManager from "@/components/common/AppUpdateManager";
 
 import "../global.css";
+
+void SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({ duration: 350, fade: true });
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +36,13 @@ export default function RootLayout(): JSX.Element {
   const isDarkMode = useThemeStore((s) => s.isDarkMode);
   const session = !!token;
   const navigationTheme = useNavigationTheme();
+  const isAppReady = hasHydrated;
+
+  const handleAppLayout = useCallback(() => {
+    if (isAppReady) {
+      SplashScreen.hide();
+    }
+  }, [isAppReady]);
 
   useEffect(() => {
     setQueryClientRef(queryClient);
@@ -50,17 +60,13 @@ export default function RootLayout(): JSX.Element {
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
           <HeroUINativeProvider>
-            <DatabaseProvider>
-              {Platform.OS === "android" && (
-                <NavigationBar style={isDarkMode ? "dark" : "light"} hidden={false} />
-              )}
-              <ExpoStatusBar style={isDarkMode ? "light" : "dark"} />
-              <ErrorBoundary>
-                {!hasHydrated ? (
-                  <View className="flex-1 items-center justify-center bg-background">
-                    <ActivityIndicator />
-                  </View>
-                ) : (
+            {Platform.OS === "android" && (
+              <NavigationBar style={isDarkMode ? "dark" : "light"} hidden={false} />
+            )}
+            <ExpoStatusBar style={isDarkMode ? "light" : "dark"} />
+            <ErrorBoundary>
+              {isAppReady && (
+                <View className="flex-1" onLayout={handleAppLayout}>
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Protected guard={session}>
                       <Stack.Screen name="(app)" />
@@ -69,11 +75,11 @@ export default function RootLayout(): JSX.Element {
                       <Stack.Screen name="sign-in" />
                     </Stack.Protected>
                   </Stack>
-                )}
-                <OfflineBanner />
-                <AppUpdateManager mode="banner" />
-              </ErrorBoundary>
-            </DatabaseProvider>
+                </View>
+              )}
+              <OfflineBanner />
+              <AppUpdateManager mode="banner" />
+            </ErrorBoundary>
           </HeroUINativeProvider>
         </QueryClientProvider>
       </KeyboardProvider>
