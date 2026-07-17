@@ -22,7 +22,7 @@ export default function POSFlowLayout() {
     >
       <Stack.Screen
         name="payment-success"
-        options={{ title: "Payment Success", headerBackVisible: false }}
+        options={{ title: "Payment Success", headerShown: false }}
       />
     </Stack>
   );
