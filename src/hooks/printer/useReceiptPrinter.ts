@@ -291,12 +291,26 @@ export function useReceiptPrinter() {
       for (const item of items) {
         PrinterDriver.printText(item.name, { onError: reportPrintError });
         PrinterDriver.printColumnsText(
-          [`${item.qty} x ${formatRupiah(item.price)}`, formatRupiah(item.price * item.qty)],
+          [`${item.qty} x ${formatRupiah(item.price)}`, formatRupiah(item.subtotal)],
           paperConfig.billColumnWidth,
           columnAlign,
           ["", ""],
           { onError: reportPrintError }
         );
+        for (const addOn of item.addOns) {
+          for (const option of addOn.options) {
+            PrinterDriver.printColumnsText(
+              [
+                `  + ${addOn.name}: ${option.name}`,
+                option.price > 0 ? formatRupiah(option.price) : "",
+              ],
+              paperConfig.billColumnWidth,
+              columnAlign,
+              ["", ""],
+              { onError: reportPrintError }
+            );
+          }
+        }
       }
 
       PrinterDriver.printText(`${paperConfig.dottedLine}`, { onError: reportPrintError });

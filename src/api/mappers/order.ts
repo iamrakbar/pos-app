@@ -48,7 +48,18 @@ export function extractNumber(value: unknown, fallback = 0): number {
     return fallback;
 }
 
-export type OrderLineItem = { name: string; qty: number; price: number };
+export type OrderLineItemAddOn = {
+    name: string;
+    options: { name: string; price: number }[];
+};
+
+export type OrderLineItem = {
+    name: string;
+    qty: number;
+    price: number;
+    subtotal: number;
+    addOns: OrderLineItemAddOn[];
+};
 
 export function extractOrderItems(products: unknown): OrderLineItem[] {
     if (!Array.isArray(products)) return [];
@@ -62,7 +73,25 @@ export function extractOrderItems(products: unknown): OrderLineItem[] {
                 : typeof rec.subtotal === 'number' && qty > 0
                   ? rec.subtotal / qty
                   : 0;
-        return { name, qty, price };
+        const subtotal = typeof rec.subtotal === 'number' ? rec.subtotal : price * qty;
+        const addOns = Array.isArray(rec.add_ons)
+            ? rec.add_ons.map((rawAddOn) => {
+                  const addOn = asRecord(rawAddOn) ?? {};
+                  return {
+                      name: typeof addOn.name === 'string' ? addOn.name : 'Add-on',
+                      options: Array.isArray(addOn.options)
+                          ? addOn.options.map((rawOption) => {
+                                const option = asRecord(rawOption) ?? {};
+                                return {
+                                    name: typeof option.name === 'string' ? option.name : 'Option',
+                                    price: typeof option.price === 'number' ? option.price : 0,
+                                };
+                            })
+                          : [],
+                  };
+              })
+            : [];
+        return { name, qty, price, subtotal, addOns };
     });
 }
 
