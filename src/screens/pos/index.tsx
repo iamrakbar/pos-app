@@ -8,14 +8,26 @@ import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
+import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
-import { View } from "react-native";
+import { Platform, StatusBar, View } from "react-native";
+import { useNavigationTheme } from "@/utils/navigationTheme";
 
 const CART_PANEL_WIDTH = 400;
 
 export default function POSScreen(): JSX.Element {
   const openAddonModal = usePOSStore((s) => s.openAddonModal);
   const addItem = useCartStore((s) => s.addItem);
+  const theme = useNavigationTheme();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== "android") return;
+
+      StatusBar.setBackgroundColor(theme.surface, true);
+      return () => StatusBar.setBackgroundColor(theme.background, true);
+    }, [theme.background, theme.surface])
+  );
 
   const handleSelectProduct = useCallback(
     (product: POSProduct) => {
@@ -36,7 +48,7 @@ export default function POSScreen(): JSX.Element {
   );
 
   return (
-    <View className="flex-1 flex-row p-safe">
+    <View className="flex-1 flex-row bg-surface p-safe">
       {/* Product catalog */}
       <View className="flex-1 bg-background">
         <SearchBar />
