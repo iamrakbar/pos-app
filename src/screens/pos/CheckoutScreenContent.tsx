@@ -1,7 +1,7 @@
 import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
-import { usePaymentGroups } from "@/hooks/db/usePayments";
 import { useTables } from "@/hooks/db/useTables";
+import { usePaymentGroups } from "@/hooks/db/usePayments";
 import { useGuests, useCreateGuest } from "@/hooks/db/useGuests";
 import { useCustomerSearch } from "@/hooks/db/useCustomers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/useCart";
@@ -19,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   SearchField,
+  Select,
   Separator,
   Surface,
   TextArea,
@@ -39,11 +40,15 @@ import { Ionicons } from "@expo/vector-icons";
 import type { PaymentSession } from "@/types/pos";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
-import { Segment } from "heroui-native-pro";
 
 type CheckoutContentProps = {
   onCancel?: () => void;
   onPaymentReady?: (session: PaymentSession, result: MerchantCheckoutData) => void;
+};
+
+const ORDER_TYPE_LABELS: Record<string, string> = {
+  "dine-in": "Dine-In",
+  takeaway: "Takeaway",
 };
 
 const CUSTOMER_TYPE_LABELS: Record<CheckoutFormValues["customer_type"], string> = {
@@ -91,7 +96,6 @@ function MiniInput({
 export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentProps): JSX.Element {
   const themeColorPrimary = useThemeColor("link");
   const closeModal = usePOSStore((s) => s.closeModal);
-  const checkoutForm = usePOSStore((s) => s.checkoutForm);
 
   const cartProducts = useCartStore((s) => s.products);
   const totalPrice = useCartStore((s) => s.totalPrice);
@@ -99,7 +103,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const isWideLayout = windowWidth >= 900;
 
   const { data: paymentGroups = [] } = usePaymentGroups();
-  const { data: tables = [] } = useTables();
+  const { data: tablesList = [] } = useTables();
   const { data: guestsList = [] } = useGuests();
   const createGuest = useCreateGuest();
   const validateCart = useValidateCart();
@@ -115,9 +119,9 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const defaultPaymentId = defaultPaymentGroup?.payments[0]?.id ?? "";
 
   const DEFAULT_VALUES: CheckoutFormValues = {
-    order_type: checkoutForm.order_type,
-    table_id: checkoutForm.table_id,
-    pickup_time: checkoutForm.pickup_time,
+    order_type: "dine-in",
+    table_id: null,
+    pickup_time: null,
     payment_group: defaultPaymentGroup?.group_type ?? "e-money",
     payment_id: defaultPaymentId,
     customer_type: "anonymous",
@@ -140,6 +144,8 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
   const paymentGroup = useWatch({ control, name: "payment_group" });
   const paymentId = useWatch({ control, name: "payment_id" });
+  const orderType = useWatch({ control, name: "order_type" });
+  const tableId = useWatch({ control, name: "table_id" });
   const customerType = useWatch({ control, name: "customer_type" });
   const guestId = useWatch({ control, name: "guest_id" });
   const customerId = useWatch({ control, name: "customer_id" });
@@ -175,7 +181,6 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const subtotal = totalPrice();
   const allPayments = paymentGroups.flatMap((g) => g.payments);
   const selectedPayment = allPayments.find((p) => p.id === paymentId);
-  const selectedTable = tables.find((table) => table.id === checkoutForm.table_id);
   const paymentFee = selectedPayment
     ? selectedPayment.fee_unit === "percentage"
       ? Math.round(subtotal * (selectedPayment.fee_value / 100))
@@ -183,6 +188,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
     : 0;
   const total = subtotal + paymentFee;
 
+  const selectedTable = tablesList.find((t) => t.id === tableId);
   const selectedGuest = guestsList.find((g) => g.id === guestId);
   const filteredGuests = guestSearch.trim()
     ? guestsList.filter((g) => g.name.toLowerCase().includes(guestSearch.trim().toLowerCase()))
@@ -237,19 +243,23 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
   return (
     <View className="flex-1 bg-background">
+      <View className="bg-surface px-5 py-5">
+        <View>
+          <Typography className="text-xl font-semibold text-foreground">Checkout</Typography>
+          <Typography className="text-sm text-muted-foreground">
+            Review order details, customer, and payment method
+          </Typography>
+        </View>
+      </View>
+
+      <Separator />
+
       <ScrollView
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
         className="flex-1"
         contentContainerClassName="w-full max-w-6xl self-center p-5 gap-5 bg-background"
       >
-        <View className="gap-1">
-          <Typography.Heading type="h4">Complete Payment</Typography.Heading>
-          <Typography type="body-sm" color="muted">
-            Choose a payment method and optionally attach a customer.
-          </Typography>
-        </View>
-
         {cartError && (
           <View className="rounded-lg bg-danger/10 px-3 py-2.5">
             <Typography className="text-sm text-danger">{cartError}</Typography>
@@ -258,40 +268,130 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
         <View className={isWideLayout ? "flex-row items-start gap-5" : "gap-4"}>
           <View className="flex-1 gap-4">
+            {/* Order type + Table/Pickup time */}
+            <Surface className="w-full gap-4 p-5">
+              <View>
+                <Typography className="text-base font-semibold text-foreground">Order</Typography>
+                <Typography className="text-xs text-muted-foreground">
+                  Service type and table information
+                </Typography>
+              </View>
+              <View className={isWideLayout ? "flex-row gap-4" : "gap-4"}>
+                <View className="flex-1 gap-1.5">
+                  <Typography className="text-sm font-semibold text-foreground">
+                    Jenis pesanan <Typography className="text-danger">*</Typography>
+                  </Typography>
+                  <Select
+                    value={{ value: orderType, label: ORDER_TYPE_LABELS[orderType] ?? orderType }}
+                    onValueChange={(opt) => {
+                      if (opt) setValue("order_type", opt.value as "dine-in" | "takeaway");
+                    }}
+                  >
+                    <Select.Trigger>
+                      <Select.Value placeholder="Pilih jenis" />
+                      <Select.TriggerIndicator />
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Overlay />
+                      <Select.Content presentation="popover" width="full">
+                        <Select.Item value="dine-in" label="Dine-In" />
+                        <Select.Item value="takeaway" label="Takeaway" />
+                      </Select.Content>
+                    </Select.Portal>
+                  </Select>
+                </View>
+
+                {orderType === "dine-in" ? (
+                  <View className="flex-1 gap-1.5">
+                    <View className="flex-row justify-between">
+                      <Typography className="text-sm font-semibold text-foreground">
+                        Meja
+                      </Typography>
+                      <Typography className="text-xs text-muted-foreground">Opsional</Typography>
+                    </View>
+                    <Select
+                      value={
+                        selectedTable
+                          ? { value: selectedTable.id, label: selectedTable.name }
+                          : undefined
+                      }
+                      onValueChange={(opt) => setValue("table_id", opt?.value ?? null)}
+                    >
+                      <Select.Trigger>
+                        <Select.Value placeholder="Pilih salah satu opsi" />
+                        <Select.TriggerIndicator />
+                      </Select.Trigger>
+                      <Select.Portal>
+                        <Select.Overlay />
+                        <Select.Content presentation="popover" width="full">
+                          <Select.Item value="" label="Tidak ada" />
+                          {tablesList.map((t) => (
+                            <Select.Item
+                              key={t.id}
+                              value={t.id}
+                              label={`${t.name} (${t.area_name})`}
+                            />
+                          ))}
+                        </Select.Content>
+                      </Select.Portal>
+                    </Select>
+                  </View>
+                ) : (
+                  <View className="flex-1 gap-1.5">
+                    <View className="flex-row justify-between">
+                      <Typography className="text-sm font-semibold text-foreground">
+                        Waktu ambil
+                      </Typography>
+                      <Typography className="text-xs text-muted-foreground">Opsional</Typography>
+                    </View>
+                    <Controller
+                      control={control}
+                      name="pickup_time"
+                      render={({ field }) => (
+                        <MiniInput
+                          value={field.value ?? ""}
+                          onChangeText={(v) => field.onChange(v || null)}
+                          placeholder="HH:mm"
+                        />
+                      )}
+                    />
+                  </View>
+                )}
+              </View>
+            </Surface>
+
             {/* Payment method group */}
             <Surface className="w-full gap-4 p-5">
               <View>
-                <Typography className="text-base font-semibold text-foreground">
-                  Payment Method
-                </Typography>
+                <Typography className="text-base font-semibold text-foreground">Payment</Typography>
                 <Typography className="text-xs text-muted-foreground">
-                  Choose a payment category and provider
+                  Choose payment category and provider
                 </Typography>
               </View>
               <View className="gap-2">
                 <Typography className="text-sm font-semibold text-foreground">Metode</Typography>
-                <Segment
-                  value={paymentGroup}
-                  onValueChange={(groupType) => {
-                    const group = paymentGroups.find((item) => item.group_type === groupType);
-                    setValue("payment_group", groupType);
-                    setValue("payment_id", group?.payments[0]?.id ?? "");
-                  }}
-                  size="sm"
-                >
-                  <Segment.Group className="w-full">
-                    <Segment.ScrollView showsHorizontalScrollIndicator={false}>
-                      <Segment.Indicator />
-                      {paymentGroups.map((group) => {
-                        return (
-                          <Segment.Item key={group.group_type} value={group.group_type}>
-                            <Segment.Label>{group.group_label}</Segment.Label>
-                          </Segment.Item>
-                        );
-                      })}
-                    </Segment.ScrollView>
-                  </Segment.Group>
-                </Segment>
+                <View className="w-full flex-row flex-wrap gap-2">
+                  {paymentGroups.map((group) => {
+                    const isActive = paymentGroup === group.group_type;
+                    return (
+                      <Pressable
+                        key={group.group_type}
+                        onPress={() => {
+                          const firstPayment = group.payments[0];
+                          setValue("payment_group", group.group_type);
+                          setValue("payment_id", firstPayment?.id ?? "");
+                        }}
+                        className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
+                      >
+                        <Typography
+                          className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
+                        >
+                          {group.group_label}
+                        </Typography>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </View>
 
               {/* Payment provider */}
@@ -304,26 +404,26 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                     {errors.payment_id.message}
                   </Typography>
                 )}
-                <Segment
-                  value={paymentId}
-                  onValueChange={(value) => setValue("payment_id", value)}
-                  size="sm"
-                >
-                  <Segment.Group className="w-full">
-                    <Segment.ScrollView showsHorizontalScrollIndicator={false}>
-                      <Segment.Indicator />
-                      {paymentGroups
-                        .find((g) => g.group_type === paymentGroup)
-                        ?.payments.map((payment) => {
-                          return (
-                            <Segment.Item key={payment.id} value={payment.id}>
-                              <Segment.Label>{payment.name}</Segment.Label>
-                            </Segment.Item>
-                          );
-                        })}
-                    </Segment.ScrollView>
-                  </Segment.Group>
-                </Segment>
+                <View className="w-full flex-row flex-wrap gap-2">
+                  {paymentGroups
+                    .find((g) => g.group_type === paymentGroup)
+                    ?.payments.map((payment) => {
+                      const isActive = paymentId === payment.id;
+                      return (
+                        <Pressable
+                          key={payment.id}
+                          onPress={() => setValue("payment_id", payment.id)}
+                          className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
+                        >
+                          <Typography
+                            className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
+                          >
+                            {payment.name}
+                          </Typography>
+                        </Pressable>
+                      );
+                    })}
+                </View>
               </View>
             </Surface>
 
@@ -331,34 +431,35 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
             <Surface className="w-full gap-4 p-5">
               <View>
                 <Typography className="text-base font-semibold text-foreground">
-                  Customer
+                  Pelanggan
                 </Typography>
                 <Typography className="text-xs text-muted-foreground">
-                  Attach a guest or registered customer when needed
+                  Optional customer or guest identity
                 </Typography>
               </View>
-              <Segment
-                value={customerType}
-                onValueChange={(value) => {
-                  const type = value as CheckoutFormValues["customer_type"];
-                  setValue("customer_type", type);
-                  setValue("guest_id", null);
-                  setValue("customer_id", null);
-                  setValue("customer_search", "");
-                }}
-                size="sm"
-              >
-                <Segment.Group className="w-full">
-                  <Segment.Indicator />
-                  {(["guest", "customer", "anonymous"] as const).map((type) => {
-                    return (
-                      <Segment.Item key={type} value={type} className="flex-1">
-                        <Segment.Label>{CUSTOMER_TYPE_LABELS[type]}</Segment.Label>
-                      </Segment.Item>
-                    );
-                  })}
-                </Segment.Group>
-              </Segment>
+              <View className="flex-row flex-wrap gap-2">
+                {(["guest", "customer", "anonymous"] as const).map((type) => {
+                  const isActive = customerType === type;
+                  return (
+                    <Pressable
+                      key={type}
+                      onPress={() => {
+                        setValue("customer_type", type);
+                        setValue("guest_id", null);
+                        setValue("customer_id", null);
+                        setValue("customer_search", "");
+                      }}
+                      className={`px-4 py-2 rounded-full ${isActive ? "bg-accent" : "bg-surface-secondary"}`}
+                    >
+                      <Typography
+                        className={`text-sm font-medium ${isActive ? "text-accent-foreground" : "text-foreground"}`}
+                      >
+                        {CUSTOMER_TYPE_LABELS[type]}
+                      </Typography>
+                    </Pressable>
+                  );
+                })}
+              </View>
 
               {customerType === "guest" && (
                 <View className="gap-2">
@@ -498,9 +599,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           <View className={isWideLayout ? "w-[360px] gap-4" : "gap-4"}>
             {/* Notes */}
             <Surface variant="secondary" className="w-full gap-3 p-5">
-              <Typography className="text-base font-semibold text-foreground">
-                Order Notes
-              </Typography>
+              <Typography className="text-base font-semibold text-foreground">Catatan</Typography>
               <Controller
                 control={control}
                 name="notes"
@@ -515,75 +614,35 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
               />
             </Surface>
 
-            {/* Order and pricing summary */}
-            <Surface className="w-full gap-4 p-5">
-              <View className="gap-1">
-                <Typography className="text-base font-semibold text-foreground">
-                  Order Summary
-                </Typography>
-                <Typography className="text-xs text-muted-foreground">
-                  Confirm service details before payment
+            {/* Pricing summary */}
+            <Surface className="w-full overflow-hidden">
+              <View className="px-4 py-3 border-b border-border">
+                <Typography className="text-base font-semibold text-foreground">Summary</Typography>
+              </View>
+              <View className="flex-row justify-between px-4 py-3 border-b border-border">
+                <Typography className="text-sm text-foreground">Subtotal</Typography>
+                <Typography className="text-sm text-foreground">
+                  {formatRupiah(subtotal)}
                 </Typography>
               </View>
-
-              <View className="gap-2.5">
-                <View className="flex-row items-center justify-between gap-4">
-                  <Typography type="body-sm" color="muted">
-                    Order type
+              {paymentFee > 0 && (
+                <View className="flex-row justify-between px-4 py-3 border-b border-border">
+                  <Typography className="text-sm text-foreground">
+                    Payment Fee
+                    {selectedPayment?.fee_unit === "percentage"
+                      ? ` (${selectedPayment.fee_value}%)`
+                      : ""}
                   </Typography>
-                  <Typography type="body-sm" weight="semibold">
-                    {checkoutForm.order_type === "dine-in" ? "Dine-in" : "Takeaway"}
-                  </Typography>
-                </View>
-                <View className="flex-row items-center justify-between gap-4">
-                  <Typography type="body-sm" color="muted">
-                    {checkoutForm.order_type === "dine-in" ? "Table" : "Pickup time"}
-                  </Typography>
-                  <Typography
-                    type="body-sm"
-                    weight="semibold"
-                    numberOfLines={1}
-                    className="flex-1 text-right"
-                  >
-                    {checkoutForm.order_type === "dine-in"
-                      ? (selectedTable?.name ?? "No table")
-                      : (checkoutForm.pickup_time?.slice(0, 5) ?? "Not selected")}
+                  <Typography className="text-sm text-foreground">
+                    {formatRupiah(paymentFee)}
                   </Typography>
                 </View>
-              </View>
-
-              <Separator />
-
-              <View className="gap-2.5">
-                <View className="flex-row justify-between">
-                  <Typography type="body-sm" color="muted">
-                    Subtotal
-                  </Typography>
-                  <Typography type="body-sm" className="tabular-nums">
-                    {formatRupiah(subtotal)}
-                  </Typography>
-                </View>
-                {paymentFee > 0 && (
-                  <View className="flex-row justify-between gap-4">
-                    <Typography type="body-sm" color="muted">
-                      Payment fee
-                      {selectedPayment?.fee_unit === "percentage"
-                        ? ` (${selectedPayment.fee_value}%)`
-                        : ""}
-                    </Typography>
-                    <Typography type="body-sm" className="tabular-nums">
-                      {formatRupiah(paymentFee)}
-                    </Typography>
-                  </View>
-                )}
-                <View className="flex-row items-center justify-between pt-1">
-                  <Typography type="body-sm" weight="semibold">
-                    Total
-                  </Typography>
-                  <Typography.Heading type="h5" className="tabular-nums">
-                    {formatRupiah(total)}
-                  </Typography.Heading>
-                </View>
+              )}
+              <View className="flex-row justify-between px-4 py-3">
+                <Typography className="text-sm font-semibold text-foreground">Total</Typography>
+                <Typography className="text-lg font-bold text-foreground">
+                  {formatRupiah(total)}
+                </Typography>
               </View>
             </Surface>
           </View>
@@ -594,7 +653,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
       <View className="flex-row gap-3 bg-surface px-5 py-4">
         <Button variant="outline" onPress={onCancel ?? closeModal}>
-          Cancel
+          Batal
         </Button>
         <Button
           className="flex-1"
@@ -608,7 +667,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
             </>
           ) : (
             <>
-              <Button.Label>Continue to Payment</Button.Label>
+              <Button.Label>Bayar</Button.Label>
             </>
           )}
         </Button>

@@ -1,7 +1,6 @@
 import { useCartStore } from "@/stores/useCartStore";
 import { formatRupiah } from "@/utils/format";
 import { useProducts } from "@/hooks/db/useProducts";
-import { usePOSStore } from "@/stores/usePOSStore";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -9,7 +8,6 @@ import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import CartItemRow from "./CartItemRow";
-import CartOrderContext from "./CartOrderContext";
 
 export default function CartPanel(): JSX.Element {
   const router = useRouter();
@@ -21,13 +19,10 @@ export default function CartPanel(): JSX.Element {
   const totalQty = useCartStore((s) => s.totalQty);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
-  const checkoutForm = usePOSStore((s) => s.checkoutForm);
   const { data: catalogProducts } = useProducts();
 
   const itemCount = totalQty();
   const subtotal = totalPrice();
-  const isOrderContextComplete =
-    checkoutForm.order_type === "dine-in" || Boolean(checkoutForm.pickup_time);
   const productById = useMemo(
     () => new Map((catalogProducts ?? []).map((product) => [product.id, product])),
     [catalogProducts]
@@ -52,8 +47,6 @@ export default function CartPanel(): JSX.Element {
           </Button>
         )}
       </View>
-
-      <CartOrderContext />
 
       {/* Cart items */}
       <ScrollView
@@ -88,9 +81,9 @@ export default function CartPanel(): JSX.Element {
         <Button
           className="w-full"
           onPress={() => router.push("/pos/checkout" as never)}
-          isDisabled={cartProducts.length === 0 || !isOrderContextComplete}
+          isDisabled={cartProducts.length === 0}
         >
-          <Button.Label>{!isOrderContextComplete ? "Select pickup time" : "Checkout"}</Button.Label>
+          Checkout
         </Button>
       </View>
     </View>
