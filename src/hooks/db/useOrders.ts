@@ -59,16 +59,19 @@ function patchOrderListPages(
     ...pages,
     pages: pages.pages.map((page) => ({
       ...page,
-      data: page.data
-        .map((order) =>
-          order.id === orderId
-            ? {
-                ...order,
-                order_status: status as App.Data.Merchant.Order.OrderListData["order_status"],
-              }
-            : order
-        )
-        .filter((order) => !filter || order.id !== orderId || nextStatusValue === filter),
+      data: page.data.reduce<App.Data.Merchant.Order.OrderListData[]>((orders, order) => {
+        if (order.id !== orderId) {
+          orders.push(order);
+          return orders;
+        }
+
+        if (filter && nextStatusValue !== filter) return orders;
+        orders.push({
+          ...order,
+          order_status: status as App.Data.Merchant.Order.OrderListData["order_status"],
+        });
+        return orders;
+      }, []),
     })),
   };
 }
@@ -161,7 +164,6 @@ export function useUpdateOrderStatus() {
       patchCachedOrderStatus(queryClient, id, data.data.order_status);
     },
     onSettled: (_data, _error, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order", id] });
     },
   });

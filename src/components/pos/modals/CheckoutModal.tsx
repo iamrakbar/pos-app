@@ -6,6 +6,7 @@ import { Dialog } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { View, useWindowDimensions } from "react-native";
+import DialogCloseButton from "@/components/common/DialogCloseButton";
 
 export default function CheckoutModal(): JSX.Element {
   const { width, height } = useWindowDimensions();
@@ -42,9 +43,9 @@ export default function CheckoutModal(): JSX.Element {
             height: Math.min(height * 0.86, 920),
           }}
         >
-          <View className="flex-row items-center justify-between bg-surface px-5 py-4">
+          <DialogCloseButton />
+          <View className="bg-surface px-5 py-4 pr-14">
             <Dialog.Title>Checkout</Dialog.Title>
-            <Dialog.Close />
           </View>
           <CheckoutContent onCancel={closeModal} onPaymentReady={handlePaymentReady} />
         </Dialog.Content>

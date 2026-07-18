@@ -22,6 +22,7 @@ import React from "react";
 import { Linking, PermissionsAndroid, Platform, Pressable, ScrollView, View } from "react-native";
 import type { ConnectionType, PaperWidth } from "@/stores/usePrinterStore";
 import { usePrinterStore } from "@/stores/usePrinterStore";
+import DialogCloseButton from "@/components/common/DialogCloseButton";
 
 // ─── Types & constants ────────────────────────────────────────────────────────
 
@@ -780,8 +781,8 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
         <Dialog.Portal>
           <Dialog.Overlay />
           <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <Dialog.Close variant="ghost" />
-            <View className="mb-5 gap-1.5">
+            <DialogCloseButton />
+            <View className="mb-5 gap-1.5 pr-10">
               <Dialog.Title>{prompt?.title}</Dialog.Title>
               {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
             </View>

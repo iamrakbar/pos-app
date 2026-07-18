@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Dialog } from "heroui-native";
 import type { JSX } from "react";
 import { useWindowDimensions } from "react-native";
+import DialogCloseButton from "@/components/common/DialogCloseButton";
 
 export default function PaymentModal(): JSX.Element {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function PaymentModal(): JSX.Element {
             height: height * 0.88,
           }}
         >
+          <DialogCloseButton />
           <PaymentContent onClose={closeModal} onPaymentSuccess={handlePaymentSuccess} />
         </Dialog.Content>
       </Dialog.Portal>

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getPosProducts } from "@/api/endpoints/products";
-import { extractOriginalPrice } from "@/api/mappers/product";
+import { extractOriginalPrice, extractSellingPrice } from "@/api/mappers/product";
 import { useAuth } from "@/stores/useAuth";
 import type { POSProduct } from "@/types/pos";
 
@@ -10,7 +10,7 @@ export function mapProduct(raw: App.Data.Merchant.Pos.ProductData): POSProduct {
   return {
     id: raw.id,
     name: raw.name,
-    price: raw.price,
+    price: extractSellingPrice(raw.discount, raw.price),
     original_price: extractOriginalPrice(raw.discount, raw.price),
     image_url: raw.image?.default ?? null,
     thumbnail_url: raw.image?.thumbnail ?? null,

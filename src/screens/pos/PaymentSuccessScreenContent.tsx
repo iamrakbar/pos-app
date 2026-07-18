@@ -15,6 +15,7 @@ import {
 import { useEffect, useRef, useState, type JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import DialogCloseButton from "@/components/common/DialogCloseButton";
 
 type PaymentSuccessContentProps = {
   onNewOrder?: () => void;
@@ -220,8 +221,8 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         <Dialog.Portal>
           <Dialog.Overlay />
           <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <Dialog.Close variant="ghost" />
-            <View className="mb-5 gap-1.5">
+            <DialogCloseButton />
+            <View className="mb-5 gap-1.5 pr-10">
               <Dialog.Title>{prompt?.title}</Dialog.Title>
               {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
             </View>

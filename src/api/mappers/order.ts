@@ -47,6 +47,13 @@ function extractStatusRecord(status: unknown): Record<string, unknown> | null {
   return asRecord(status);
 }
 
+function extractDataRecord(value: unknown): Record<string, unknown> | null {
+  if (Array.isArray(value)) {
+    return value.length > 0 ? extractDataRecord(value[0]) : null;
+  }
+  return asRecord(value);
+}
+
 export function extractStatusValue(status: unknown): string {
   const rec = extractStatusRecord(status);
   if (rec) {
@@ -104,13 +111,13 @@ export function extractStatusColor(status: unknown): StatusColor {
 }
 
 export function extractCustomerName(customer: unknown): string | null {
-  const rec = asRecord(customer);
+  const rec = extractDataRecord(customer);
   if (rec && typeof rec.name === "string") return rec.name;
   return null;
 }
 
 export function extractTableName(orderable: unknown): string | null {
-  const rec = asRecord(orderable);
+  const rec = extractDataRecord(orderable);
   if (!rec) return null;
   if (typeof rec.table_name === "string") return rec.table_name;
   if (typeof rec.name === "string") return rec.name;
@@ -119,8 +126,33 @@ export function extractTableName(orderable: unknown): string | null {
   return null;
 }
 
+export function extractTableId(orderable: unknown): string | null {
+  const rec = extractDataRecord(orderable);
+  if (!rec) return null;
+  if (typeof rec.table_id === "string") return rec.table_id;
+  if (typeof rec.id === "string") return rec.id;
+  const table = extractDataRecord(rec.table);
+  return table && typeof table.id === "string" ? table.id : null;
+}
+
+export function extractAreaName(orderable: unknown): string | null {
+  const rec = extractDataRecord(orderable);
+  if (!rec) return null;
+  if (typeof rec.area_name === "string") return rec.area_name;
+  const area = extractDataRecord(rec.area);
+  if (area && typeof area.name === "string") return area.name;
+  const table = extractDataRecord(rec.table);
+  if (table && typeof table.area_name === "string") return table.area_name;
+  return null;
+}
+
+export function extractPickupTime(orderable: unknown): string | null {
+  const rec = extractDataRecord(orderable);
+  return rec && typeof rec.pickup_time === "string" ? rec.pickup_time : null;
+}
+
 export function extractPaymentName(payment: unknown): string {
-  const rec = asRecord(payment);
+  const rec = extractDataRecord(payment);
   if (rec && typeof rec.name === "string") return rec.name;
   return "Unknown";
 }
@@ -141,6 +173,9 @@ export type OrderLineItem = {
   name: string;
   qty: number;
   price: number;
+  originalPrice: number | null;
+  discountLabel: string | null;
+  discountAmount: number;
   subtotal: number;
   addOns: OrderLineItemAddOn[];
 };
@@ -151,12 +186,24 @@ export function extractOrderItems(products: unknown): OrderLineItem[] {
     const rec = asRecord(raw) ?? {};
     const name = typeof rec.name === "string" ? rec.name : "Unknown item";
     const qty = typeof rec.qty === "number" ? rec.qty : 1;
-    const price =
+    const basePrice =
       typeof rec.price === "number"
         ? rec.price
         : typeof rec.subtotal === "number" && qty > 0
           ? rec.subtotal / qty
           : 0;
+    const discount = asRecord(rec.discount);
+    const discountedPrice = typeof discount?.price === "number" ? discount.price : null;
+    const price = discountedPrice ?? basePrice;
+    const originalPrice =
+      discountedPrice !== null && discountedPrice !== basePrice ? basePrice : null;
+    const discountLabel =
+      originalPrice === null
+        ? null
+        : discount?.unit === "percentage" && typeof discount.value === "number"
+          ? `Discount (${discount.value}%)`
+          : "Discount";
+    const discountAmount = originalPrice === null ? 0 : (originalPrice - price) * qty;
     const subtotal = typeof rec.subtotal === "number" ? rec.subtotal : price * qty;
     const addOns = Array.isArray(rec.add_ons)
       ? rec.add_ons.map((rawAddOn) => {
@@ -175,7 +222,16 @@ export function extractOrderItems(products: unknown): OrderLineItem[] {
           };
         })
       : [];
-    return { name, qty, price, subtotal, addOns };
+    return {
+      name,
+      qty,
+      price,
+      originalPrice,
+      discountLabel,
+      discountAmount,
+      subtotal,
+      addOns,
+    };
   });
 }
 

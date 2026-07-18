@@ -63,19 +63,20 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
   return (
     <View className="flex-1 bg-background">
-      <View className="bg-surface px-5 py-5">
+      <View className="bg-surface px-5 py-5 pr-14">
         <Typography className="text-xl font-semibold text-foreground">Payment</Typography>
       </View>
 
       <Separator />
 
       <ScrollView
-        className="flex-1"
+        className="flex-1 bg-surface"
         contentContainerClassName="flex-grow justify-center p-5"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <Surface
+          variant="transparent"
           className={
             isWideLayout
               ? "w-full max-w-4xl self-center flex-row items-center justify-center gap-8 p-6"

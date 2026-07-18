@@ -1,7 +1,10 @@
 import { useOrders } from "@/hooks/db/useOrders";
 import {
+  extractAreaName,
   extractCustomerName,
   extractPaymentName,
+  extractPickupTime,
+  extractTableId,
   extractTableName,
   getOrderStatus,
   getPaymentStatus,
@@ -15,6 +18,7 @@ import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTables } from "@/hooks/db/useTables";
 
 type StatusFilter = "all" | "new" | "process" | "completed" | "cancelled" | "rejected";
 
@@ -32,9 +36,25 @@ function formatTime(iso: string): string {
   return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 
+function formatPickupTime(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isFinite(date.getTime())) {
+    return date.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  const time = /^(\d{2}):(\d{2})/.exec(value);
+  return time ? `${time[1]}:${time[2]}` : value;
+}
+
 export default function OrdersScreen(): React.JSX.Element {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all");
+  const { data: tables } = useTables();
 
   const {
     data,
@@ -96,7 +116,15 @@ export default function OrdersScreen(): React.JSX.Element {
           }}
           ItemSeparatorComponent={() => <Separator className="mx-4" />}
           renderItem={({ item }) => (
-            <OrderRow order={item} onPress={() => router.push(`/orders/${item.id}` as never)} />
+            <OrderRow
+              order={item}
+              areaName={
+                extractAreaName(item.orderable) ??
+                tables?.find((table) => table.id === extractTableId(item.orderable))?.area_name ??
+                null
+              }
+              onPress={() => router.push(`/orders/${item.id}` as never)}
+            />
           )}
           ListFooterComponent={isFetchingNextPage ? <LoadingState /> : null}
         />
@@ -107,9 +135,11 @@ export default function OrdersScreen(): React.JSX.Element {
 
 function OrderRow({
   order,
+  areaName,
   onPress,
 }: {
   order: App.Data.Merchant.Order.OrderListData;
+  areaName: string | null;
   onPress: () => void;
 }) {
   const themeColorMuted = useThemeColor("muted");
@@ -118,6 +148,13 @@ function OrderRow({
   const customerName = extractCustomerName(order.customer);
   const paymentName = extractPaymentName(order.payment);
   const tableName = extractTableName(order.orderable);
+  const pickupTime = formatPickupTime(extractPickupTime(order.orderable));
+  const orderContext =
+    order.order_type === "dine-in"
+      ? ["Dine-in", areaName, tableName].filter(Boolean).join(" · ")
+      : pickupTime
+        ? `Takeaway · Pickup ${pickupTime}`
+        : "Takeaway";
 
   return (
     <Pressable onPress={onPress} className="px-5 py-3 active:bg-surface-secondary">
@@ -139,9 +176,7 @@ function OrderRow({
               color={themeColorMuted}
             />
             <Typography type="body-xs" color="muted">
-              {order.order_type === "dine-in"
-                ? `Dine-in${tableName ? ` · ${tableName}` : ""}`
-                : "Takeaway"}
+              {orderContext}
             </Typography>
             {customerName && (
               <>

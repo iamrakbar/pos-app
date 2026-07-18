@@ -21,6 +21,7 @@ import {
 import type { JSX } from "react";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import React, { memo, useCallback, useMemo, useEffect, useState } from "react";
+import DialogCloseButton from "@/components/common/DialogCloseButton";
 import { useForm, Controller, type Control } from "react-hook-form";
 
 function constraintLabel(group: AddOnGroup): string {
@@ -244,14 +245,14 @@ export default function AddOnModal(): JSX.Element {
           className="w-full max-w-3xl self-center bg-background p-0 overflow-hidden"
           style={{ maxHeight: dialogMaxHeight }}
         >
-          <View className="flex-row justify-between gap-4 bg-surface p-4">
+          <DialogCloseButton />
+          <View className="bg-surface p-4 pr-14">
             <View>
               <Dialog.Title>{product.name}</Dialog.Title>
               <Typography className="text-sm text-muted-foreground">
                 {formatRupiah(product.price)}
               </Typography>
             </View>
-            <Dialog.Close />
           </View>
 
           <Separator />

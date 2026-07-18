@@ -114,9 +114,16 @@ export function formatReceiptPayload(
 
   data.items.forEach((item, index) => {
     contentLine(item.name);
-    priceRow(`${item.qty} x ${formatRupiah(item.price)}`, formatRupiah(item.subtotal));
+    const basePrice = item.originalPrice ?? item.price;
+    priceRow(`${item.qty} x ${formatRupiah(basePrice)}`, formatRupiah(basePrice * item.qty));
+    if (item.discountLabel && item.discountAmount > 0) {
+      priceRow(item.discountLabel, `-${formatRupiah(item.discountAmount)}`);
+    }
     for (const option of item.addOns) {
-      priceRow(`+ ${option.group}: ${option.name}`, option.price ? formatRupiah(option.price) : "");
+      priceRow(
+        `+ ${option.group}: ${option.name}`,
+        option.price ? formatRupiah(option.price * item.qty) : ""
+      );
     }
     if (item.notes) contentLine(`Note: ${item.notes}`);
     if (!isCompact && index < data.items.length - 1) line(state);
