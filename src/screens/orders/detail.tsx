@@ -18,6 +18,7 @@ import {
 import LoadingState from "@/components/common/LoadingState";
 import ErrorState from "@/components/common/ErrorState";
 import Countdown from "@/components/common/Countdown";
+import QrUrlDisclosure from "@/components/common/QrUrlDisclosure";
 import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
 import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/ApiError";
@@ -42,6 +43,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useState } from "react";
+import Constants from "expo-constants";
 
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
@@ -147,6 +149,12 @@ export default function OrderDetailScreen() {
     payment_details: order.payment_details,
     payment: order.payment,
   });
+  const buildVariant = Constants.expoConfig?.extra?.buildVariant;
+  const hasQrImageUrl = !!paymentQrUrl && /^https?:\/\//i.test(paymentQrUrl);
+  const showQrUrl = (buildVariant === "development" || buildVariant === "preview") && hasQrImageUrl;
+  const visiblePaymentDetailsRows = paymentDetailsRows.filter(
+    (row) => !hasQrImageUrl || row.value !== paymentQrUrl
+  );
   const paymentExpired = isExpired(paymentExpiresAt);
   const isQrisPayment = paymentName.toLowerCase().includes("qris") || !!paymentQrUrl;
   const canShowQr = !!paymentQrUrl && !paymentExpired && isQrisPayment;
@@ -275,9 +283,10 @@ export default function OrderDetailScreen() {
                 </View>
                 <Surface className="w-full p-4 gap-3">
                   <DetailRow label="Method" value={paymentName} />
-                  {paymentDetailsRows.map((row) => (
+                  {visiblePaymentDetailsRows.map((row) => (
                     <DetailRow key={row.label} label={row.label} value={row.value} />
                   ))}
+                  {showQrUrl ? <QrUrlDisclosure url={paymentQrUrl} /> : null}
                   {paymentExpiresAt && !paymentExpired ? (
                     <Countdown
                       expiresAt={paymentExpiresAt}

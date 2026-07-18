@@ -5,6 +5,7 @@ import { getErrorMessage } from "@/api/ApiError";
 import { isExpired } from "@/api/mappers/checkout";
 import { getPaymentStatus } from "@/api/mappers/order";
 import Countdown from "@/components/common/Countdown";
+import QrUrlDisclosure from "@/components/common/QrUrlDisclosure";
 import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -133,16 +134,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
               />
             )}
 
-            {showQrUrl ? (
-              <View className="gap-1.5 rounded-lg bg-surface-secondary px-3 py-2.5">
-                <Typography type="body-xs" weight="semibold" color="muted">
-                  QR image URL
-                </Typography>
-                <Typography selectable type="body-xs" className="text-foreground">
-                  {paymentSession.qr_url}
-                </Typography>
-              </View>
-            ) : null}
+            {showQrUrl ? <QrUrlDisclosure url={paymentSession.qr_url!} /> : null}
 
             {paymentStatus.isError && (
               <Typography type="body-xs" className="text-danger">
