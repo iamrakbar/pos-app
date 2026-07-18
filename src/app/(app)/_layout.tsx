@@ -54,6 +54,14 @@ export default function AppLayout() {
         }}
       />
       <Drawer.Screen
+        name="earnings"
+        options={{
+          title: "Earnings",
+          drawerLabel: "Earnings",
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
         name="settings"
         options={{
           title: "Settings",
