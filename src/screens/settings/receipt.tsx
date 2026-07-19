@@ -4,14 +4,14 @@ import { useMerchantProfile } from "@/hooks/db/useMerchantProfile";
 import { useReceiptStore } from "@/stores/useReceiptStore";
 import { usePrinterStore, type PaperWidth } from "@/stores/usePrinterStore";
 import { optimizeReceiptLogo } from "@/utils/receiptLogo";
-import { getToolbarIcon } from "@/utils/toolbarIcons";
-import { useNavigationTheme } from "@/utils/navigationTheme";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { Stack, useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import {
   Button,
   Input,
+  ScrollShadow,
   Select,
   Separator,
   Surface,
@@ -116,8 +116,11 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
-  const themeColorMuted = useThemeColor("muted");
-  const navigationTheme = useNavigationTheme();
+  const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useThemeColor([
+    "muted",
+    "foreground",
+    "surface-secondary",
+  ]);
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
   const [previewPaperWidth, setPreviewPaperWidth] = useState<PaperWidth>(configuredPaperWidth);
 
@@ -198,15 +201,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
 
   return (
     <>
-      <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button
-          {...getToolbarIcon("printer")}
-          tintColor={navigationTheme.foreground}
-          accessibilityLabel="Setup printers"
-          onPress={() => router.push("/settings/printers")}
-        />
-      </Stack.Toolbar>
-
       <View className="flex-1 bg-background p-4">
         <View
           className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row-reverse items-stretch gap-6" : "gap-4"}`}
@@ -339,6 +333,15 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                     className="min-h-20 py-3"
                   />
                 </View>
+
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onPress={() => router.push("/settings/printers")}
+                >
+                  <Ionicons name="print-outline" size={18} color={themeColorForeground} />
+                  <Button.Label>Setup Printer</Button.Label>
+                </Button>
               </View>
             </KeyboardAwareScrollView>
 
@@ -379,24 +382,26 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                 </Select.Portal>
               </Select>
             </View>
-            <ScrollView
-              className="flex-1 rounded-lg bg-neutral-200 dark:bg-neutral-800"
-              contentContainerClassName="p-4"
-              showsVerticalScrollIndicator={false}
+            <ScrollShadow
+              className="flex-1 rounded-lg bg-surface-secondary"
+              color={themeColorSurfaceSecondary}
+              LinearGradientComponent={LinearGradient}
             >
-              <ReceiptPaper
-                settings={settings}
-                data={SAMPLE_RECEIPT}
-                paperWidth={previewPaperWidth}
-                charactersPerLine={
-                  previewPaperWidth === configuredPaperWidth
-                    ? configuredCharactersPerLine
-                    : previewPaperWidth === "80mm"
-                      ? "46"
-                      : "32"
-                }
-              />
-            </ScrollView>
+              <ScrollView contentContainerClassName="p-4" showsVerticalScrollIndicator={false}>
+                <ReceiptPaper
+                  settings={settings}
+                  data={SAMPLE_RECEIPT}
+                  paperWidth={previewPaperWidth}
+                  charactersPerLine={
+                    previewPaperWidth === configuredPaperWidth
+                      ? configuredCharactersPerLine
+                      : previewPaperWidth === "80mm"
+                        ? "46"
+                        : "32"
+                  }
+                />
+              </ScrollView>
+            </ScrollShadow>
           </View>
         </View>
       </View>

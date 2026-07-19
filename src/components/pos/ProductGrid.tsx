@@ -4,8 +4,9 @@ import LoadingState from "@/components/common/LoadingState";
 import ErrorState from "@/components/common/ErrorState";
 import type { POSProduct } from "@/types/pos";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
-import { useThemeColor } from "heroui-native";
+import { ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import { useCallback } from "react";
 import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
@@ -63,32 +64,34 @@ export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props):
   if (isLoading) return <LoadingState message="Loading products…" />;
 
   return (
-    <FlatList
-      data={isError ? [] : filtered}
-      key={numColumns}
-      numColumns={numColumns}
-      keyExtractor={(item) => item.id}
-      renderItem={renderProduct}
-      contentContainerClassName="flex-grow gap-2 px-3 py-4"
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-      showsVerticalScrollIndicator={false}
-      ListEmptyComponent={
-        isError ? (
-          <ErrorState error={error} onRetry={refetch} />
-        ) : (
-          <EmptyState className="py-20">
-            <EmptyState.Header>
-              <EmptyState.Media variant="icon">
-                <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
-              </EmptyState.Media>
-              <EmptyState.Title>No products found</EmptyState.Title>
-              <EmptyState.Description>
-                Try another search or choose a different category.
-              </EmptyState.Description>
-            </EmptyState.Header>
-          </EmptyState>
-        )
-      }
-    />
+    <ScrollShadow className="flex-1" LinearGradientComponent={LinearGradient}>
+      <FlatList
+        data={isError ? [] : filtered}
+        key={numColumns}
+        numColumns={numColumns}
+        keyExtractor={(item) => item.id}
+        renderItem={renderProduct}
+        contentContainerClassName="flex-grow gap-2 px-3 py-4"
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          isError ? (
+            <ErrorState error={error} onRetry={refetch} />
+          ) : (
+            <EmptyState className="py-20">
+              <EmptyState.Header>
+                <EmptyState.Media variant="icon">
+                  <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
+                </EmptyState.Media>
+                <EmptyState.Title>No products found</EmptyState.Title>
+                <EmptyState.Description>
+                  Try another search or choose a different category.
+                </EmptyState.Description>
+              </EmptyState.Header>
+            </EmptyState>
+          )
+        }
+      />
+    </ScrollShadow>
   );
 }

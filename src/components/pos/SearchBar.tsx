@@ -1,7 +1,8 @@
 import { usePOSStore, type ProductSort } from "@/stores/usePOSStore";
 import { useCategories } from "@/hooks/db/useCategories";
 import DrawerMenuButton from "@/components/navigation/DrawerMenuButton";
-import { Button, Chip, SearchField, Select, useThemeColor } from "heroui-native";
+import { Button, Chip, ScrollShadow, SearchField, Select, useThemeColor } from "heroui-native";
+import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -79,27 +80,29 @@ export default function SearchBar(): JSX.Element {
       </View>
 
       {areCategoriesVisible ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-2 px-5 pb-3"
-        >
-          <Chip
-            variant={categoryId === null ? "primary" : "secondary"}
-            onPress={() => setCategoryId(null)}
+        <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-2 px-5 pb-3"
           >
-            <Chip.Label>All</Chip.Label>
-          </Chip>
-          {categoriesList.map((category) => (
             <Chip
-              key={category.id}
-              variant={categoryId === category.id ? "primary" : "secondary"}
-              onPress={() => setCategoryId(category.id)}
+              variant={categoryId === null ? "primary" : "secondary"}
+              onPress={() => setCategoryId(null)}
             >
-              <Chip.Label>{category.name}</Chip.Label>
+              <Chip.Label>All</Chip.Label>
             </Chip>
-          ))}
-        </ScrollView>
+            {categoriesList.map((category) => (
+              <Chip
+                key={category.id}
+                variant={categoryId === category.id ? "primary" : "secondary"}
+                onPress={() => setCategoryId(category.id)}
+              >
+                <Chip.Label>{category.name}</Chip.Label>
+              </Chip>
+            ))}
+          </ScrollView>
+        </ScrollShadow>
       ) : null}
     </View>
   );
