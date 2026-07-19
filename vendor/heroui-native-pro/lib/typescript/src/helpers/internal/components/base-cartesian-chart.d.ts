@@ -19,13 +19,29 @@ export type BaseCartesianChartNumericalFields<T> = {
     [K in keyof T as T[K] extends MaybeNumber ? K : never]: T[K];
 };
 /**
+ * Union of the parameter types across all `CartesianChart` call signatures.
+ *
+ * victory-native declares `CartesianChart` with three overloads (horizontal, vertical, and
+ * dynamic orientation). `Parameters<typeof CartesianChart<...>>[0]` resolves to the **last**
+ * overload only — the dynamic-orientation one, which makes `orientation` required and widens
+ * axis label types (e.g. `formatYLabel` becomes `(label: string | number) => string`). That
+ * breaks the common vertical usage where `orientation` is omitted. Matching the overload list
+ * explicitly recovers all three prop shapes; the single-signature branch is a fallback in case
+ * upstream changes the overload count.
+ */
+type CartesianChartOverloadProps<F> = F extends {
+    (props: infer P1): unknown;
+    (props: infer P2): unknown;
+    (props: infer P3): unknown;
+} ? P1 | P2 | P3 : F extends (props: infer P) => unknown ? P : never;
+/**
  * Full set of props accepted by `BaseCartesianChart` — identical to the underlying victory-native
- * `CartesianChart` props for the chosen data / x-key / y-keys.
+ * `CartesianChart` props for the chosen data / x-key / y-keys, across all orientation overloads.
  *
  * We derive the shape from the wrapped component so any additions upstream flow through without
  * needing manual re-declaration.
  */
-export type BaseCartesianChartProps<RawData extends Record<string, unknown>, XK extends keyof BaseCartesianChartInputFields<RawData>, YK extends keyof BaseCartesianChartNumericalFields<RawData>> = Parameters<typeof CartesianChart<RawData, XK, YK>>[0];
+export type BaseCartesianChartProps<RawData extends Record<string, unknown>, XK extends keyof BaseCartesianChartInputFields<RawData>, YK extends keyof BaseCartesianChartNumericalFields<RawData>> = CartesianChartOverloadProps<typeof CartesianChart<RawData, XK, YK>>;
 /**
  * Themed wrapper around victory-native `CartesianChart` that injects sensible defaults for axis
  * styling so the chart visually matches the HeroUI Native theme out of the box.

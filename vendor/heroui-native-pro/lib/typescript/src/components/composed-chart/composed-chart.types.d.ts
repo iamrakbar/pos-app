@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { CartesianChart } from 'victory-native';
+import type { BaseCartesianChartProps } from '../../helpers/internal/components';
 import type { AnimationRoot } from '../../helpers/internal/types';
 import type { AreaChartAreaProps, AreaChartAreaRangeProps, AreaChartStackedAreaProps } from '../area-chart/area-chart.types';
 import type { BarChartBarGroupItemProps, BarChartBarGroupProps, BarChartBarProps, BarChartStackedBarProps } from '../bar-chart/bar-chart.types';
@@ -63,7 +63,7 @@ export type ComposedChartDatum = Record<string, unknown>;
  * </ComposedChart>
  * ```
  */
-export type ComposedChartRootProps<RawData extends Record<string, unknown>, XK extends keyof ComposedChartInputFields<RawData>, YK extends keyof ComposedChartNumericalFields<RawData>> = Parameters<typeof CartesianChart<RawData, XK, YK>>[0] & {
+export type ComposedChartRootProps<RawData extends Record<string, unknown>, XK extends keyof ComposedChartInputFields<RawData>, YK extends keyof ComposedChartNumericalFields<RawData>> = BaseCartesianChartProps<RawData, XK, YK> & {
     /**
      * Additional Tailwind classes for the outer `View` that wraps `CartesianChart`.
      */

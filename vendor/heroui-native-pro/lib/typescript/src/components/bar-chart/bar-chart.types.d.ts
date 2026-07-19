@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 import type { ApplyUniwind } from 'uniwind';
-import type { BarGroup, CartesianChart } from 'victory-native';
+import type { BarGroup } from 'victory-native';
+import type { BaseCartesianChartProps } from '../../helpers/internal/components';
 import type { AnimationRoot } from '../../helpers/internal/types';
 type CartesianBarComponent = typeof import('victory-native').Bar;
 type CartesianStackedBarComponent = typeof import('victory-native').StackedBar;
@@ -56,7 +57,7 @@ export type BarChartDatum = Record<string, unknown>;
  * </BarChart>
  * ```
  */
-export type BarChartRootProps<RawData extends Record<string, unknown>, XK extends keyof BarChartInputFields<RawData>, YK extends keyof BarChartNumericalFields<RawData>> = Parameters<typeof CartesianChart<RawData, XK, YK>>[0] & {
+export type BarChartRootProps<RawData extends Record<string, unknown>, XK extends keyof BarChartInputFields<RawData>, YK extends keyof BarChartNumericalFields<RawData>> = BaseCartesianChartProps<RawData, XK, YK> & {
     /**
      * Additional Tailwind classes for the outer `View` that wraps `CartesianChart`.
      */

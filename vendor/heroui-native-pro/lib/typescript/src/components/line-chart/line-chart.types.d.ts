@@ -2,7 +2,8 @@ import type { Path } from '@shopify/react-native-skia';
 import type { ComponentProps } from 'react';
 import type { WithSpringConfig, WithTimingConfig } from 'react-native-reanimated';
 import type { ApplyUniwind } from 'uniwind';
-import type { CartesianChart, CurveType, PointsArray } from 'victory-native';
+import type { CurveType, PointsArray } from 'victory-native';
+import type { BaseCartesianChartProps } from '../../helpers/internal/components';
 import type { Animation, AnimationRoot } from '../../helpers/internal/types';
 type CartesianLineComponent = typeof import('victory-native').Line;
 /**
@@ -59,7 +60,7 @@ export type LineChartDatum = Record<string, unknown>;
  * </LineChart>
  * ```
  */
-export type LineChartRootProps<RawData extends Record<string, unknown>, XK extends keyof LineChartInputFields<RawData>, YK extends keyof LineChartNumericalFields<RawData>> = Parameters<typeof CartesianChart<RawData, XK, YK>>[0] & {
+export type LineChartRootProps<RawData extends Record<string, unknown>, XK extends keyof LineChartInputFields<RawData>, YK extends keyof LineChartNumericalFields<RawData>> = BaseCartesianChartProps<RawData, XK, YK> & {
     /**
      * Additional Tailwind classes for the outer `View` that wraps `CartesianChart`.
      */

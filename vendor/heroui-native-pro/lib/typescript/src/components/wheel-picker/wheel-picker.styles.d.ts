@@ -116,15 +116,15 @@ declare const indicator: import("tailwind-variants").TVReturnType<{
 declare const mask: import("tailwind-variants").TVReturnType<{
     [key: string]: {
         [key: string]: import("tailwind-merge").ClassNameValue | {
-            bottom?: import("tailwind-merge").ClassNameValue;
             top?: import("tailwind-merge").ClassNameValue;
+            bottom?: import("tailwind-merge").ClassNameValue;
         };
     };
 } | {
     [x: string]: {
         [x: string]: import("tailwind-merge").ClassNameValue | {
-            bottom?: import("tailwind-merge").ClassNameValue;
             top?: import("tailwind-merge").ClassNameValue;
+            bottom?: import("tailwind-merge").ClassNameValue;
         };
     };
 } | {}, {
@@ -133,8 +133,8 @@ declare const mask: import("tailwind-variants").TVReturnType<{
 }, undefined, {
     [key: string]: {
         [key: string]: import("tailwind-merge").ClassNameValue | {
-            bottom?: import("tailwind-merge").ClassNameValue;
             top?: import("tailwind-merge").ClassNameValue;
+            bottom?: import("tailwind-merge").ClassNameValue;
         };
     };
 } | {}, {
@@ -219,15 +219,15 @@ export declare const wheelPickerClassNames: import("../../helpers/internal/types
     mask: import("tailwind-variants").TVReturnType<{
         [key: string]: {
             [key: string]: import("tailwind-merge").ClassNameValue | {
-                bottom?: import("tailwind-merge").ClassNameValue;
                 top?: import("tailwind-merge").ClassNameValue;
+                bottom?: import("tailwind-merge").ClassNameValue;
             };
         };
     } | {
         [x: string]: {
             [x: string]: import("tailwind-merge").ClassNameValue | {
-                bottom?: import("tailwind-merge").ClassNameValue;
                 top?: import("tailwind-merge").ClassNameValue;
+                bottom?: import("tailwind-merge").ClassNameValue;
             };
         };
     } | {}, {
@@ -236,8 +236,8 @@ export declare const wheelPickerClassNames: import("../../helpers/internal/types
     }, undefined, {
         [key: string]: {
             [key: string]: import("tailwind-merge").ClassNameValue | {
-                bottom?: import("tailwind-merge").ClassNameValue;
                 top?: import("tailwind-merge").ClassNameValue;
+                bottom?: import("tailwind-merge").ClassNameValue;
             };
         };
     } | {}, {

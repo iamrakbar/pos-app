@@ -2,6 +2,7 @@ import { useManagementProducts } from "@/hooks/db/useProducts";
 import { useCategories } from "@/hooks/db/useCategories";
 import LoadingState from "@/components/common/LoadingState";
 import ErrorState from "@/components/common/ErrorState";
+import CreateFAB from "@/components/common/CreateFAB";
 import { formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigationTheme";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
@@ -104,12 +105,6 @@ export default function ProductsScreen(): React.JSX.Element {
             </Stack.Toolbar.MenuAction>
           ))}
         </Stack.Toolbar.Menu>
-        <Stack.Toolbar.Button
-          {...getToolbarIcon("add")}
-          tintColor={theme.foreground}
-          accessibilityLabel="Add product"
-          onPress={() => router.push("/products/new")}
-        />
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
         {/* Product list */}
@@ -118,7 +113,7 @@ export default function ProductsScreen(): React.JSX.Element {
         ) : isError ? (
           <ErrorState error={error} onRetry={refetch} />
         ) : (
-          <ScrollView className="flex-1" contentContainerClassName="py-2 pb-8">
+          <ScrollView className="flex-1" contentContainerClassName="py-2 pb-24">
             {filtered.length === 0 ? (
               <EmptyState className="py-20">
                 <EmptyState.Header>
@@ -219,6 +214,7 @@ export default function ProductsScreen(): React.JSX.Element {
             )}
           </ScrollView>
         )}
+        <CreateFAB accessibilityLabel="Add product" onPress={() => router.push("/products/new")} />
       </View>
     </>
   );
