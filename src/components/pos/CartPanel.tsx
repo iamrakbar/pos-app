@@ -6,6 +6,7 @@ import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { EmptyState } from "heroui-native-pro";
 import CartItemRow from "./CartItemRow";
 
 export default function CartPanel(): JSX.Element {
@@ -47,12 +48,15 @@ export default function CartPanel(): JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         {cartProducts.length === 0 ? (
-          <View className="items-center justify-center py-16 gap-2">
-            <Ionicons name="cart-outline" size={40} color={themeColorMuted} />
-            <Typography type="body-sm" color="muted" align="center">
-              Cart is empty.{"\n"}Add products to get started.
-            </Typography>
-          </View>
+          <EmptyState className="py-16">
+            <EmptyState.Header>
+              <EmptyState.Media variant="icon">
+                <Ionicons name="cart-outline" size={20} color={themeColorMuted} />
+              </EmptyState.Media>
+              <EmptyState.Title>Cart is empty</EmptyState.Title>
+              <EmptyState.Description>Add products to get started.</EmptyState.Description>
+            </EmptyState.Header>
+          </EmptyState>
         ) : (
           cartProducts.map((item) => (
             <CartItemRow key={item.id} item={item} product={productById.get(item.product_id)} />

@@ -3,11 +3,11 @@ import { Stack, useRouter } from "expo-router";
 import { Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
-import EmptyState from "@/components/common/EmptyState";
 import LoadingState from "@/components/common/LoadingState";
 import { usePrinterStore, type SavedPrinter } from "@/stores/usePrinterStore";
 import { useNavigationTheme } from "@/utils/navigationTheme";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
+import { EmptyState } from "heroui-native-pro";
 
 function getPrinterTarget(printer: SavedPrinter) {
   if (printer.connection === "bluetooth") {
@@ -40,7 +40,17 @@ export default function PrintersScreen(): React.JSX.Element {
         {!hasHydrated ? (
           <LoadingState message="Loading printers…" />
         ) : printers.length === 0 ? (
-          <EmptyState icon="print-outline" message="No printers saved" />
+          <EmptyState className="py-20">
+            <EmptyState.Header>
+              <EmptyState.Media variant="icon">
+                <Ionicons name="print-outline" size={20} color={themeColorMuted} />
+              </EmptyState.Media>
+              <EmptyState.Title>No printers saved</EmptyState.Title>
+              <EmptyState.Description>
+                Add a printer to start printing order receipts.
+              </EmptyState.Description>
+            </EmptyState.Header>
+          </EmptyState>
         ) : (
           <FlatList
             data={printers}

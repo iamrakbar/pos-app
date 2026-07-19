@@ -23,6 +23,7 @@ import { Linking, PermissionsAndroid, Platform, Pressable, ScrollView, View } fr
 import type { ConnectionType, PaperWidth } from "@/stores/usePrinterStore";
 import { usePrinterStore } from "@/stores/usePrinterStore";
 import DialogCloseButton from "@/components/common/DialogCloseButton";
+import { EmptyState } from "heroui-native-pro";
 
 // ─── Types & constants ────────────────────────────────────────────────────────
 
@@ -672,18 +673,23 @@ export default function PrinterSettingsScreen(): React.JSX.Element {
                   </Typography>
                 </View>
               ) : devices.length === 0 ? (
-                <View className="py-6 px-4 items-center gap-1">
-                  <Typography type="body-sm" color="muted" className="text-center">
-                    {permissionStatus === "denied"
-                      ? "Bluetooth permission is required to scan printers."
-                      : "No Bluetooth printers found."}
-                  </Typography>
-                  <Typography type="body-xs" color="muted" className="text-center">
-                    {permissionStatus === "denied"
-                      ? "Tap refresh to request access again."
-                      : "Turn on the printer, then tap refresh."}
-                  </Typography>
-                </View>
+                <EmptyState className="px-4 py-6">
+                  <EmptyState.Header>
+                    <EmptyState.Media variant="icon">
+                      <Ionicons name="bluetooth-outline" size={20} color={themeColorForeground} />
+                    </EmptyState.Media>
+                    <EmptyState.Title>
+                      {permissionStatus === "denied"
+                        ? "Bluetooth permission required"
+                        : "No Bluetooth printers found"}
+                    </EmptyState.Title>
+                    <EmptyState.Description>
+                      {permissionStatus === "denied"
+                        ? "Tap refresh to request access again."
+                        : "Turn on the printer, then tap refresh."}
+                    </EmptyState.Description>
+                  </EmptyState.Header>
+                </EmptyState>
               ) : (
                 devices.map((device, i) => (
                   <React.Fragment key={device.id}>

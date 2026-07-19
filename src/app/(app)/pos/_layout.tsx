@@ -20,6 +20,7 @@ export default function POSFlowLayout() {
         },
       }}
     >
+      <Stack.Screen name="index" options={{ title: "POS", headerShown: false }} />
       <Stack.Screen
         name="payment-success"
         options={{ title: "Payment Success", headerShown: false }}

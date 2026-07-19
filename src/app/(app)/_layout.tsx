@@ -32,9 +32,8 @@ export default function AppLayout() {
       <Drawer.Screen
         name="index"
         options={{
-          title: "POS",
-          drawerLabel: "POS",
-          headerShown: false,
+          title: "Dashboard",
+          drawerLabel: "Dashboard",
         }}
       />
       <Drawer.Screen
@@ -73,7 +72,7 @@ export default function AppLayout() {
         name="pos"
         options={{
           title: "POS",
-          drawerItemStyle: { display: "none" },
+          drawerLabel: "POS",
           headerShown: false,
         }}
       />

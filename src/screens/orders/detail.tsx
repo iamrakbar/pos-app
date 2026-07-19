@@ -27,9 +27,10 @@ import { useNavigationTheme } from "@/utils/navigationTheme";
 import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/ApiError";
 import { Ionicons } from "@expo/vector-icons";
+import { EmptyState } from "heroui-native-pro";
 import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { ActivityIndicator, Image, View, ScrollView, Pressable } from "react-native";
+import { ActivityIndicator, Image, ScrollView, View } from "react-native";
 import { useState } from "react";
 import Constants from "expo-constants";
 
@@ -128,12 +129,23 @@ export default function OrderDetailScreen() {
 
   if (!order) {
     return (
-      <View className="flex-1 items-center justify-center bg-background gap-3">
-        <Ionicons name="receipt-outline" size={40} color={themeColorMuted} />
-        <Typography className="text-sm text-muted-foreground">Order not found</Typography>
-        <Pressable onPress={() => router.back()} className="active:opacity-70">
-          <Typography className="text-sm text-primary">← Back</Typography>
-        </Pressable>
+      <View className="flex-1 justify-center bg-background">
+        <EmptyState>
+          <EmptyState.Header>
+            <EmptyState.Media variant="icon">
+              <Ionicons name="receipt-outline" size={20} color={themeColorMuted} />
+            </EmptyState.Media>
+            <EmptyState.Title>Order not found</EmptyState.Title>
+            <EmptyState.Description>
+              This order may have been removed or is no longer available.
+            </EmptyState.Description>
+          </EmptyState.Header>
+          <EmptyState.Content>
+            <Button size="sm" variant="outline" onPress={() => router.back()}>
+              <Button.Label>Go back</Button.Label>
+            </Button>
+          </EmptyState.Content>
+        </EmptyState>
       </View>
     );
   }

@@ -11,7 +11,6 @@ import {
 } from "@/api/mappers/order";
 import LoadingState from "@/components/common/LoadingState";
 import ErrorState from "@/components/common/ErrorState";
-import EmptyState from "@/components/common/EmptyState";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
@@ -19,6 +18,7 @@ import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTables } from "@/hooks/db/useTables";
+import { EmptyState } from "heroui-native-pro";
 
 type StatusFilter = "all" | "new" | "process" | "completed" | "cancelled" | "rejected";
 
@@ -53,6 +53,7 @@ function formatPickupTime(value: string | null): string | null {
 
 export default function OrdersScreen(): React.JSX.Element {
   const router = useRouter();
+  const themeColorMuted = useThemeColor("muted");
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all");
   const { data: tables } = useTables();
 
@@ -103,7 +104,17 @@ export default function OrdersScreen(): React.JSX.Element {
       ) : isError ? (
         <ErrorState error={error} onRetry={refetch} />
       ) : orders.length === 0 ? (
-        <EmptyState icon="receipt-outline" message="No orders found" />
+        <EmptyState className="py-20">
+          <EmptyState.Header>
+            <EmptyState.Media variant="icon">
+              <Ionicons name="receipt-outline" size={20} color={themeColorMuted} />
+            </EmptyState.Media>
+            <EmptyState.Title>No orders found</EmptyState.Title>
+            <EmptyState.Description>
+              Orders matching the selected status will appear here.
+            </EmptyState.Description>
+          </EmptyState.Header>
+        </EmptyState>
       ) : (
         <FlatList
           data={orders}

@@ -1,5 +1,4 @@
 import { extractPaymentName, getOrderStatus, getPaymentStatus } from "@/api/mappers/order";
-import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
 import LoadingState from "@/components/common/LoadingState";
 import { useEarningsOrders } from "@/hooks/db/useEarnings";
@@ -7,6 +6,7 @@ import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { Card, Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
+import { EmptyState } from "heroui-native-pro";
 import { RefreshControl, ScrollView, View } from "react-native";
 
 type Period = "today" | "7-days" | "30-days";
@@ -161,7 +161,17 @@ export default function EarningsScreen(): React.JSX.Element {
             </View>
 
             {paidOrders.length === 0 ? (
-              <EmptyState icon="wallet-outline" message="No paid earnings for this period" />
+              <EmptyState className="py-16">
+                <EmptyState.Header>
+                  <EmptyState.Media variant="icon">
+                    <Ionicons name="wallet-outline" size={20} color={themeColorMuted} />
+                  </EmptyState.Media>
+                  <EmptyState.Title>No paid earnings</EmptyState.Title>
+                  <EmptyState.Description>
+                    No completed, paid orders were found for this period.
+                  </EmptyState.Description>
+                </EmptyState.Header>
+              </EmptyState>
             ) : (
               <>
                 <Card className="p-0 overflow-hidden">

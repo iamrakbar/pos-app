@@ -2,9 +2,11 @@ import { usePOSStore } from "@/stores/usePOSStore";
 import { useProducts } from "@/hooks/db/useProducts";
 import LoadingState from "@/components/common/LoadingState";
 import ErrorState from "@/components/common/ErrorState";
-import EmptyState from "@/components/common/EmptyState";
 import type { POSProduct } from "@/types/pos";
+import { Ionicons } from "@expo/vector-icons";
 import type { JSX } from "react";
+import { useThemeColor } from "heroui-native";
+import { EmptyState } from "heroui-native-pro";
 import { useCallback } from "react";
 import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
 import ProductCard from "./ProductCard";
@@ -19,6 +21,7 @@ type Props = {
 
 export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props): JSX.Element {
   const { width } = useWindowDimensions();
+  const themeColorMuted = useThemeColor("muted");
 
   const searchQuery = usePOSStore((s) => s.searchQuery);
   const categoryId = usePOSStore((s) => s.categoryId);
@@ -73,7 +76,17 @@ export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props):
         isError ? (
           <ErrorState error={error} onRetry={refetch} />
         ) : (
-          <EmptyState icon="fast-food-outline" message="No products found" />
+          <EmptyState className="py-20">
+            <EmptyState.Header>
+              <EmptyState.Media variant="icon">
+                <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
+              </EmptyState.Media>
+              <EmptyState.Title>No products found</EmptyState.Title>
+              <EmptyState.Description>
+                Try another search or choose a different category.
+              </EmptyState.Description>
+            </EmptyState.Header>
+          </EmptyState>
         )
       }
     />

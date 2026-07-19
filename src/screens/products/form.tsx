@@ -15,8 +15,13 @@ import {
   useThemeColor,
 } from "heroui-native";
 import React from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Image, Pressable, ScrollView, View } from "react-native";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
+import ErrorState from "@/components/common/ErrorState";
+import LoadingState from "@/components/common/LoadingState";
+import { useCategories } from "@/hooks/db/useCategories";
+import { useProduct, useProductsRaw } from "@/hooks/db/useProducts";
+import { formatRupiah } from "@/utils/format";
 
 const CATEGORY_OPTIONS = [
   { value: "main-courses", label: "Main Courses" },
@@ -52,16 +57,26 @@ function NumberField({
   placeholder,
   description,
   required,
+  value,
+  onChangeText,
 }: {
   label: string;
   placeholder: string;
   description?: string;
   required?: boolean;
+  value?: string;
+  onChangeText?: (value: string) => void;
 }) {
   return (
     <TextField isRequired={required} className="min-w-[140px] flex-1">
       <Label>{label}</Label>
-      <Input variant="secondary" placeholder={placeholder} keyboardType="decimal-pad" />
+      <Input
+        variant="secondary"
+        placeholder={placeholder}
+        keyboardType="decimal-pad"
+        value={value}
+        onChangeText={onChangeText}
+      />
       {description ? <Description>{description}</Description> : null}
     </TextField>
   );
@@ -102,11 +117,77 @@ export default function ProductFormScreen(): React.JSX.Element {
     "danger",
   ]);
   const isNew = id === "new";
-  const [category, setCategory] = React.useState<(typeof CATEGORY_OPTIONS)[number] | undefined>();
-  const [discount, setDiscount] = React.useState<(typeof DISCOUNT_OPTIONS)[number] | undefined>();
+  const productQuery = useProduct(id);
+  const productsQuery = useProductsRaw();
+  const categoriesQuery = useCategories();
+  const selectedPosProduct = productsQuery.data?.find((product) => product.id === id) ?? null;
+  const categoryOptions = (categoriesQuery.data ?? []).map((item) => ({
+    value: item.id,
+    label: item.name,
+  }));
+  const [category, setCategory] = React.useState<{ value: string; label: string } | undefined>();
+  const [discountSelection, setDiscountSelection] = React.useState<
+    { value: string; label: string } | undefined
+  >();
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [price, setPrice] = React.useState("");
+  const [code, setCode] = React.useState("");
+  const [stockQuantity, setStockQuantity] = React.useState("");
   const [stockEnabled, setStockEnabled] = React.useState(false);
   const [isActive, setIsActive] = React.useState(true);
   const [preOrderEnabled, setPreOrderEnabled] = React.useState(false);
+  const hydratedProductId = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    const product = productQuery.data;
+    if (isNew || !product || hydratedProductId.current === product.id) return;
+
+    setCategory(
+      product.category ? { value: product.category.id, label: product.category.name } : undefined
+    );
+    setName(product.name);
+    setDescription(product.description ?? "");
+    setPrice(String(product.price));
+    setCode(product.code ?? "");
+    setStockEnabled(product.stock_enabled);
+    setStockQuantity(product.stock_enabled ? String(product.stock) : "");
+    setIsActive(product.active);
+    setPreOrderEnabled(selectedPosProduct?.is_po ?? false);
+    hydratedProductId.current = product.id;
+  }, [isNew, productQuery.data, selectedPosProduct]);
+
+  if (!isNew && (productQuery.isLoading || productsQuery.isLoading)) {
+    return <LoadingState message="Loading product…" />;
+  }
+
+  if (!isNew && productQuery.isError) {
+    return <ErrorState error={productQuery.error} onRetry={productQuery.refetch} />;
+  }
+
+  const currentDiscount = selectedPosProduct?.discount
+    ? {
+        value: "current-discount",
+        label:
+          selectedPosProduct.discount.unit === "percentage"
+            ? `Discount ${selectedPosProduct.discount.value ?? 0}%`
+            : `Discount ${formatRupiah(selectedPosProduct.discount.value ?? 0)}`,
+      }
+    : DISCOUNT_OPTIONS.find((option) => option.value === "none");
+  const discount = discountSelection ?? currentDiscount;
+  const discountOptions =
+    discount?.value === "current-discount"
+      ? [
+          discount,
+          ...DISCOUNT_OPTIONS.filter((option) => option.value !== "none"),
+          DISCOUNT_OPTIONS[2],
+        ]
+      : DISCOUNT_OPTIONS;
+  const addOnGroups = selectedPosProduct?.add_ons ?? (isNew ? ADD_ON_GROUPS : []);
+  const discountedPrice = selectedPosProduct?.discount?.price ?? null;
+  const preOrderAvailability = selectedPosProduct?.po_availability
+    ? `${selectedPosProduct.po_availability.value} ${selectedPosProduct.po_availability.unit ?? ""}`.trim()
+    : "";
 
   return (
     <>
@@ -145,9 +226,11 @@ export default function ProductFormScreen(): React.JSX.Element {
                     <Select.Portal>
                       <Select.Overlay />
                       <Select.Content presentation="popover" width="trigger">
-                        {CATEGORY_OPTIONS.map((option) => (
-                          <Select.Item key={option.value} {...option} />
-                        ))}
+                        {(categoryOptions.length > 0 ? categoryOptions : CATEGORY_OPTIONS).map(
+                          (option) => (
+                            <Select.Item key={option.value} {...option} />
+                          )
+                        )}
                       </Select.Content>
                     </Select.Portal>
                   </Select>
@@ -155,7 +238,12 @@ export default function ProductFormScreen(): React.JSX.Element {
 
                 <TextField isRequired>
                   <Label>Product name</Label>
-                  <Input variant="secondary" placeholder="e.g. Mushroom & Swiss Burger" />
+                  <Input
+                    variant="secondary"
+                    placeholder="e.g. Mushroom & Swiss Burger"
+                    value={name}
+                    onChangeText={setName}
+                  />
                 </TextField>
 
                 <TextField>
@@ -164,6 +252,8 @@ export default function ProductFormScreen(): React.JSX.Element {
                     variant="secondary"
                     placeholder="Describe the product, ingredients, or serving notes"
                     className="min-h-24"
+                    value={description}
+                    onChangeText={setDescription}
                   />
                   <Description>Keep it concise and helpful for customers.</Description>
                 </TextField>
@@ -180,19 +270,29 @@ export default function ProductFormScreen(): React.JSX.Element {
                   accessibilityRole="button"
                   accessibilityLabel="Choose product image"
                   onPress={() => {}}
-                  className="aspect-[4/3] max-h-72 items-center justify-center gap-3 rounded-panel-inner bg-surface-secondary active:opacity-80"
+                  className="aspect-[4/3] max-h-72 items-center justify-center gap-3 overflow-hidden rounded-panel-inner bg-surface-secondary active:opacity-80"
                 >
-                  <View className="size-14 items-center justify-center rounded-full bg-accent-soft">
-                    <Ionicons name="image-outline" size={26} color={themeColorAccent} />
-                  </View>
-                  <View className="items-center gap-1 px-6">
-                    <Typography type="body-sm" weight="semibold">
-                      Add product image
-                    </Typography>
-                    <Typography type="body-xs" color="muted" className="text-center">
-                      PNG or JPG, up to 5 MB
-                    </Typography>
-                  </View>
+                  {!isNew && productQuery.data?.image_url ? (
+                    <Image
+                      source={{ uri: productQuery.data.image_url }}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <>
+                      <View className="size-14 items-center justify-center rounded-full bg-accent-soft">
+                        <Ionicons name="image-outline" size={26} color={themeColorAccent} />
+                      </View>
+                      <View className="items-center gap-1 px-6">
+                        <Typography type="body-sm" weight="semibold">
+                          Add product image
+                        </Typography>
+                        <Typography type="body-xs" color="muted" className="text-center">
+                          PNG or JPG, up to 5 MB
+                        </Typography>
+                      </View>
+                    </>
+                  )}
                 </Pressable>
               </Card.Body>
             </Card>
@@ -200,20 +300,26 @@ export default function ProductFormScreen(): React.JSX.Element {
             <Card>
               <SectionHeading title="Pricing" description="Set the selling price and promotion." />
               <Card.Body className="gap-4">
-                <NumberField label="Price (Rp)" placeholder="0" required />
+                <NumberField
+                  label="Price (Rp)"
+                  placeholder="0"
+                  required
+                  value={price}
+                  onChangeText={setPrice}
+                />
 
                 <View className="rounded-panel-inner bg-surface-secondary p-3 gap-0.5">
                   <Typography type="body-xs" color="muted">
                     Discounted price
                   </Typography>
                   <Typography type="body" weight="semibold" className="tabular-nums">
-                    Rp0
+                    {discountedPrice === null ? "—" : formatRupiah(discountedPrice)}
                   </Typography>
                 </View>
 
                 <TextField>
                   <Label>Discount</Label>
-                  <Select value={discount} onValueChange={setDiscount}>
+                  <Select value={discount} onValueChange={setDiscountSelection}>
                     <Select.Trigger>
                       <Select.Value placeholder="Select an optional discount" numberOfLines={1} />
                       <Select.TriggerIndicator />
@@ -221,7 +327,7 @@ export default function ProductFormScreen(): React.JSX.Element {
                     <Select.Portal>
                       <Select.Overlay />
                       <Select.Content presentation="popover" width="trigger">
-                        {DISCOUNT_OPTIONS.map((option) => (
+                        {discountOptions.map((option) => (
                           <Select.Item key={option.value} {...option} />
                         ))}
                       </Select.Content>
@@ -261,6 +367,8 @@ export default function ProductFormScreen(): React.JSX.Element {
                     variant="secondary"
                     placeholder="e.g. 88551340"
                     autoCapitalize="characters"
+                    value={code}
+                    onChangeText={setCode}
                   />
                   <Description>Stock Keeping Unit</Description>
                 </TextField>
@@ -272,7 +380,13 @@ export default function ProductFormScreen(): React.JSX.Element {
                   onSelectedChange={setStockEnabled}
                 />
                 {stockEnabled ? (
-                  <NumberField label="Available stock" placeholder="0" required />
+                  <NumberField
+                    label="Available stock"
+                    placeholder="0"
+                    required
+                    value={stockQuantity}
+                    onChangeText={setStockQuantity}
+                  />
                 ) : null}
               </Card.Body>
             </Card>
@@ -299,6 +413,7 @@ export default function ProductFormScreen(): React.JSX.Element {
                     <Input
                       variant="secondary"
                       placeholder="Select date and time"
+                      value={preOrderAvailability}
                       editable={false}
                     />
                   </TextField>
@@ -320,7 +435,7 @@ export default function ProductFormScreen(): React.JSX.Element {
                 </Button>
               </View>
               <Separator />
-              {ADD_ON_GROUPS.map((group, index) => (
+              {addOnGroups.map((group, index) => (
                 <View key={group.id}>
                   <Pressable className="flex-row items-center gap-3 px-4 py-3.5 active:bg-surface-secondary">
                     <View className="flex-1 gap-0.5">
@@ -328,12 +443,16 @@ export default function ProductFormScreen(): React.JSX.Element {
                         {group.name}
                       </Typography>
                       <Typography type="body-xs" color="muted">
-                        {group.rule} · {group.options} options
+                        {"rule" in group
+                          ? group.rule
+                          : `${group.required ? "Required" : "Optional"} · Max ${group.max}`}{" "}
+                        · {Array.isArray(group.options) ? group.options.length : group.options}{" "}
+                        options
                       </Typography>
                     </View>
                     <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
                   </Pressable>
-                  {index < ADD_ON_GROUPS.length - 1 ? <Separator className="mx-4" /> : null}
+                  {index < addOnGroups.length - 1 ? <Separator className="mx-4" /> : null}
                 </View>
               ))}
             </Card>

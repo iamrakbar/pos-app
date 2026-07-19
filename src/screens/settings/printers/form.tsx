@@ -33,6 +33,7 @@ import {
 import { getToolbarIcon } from "@/utils/toolbarIcons";
 import { printCalibrationReceipt } from "@/services/printer/PrintService";
 import DialogCloseButton from "@/components/common/DialogCloseButton";
+import { EmptyState } from "heroui-native-pro";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [
   { value: "bluetooth", label: "Bluetooth" },
@@ -497,14 +498,21 @@ export default function PrinterFormScreen(): React.JSX.Element {
                             </Typography>
                           </View>
                         ) : devices.length === 0 ? (
-                          <View className="py-6 px-4 items-center gap-1">
-                            <Typography type="body-sm" color="muted" className="text-center">
-                              No Bluetooth printers found.
-                            </Typography>
-                            <Typography type="body-xs" color="muted" className="text-center">
-                              Turn on the printer, then tap refresh.
-                            </Typography>
-                          </View>
+                          <EmptyState className="px-4 py-6">
+                            <EmptyState.Header>
+                              <EmptyState.Media variant="icon">
+                                <Ionicons
+                                  name="bluetooth-outline"
+                                  size={20}
+                                  color={themeColorForeground}
+                                />
+                              </EmptyState.Media>
+                              <EmptyState.Title>No Bluetooth printers found</EmptyState.Title>
+                              <EmptyState.Description>
+                                Turn on the printer, then tap refresh.
+                              </EmptyState.Description>
+                            </EmptyState.Header>
+                          </EmptyState>
                         ) : (
                           devices.map((device, index) => (
                             <React.Fragment key={device.id}>

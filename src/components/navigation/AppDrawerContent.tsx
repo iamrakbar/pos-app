@@ -11,10 +11,11 @@ import type { ComponentProps, JSX } from "react";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 
-type DrawerRouteName = "index" | "products" | "orders" | "earnings" | "settings";
+type DrawerRouteName = "index" | "pos" | "products" | "orders" | "earnings" | "settings";
 
 const DRAWER_ROUTE_ORDER: DrawerRouteName[] = [
   "index",
+  "pos",
   "orders",
   "earnings",
   "products",
@@ -23,6 +24,7 @@ const DRAWER_ROUTE_ORDER: DrawerRouteName[] = [
 
 const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof Ionicons>["name"]> = {
   index: "grid-outline",
+  pos: "calculator-outline",
   products: "fast-food-outline",
   orders: "receipt-outline",
   earnings: "wallet-outline",
@@ -30,7 +32,8 @@ const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof Ionicons>["nam
 };
 
 const DRAWER_DESCRIPTIONS: Record<DrawerRouteName, string> = {
-  index: "Sales workspace",
+  index: "Business overview",
+  pos: "Sales workspace",
   products: "Catalog and add-ons",
   orders: "Transactions and status",
   earnings: "Revenue and sales summary",
@@ -48,7 +51,8 @@ const THEME_ACTIONS: {
 ];
 
 function getRouteLabel(routeName: string): string {
-  if (routeName === "index") return "POS";
+  if (routeName === "index") return "Dashboard";
+  if (routeName === "pos") return "POS";
   if (routeName === "products") return "Products";
   if (routeName === "orders") return "Orders";
   if (routeName === "earnings") return "Earnings";

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getPosProducts } from "@/api/endpoints/products";
+import { getPosProducts, getProduct } from "@/api/endpoints/products";
 import { extractOriginalPrice, extractSellingPrice } from "@/api/mappers/product";
 import { useAuth } from "@/stores/useAuth";
 import type { POSProduct } from "@/types/pos";
@@ -47,11 +47,11 @@ export function useProducts(search?: string, categoryId?: string | null) {
 }
 
 export function useProduct(id: string) {
-  // No GET /pos/products/:id endpoint — derive from the already-fetched
-  // (unfiltered) product list instead.
-  const { data: products, ...rest } = useProducts();
-  return {
-    ...rest,
-    data: id === "new" ? null : (products?.find((p) => p.id === id) ?? null),
-  };
+  const merchantId = useAuth((state) => state.merchantId);
+  return useQuery({
+    queryKey: ["product", merchantId, id],
+    queryFn: async () => (await getProduct(merchantId!, id)).data,
+    enabled: !!merchantId && id !== "new",
+    staleTime: PRODUCTS_STALE_TIME_MS,
+  });
 }
