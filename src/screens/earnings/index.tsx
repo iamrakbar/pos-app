@@ -1,12 +1,11 @@
-import { extractPaymentName, getOrderStatus, getPaymentStatus } from "@/api/mappers/order";
 import ErrorState from "@/components/common/ErrorState";
 import LoadingState from "@/components/common/LoadingState";
-import { useEarningsOrders } from "@/hooks/db/useEarnings";
+import { useEarnings } from "@/hooks/db/useEarnings";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
-import { Card, Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
-import { EmptyState } from "heroui-native-pro";
 import { RefreshControl, ScrollView, View } from "react-native";
 
 type Period = "today" | "7-days" | "30-days";
@@ -16,6 +15,13 @@ const PERIODS: { value: Period; label: string; days: number }[] = [
   { value: "7-days", label: "7 Days", days: 7 },
   { value: "30-days", label: "30 Days", days: 30 },
 ];
+
+const SUMMARY_STYLES = {
+  accent: { background: "bg-accent-soft", token: "accent-soft-foreground" },
+  success: { background: "bg-success-soft", token: "success-soft-foreground" },
+  warning: { background: "bg-warning-soft", token: "warning-soft-foreground" },
+  default: { background: "bg-default", token: "foreground" },
+} as const;
 
 function toDateParam(date: Date): string {
   const year = date.getFullYear();
@@ -45,60 +51,76 @@ function formatPeriodLabel(dateFrom: string, dateTo: string): string {
   })}`;
 }
 
-function MetricCard({
+function formatOrderType(value: string): string {
+  const normalized = value.toLowerCase().replaceAll("_", "-");
+  if (normalized === "dine-in" || normalized === "dinein") return "Dine-in";
+  if (normalized === "takeaway" || normalized === "take-away") return "Takeaway";
+  return value
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function SummaryWidget({
   label,
   value,
   icon,
+  color,
 }: {
   label: string;
   value: string;
   icon: React.ComponentProps<typeof Ionicons>["name"];
+  color: keyof typeof SUMMARY_STYLES;
 }) {
-  const themeColorAccentSoftForeground = useThemeColor("accent-soft-foreground");
+  const style = SUMMARY_STYLES[color];
+  const iconColor = useThemeColor(style.token);
+
   return (
-    <Card className="min-w-[150px] flex-1">
-      <Card.Body className="gap-3">
-        <View className="size-9 items-center justify-center rounded-panel-inner bg-accent-soft">
-          <Ionicons name={icon} size={18} color={themeColorAccentSoftForeground} />
+    <Widget className="min-w-[220px] flex-1">
+      <Widget.Header>
+        <Widget.Title>{label}</Widget.Title>
+        <View
+          className={`size-9 items-center justify-center rounded-panel-inner ${style.background}`}
+        >
+          <Ionicons name={icon} size={18} color={iconColor} />
         </View>
-        <View className="gap-0.5">
-          <Typography type="body-xs" color="muted">
-            {label}
-          </Typography>
-          <Typography type="body" weight="bold" className="tabular-nums" numberOfLines={1}>
-            {value}
-          </Typography>
-        </View>
-      </Card.Body>
-    </Card>
+      </Widget.Header>
+      <Widget.Content className="p-4">
+        <Typography
+          type="h4"
+          weight="bold"
+          className="tabular-nums"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.72}
+        >
+          {value}
+        </Typography>
+      </Widget.Content>
+    </Widget>
   );
 }
 
 export default function EarningsScreen(): React.JSX.Element {
   const [period, setPeriod] = React.useState<Period>("today");
   const { dateFrom, dateTo } = getPeriodRange(period);
-  const {
-    data = [],
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isRefetching,
-  } = useEarningsOrders(dateFrom, dateTo);
-  const themeColorMuted = useThemeColor("muted");
-
-  const paidOrders = data.filter(
-    (order) => getPaymentStatus(order.payment_status).color === "success"
+  const { data = [], isLoading, isError, error, refetch, isRefetching } = useEarnings(
+    dateFrom,
+    dateTo
   );
-  const grossEarnings = paidOrders.reduce((total, order) => total + order.total, 0);
-  const itemCount = paidOrders.reduce((total, order) => total + order.products_count, 0);
-  const averageOrder = paidOrders.length > 0 ? grossEarnings / paidOrders.length : 0;
+  const mutedColor = useThemeColor("muted");
+  const successColor = useThemeColor("success");
+  const accentSoftForeground = useThemeColor("accent-soft-foreground");
 
-  const payments = Array.from(
-    paidOrders.reduce((groups, order) => {
-      const name = extractPaymentName(order.payment);
+  const totalEarnings = data.reduce((total, entry) => total + entry.total_price, 0);
+  const itemCount = data.reduce((total, entry) => total + entry.items_count, 0);
+  const averageOrder = data.length > 0 ? totalEarnings / data.length : 0;
+
+  const orderTypes = Array.from(
+    data.reduce((groups, entry) => {
+      const name = formatOrderType(entry.order_type);
       const current = groups.get(name) ?? { name, amount: 0, count: 0 };
-      current.amount += order.total;
+      current.amount += entry.total_price;
       current.count += 1;
       groups.set(name, current);
       return groups;
@@ -107,32 +129,38 @@ export default function EarningsScreen(): React.JSX.Element {
     .map(([, value]) => value)
     .sort((a, b) => b.amount - a.amount);
 
-  const dineInOrders = paidOrders.filter((order) => order.order_type === "dine-in");
-  const takeawayOrders = paidOrders.filter((order) => order.order_type !== "dine-in");
-  const recentOrders = paidOrders.slice(0, 5);
+  const recentEntries = data.slice(0, 8);
+  const periodLabel = formatPeriodLabel(dateFrom, dateTo);
 
   return (
     <ScrollView
       className="flex-1 bg-background"
-      contentContainerClassName="px-4 py-5 pb-8"
+      contentContainerClassName="px-4 py-6 pb-10"
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
     >
-      <View className="w-full gap-4">
+      <View className="w-full gap-6">
         <View className="gap-3">
-          <View className="flex-row flex-wrap items-center gap-2">
-            {PERIODS.map((item) => (
-              <Chip
-                key={item.value}
-                variant={period === item.value ? "primary" : "secondary"}
-                onPress={() => setPeriod(item.value)}
-              >
-                <Chip.Label>{item.label}</Chip.Label>
-              </Chip>
-            ))}
+          <View className="flex-row flex-wrap items-center justify-between gap-3">
+            <View className="gap-1">
+              <Typography type="h3" weight="bold">
+                Earnings overview
+              </Typography>
+              <Typography type="body-sm" color="muted">
+                Settled sales for {periodLabel}
+              </Typography>
+            </View>
+            <View className="flex-row flex-wrap items-center gap-2">
+              {PERIODS.map((item) => (
+                <Chip
+                  key={item.value}
+                  variant={period === item.value ? "primary" : "secondary"}
+                  onPress={() => setPeriod(item.value)}
+                >
+                  <Chip.Label>{item.label}</Chip.Label>
+                </Chip>
+              ))}
+            </View>
           </View>
-          <Typography type="body-xs" color="muted">
-            Paid and completed sales · {formatPeriodLabel(dateFrom, dateTo)}
-          </Typography>
         </View>
 
         {isLoading ? (
@@ -141,153 +169,152 @@ export default function EarningsScreen(): React.JSX.Element {
           <ErrorState error={error} onRetry={refetch} />
         ) : (
           <>
-            <View className="flex-row flex-wrap gap-3">
-              <MetricCard
-                label="Gross earnings"
-                value={formatRupiah(grossEarnings)}
+            <View className="flex-row flex-wrap gap-4">
+              <SummaryWidget
+                label="Settled earnings"
+                value={formatRupiah(totalEarnings)}
                 icon="wallet-outline"
+                color="success"
               />
-              <MetricCard
-                label="Paid orders"
-                value={String(paidOrders.length)}
+              <SummaryWidget
+                label="Settled orders"
+                value={String(data.length)}
                 icon="receipt-outline"
+                color="accent"
               />
-              <MetricCard
+              <SummaryWidget
                 label="Average order"
                 value={formatRupiah(averageOrder)}
                 icon="analytics-outline"
+                color="warning"
               />
-              <MetricCard label="Items sold" value={String(itemCount)} icon="bag-handle-outline" />
+              <SummaryWidget
+                label="Items sold"
+                value={String(itemCount)}
+                icon="bag-handle-outline"
+                color="default"
+              />
             </View>
 
-            {paidOrders.length === 0 ? (
+            {data.length === 0 ? (
               <EmptyState className="py-16">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <Ionicons name="wallet-outline" size={20} color={themeColorMuted} />
+                    <Ionicons name="wallet-outline" size={20} color={mutedColor} />
                   </EmptyState.Media>
-                  <EmptyState.Title>No paid earnings</EmptyState.Title>
+                  <EmptyState.Title>No settled earnings</EmptyState.Title>
                   <EmptyState.Description>
-                    No completed, paid orders were found for this period.
+                    There are no settled order earnings in this period.
                   </EmptyState.Description>
                 </EmptyState.Header>
               </EmptyState>
             ) : (
               <>
-                <Card className="p-0 overflow-hidden">
-                  <Card.Header className="p-4">
-                    <Card.Title>Payment Methods</Card.Title>
-                  </Card.Header>
-                  <Separator />
-                  {payments.map((payment, index) => (
-                    <View key={payment.name}>
-                      <View className="flex-row items-center gap-3 px-4 py-3.5">
-                        <View className="size-9 items-center justify-center rounded-panel-inner bg-surface-secondary">
-                          <Ionicons name="card-outline" size={17} color={themeColorMuted} />
-                        </View>
-                        <View className="flex-1 gap-0.5">
-                          <Typography type="body-sm" weight="semibold">
-                            {payment.name}
-                          </Typography>
-                          <Typography type="body-xs" color="muted">
-                            {payment.count} order{payment.count !== 1 ? "s" : ""}
-                          </Typography>
-                        </View>
-                        <Typography type="body-sm" weight="bold" className="tabular-nums">
-                          {formatRupiah(payment.amount)}
-                        </Typography>
-                      </View>
-                      {index < payments.length - 1 ? <Separator className="mx-4" /> : null}
+                <Widget>
+                  <Widget.Header>
+                    <View>
+                      <Widget.Title>Sales by order type</Widget.Title>
+                      <Widget.Description>Revenue contribution and settled orders</Widget.Description>
                     </View>
-                  ))}
-                </Card>
+                  </Widget.Header>
+                  <Widget.Content className="overflow-hidden p-0">
+                    {orderTypes.map((orderType, index) => {
+                      const share = totalEarnings > 0 ? orderType.amount / totalEarnings : 0;
+                      return (
+                        <View key={orderType.name}>
+                          <View className="gap-3 p-4">
+                            <View className="flex-row items-center gap-3">
+                              <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
+                                <Ionicons
+                                  name={
+                                    orderType.name === "Dine-in"
+                                      ? "restaurant-outline"
+                                      : "bag-handle-outline"
+                                  }
+                                  size={18}
+                                  color={accentSoftForeground}
+                                />
+                              </View>
+                              <View className="flex-1 gap-0.5">
+                                <Typography type="body-sm" weight="semibold">
+                                  {orderType.name}
+                                </Typography>
+                                <Typography type="body-xs" color="muted">
+                                  {orderType.count} order{orderType.count === 1 ? "" : "s"} ·{" "}
+                                  {Math.round(share * 100)}% of earnings
+                                </Typography>
+                              </View>
+                              <Typography type="body-sm" weight="bold" className="tabular-nums">
+                                {formatRupiah(orderType.amount)}
+                              </Typography>
+                            </View>
+                            <View className="h-1.5 overflow-hidden rounded-full bg-default">
+                              <View
+                                className="h-full rounded-full bg-accent"
+                                style={{ width: `${Math.max(share * 100, 2)}%` }}
+                              />
+                            </View>
+                          </View>
+                          {index < orderTypes.length - 1 ? <Separator /> : null}
+                        </View>
+                      );
+                    })}
+                  </Widget.Content>
+                  <Widget.Footer>
+                    <Widget.Description>{periodLabel}</Widget.Description>
+                  </Widget.Footer>
+                </Widget>
 
-                <Card>
-                  <Card.Header>
-                    <Card.Title>Order Types</Card.Title>
-                  </Card.Header>
-                  <Card.Body className="gap-4">
-                    <View className="flex-row gap-3">
-                      <View className="flex-1 rounded-panel-inner bg-surface-secondary p-3 gap-1">
-                        <Typography type="body-xs" color="muted">
-                          Dine-in
-                        </Typography>
-                        <Typography type="body" weight="bold" className="tabular-nums">
-                          {dineInOrders.length}
-                        </Typography>
-                      </View>
-                      <View className="flex-1 rounded-panel-inner bg-surface-secondary p-3 gap-1">
-                        <Typography type="body-xs" color="muted">
-                          Takeaway
-                        </Typography>
-                        <Typography type="body" weight="bold" className="tabular-nums">
-                          {takeawayOrders.length}
-                        </Typography>
-                      </View>
+                <Widget>
+                  <Widget.Header>
+                    <View>
+                      <Widget.Title>Recent earnings</Widget.Title>
+                      <Widget.Description>Latest settled order entries</Widget.Description>
                     </View>
-                  </Card.Body>
-                </Card>
-
-                <Card className="p-0 overflow-hidden">
-                  <Card.Header className="p-4">
-                    <Card.Title>Recent Paid Orders</Card.Title>
-                  </Card.Header>
-                  <Separator />
-                  {recentOrders.map((order, index) => {
-                    const orderStatus = getOrderStatus(order.order_status);
-                    const paymentStatus = getPaymentStatus(order.payment_status);
-                    const isDineIn = order.order_type === "dine-in";
-
-                    return (
-                      <View key={order.id}>
-                        <View className="gap-2 px-4 py-3.5">
-                          <View className="flex-row items-start gap-3">
-                            <View className="flex-1 gap-0.5">
+                    <Widget.Legend>
+                      <Widget.LegendItem colorClassName="bg-success">Settled</Widget.LegendItem>
+                    </Widget.Legend>
+                  </Widget.Header>
+                  <Widget.Content className="overflow-hidden p-0">
+                    {recentEntries.map((entry, index) => (
+                      <View key={entry.id}>
+                        <View className="flex-row items-center gap-3 px-4 py-3.5">
+                          <View className="size-10 items-center justify-center rounded-panel-inner bg-success-soft">
+                            <Ionicons name="checkmark" size={18} color={successColor} />
+                          </View>
+                          <View className="min-w-0 flex-1 gap-0.5">
+                            <View className="flex-row flex-wrap items-center gap-2">
                               <Typography
                                 type="body-sm"
                                 weight="semibold"
                                 className="font-mono tabular-nums"
                               >
-                                {order.code}
+                                {entry.code}
                               </Typography>
-                              <Typography type="body-xs" color="muted">
-                                {new Date(order.created_at).toLocaleString("id-ID", {
-                                  day: "numeric",
-                                  month: "short",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </Typography>
+                              <Chip color="success" size="sm" variant="soft">
+                                <Chip.Label>Settled</Chip.Label>
+                              </Chip>
                             </View>
-                            <Typography type="body-sm" weight="bold" className="tabular-nums">
-                              {formatRupiah(order.total)}
+                            <Typography type="body-xs" color="muted">
+                              {formatOrderType(entry.order_type)} · {entry.items_count} item
+                              {entry.items_count === 1 ? "" : "s"} ·{" "}
+                              {new Date(entry.created_at).toLocaleString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </Typography>
                           </View>
-
-                          <View className="flex-row flex-wrap items-center gap-2">
-                            <View className="flex-row items-center gap-1.5 pr-1">
-                              <Ionicons
-                                name={isDineIn ? "restaurant-outline" : "bag-outline"}
-                                size={13}
-                                color={themeColorMuted}
-                              />
-                              <Typography type="body-xs" color="muted">
-                                {isDineIn ? "Dine-in" : "Takeaway"}
-                              </Typography>
-                            </View>
-                            <Chip color={orderStatus.color} size="sm" variant="soft">
-                              <Chip.Label>{orderStatus.label}</Chip.Label>
-                            </Chip>
-                            <Chip color={paymentStatus.color} size="sm" variant="soft">
-                              <Chip.Label>{paymentStatus.label}</Chip.Label>
-                            </Chip>
-                          </View>
+                          <Typography type="body-sm" weight="bold" className="tabular-nums">
+                            {formatRupiah(entry.total_price)}
+                          </Typography>
                         </View>
-                        {index < recentOrders.length - 1 ? <Separator className="mx-4" /> : null}
+                        {index < recentEntries.length - 1 ? <Separator /> : null}
                       </View>
-                    );
-                  })}
-                </Card>
+                    ))}
+                  </Widget.Content>
+                </Widget>
               </>
             )}
           </>
