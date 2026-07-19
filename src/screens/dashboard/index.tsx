@@ -1,11 +1,11 @@
 import ErrorState from "@/components/common/ErrorState";
 import LoadingState from "@/components/common/LoadingState";
+import DrawerMenuButton from "@/components/navigation/DrawerMenuButton";
 import { useDashboard } from "@/hooks/db/useDashboard";
-import { useAuth } from "@/stores/useAuth";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Button, Card, Separator, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, Select, Separator, Typography, useThemeColor } from "heroui-native";
 import { AreaChart, EmptyState } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -15,6 +15,14 @@ const SUMMARY_ICON_BACKGROUNDS = {
   warning: "bg-warning-soft",
   success: "bg-success-soft",
 } as const;
+
+const DATE_RANGE_OPTIONS = [
+  { value: "last-7-days", label: "7 Hari Terakhir" },
+  { value: "last-30-days", label: "30 Hari Terakhir" },
+  { value: "this-week", label: "Minggu Ini" },
+  { value: "this-month", label: "Bulan Ini" },
+  { value: "custom", label: "Kustom" },
+] as const;
 
 function SummaryCard({
   label,
@@ -62,6 +70,43 @@ function formatChartDate(value: string): string {
 
 type ChartPoint = { date: string; count: number };
 
+function toDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeChartRange(points: ChartPoint[]): ChartPoint[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const minimumStart = new Date(today);
+  minimumStart.setDate(minimumStart.getDate() - 6);
+  const todayKey = toDateKey(today);
+  const countsByDate = new Map<string, number>();
+
+  for (const point of points) {
+    const date = point.date.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > todayKey) continue;
+    countsByDate.set(date, (countsByDate.get(date) ?? 0) + point.count);
+  }
+
+  const earliestApiDate = [...countsByDate.keys()].sort()[0];
+  const earliestApiDateValue = earliestApiDate ? new Date(`${earliestApiDate}T00:00:00`) : null;
+  const start =
+    earliestApiDateValue && earliestApiDateValue < minimumStart
+      ? earliestApiDateValue
+      : minimumStart;
+  const normalized: ChartPoint[] = [];
+
+  for (const date = new Date(start); date <= today; date.setDate(date.getDate() + 1)) {
+    const dateKey = toDateKey(date);
+    normalized.push({ date: dateKey, count: countsByDate.get(dateKey) ?? 0 });
+  }
+
+  return normalized;
+}
+
 function OrdersChart({ data }: { data: ChartPoint[] }) {
   const [width, setWidth] = React.useState(0);
   const height = 224;
@@ -106,18 +151,22 @@ function OrdersChart({ data }: { data: ChartPoint[] }) {
 
 export default function DashboardScreen(): React.JSX.Element {
   const router = useRouter();
-  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
+    DATE_RANGE_OPTIONS[0]
+  );
   const dashboard = useDashboard();
   const [themeColorMuted, themeColorForeground] = useThemeColor(["muted", "foreground"]);
-  const chart = (dashboard.data?.orders_chart ?? []).map((point) => ({
-    date: point.date,
-    count: Number(point.count) || 0,
-  }));
+  const chart = normalizeChartRange(
+    (dashboard.data?.orders_chart ?? []).map((point) => ({
+      date: point.date,
+      count: Number(point.count) || 0,
+    }))
+  );
   const bestSellers = dashboard.data?.best_sellers ?? [];
 
   return (
     <ScrollView
-      className="flex-1 bg-background"
+      className="flex-1 bg-background pt-safe"
       contentContainerClassName="px-4 py-6 pb-8 gap-5"
       refreshControl={
         <RefreshControl
@@ -126,42 +175,42 @@ export default function DashboardScreen(): React.JSX.Element {
         />
       }
     >
-      <View className="flex-row items-stretch gap-3">
-        <Card className="flex-1">
-          <Card.Body className="flex-1 justify-between gap-3">
-            <View className="size-9 items-center justify-center rounded-panel-inner bg-surface-secondary">
-              <Ionicons name="storefront-outline" size={18} color={themeColorMuted} />
-            </View>
-            <View className="gap-0.5">
-              <Typography type="body-xs" color="muted">
-                Merchant
-              </Typography>
-              <Typography type="body" weight="bold" numberOfLines={2}>
-                {activeMerchant?.name ?? "Dashboard"}
-              </Typography>
-              <Typography type="body-xs" color="muted" numberOfLines={1}>
-                Today&apos;s activity
-              </Typography>
-            </View>
-          </Card.Body>
-        </Card>
-
-        <Card className="flex-1">
-          <Card.Body className="flex-1 justify-between gap-3">
-            <View className="gap-0.5">
-              <Typography type="body-xs" color="muted">
-                Point of Sale
-              </Typography>
-              <Typography type="body-sm" weight="semibold">
-                Ready to take an order?
-              </Typography>
-            </View>
-            <Button size="sm" variant="outline" onPress={() => router.push("/pos" as never)}>
-              <Ionicons name="calculator-outline" size={16} color={themeColorForeground} />
-              <Button.Label>Open POS</Button.Label>
+      <View className="flex-row items-center gap-3">
+        <DrawerMenuButton />
+        <Typography type="body" weight="semibold" className="flex-1">
+          Dashboard
+        </Typography>
+        <Select
+          value={dateRange}
+          onValueChange={(option) => {
+            if (option) setDateRange(option as (typeof DATE_RANGE_OPTIONS)[number]);
+          }}
+        >
+          <Select.Trigger asChild variant="unstyled">
+            <Button size="sm" variant="outline">
+              <Button.Label>{dateRange.label}</Button.Label>
+              <Ionicons name="chevron-down" size={14} color={themeColorMuted} />
             </Button>
-          </Card.Body>
-        </Card>
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Overlay />
+            <Select.Content presentation="popover" width={200}>
+              <Select.ListLabel>Rentang Tanggal</Select.ListLabel>
+              {DATE_RANGE_OPTIONS.map((option) => (
+                <Select.Item
+                  key={option.value}
+                  value={option.value}
+                  label={option.label}
+                  disabled={option.value !== "last-7-days"}
+                />
+              ))}
+            </Select.Content>
+          </Select.Portal>
+        </Select>
+        <Button size="sm" variant="outline" onPress={() => router.push("/pos" as never)}>
+          <Ionicons name="calculator-outline" size={16} color={themeColorForeground} />
+          <Button.Label>POS</Button.Label>
+        </Button>
       </View>
 
       {dashboard.isLoading ? (
@@ -171,9 +220,6 @@ export default function DashboardScreen(): React.JSX.Element {
       ) : (
         <>
           <View className="gap-3">
-            <Typography type="body-sm" weight="semibold">
-              Today
-            </Typography>
             <View className="flex-row flex-wrap gap-3">
               <SummaryCard
                 label="Revenue"

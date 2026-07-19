@@ -34,6 +34,7 @@ export default function AppLayout() {
         options={{
           title: "Dashboard",
           drawerLabel: "Dashboard",
+          headerShown: false,
         }}
       />
       <Drawer.Screen
