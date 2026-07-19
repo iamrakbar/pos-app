@@ -1,5 +1,4 @@
 import { Skia, Canvas, useClock, Group, Skottie } from "@shopify/react-native-skia";
-import { View } from "react-native";
 import { useDerivedValue } from "react-native-reanimated";
 
 const legoAnimationJSON = require("../../../assets/soeat.json");

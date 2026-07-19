@@ -12,7 +12,7 @@ const BUILD_VARIANTS = {
     appName: "Soeat POS (Preview)",
     packageName: "id.soeat.pos.preview",
     scheme: "soeat-pos-preview",
-    backgroundColor: "#000000",
+    backgroundColor: "#0bb7cc",
   },
   production: {
     appName: "Soeat POS",

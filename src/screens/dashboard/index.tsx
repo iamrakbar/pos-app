@@ -1,5 +1,5 @@
 import ErrorState from "@/components/common/ErrorState";
-import LoadingState from "@/components/common/LoadingState";
+import LoadingAnimation from "@/components/common/LoadingAnimation";
 import DrawerMenuButton from "@/components/navigation/DrawerMenuButton";
 import { useDashboard } from "@/hooks/db/useDashboard";
 import { formatRupiah } from "@/utils/format";
@@ -164,6 +164,14 @@ export default function DashboardScreen(): React.JSX.Element {
   );
   const bestSellers = dashboard.data?.best_sellers ?? [];
 
+  if (dashboard.isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <LoadingAnimation />
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       className="flex-1 bg-background pt-safe"
@@ -213,9 +221,7 @@ export default function DashboardScreen(): React.JSX.Element {
         </Button>
       </View>
 
-      {dashboard.isLoading ? (
-        <LoadingState message="Loading dashboard…" />
-      ) : dashboard.isError ? (
+      {dashboard.isError ? (
         <ErrorState error={dashboard.error} onRetry={() => void dashboard.refetch()} />
       ) : (
         <>
