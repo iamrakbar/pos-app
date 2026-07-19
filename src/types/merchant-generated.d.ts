@@ -511,6 +511,7 @@ pending_orders: number;
 completed_orders: number;
 orders_chart: Array<{ date: string; count: number }>;
 best_sellers: Array<{ product_id: string; name: string; qty_sold: number; revenue: number }>;
+period: { start: string; end: string };
 };
 }
 declare namespace App.Data.Merchant.Delivery {
