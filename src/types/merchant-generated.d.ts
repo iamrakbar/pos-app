@@ -391,7 +391,6 @@ declare namespace App.Data.Merchant.Category {
 export type CategoryData = {
 id: string;
 merchant_id: string;
-parent_id: string | null;
 name: string;
 slug: string;
 description: string | null;

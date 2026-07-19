@@ -1,4 +1,4 @@
-import { useProducts } from "@/hooks/db/useProducts";
+import { useManagementProducts } from "@/hooks/db/useProducts";
 import { useCategories } from "@/hooks/db/useCategories";
 import LoadingState from "@/components/common/LoadingState";
 import ErrorState from "@/components/common/ErrorState";
@@ -27,23 +27,22 @@ export default function ProductsScreen(): React.JSX.Element {
     isError,
     error,
     refetch,
-  } = useProducts(deferredSearch || undefined);
-  const allProducts = allProductsRaw ?? [];
+  } = useManagementProducts(
+    deferredSearch || undefined,
+    categoryId,
+    activeFilter === "all" ? undefined : activeFilter === "active"
+  );
   const { data: categoriesList = [] } = useCategories();
 
-  const filtered = React.useMemo(
-    () =>
-      allProducts.filter((product) => {
-        const matchesCategory = !categoryId || product.category_id === categoryId;
-        const matchesStatus =
-          activeFilter === "all" ||
-          (activeFilter === "active" && product.is_active) ||
-          (activeFilter === "inactive" && !product.is_active);
+  const filtered = (allProductsRaw ?? []).filter((product) => {
+    const matchesCategory = !categoryId || product.category_id === categoryId;
+    const matchesStatus =
+      activeFilter === "all" ||
+      (activeFilter === "active" && product.is_active) ||
+      (activeFilter === "inactive" && !product.is_active);
 
-        return matchesCategory && matchesStatus;
-      }),
-    [activeFilter, allProducts, categoryId]
-  );
+    return matchesCategory && matchesStatus;
+  });
 
   const selectedCategory = categoriesList.find((c) => c.id === categoryId);
 
@@ -119,7 +118,7 @@ export default function ProductsScreen(): React.JSX.Element {
         ) : isError ? (
           <ErrorState error={error} onRetry={refetch} />
         ) : (
-          <ScrollView className="flex-1" contentContainerClassName="py-2">
+          <ScrollView className="flex-1" contentContainerClassName="py-2 pb-8">
             {filtered.length === 0 ? (
               <EmptyState className="py-20">
                 <EmptyState.Header>
@@ -141,7 +140,7 @@ export default function ProductsScreen(): React.JSX.Element {
                   <View key={product.id}>
                     <Pressable
                       onPress={() => router.push(`/products/${product.id}` as never)}
-                      className="flex-row items-center gap-4 px-5 py-3 active:bg-surface-secondary"
+                      className="min-h-20 flex-row items-center gap-4 px-5 py-3 active:bg-surface-secondary"
                     >
                       {/* Thumbnail */}
                       <View className="w-14 h-14 rounded-panel-inner bg-surface-secondary overflow-hidden items-center justify-center shrink-0">

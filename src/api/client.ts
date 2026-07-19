@@ -65,7 +65,8 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}, isR
 
     const url = buildUrl(path, opts.query);
     const headers: Record<string, string> = { Accept: 'application/json' };
-    if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+    const isFormData = typeof FormData !== 'undefined' && opts.body instanceof FormData;
+    if (opts.body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
     if (opts.auth !== false) {
         const token = useAuth.getState().token;
         if (token) headers.Authorization = `Bearer ${token}`;
@@ -75,7 +76,11 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}, isR
         const res = await fetch(url, {
             method: opts.method ?? 'GET',
             headers,
-            body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+            body: opts.body !== undefined
+                ? isFormData
+                    ? (opts.body as FormData)
+                    : JSON.stringify(opts.body)
+                : undefined,
             signal: controller.signal,
         });
 

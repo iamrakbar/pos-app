@@ -72,7 +72,6 @@ declare namespace App.Requests.Merchant.Category {
     export type StoreCategoryRequest = {
         name: string;
         slug?: string | null;
-        parent_id?: string | null;
         description?: string | null;
         position?: number | null;
         active?: boolean;
@@ -80,7 +79,6 @@ declare namespace App.Requests.Merchant.Category {
     export type UpdateCategoryRequest = {
         name?: string;
         slug?: string | null;
-        parent_id?: string | null;
         description?: string | null;
         position?: number | null;
         active?: boolean;
@@ -242,7 +240,7 @@ declare namespace App.Requests.Merchant.Order {
 declare namespace App.Requests.Merchant.Product {
     export type StoreProductRequest = {
         name: string;
-        code: string;
+        code?: string | null;
         category_id: string;
         description?: string | null;
         price: number;
@@ -254,7 +252,7 @@ declare namespace App.Requests.Merchant.Product {
     };
     export type UpdateProductRequest = {
         name?: string;
-        code?: string;
+        code?: string | null;
         category_id?: string;
         description?: string | null;
         price?: number;

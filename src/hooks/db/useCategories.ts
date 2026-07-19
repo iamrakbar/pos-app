@@ -1,18 +1,18 @@
-import { useProductsRaw } from './useProducts';
-import type { POSCategory } from '@/types/pos';
+import { useQuery } from "@tanstack/react-query";
+import { getCategories } from "@/api/endpoints/categories";
+import { useAuth } from "@/stores/useAuth";
+import type { POSCategory } from "@/types/pos";
 
-// No standalone categories endpoint is used here — categories are derived
-// from the `category` object embedded on each POS product.
 export function useCategories() {
-    const query = useProductsRaw();
-    const categories: POSCategory[] = [];
-    const seen = new Set<string>();
-    for (const product of query.data ?? []) {
-        const category = product.category as { id: string; name: string; slug: string } | null;
-        if (category && !seen.has(category.id)) {
-            seen.add(category.id);
-            categories.push({ id: category.id, name: category.name });
-        }
-    }
-    return { ...query, data: categories };
+  const merchantId = useAuth((state) => state.merchantId);
+  return useQuery({
+    queryKey: ["categories", merchantId],
+    queryFn: async (): Promise<POSCategory[]> =>
+      (await getCategories(merchantId!)).data.map((category) => ({
+        id: category.id,
+        name: category.name,
+      })),
+    enabled: !!merchantId,
+    staleTime: 5 * 60 * 1000,
+  });
 }
