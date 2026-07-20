@@ -9,6 +9,7 @@ export default function AppLayout() {
     <Drawer
       drawerContent={(props) => <AppDrawerContent {...props} />}
       screenOptions={{
+        swipeEnabled: true,
         drawerStyle: {
           backgroundColor: theme.background,
           borderTopRightRadius: 0,

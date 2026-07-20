@@ -20,7 +20,7 @@ import {
   useThemeColor,
 } from "heroui-native";
 import React from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { Linking, PermissionsAndroid, Platform, Pressable, ScrollView, View } from "react-native";
 import { printerSchema, type PrinterFormValues } from "@/schemas/printer";
 import {
@@ -117,8 +117,8 @@ export default function PrinterFormScreen(): React.JSX.Element {
     control,
     handleSubmit,
     reset,
+    setError,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<PrinterFormValues>({
     resolver: zodResolver(printerSchema) as never,
@@ -129,10 +129,10 @@ export default function PrinterFormScreen(): React.JSX.Element {
     },
   });
 
-  const connection = watch("connection");
-  const paperWidth = watch("paperWidth");
-  const selectedDeviceId = watch("selectedDeviceId");
-  const currentName = watch("name");
+  const connection = useWatch({ control, name: "connection" });
+  const paperWidth = useWatch({ control, name: "paperWidth" });
+  const selectedDeviceId = useWatch({ control, name: "selectedDeviceId" });
+  const currentName = useWatch({ control, name: "name" });
 
   React.useEffect(() => {
     if (!hasHydrated) return;
@@ -242,15 +242,6 @@ export default function PrinterFormScreen(): React.JSX.Element {
     }
   }, [openBluetoothSettings, requestBluetoothPermissions]);
 
-  React.useEffect(() => {
-    if (connection === "bluetooth") {
-      void handleScan();
-    } else {
-      setDevices([]);
-      void NetPrinter.init().catch(() => undefined);
-    }
-  }, [connection, handleScan]);
-
   const handleSelectDevice = (device: DiscoveredDevice) => {
     setValue("selectedDeviceId", device.id, { shouldDirty: true, shouldValidate: true });
     setValue("macAddress", device.id, { shouldDirty: true, shouldValidate: true });
@@ -258,14 +249,24 @@ export default function PrinterFormScreen(): React.JSX.Element {
   };
 
   const handleSave = (values: PrinterFormValues) => {
-    if (isCreate) {
-      const savedPrinter = addPrinter(toPrinterSettings(values));
-      selectPrinter(savedPrinter.id);
-    } else if (printer) {
-      updatePrinter(printer.id, toPrinterSettings(values));
+    try {
+      if (isCreate) {
+        const savedPrinter = addPrinter(toPrinterSettings(values));
+        selectPrinter(savedPrinter.id);
+      } else if (printer) {
+        updatePrinter(printer.id, toPrinterSettings(values));
+      } else {
+        const message = "The printer could not be found.";
+        setError("root.server", { type: "server", message });
+        setPrompt({ title: "Could not save printer", message });
+        return;
+      }
+      router.replace("/settings/printers" as never);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Could not save the printer.";
+      setError("root.server", { type: "server", message });
+      setPrompt({ title: "Could not save printer", message });
     }
-
-    router.replace("/settings/printers" as never);
   };
 
   const handleDelete = async () => {
@@ -439,6 +440,12 @@ export default function PrinterFormScreen(): React.JSX.Element {
                           onChange(option.value);
                           setValue("selectedDeviceId", "", { shouldDirty: true });
                           setValue("macAddress", "", { shouldDirty: true, shouldValidate: true });
+                          if (option.value === "bluetooth") {
+                            void handleScan();
+                          } else {
+                            setDevices([]);
+                            void NetPrinter.init().catch(() => undefined);
+                          }
                         }}
                       >
                         <Select.Trigger>
@@ -780,17 +787,22 @@ export default function PrinterFormScreen(): React.JSX.Element {
               </Card.Body>
             </Card>
 
-            <View className="flex-row gap-3 pt-2">
-              <Button variant="outline" onPress={() => router.back()}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button
-                className="flex-1"
-                onPress={handleSubmit(handleSave)}
-                isDisabled={isSubmitting}
-              >
-                <Button.Label>{isCreate ? "Save Printer" : "Update Printer"}</Button.Label>
-              </Button>
+            <View className="gap-3 pt-2">
+              {errors.root?.server?.message ? (
+                <FieldError message={errors.root.server.message} />
+              ) : null}
+              <View className="flex-row gap-3">
+                <Button variant="outline" onPress={() => router.back()}>
+                  <Button.Label>Cancel</Button.Label>
+                </Button>
+                <Button
+                  className="flex-1"
+                  onPress={handleSubmit(handleSave)}
+                  isDisabled={isSubmitting}
+                >
+                  <Button.Label>{isCreate ? "Save Printer" : "Update Printer"}</Button.Label>
+                </Button>
+              </View>
             </View>
           </View>
         </ScrollView>

@@ -233,13 +233,13 @@ function OrdersChart({ data }: { data: ChartPoint[] }) {
             xAxis={{
               tickCount: Math.min(data.length, 8),
               labelOffset: 8,
-              formatXLabel: (value) => formatChartDate(String(value)),
+              formatXLabel: (value: unknown) => formatChartDate(String(value)),
             }}
             yAxis={[
               {
                 tickCount: 5,
                 labelOffset: 8,
-                formatYLabel: (value) => String(Math.round(Number(value))),
+                formatYLabel: (value: unknown) => String(Math.round(Number(value))),
               },
             ]}
             explicitSize={{ width, height }}

@@ -1,4 +1,6 @@
 import { apiRequest } from "../client";
+import { File } from "expo-file-system";
+import { Platform } from "react-native";
 
 type PosProductsResponse = {
   success: boolean;
@@ -25,6 +27,23 @@ type MutationResponse = {
 type DeleteResponse = { success: boolean; message?: string };
 
 export type ProductImageAsset = { uri: string; name: string; type: string };
+
+async function appendProductImage(formData: FormData, image: ProductImageAsset): Promise<void> {
+  if (Platform.OS === "web") {
+    try {
+      const response = await fetch(image.uri);
+      const blob = await response.blob();
+      formData.append("image", blob, image.name);
+      return;
+    } catch (error) {
+      throw new Error("The selected product image could not be read. Choose it again.", {
+        cause: error,
+      });
+    }
+  }
+
+  formData.append("image", new File(image.uri), image.name);
+}
 
 function appendProductFields(
   formData: FormData,
@@ -61,20 +80,20 @@ export function getProducts(
       "filter[search]": params?.search,
       "filter[category_id]": params?.category_id,
       "filter[active]": params?.active === undefined ? undefined : params.active ? 1 : 0,
-      sort: "name",
+      sort: "-created_at",
       per_page: 50,
     },
   });
 }
 
-export function createProduct(
+export async function createProduct(
   merchantId: string,
   body: App.Requests.Merchant.Product.StoreProductRequest,
   image?: ProductImageAsset | null
 ): Promise<MutationResponse> {
   const formData = new FormData();
   appendProductFields(formData, body);
-  if (image) formData.append("image", image as unknown as Blob);
+  if (image) await appendProductImage(formData, image);
   return apiRequest<MutationResponse>(`/${merchantId}/products`, {
     method: "POST",
     body: formData,
@@ -92,13 +111,13 @@ export function updateProduct(
   });
 }
 
-export function uploadProductImage(
+export async function uploadProductImage(
   merchantId: string,
   productId: string,
   image: ProductImageAsset
 ): Promise<MutationResponse> {
   const formData = new FormData();
-  formData.append("image", image as unknown as Blob);
+  await appendProductImage(formData, image);
   return apiRequest<MutationResponse>(`/${merchantId}/products/${productId}/image`, {
     method: "POST",
     body: formData,

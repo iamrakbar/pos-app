@@ -11,7 +11,7 @@ export function getCategories(merchantId: string): Promise<CategoriesResponse> {
     query: {
       "filter[active]": 1,
       sort: "position",
-      per_page: 100,
+      per_page: 50,
     },
   });
 }
