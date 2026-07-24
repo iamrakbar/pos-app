@@ -1,6 +1,6 @@
-import { usePOSStore, type ProductSort } from "@/stores/usePOSStore";
-import { useCategories } from "@/hooks/db/useCategories";
-import DrawerMenuButton from "@/components/navigation/DrawerMenuButton";
+import { usePOSStore, type ProductSort } from "@/stores/use-pos-store";
+import { useCategories } from "@/hooks/db/use-categories";
+import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { Button, Chip, ScrollShadow, SearchField, Select, useThemeColor } from "heroui-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";

@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 import { Typography, useThemeColor } from 'heroui-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { JSX } from 'react';
-import { getErrorMessage } from '@/api/ApiError';
+import { getErrorMessage } from '@/api/api-error';
 import { t } from '@/locales';
 
 export default function ErrorState({

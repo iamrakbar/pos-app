@@ -1,11 +1,11 @@
-import { usePOSStore } from "@/stores/usePOSStore";
-import { usePaymentStatus } from "@/hooks/db/usePaymentStatus";
+import { usePOSStore } from "@/stores/use-pos-store";
+import { usePaymentStatus } from "@/hooks/db/use-payment-status";
 import { formatRupiah } from "@/utils/format";
-import { getErrorMessage } from "@/api/ApiError";
+import { getErrorMessage } from "@/api/api-error";
 import { isExpired } from "@/api/mappers/checkout";
 import { getPaymentStatus } from "@/api/mappers/order";
-import Countdown from "@/components/common/Countdown";
-import QrUrlDisclosure from "@/components/common/QrUrlDisclosure";
+import Countdown from "@/components/common/countdown";
+import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
 import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";

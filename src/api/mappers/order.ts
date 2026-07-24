@@ -106,10 +106,6 @@ export function getPaymentStatus(status: unknown): StatusPresentation {
   return getStatusPresentation(status, PAYMENT_STATUSES);
 }
 
-export function extractStatusColor(status: unknown): StatusColor {
-  return extractApiStatusColor(status);
-}
-
 export function extractCustomerName(customer: unknown): string | null {
   const rec = extractDataRecord(customer);
   if (rec && typeof rec.name === "string") return rec.name;

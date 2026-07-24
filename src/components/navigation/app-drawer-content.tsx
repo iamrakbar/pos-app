@@ -1,9 +1,9 @@
 import Logo from "@/components/common/logo";
-import LogoutConfirmationDialog from "@/components/common/LogoutConfirmationDialog";
+import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { t } from "@/locales";
-import { useAuth } from "@/stores/useAuth";
-import { useNetworkStore } from "@/stores/useNetworkStore";
-import { useThemeStore, type ThemeMode } from "@/stores/useThemeStore";
+import { useAuth } from "@/stores/use-auth";
+import { useNetworkStore } from "@/stores/use-network-store";
+import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import { Ionicons } from "@expo/vector-icons";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
 import { Avatar, Popover, Surface, Typography, useThemeColor } from "heroui-native";

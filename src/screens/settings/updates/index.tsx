@@ -1,4 +1,4 @@
-import AppUpdateManager from '@/components/common/AppUpdateManager';
+import AppUpdateManager from '@/components/common/app-update-manager';
 import type { JSX } from 'react';
 import { ScrollView, View } from 'react-native';
 

@@ -1,5 +1,5 @@
-import { useCartStore } from "@/stores/useCartStore";
-import { usePOSStore } from "@/stores/usePOSStore";
+import { useCartStore } from "@/stores/use-cart-store";
+import { usePOSStore } from "@/stores/use-pos-store";
 import type { CartItem } from "@/types/cart";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";

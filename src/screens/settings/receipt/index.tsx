@@ -1,9 +1,9 @@
-import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
-import { useAuth } from "@/stores/useAuth";
-import { useMerchantProfile } from "@/hooks/db/useMerchantProfile";
-import { useReceiptStore } from "@/stores/useReceiptStore";
-import { usePrinterStore, type PaperWidth } from "@/stores/usePrinterStore";
-import { optimizeReceiptLogo } from "@/utils/receiptLogo";
+import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/receipt-paper";
+import { useAuth } from "@/stores/use-auth";
+import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
+import { useReceiptStore } from "@/stores/use-receipt-store";
+import { usePrinterStore, type PaperWidth } from "@/stores/use-printer-store";
+import { optimizeReceiptLogo } from "@/utils/receipt-logo";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";

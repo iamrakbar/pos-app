@@ -3,11 +3,11 @@ import { useRouter } from "expo-router";
 import { Button, Card, Select, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { useAuth } from "@/stores/useAuth";
-import { useThemeStore, type ThemeMode } from "@/stores/useThemeStore";
-import { useLocale } from "@/stores/useLocale";
+import { useAuth } from "@/stores/use-auth";
+import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
+import { useLocale } from "@/stores/use-locale";
 import { t } from "@/locales";
-import LogoutConfirmationDialog from "@/components/common/LogoutConfirmationDialog";
+import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { useState } from "react";
 
 type SettingsItem = {

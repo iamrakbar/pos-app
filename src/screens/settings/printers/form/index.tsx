@@ -37,10 +37,10 @@ import {
   type ConnectionType,
   type PaperWidth,
   type PrinterSettings,
-} from "@/stores/usePrinterStore";
-import { getToolbarIcon } from "@/utils/toolbarIcons";
-import { printCalibrationReceipt } from "@/services/printer/PrintService";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
+} from "@/stores/use-printer-store";
+import { getToolbarIcon } from "@/utils/toolbar-icons";
+import { printCalibrationReceipt } from "@/services/printer/print-service";
+import DialogCloseButton from "@/components/common/dialog-close-button";
 import { EmptyState } from "heroui-native-pro";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [

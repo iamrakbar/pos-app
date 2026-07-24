@@ -5,7 +5,7 @@ import {
   extractTableName,
   getPaymentStatus,
 } from "@/api/mappers/order";
-import type { ReceiptPreviewData } from "@/components/receipt/ReceiptPaper";
+import type { ReceiptPreviewData } from "@/components/receipt/receipt-paper";
 import type { ReceiptOrder } from "./escpos";
 
 function record(value: unknown): Record<string, unknown> | null {

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { InfiniteData } from "@tanstack/react-query";
 import { checkout } from "@/api/endpoints/checkout";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/use-auth";
 import type { CheckoutFormValues } from "@/schemas/checkout";
 
 type PosProductData = App.Data.Merchant.Pos.ProductData;

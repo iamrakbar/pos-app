@@ -1,5 +1,5 @@
-import { useCartStore } from "@/stores/useCartStore";
-import { usePOSStore } from "@/stores/usePOSStore";
+import { useCartStore } from "@/stores/use-cart-store";
+import { usePOSStore } from "@/stores/use-pos-store";
 import { createAddOnSchema, type AddOnFormValues } from "@/schemas/addon";
 import type { AddOnGroup, AddOnOption } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
@@ -21,7 +21,7 @@ import {
 import type { JSX } from "react";
 import { FlatList, View, useWindowDimensions } from "react-native";
 import React, { useEffect, useState } from "react";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
+import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useForm, Controller, type Control } from "react-hook-form";
 
 function constraintLabel(group: AddOnGroup): string {

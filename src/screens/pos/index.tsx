@@ -4,13 +4,13 @@ import SearchBar from "./components/search-bar";
 import AddOnModal from "./components/modals/add-on-modal";
 import CheckoutModal from "./components/modals/checkout-modal";
 import PaymentModal from "./components/modals/payment-modal";
-import { useCartStore } from "@/stores/useCartStore";
-import { usePOSStore } from "@/stores/usePOSStore";
+import { useCartStore } from "@/stores/use-cart-store";
+import { usePOSStore } from "@/stores/use-pos-store";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
 import { useFocusEffect } from "expo-router";
 import { Platform, StatusBar, View, useWindowDimensions } from "react-native";
-import { useNavigationTheme } from "@/utils/navigationTheme";
+import { useNavigationTheme } from "@/utils/navigation-theme";
 
 export default function POSScreen(): JSX.Element {
   const { width: viewportWidth } = useWindowDimensions();

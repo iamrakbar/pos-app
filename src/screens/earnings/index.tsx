@@ -1,6 +1,6 @@
-import ErrorState from "@/components/common/ErrorState";
-import LoadingState from "@/components/common/LoadingState";
-import { useEarnings } from "@/hooks/db/useEarnings";
+import ErrorState from "@/components/common/error-state";
+import LoadingState from "@/components/common/loading-state";
+import { useEarnings } from "@/hooks/db/use-earnings";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";

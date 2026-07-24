@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { searchCustomers } from '@/api/endpoints/customers';
-import { useAuth } from '@/stores/useAuth';
+import { useAuth } from '@/stores/use-auth';
 
 export function useCustomerSearch(query: string) {
     const merchantId = useAuth((s) => s.merchantId);

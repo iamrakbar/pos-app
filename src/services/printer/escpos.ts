@@ -1,7 +1,7 @@
-import type { PaperWidth } from "@/stores/usePrinterStore";
-import type { ReceiptSettings } from "@/stores/useReceiptStore";
+import type { PaperWidth } from "@/stores/use-printer-store";
+import type { ReceiptSettings } from "@/stores/use-receipt-store";
 import { formatRupiah } from "@/utils/format";
-import { toReceiptData } from "./receiptData";
+import { toReceiptData } from "./receipt-data";
 
 export type ReceiptOrder =
   App.Data.Merchant.Order.OrderData | App.Data.Merchant.Checkout.CheckoutData;

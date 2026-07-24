@@ -28,8 +28,3 @@ export async function appendPrintDiagnostic(entry: PrintDiagnostic): Promise<voi
     // Diagnostics must never block receipt printing.
   }
 }
-
-export async function getPrintDiagnostics(): Promise<PrintDiagnostic[]> {
-  const stored = storage.getString(STORAGE_KEY);
-  return stored ? (JSON.parse(stored) as PrintDiagnostic[]) : [];
-}

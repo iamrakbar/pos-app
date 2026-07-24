@@ -9,12 +9,12 @@ import { useEffect, type JSX } from "react";
 import { Platform, StatusBar as NativeStatusBar, View, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAuth, setQueryClientRef } from "@/stores/useAuth";
-import { isApiError } from "@/api/ApiError";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { useNavigationTheme } from "@/utils/navigationTheme";
-import OfflineBanner from "@/components/common/OfflineBanner";
-import AppUpdateManager from "@/components/common/AppUpdateManager";
+import { useAuth, setQueryClientRef } from "@/stores/use-auth";
+import { isApiError } from "@/api/api-error";
+import { ErrorBoundary } from "@/components/common/error-boundary";
+import { useNavigationTheme } from "@/utils/navigation-theme";
+import OfflineBanner from "@/components/common/offline-banner";
+import AppUpdateManager from "@/components/common/app-update-manager";
 
 import "../global.css";
 

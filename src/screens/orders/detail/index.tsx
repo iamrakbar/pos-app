@@ -1,6 +1,6 @@
-import { useOrder, useUpdateOrderStatus } from "@/hooks/db/useOrders";
-import { usePaymentStatus } from "@/hooks/db/usePaymentStatus";
-import { useTables } from "@/hooks/db/useTables";
+import { useOrder, useUpdateOrderStatus } from "@/hooks/db/use-orders";
+import { usePaymentStatus } from "@/hooks/db/use-payment-status";
+import { useTables } from "@/hooks/db/use-tables";
 import {
   extractPaymentDetailsRows,
   extractPaymentExpiry,
@@ -16,16 +16,16 @@ import {
   getOrderStatus,
   getPaymentStatus,
 } from "@/api/mappers/order";
-import LoadingState from "@/components/common/LoadingState";
-import ErrorState from "@/components/common/ErrorState";
-import Countdown from "@/components/common/Countdown";
-import QrUrlDisclosure from "@/components/common/QrUrlDisclosure";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
-import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/useReceiptPrinter";
-import { getToolbarIcon } from "@/utils/toolbarIcons";
-import { useNavigationTheme } from "@/utils/navigationTheme";
+import LoadingState from "@/components/common/loading-state";
+import ErrorState from "@/components/common/error-state";
+import Countdown from "@/components/common/countdown";
+import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
+import DialogCloseButton from "@/components/common/dialog-close-button";
+import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/use-receipt-printer";
+import { getToolbarIcon } from "@/utils/toolbar-icons";
+import { useNavigationTheme } from "@/utils/navigation-theme";
 import { formatRupiah } from "@/utils/format";
-import { getErrorMessage } from "@/api/ApiError";
+import { getErrorMessage } from "@/api/api-error";
 import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "heroui-native-pro";
 import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";

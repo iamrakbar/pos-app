@@ -1,5 +1,5 @@
-import type { ReceiptSettings } from "@/stores/useReceiptStore";
-import type { PaperWidth } from "@/stores/usePrinterStore";
+import type { ReceiptSettings } from "@/stores/use-receipt-store";
+import type { PaperWidth } from "@/stores/use-printer-store";
 import { formatRupiah } from "@/utils/format";
 import { formatReceiptRow, wrapReceiptText } from "@/services/printer/escpos";
 import { Image } from "expo-image";

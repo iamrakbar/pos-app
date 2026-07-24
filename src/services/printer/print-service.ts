@@ -1,7 +1,7 @@
 import { BLEPrinter, NetPrinter } from "@haroldtran/react-native-thermal-printer";
 import { File } from "expo-file-system";
-import { usePrinterStore, type PrinterSettings } from "@/stores/usePrinterStore";
-import { useReceiptStore } from "@/stores/useReceiptStore";
+import { usePrinterStore, type PrinterSettings } from "@/stores/use-printer-store";
+import { useReceiptStore } from "@/stores/use-receipt-store";
 import {
   bytesToBase64,
   formatCalibrationPayload,
@@ -10,7 +10,7 @@ import {
 } from "./escpos";
 import { PrintError } from "./errors";
 import { ensureBluetoothPermissions } from "./permissions";
-import { appendPrintDiagnostic } from "./printDiagnostics";
+import { appendPrintDiagnostic } from "./print-diagnostics";
 
 const CONNECTION_TIMEOUT_MS = 5_000;
 

@@ -1,11 +1,11 @@
-import { useManagementProducts } from "@/hooks/db/useProducts";
-import { useCategories } from "@/hooks/db/useCategories";
-import LoadingState from "@/components/common/LoadingState";
-import ErrorState from "@/components/common/ErrorState";
-import CreateFAB from "@/components/common/CreateFAB";
+import { useManagementProducts } from "@/hooks/db/use-products";
+import { useCategories } from "@/hooks/db/use-categories";
+import LoadingState from "@/components/common/loading-state";
+import ErrorState from "@/components/common/error-state";
+import CreateFAB from "@/components/common/create-fab";
 import { formatRupiah } from "@/utils/format";
-import { useNavigationTheme } from "@/utils/navigationTheme";
-import { getToolbarIcon } from "@/utils/toolbarIcons";
+import { useNavigationTheme } from "@/utils/navigation-theme";
+import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import { Image } from "expo-image";

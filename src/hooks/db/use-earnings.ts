@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getEarnings } from "@/api/endpoints/earnings";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/use-auth";
 
 const EARNINGS_PAGE_SIZE = 50;
 

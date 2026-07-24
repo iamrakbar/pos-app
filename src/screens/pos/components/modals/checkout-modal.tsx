@@ -1,12 +1,12 @@
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { CheckoutContent } from "../checkout-content";
-import { usePOSStore } from "@/stores/usePOSStore";
+import { usePOSStore } from "@/stores/use-pos-store";
 import type { PaymentSession } from "@/types/pos";
 import { Dialog } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { View, useWindowDimensions } from "react-native";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
+import DialogCloseButton from "@/components/common/dialog-close-button";
 
 export default function CheckoutModal(): JSX.Element {
   const { width, height } = useWindowDimensions();

@@ -1,5 +1,5 @@
 import { getMerchantProfile } from "@/api/endpoints/merchant";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/use-auth";
 import { useQuery } from "@tanstack/react-query";
 
 const MERCHANT_PROFILE_STALE_TIME_MS = 5 * 60 * 1000;

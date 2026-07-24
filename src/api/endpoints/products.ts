@@ -32,6 +32,9 @@ async function appendProductImage(formData: FormData, image: ProductImageAsset):
   if (Platform.OS === "web") {
     try {
       const response = await fetch(image.uri);
+      if (!response.ok) {
+        throw new Error(`Image request failed with status ${response.status}.`);
+      }
       const blob = await response.blob();
       formData.append("image", blob, image.name);
       return;

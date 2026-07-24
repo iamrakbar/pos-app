@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { useNavigationTheme } from "@/utils/navigationTheme";
+import { useNavigationTheme } from "@/utils/navigation-theme";
 
 export default function POSFlowLayout() {
   const theme = useNavigationTheme();

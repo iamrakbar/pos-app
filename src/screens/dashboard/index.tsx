@@ -1,8 +1,8 @@
-import ErrorState from "@/components/common/ErrorState";
-import LoadingAnimation from "@/components/common/LoadingAnimation";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
-import DrawerMenuButton from "@/components/navigation/DrawerMenuButton";
-import { useDashboard } from "@/hooks/db/useDashboard";
+import ErrorState from "@/components/common/error-state";
+import LoadingAnimation from "@/components/common/loading-animation";
+import DialogCloseButton from "@/components/common/dialog-close-button";
+import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
+import { useDashboard } from "@/hooks/db/use-dashboard";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";

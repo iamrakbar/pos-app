@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/api/endpoints/categories";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/use-auth";
 import type { POSCategory } from "@/types/pos";
 
 export function useCategories() {

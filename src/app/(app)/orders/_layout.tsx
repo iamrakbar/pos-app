@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
-import { useNavigationTheme } from '@/utils/navigationTheme';
-import DrawerMenuButton from '@/components/navigation/DrawerMenuButton';
+import { useNavigationTheme } from '@/utils/navigation-theme';
+import DrawerMenuButton from '@/components/navigation/drawer-menu-button';
 
 export default function OrdersLayout() {
     const theme = useNavigationTheme();

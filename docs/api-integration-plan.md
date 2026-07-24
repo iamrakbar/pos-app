@@ -27,7 +27,7 @@ Investigation surfaced real gaps between the generic integration brief and what 
 - `src/api/ApiError.ts` — `ApiError { status, code?, message, errors?, raw? }` + `isApiError()`.
 - `src/api/client.ts` — thin `fetch` + `AbortController` wrapper (no new dependency — 15 endpoints don't justify axios/ky). Injects `Authorization: Bearer <token>` from `useAuth.getState().token`, normalizes non-2xx into `ApiError`, and on 401 calls a `handleUnauthorized()` that logs out + redirects to `/sign-in`. Support both merchant-scoped paths and an absolute/override path for `/customer/payments` and `/merchant/orders/...`.
 - `src/api/endpoints/{auth,products,payments,guests,customers,cart,checkout,orders}.ts` — one function per Postman endpoint, typed with the generated `App.Data.Merchant.*`/`App.Requests.Merchant.*` types.
-- `src/api/mappers/order.ts` — defensive accessors for opaque fields (`extractStatusLabel`, `extractStatusColor`, `extractCustomerName`, `extractPaymentName`, etc.), used instead of assuming shapes.
+- `src/api/mappers/order.ts` — defensive accessors for opaque fields (`extractStatusLabel`, `extractCustomerName`, `extractPaymentName`, etc.), used instead of assuming shapes.
 
 ### 2. Authentication
 - `src/stores/useAuth.ts`: add `merchantId`, `activeMerchant` (from `merchants[0]`), `hasHydrated` (set via `persist`'s `onRehydrateStorage`, so `_layout.tsx` doesn't flash sign-in during the async SecureStore read). Replace `loginLocal` with `login(payload: AuthTokenData)`. Add `partialize` to persist only durable fields.

@@ -1,6 +1,6 @@
 import { Drawer } from "expo-router/drawer";
-import AppDrawerContent from "@/components/navigation/AppDrawerContent";
-import { useNavigationTheme } from "@/utils/navigationTheme";
+import AppDrawerContent from "@/components/navigation/app-drawer-content";
+import { useNavigationTheme } from "@/utils/navigation-theme";
 
 export default function AppLayout() {
   const theme = useNavigationTheme();

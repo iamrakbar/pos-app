@@ -1,5 +1,5 @@
-import DrawerMenuButton from '@/components/navigation/DrawerMenuButton';
-import { useNavigationTheme } from '@/utils/navigationTheme';
+import DrawerMenuButton from '@/components/navigation/drawer-menu-button';
+import { useNavigationTheme } from '@/utils/navigation-theme';
 import { Stack } from 'expo-router';
 
 export default function ProductsLayout() {

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getPosTables } from '@/api/endpoints/tables';
-import { useAuth } from '@/stores/useAuth';
+import { useAuth } from '@/stores/use-auth';
 import type { POSTable } from '@/types/pos';
 
 const TABLES_STALE_TIME_MS = 5 * 60 * 1000;

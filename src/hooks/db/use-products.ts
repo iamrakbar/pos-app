@@ -10,7 +10,7 @@ import {
   type ProductImageAsset,
 } from "@/api/endpoints/products";
 import { extractOriginalPrice, extractSellingPrice } from "@/api/mappers/product";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/use-auth";
 import type { POSProduct } from "@/types/pos";
 
 const PRODUCTS_STALE_TIME_MS = 5 * 60 * 1000;

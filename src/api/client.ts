@@ -1,9 +1,9 @@
 import { router } from "expo-router";
 import { fetch as expoFetch } from "expo/fetch";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/use-auth";
 import { API_BASE_URL, API_TIMEOUT_MS } from "./config";
-import { ApiError } from "./ApiError";
-import { useNetworkStore } from "@/stores/useNetworkStore";
+import { ApiError } from "./api-error";
+import { useNetworkStore } from "@/stores/use-network-store";
 import { t } from "@/locales";
 
 type RequestOptions = {

@@ -24,20 +24,20 @@ import React from "react";
 import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
 import { Image } from "expo-image";
 import { Platform, Pressable, ScrollView, View } from "react-native";
-import { getToolbarIcon } from "@/utils/toolbarIcons";
-import ErrorState from "@/components/common/ErrorState";
-import LoadingState from "@/components/common/LoadingState";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
-import { getErrorMessage, isApiError } from "@/api/ApiError";
+import { getToolbarIcon } from "@/utils/toolbar-icons";
+import ErrorState from "@/components/common/error-state";
+import LoadingState from "@/components/common/loading-state";
+import DialogCloseButton from "@/components/common/dialog-close-button";
+import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { ProductImageAsset } from "@/api/endpoints/products";
-import { useCategories } from "@/hooks/db/useCategories";
+import { useCategories } from "@/hooks/db/use-categories";
 import {
   useCreateProduct,
   useDeleteProduct,
   useProduct,
   useUpdateProduct,
   type ProductFormPayload,
-} from "@/hooks/db/useProducts";
+} from "@/hooks/db/use-products";
 import { productSchema, type ProductFormValues } from "@/schemas/product";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;

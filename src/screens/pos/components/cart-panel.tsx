@@ -1,7 +1,7 @@
-import { useCartStore } from "@/stores/useCartStore";
+import { useCartStore } from "@/stores/use-cart-store";
 import { formatRupiah } from "@/utils/format";
-import { useProducts } from "@/hooks/db/useProducts";
-import { usePOSStore } from "@/stores/usePOSStore";
+import { useProducts } from "@/hooks/db/use-products";
+import { usePOSStore } from "@/stores/use-pos-store";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";

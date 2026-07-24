@@ -3,9 +3,9 @@ import { useRouter } from "expo-router";
 import { Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
-import LoadingState from "@/components/common/LoadingState";
-import CreateFAB from "@/components/common/CreateFAB";
-import { usePrinterStore, type SavedPrinter } from "@/stores/usePrinterStore";
+import LoadingState from "@/components/common/loading-state";
+import CreateFAB from "@/components/common/create-fab";
+import { usePrinterStore, type SavedPrinter } from "@/stores/use-printer-store";
 import { EmptyState } from "heroui-native-pro";
 
 function getPrinterTarget(printer: SavedPrinter) {

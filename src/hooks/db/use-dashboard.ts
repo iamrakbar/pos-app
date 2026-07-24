@@ -1,5 +1,5 @@
 import { getDashboard } from "@/api/endpoints/dashboard";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/use-auth";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export function useDashboard(startDate: string, endDate: string) {

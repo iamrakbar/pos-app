@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { validateCart } from '@/api/endpoints/cart';
-import { useAuth } from '@/stores/useAuth';
-import { useCartStore } from '@/stores/useCartStore';
+import { useAuth } from '@/stores/use-auth';
+import { useCartStore } from '@/stores/use-cart-store';
 import type { CartItem } from '@/types/cart';
 
 export function buildCartProducts(

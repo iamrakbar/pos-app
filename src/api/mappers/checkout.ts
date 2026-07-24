@@ -71,30 +71,6 @@ export function isExpired(expiresAt: string | null | undefined): boolean {
     return Number.isFinite(timestamp) && timestamp <= Date.now();
 }
 
-export function extractPaymentReference(value: unknown): string | null {
-    const rec = asReadableRecord(value);
-    if (!rec) return null;
-
-    const candidates = [
-        rec.reference,
-        rec.code,
-        rec.extra,
-        rec.reference_no,
-        rec.transaction_id,
-        rec.transaction_no,
-        rec.payment_code,
-        rec.va_number,
-        rec.account_number,
-    ];
-
-    for (const candidate of candidates) {
-        if (typeof candidate === 'string' && candidate.trim()) return candidate;
-        if (typeof candidate === 'number') return String(candidate);
-    }
-
-    return null;
-}
-
 export function extractPaymentDetailsRows(value: unknown): { label: string; value: string }[] {
     const rec = asReadableRecord(value);
     if (!rec) return [];

@@ -1,7 +1,7 @@
-import { usePOSStore } from "@/stores/usePOSStore";
-import { useProducts } from "@/hooks/db/useProducts";
-import LoadingState from "@/components/common/LoadingState";
-import ErrorState from "@/components/common/ErrorState";
+import { usePOSStore } from "@/stores/use-pos-store";
+import { useProducts } from "@/hooks/db/use-products";
+import LoadingState from "@/components/common/loading-state";
+import ErrorState from "@/components/common/error-state";
 import type { POSProduct } from "@/types/pos";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";

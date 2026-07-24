@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, useThemeColor } from 'heroui-native';
 import { View } from 'react-native';
-import { useNetworkStore } from '@/stores/useNetworkStore';
+import { useNetworkStore } from '@/stores/use-network-store';
 import { t } from '@/locales';
 
 export default function OfflineBanner() {

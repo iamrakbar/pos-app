@@ -1,7 +1,7 @@
 import { Button, Dialog } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
+import DialogCloseButton from "@/components/common/dialog-close-button";
 
 type LogoutConfirmationDialogProps = {
   isOpen: boolean;

@@ -1,6 +1,6 @@
-import { usePOSStore } from "@/stores/usePOSStore";
-import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
-import { useReceiptStore } from "@/stores/useReceiptStore";
+import { usePOSStore } from "@/stores/use-pos-store";
+import { useReceiptPrinter } from "@/hooks/printer/use-receipt-printer";
+import { useReceiptStore } from "@/stores/use-receipt-store";
 import { formatRupiah } from "@/utils/format";
 import {
   Button,
@@ -15,7 +15,7 @@ import {
 import { useEffect, useRef, useState, type JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
+import DialogCloseButton from "@/components/common/dialog-close-button";
 
 type PaymentSuccessContentProps = {
   onNewOrder?: () => void;

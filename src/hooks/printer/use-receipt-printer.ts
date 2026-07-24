@@ -2,8 +2,8 @@ import {
   PrintError,
   printReceipt as runPrintReceipt,
   type ReceiptOrder,
-} from "@/services/printer/PrintService";
-import { usePrinterStore } from "@/stores/usePrinterStore";
+} from "@/services/printer/print-service";
+import { usePrinterStore } from "@/stores/use-printer-store";
 import { useRouter } from "expo-router";
 import { useToast } from "heroui-native";
 import { useState } from "react";

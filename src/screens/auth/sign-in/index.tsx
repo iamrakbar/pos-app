@@ -7,8 +7,8 @@ import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormValues } from "@/schemas/auth";
-import { useLogin } from "@/hooks/useLogin";
-import { getErrorMessage } from "@/api/ApiError";
+import { useLogin } from "@/hooks/use-login";
+import { getErrorMessage } from "@/api/api-error";
 
 export default function SignInScreen(): JSX.Element {
     const themeColorAccent = useThemeColor("accent");

@@ -1,10 +1,10 @@
 import { PaymentContent } from "../payment-content";
-import { usePOSStore } from "@/stores/usePOSStore";
+import { usePOSStore } from "@/stores/use-pos-store";
 import { useRouter } from "expo-router";
 import { Dialog } from "heroui-native";
 import type { JSX } from "react";
 import { useWindowDimensions } from "react-native";
-import DialogCloseButton from "@/components/common/DialogCloseButton";
+import DialogCloseButton from "@/components/common/dialog-close-button";
 
 export default function PaymentModal(): JSX.Element {
   const router = useRouter();
