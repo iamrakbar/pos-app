@@ -114,7 +114,7 @@ export function ReceiptPaper({
       {!isKitchen && settings.storeLogo ? (
         <Image
           source={{ uri: settings.storeLogo }}
-          className="w-40 h-20 self-center mb-5"
+          style={{ width: 160, height: 80, alignSelf: "center", marginBottom: 20 }}
           contentFit="contain"
         />
       ) : null}

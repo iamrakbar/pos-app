@@ -143,7 +143,7 @@ export default function ProductsScreen(): React.JSX.Element {
                         {product.thumbnail_url ? (
                           <Image
                             source={{ uri: product.thumbnail_url }}
-                            className="w-full h-full"
+                            style={{ width: "100%", height: "100%" }}
                             contentFit="cover"
                           />
                         ) : (

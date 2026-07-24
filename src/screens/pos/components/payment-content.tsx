@@ -89,7 +89,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
               <View className="w-64 h-64 bg-white rounded-lg items-center justify-center border border-border">
                 <Image
                   source={{ uri: paymentSession.qr_url! }}
-                  className="w-56 h-56"
+                  style={{ width: 224, height: 224 }}
                   contentFit="contain"
                 />
               </View>

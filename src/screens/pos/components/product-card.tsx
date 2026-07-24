@@ -37,7 +37,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
           {product.image_url ? (
             <Image
               source={{ uri: product.image_url }}
-              className="w-full h-full"
+              style={{ width: "100%", height: "100%" }}
               contentFit="cover"
             />
           ) : (

@@ -189,7 +189,11 @@ function PaymentQrDialog({
           <Separator />
           <View className="items-center gap-3 p-6">
             <View className="w-64 h-64 bg-white rounded-lg border border-border items-center justify-center">
-              <Image source={{ uri: qrUrl }} className="w-60 h-60" contentFit="contain" />
+              <Image
+                source={{ uri: qrUrl }}
+                style={{ width: 240, height: 240 }}
+                contentFit="contain"
+              />
             </View>
             <Typography className="text-base font-semibold text-foreground">
               {formatRupiah(total)}

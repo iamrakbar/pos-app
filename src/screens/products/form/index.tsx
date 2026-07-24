@@ -251,7 +251,11 @@ function ProductImageCard({
           className="aspect-[16/9] w-full items-center justify-center gap-3 overflow-hidden rounded-panel-inner bg-surface-secondary active:opacity-80"
         >
           {imageUri ? (
-            <Image source={{ uri: imageUri }} className="h-full w-full" contentFit="contain" />
+            <Image
+              source={{ uri: imageUri }}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="contain"
+            />
           ) : (
             <>
               <View className="size-14 items-center justify-center rounded-full bg-accent-soft">

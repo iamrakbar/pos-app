@@ -279,7 +279,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       <>
                         <Image
                           source={{ uri: settings.storeLogo }}
-                          className="h-20 w-40"
+                          style={{ width: 160, height: 80 }}
                           contentFit="contain"
                         />
                         <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
