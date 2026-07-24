@@ -10,7 +10,7 @@ import { ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import { useCallback } from "react";
 import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
-import ProductCard from "./ProductCard";
+import ProductCard from "./product-card";
 
 const CARD_MIN_WIDTH = 180;
 const GRID_HORIZONTAL_PADDING = 24;

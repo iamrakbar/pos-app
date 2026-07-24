@@ -1,9 +1,9 @@
-import CartPanel from "@/components/pos/CartPanel";
-import ProductGrid from "@/components/pos/ProductGrid";
-import SearchBar from "@/components/pos/SearchBar";
-import AddOnModal from "@/components/pos/modals/AddOnModal";
-import CheckoutModal from "@/components/pos/modals/CheckoutModal";
-import PaymentModal from "@/components/pos/modals/PaymentModal";
+import CartPanel from "./components/cart-panel";
+import ProductGrid from "./components/product-grid";
+import SearchBar from "./components/search-bar";
+import AddOnModal from "./components/modals/add-on-modal";
+import CheckoutModal from "./components/modals/checkout-modal";
+import PaymentModal from "./components/modals/payment-modal";
 import { useCartStore } from "@/stores/useCartStore";
 import { usePOSStore } from "@/stores/usePOSStore";
 import type { POSProduct } from "@/types/pos";

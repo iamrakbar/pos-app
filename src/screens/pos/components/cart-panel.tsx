@@ -7,7 +7,7 @@ import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "heroui-native-pro";
-import CartItemRow from "./CartItemRow";
+import CartItemRow from "./cart-item-row";
 
 export default function CartPanel(): JSX.Element {
   const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([

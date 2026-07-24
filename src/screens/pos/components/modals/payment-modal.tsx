@@ -1,4 +1,4 @@
-import { PaymentContent } from "@/screens/pos/PaymentScreenContent";
+import { PaymentContent } from "../payment-content";
 import { usePOSStore } from "@/stores/usePOSStore";
 import { useRouter } from "expo-router";
 import { Dialog } from "heroui-native";

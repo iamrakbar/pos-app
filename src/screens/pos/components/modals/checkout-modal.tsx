@@ -1,5 +1,5 @@
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
-import { CheckoutContent } from "@/screens/pos/CheckoutScreenContent";
+import { CheckoutContent } from "../checkout-content";
 import { usePOSStore } from "@/stores/usePOSStore";
 import type { PaymentSession } from "@/types/pos";
 import { Dialog } from "heroui-native";

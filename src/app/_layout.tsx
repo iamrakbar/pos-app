@@ -71,7 +71,7 @@ export default function RootLayout(): JSX.Element {
                       <Stack.Screen name="(app)" />
                     </Stack.Protected>
                     <Stack.Protected guard={!session}>
-                      <Stack.Screen name="sign-in" />
+                      <Stack.Screen name="(auth)" />
                     </Stack.Protected>
                   </Stack>
                 </View>
