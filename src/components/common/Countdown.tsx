@@ -1,5 +1,5 @@
 import { Typography } from "heroui-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 
 type CountdownProps = {
@@ -35,7 +35,7 @@ export default function Countdown({
   prominent = false,
   onExpire,
 }: CountdownProps) {
-  const expiryTimestamp = useMemo(() => toTimestamp(expiresAt), [expiresAt]);
+  const expiryTimestamp = toTimestamp(expiresAt);
   const [now, setNow] = useState(() => Date.now());
   const onExpireRef = useRef(onExpire);
   const remainingMs = expiryTimestamp ? Math.max(0, expiryTimestamp - now) : 0;

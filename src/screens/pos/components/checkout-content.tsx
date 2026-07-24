@@ -31,7 +31,13 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import type { PaymentSession, POSTable } from "@/types/pos";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import {
+  useForm,
+  Controller,
+  useWatch,
+  type FieldErrors,
+  type UseFormSetValue,
+} from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 
 type CheckoutContentProps = {
@@ -149,6 +155,224 @@ function PaymentButtonSkeleton({ widths }: { widths: number[] }) {
         <View key={width} className="h-8 rounded-lg bg-surface-secondary" style={{ width }} />
       ))}
     </View>
+  );
+}
+
+function OrderTypeFields({
+  orderType,
+  selectedTable,
+  tablesByArea,
+  pickupTime,
+  errors,
+  setValue,
+}: {
+  orderType: CheckoutFormValues["order_type"];
+  selectedTable: POSTable | undefined;
+  tablesByArea: ReturnType<typeof groupTablesByArea>;
+  pickupTime: string | null;
+  errors: FieldErrors<CheckoutFormValues>;
+  setValue: UseFormSetValue<CheckoutFormValues>;
+}) {
+  return (
+    <View className="flex-row gap-3">
+      <View className="flex-1 gap-1.5">
+        <Typography type="body-sm" weight="semibold">
+          Jenis pesanan <Typography className="text-danger">*</Typography>
+        </Typography>
+        <Select
+          value={{ value: orderType, label: ORDER_TYPE_LABELS[orderType] ?? orderType }}
+          onValueChange={(option) => {
+            if (option) setValue("order_type", option.value as "dine-in" | "takeaway");
+          }}
+        >
+          <Select.Trigger>
+            <Select.Value placeholder="Pilih jenis" />
+            <Select.TriggerIndicator />
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Overlay />
+            <Select.Content presentation="popover" width="trigger">
+              <Select.Item value="dine-in" label="Dine-In" />
+              <Select.Item value="takeaway" label="Takeaway" />
+            </Select.Content>
+          </Select.Portal>
+        </Select>
+      </View>
+
+      {orderType === "dine-in" ? (
+        <View className="flex-1 gap-1.5">
+          <Typography type="body-sm" weight="semibold">
+            Meja{" "}
+            <Typography type="body-xs" color="muted">
+              (opsional)
+            </Typography>
+          </Typography>
+          <Select
+            value={
+              selectedTable ? { value: selectedTable.id, label: selectedTable.name } : undefined
+            }
+            onValueChange={(option) => setValue("table_id", option?.value || null)}
+          >
+            <Select.Trigger>
+              <Select.Value placeholder="Pilih meja" />
+              <Select.TriggerIndicator />
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Overlay />
+              <Select.Content presentation="popover" width="trigger">
+                <Select.Item value="" label="Tanpa meja" />
+                {tablesByArea.map((area) => (
+                  <View key={area.id}>
+                    <Select.ListLabel>{area.name}</Select.ListLabel>
+                    {area.tables.map((table) => (
+                      <Select.Item key={table.id} value={table.id} label={table.name} />
+                    ))}
+                  </View>
+                ))}
+              </Select.Content>
+            </Select.Portal>
+          </Select>
+        </View>
+      ) : (
+        <View className="flex-1 gap-1.5">
+          <Typography type="body-sm" weight="semibold">
+            Waktu ambil
+          </Typography>
+          <TimePicker
+            hourFormat={24}
+            minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
+            locale="id-ID"
+            isRequired
+            isInvalid={Boolean(errors.pickup_time)}
+            value={pickupTime ? { value: `${pickupTime}:00`, label: pickupTime } : undefined}
+            onOpenChange={(isOpen) => {
+              if (!isOpen || (pickupTime && !isPastPickupTime(pickupTime))) return;
+              setValue("pickup_time", getNextPickupTime(), { shouldValidate: true });
+            }}
+            onValueChange={(option) => {
+              const nextValue = option?.value.slice(0, 5) ?? null;
+              if (nextValue && isPastPickupTime(nextValue)) return;
+              setValue("pickup_time", nextValue, { shouldValidate: true });
+            }}
+          >
+            <TimePicker.Select>
+              <TimePicker.Trigger>
+                <TimePicker.Value placeholder="Pilih waktu" />
+                <TimePicker.TriggerIndicator />
+              </TimePicker.Trigger>
+              <TimePicker.Portal>
+                <TimePicker.Overlay />
+                <TimePicker.Content
+                  presentation="popover"
+                  width="trigger"
+                  className="items-center justify-center"
+                >
+                  <TimePicker.Wheel />
+                </TimePicker.Content>
+              </TimePicker.Portal>
+            </TimePicker.Select>
+          </TimePicker>
+          {errors.pickup_time ? (
+            <Typography type="body-xs" className="text-danger">
+              {errors.pickup_time.message}
+            </Typography>
+          ) : (
+            <Typography type="body-xs" color="muted">
+              Waktu yang sudah lewat tidak dapat dipilih.
+            </Typography>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function CheckoutCostSummary({
+  subtotal,
+  paymentFee,
+  feeUnit,
+  feeValue,
+}: {
+  subtotal: number;
+  paymentFee: number;
+  feeUnit?: string;
+  feeValue?: number;
+}) {
+  return (
+    <Surface variant="secondary" className="gap-2 p-3">
+      <View className="flex-row justify-between">
+        <Typography type="body-xs" color="muted">
+          Subtotal
+        </Typography>
+        <Typography type="body-xs" className="tabular-nums">
+          {formatRupiah(subtotal)}
+        </Typography>
+      </View>
+      {paymentFee > 0 ? (
+        <View className="flex-row justify-between">
+          <Typography type="body-xs" color="muted">
+            Biaya pembayaran{feeUnit === "percentage" ? ` (${feeValue}%)` : ""}
+          </Typography>
+          <Typography type="body-xs" className="tabular-nums">
+            {formatRupiah(paymentFee)}
+          </Typography>
+        </View>
+      ) : null}
+    </Surface>
+  );
+}
+
+function CheckoutActions({
+  total,
+  isPending,
+  isDisabled,
+  onCancel,
+  onComplete,
+}: {
+  total: number;
+  isPending: boolean;
+  isDisabled: boolean;
+  onCancel: () => void;
+  onComplete: () => void;
+}) {
+  return (
+    <>
+      <Separator />
+      <View className="bg-surface px-5 pb-3 pt-2.5">
+        <View className="flex-row items-center justify-between pb-2.5">
+          <Typography type="body-sm" color="muted">
+            Total
+          </Typography>
+          <Typography.Heading type="h5" className="tabular-nums">
+            {formatRupiah(total)}
+          </Typography.Heading>
+        </View>
+        <View className="flex-row items-center gap-3">
+          <Button variant="outline" onPress={onCancel}>
+            <Button.Label>Batal</Button.Label>
+          </Button>
+          <SlideButton
+            variant="accent"
+            className="flex-1"
+            classNames={{ container: "h-12" }}
+            isDisabled={isDisabled}
+            autoReset
+            autoResetDelay={600}
+            onComplete={onComplete}
+          >
+            <SlideButton.UnderlayContent>
+              <SlideButton.Label>{isPending ? "Memproses" : "Geser untuk bayar"}</SlideButton.Label>
+            </SlideButton.UnderlayContent>
+            <SlideButton.OverlayContent>
+              <SlideButton.Label>Bayar</SlideButton.Label>
+            </SlideButton.OverlayContent>
+            <SlideButton.Thumb>
+              {isPending ? <ActivityIndicator size="small" /> : null}
+            </SlideButton.Thumb>
+          </SlideButton>
+        </View>
+      </View>
+    </>
   );
 }
 
@@ -320,118 +544,14 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           </View>
         ) : null}
 
-        <View className="flex-row gap-3">
-          <View className="flex-1 gap-1.5">
-            <Typography type="body-sm" weight="semibold">
-              Jenis pesanan <Typography className="text-danger">*</Typography>
-            </Typography>
-            <Select
-              value={{ value: orderType, label: ORDER_TYPE_LABELS[orderType] ?? orderType }}
-              onValueChange={(option) => {
-                if (option) setValue("order_type", option.value as "dine-in" | "takeaway");
-              }}
-            >
-              <Select.Trigger>
-                <Select.Value placeholder="Pilih jenis" />
-                <Select.TriggerIndicator />
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Overlay />
-                <Select.Content presentation="popover" width="trigger">
-                  <Select.Item value="dine-in" label="Dine-In" />
-                  <Select.Item value="takeaway" label="Takeaway" />
-                </Select.Content>
-              </Select.Portal>
-            </Select>
-          </View>
-
-          {orderType === "dine-in" ? (
-            <View className="flex-1 gap-1.5">
-              <Typography type="body-sm" weight="semibold">
-                Meja{" "}
-                <Typography type="body-xs" color="muted">
-                  (opsional)
-                </Typography>
-              </Typography>
-              <Select
-                value={
-                  selectedTable ? { value: selectedTable.id, label: selectedTable.name } : undefined
-                }
-                onValueChange={(option) => setValue("table_id", option?.value || null)}
-              >
-                <Select.Trigger>
-                  <Select.Value placeholder="Pilih meja" />
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content presentation="popover" width="trigger">
-                    <Select.Item value="" label="Tanpa meja" />
-                    {tablesByArea.map((area) => (
-                      <View key={area.id}>
-                        <Select.ListLabel>{area.name}</Select.ListLabel>
-                        {area.tables.map((table) => (
-                          <Select.Item key={table.id} value={table.id} label={table.name} />
-                        ))}
-                      </View>
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-            </View>
-          ) : (
-            <View className="flex-1 gap-1.5">
-              <Typography type="body-sm" weight="semibold">
-                Waktu ambil
-              </Typography>
-              <TimePicker
-                hourFormat={24}
-                minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
-                locale="id-ID"
-                isRequired
-                isInvalid={Boolean(errors.pickup_time)}
-                value={pickupTime ? { value: `${pickupTime}:00`, label: pickupTime } : undefined}
-                onOpenChange={(isOpen) => {
-                  if (!isOpen || (pickupTime && !isPastPickupTime(pickupTime))) return;
-
-                  setValue("pickup_time", getNextPickupTime(), { shouldValidate: true });
-                }}
-                onValueChange={(option) => {
-                  const nextValue = option?.value.slice(0, 5) ?? null;
-                  if (nextValue && isPastPickupTime(nextValue)) return;
-
-                  setValue("pickup_time", nextValue, { shouldValidate: true });
-                }}
-              >
-                <TimePicker.Select>
-                  <TimePicker.Trigger>
-                    <TimePicker.Value placeholder="Pilih waktu" />
-                    <TimePicker.TriggerIndicator />
-                  </TimePicker.Trigger>
-                  <TimePicker.Portal>
-                    <TimePicker.Overlay />
-                    <TimePicker.Content
-                      presentation="popover"
-                      width="trigger"
-                      className="items-center justify-center"
-                    >
-                      <TimePicker.Wheel />
-                    </TimePicker.Content>
-                  </TimePicker.Portal>
-                </TimePicker.Select>
-              </TimePicker>
-              {errors.pickup_time ? (
-                <Typography type="body-xs" className="text-danger">
-                  {errors.pickup_time.message}
-                </Typography>
-              ) : (
-                <Typography type="body-xs" color="muted">
-                  Waktu yang sudah lewat tidak dapat dipilih.
-                </Typography>
-              )}
-            </View>
-          )}
-        </View>
+        <OrderTypeFields
+          orderType={orderType}
+          selectedTable={selectedTable}
+          tablesByArea={tablesByArea}
+          pickupTime={pickupTime}
+          errors={errors}
+          setValue={setValue}
+        />
 
         <View className="gap-2">
           <Typography type="body-sm" weight="semibold">
@@ -656,68 +776,20 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           />
         </View>
 
-        <Surface variant="secondary" className="gap-2 p-3">
-          <View className="flex-row justify-between">
-            <Typography type="body-xs" color="muted">
-              Subtotal
-            </Typography>
-            <Typography type="body-xs" className="tabular-nums">
-              {formatRupiah(subtotal)}
-            </Typography>
-          </View>
-          {paymentFee > 0 ? (
-            <View className="flex-row justify-between">
-              <Typography type="body-xs" color="muted">
-                Biaya pembayaran
-                {selectedPayment?.fee_unit === "percentage"
-                  ? ` (${selectedPayment.fee_value}%)`
-                  : ""}
-              </Typography>
-              <Typography type="body-xs" className="tabular-nums">
-                {formatRupiah(paymentFee)}
-              </Typography>
-            </View>
-          ) : null}
-        </Surface>
+        <CheckoutCostSummary
+          subtotal={subtotal}
+          paymentFee={paymentFee}
+          feeUnit={selectedPayment?.fee_unit}
+          feeValue={selectedPayment?.fee_value}
+        />
       </KeyboardAwareScrollView>
-
-      <Separator />
-      <View className="bg-surface px-5 pb-3 pt-2.5">
-        <View className="flex-row items-center justify-between pb-2.5">
-          <Typography type="body-sm" color="muted">
-            Total
-          </Typography>
-          <Typography.Heading type="h5" className="tabular-nums">
-            {formatRupiah(total)}
-          </Typography.Heading>
-        </View>
-        <View className="flex-row items-center gap-3">
-          <Button variant="outline" onPress={onCancel ?? closeModal}>
-            <Button.Label>Batal</Button.Label>
-          </Button>
-          <SlideButton
-            variant="accent"
-            className="flex-1"
-            classNames={{ container: "h-12" }}
-            isDisabled={isCheckoutDisabled}
-            autoReset
-            autoResetDelay={600}
-            onComplete={handleSubmit(onSubmit, onInvalid)}
-          >
-            <SlideButton.UnderlayContent>
-              <SlideButton.Label>
-                {isCheckoutPending ? "Memproses" : "Geser untuk bayar"}
-              </SlideButton.Label>
-            </SlideButton.UnderlayContent>
-            <SlideButton.OverlayContent>
-              <SlideButton.Label>Bayar</SlideButton.Label>
-            </SlideButton.OverlayContent>
-            <SlideButton.Thumb>
-              {isCheckoutPending ? <ActivityIndicator size="small" /> : null}
-            </SlideButton.Thumb>
-          </SlideButton>
-        </View>
-      </View>
+      <CheckoutActions
+        total={total}
+        isPending={isCheckoutPending}
+        isDisabled={isCheckoutDisabled}
+        onCancel={onCancel ?? closeModal}
+        onComplete={handleSubmit(onSubmit, onInvalid)}
+      />
     </View>
   );
 }

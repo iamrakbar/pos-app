@@ -9,7 +9,8 @@ import QrUrlDisclosure from "@/components/common/QrUrlDisclosure";
 import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
-import { ActivityIndicator, Image, ScrollView, View, useWindowDimensions } from "react-native";
+import { Image } from "expo-image";
+import { ActivityIndicator, ScrollView, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 
@@ -89,7 +90,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
                 <Image
                   source={{ uri: paymentSession.qr_url! }}
                   className="w-56 h-56"
-                  resizeMode="contain"
+                  contentFit="contain"
                 />
               </View>
             ) : (

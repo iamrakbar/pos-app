@@ -2,8 +2,9 @@ import type { ReceiptSettings } from "@/stores/useReceiptStore";
 import type { PaperWidth } from "@/stores/usePrinterStore";
 import { formatRupiah } from "@/utils/format";
 import { formatReceiptRow, wrapReceiptText } from "@/services/printer/escpos";
+import { Image } from "expo-image";
 import type { JSX } from "react";
-import { Image, Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 
 export type ReceiptPreviewData = {
   code: string;
@@ -56,16 +57,22 @@ function ReceiptLines({
   align?: "left" | "center" | "right";
   bold?: boolean;
 }): JSX.Element {
+  const occurrences = new Map<string, number>();
+
   return (
     <>
-      {lines.map((value, index) => (
-        <Text
-          key={`${value}-${index}`}
-          style={[styles.text, { textAlign: align }, bold && { fontWeight: "700" }]}
-        >
-          {value}
-        </Text>
-      ))}
+      {lines.map((value) => {
+        const occurrence = occurrences.get(value) ?? 0;
+        occurrences.set(value, occurrence + 1);
+        return (
+          <Text
+            key={`${value}-${occurrence}`}
+            style={[styles.text, { textAlign: align }, bold && { fontWeight: "700" }]}
+          >
+            {value}
+          </Text>
+        );
+      })}
     </>
   );
 }
@@ -108,7 +115,7 @@ export function ReceiptPaper({
         <Image
           source={{ uri: settings.storeLogo }}
           className="w-40 h-20 self-center mb-5"
-          resizeMode="contain"
+          contentFit="contain"
         />
       ) : null}
       <ReceiptLines lines={[settings.storeName || "Store name"]} align="center" bold />

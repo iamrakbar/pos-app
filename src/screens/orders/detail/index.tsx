@@ -21,7 +21,7 @@ import ErrorState from "@/components/common/ErrorState";
 import Countdown from "@/components/common/Countdown";
 import QrUrlDisclosure from "@/components/common/QrUrlDisclosure";
 import DialogCloseButton from "@/components/common/DialogCloseButton";
-import { useReceiptPrinter } from "@/hooks/printer/useReceiptPrinter";
+import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/useReceiptPrinter";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
 import { useNavigationTheme } from "@/utils/navigationTheme";
 import { formatRupiah } from "@/utils/format";
@@ -30,7 +30,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "heroui-native-pro";
 import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { ActivityIndicator, Image, ScrollView, View } from "react-native";
+import { Image } from "expo-image";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useState } from "react";
 import Constants from "expo-constants";
 
@@ -111,6 +112,181 @@ function MoneyRow({
   );
 }
 
+function OrderStatusActions({
+  status,
+  orderId,
+  isPending,
+  error,
+  isSuccess,
+  onUpdate,
+}: {
+  status: string;
+  orderId: string;
+  isPending: boolean;
+  error: unknown;
+  isSuccess: boolean;
+  onUpdate: (input: { id: string; status: "process" | "completed" }) => void;
+}) {
+  if (status !== "new" && status !== "process") return null;
+
+  return (
+    <View className="gap-2">
+      <SectionTitle>Update Status</SectionTitle>
+      <View className="flex-row gap-3">
+        <Button
+          className="flex-1"
+          onPress={() =>
+            onUpdate({ id: orderId, status: status === "new" ? "process" : "completed" })
+          }
+          isDisabled={isPending}
+        >
+          <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+          <Button.Label className="ml-1.5">
+            {status === "new" ? "Accept" : "Mark Completed"}
+          </Button.Label>
+        </Button>
+      </View>
+      {error ? (
+        <Typography className="text-xs text-danger">{getErrorMessage(error)}</Typography>
+      ) : null}
+      {isSuccess ? (
+        <Typography className="text-xs text-success">Order status updated.</Typography>
+      ) : null}
+    </View>
+  );
+}
+
+function PaymentQrDialog({
+  isOpen,
+  onOpenChange,
+  code,
+  qrUrl,
+  total,
+  expiresAt,
+}: {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  code: string;
+  qrUrl: string;
+  total: number;
+  expiresAt: string | null | undefined;
+}) {
+  return (
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content
+          isSwipeable={false}
+          className="w-full max-w-md self-center bg-background p-0 overflow-hidden"
+        >
+          <DialogCloseButton />
+          <View className="bg-surface p-4 pr-14">
+            <View className="gap-0.5">
+              <Dialog.Title>QRIS Payment</Dialog.Title>
+              <Typography className="text-sm text-muted-foreground">{code}</Typography>
+            </View>
+          </View>
+          <Separator />
+          <View className="items-center gap-3 p-6">
+            <View className="w-64 h-64 bg-white rounded-lg border border-border items-center justify-center">
+              <Image source={{ uri: qrUrl }} className="w-60 h-60" contentFit="contain" />
+            </View>
+            <Typography className="text-base font-semibold text-foreground">
+              {formatRupiah(total)}
+            </Typography>
+            <Countdown
+              expiresAt={expiresAt}
+              prefix="QR berlaku"
+              className="text-xs text-warning font-semibold"
+              onExpire={() => onOpenChange(false)}
+            />
+          </View>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
+  );
+}
+
+function PrinterPromptDialog({
+  prompt,
+  onClose,
+  onAction,
+}: {
+  prompt: PrinterPrompt | null;
+  onClose: () => void;
+  onAction: () => void | Promise<void>;
+}) {
+  return (
+    <Dialog isOpen={prompt !== null} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
+          <DialogCloseButton />
+          <View className="mb-5 gap-1.5 pr-10">
+            <Dialog.Title>{prompt?.title}</Dialog.Title>
+            {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
+          </View>
+          <View className="flex-row justify-end gap-3">
+            <Button variant="ghost" size="sm" onPress={onClose}>
+              <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
+            </Button>
+            {prompt?.actionLabel ? (
+              <Button size="sm" onPress={onAction}>
+                <Button.Label>{prompt.actionLabel}</Button.Label>
+              </Button>
+            ) : null}
+          </View>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
+  );
+}
+
+function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () => void }) {
+  return (
+    <View className="flex-1 justify-center bg-background">
+      <EmptyState>
+        <EmptyState.Header>
+          <EmptyState.Media variant="icon">
+            <Ionicons name="receipt-outline" size={20} color={iconColor} />
+          </EmptyState.Media>
+          <EmptyState.Title>Order not found</EmptyState.Title>
+          <EmptyState.Description>
+            This order may have been removed or is no longer available.
+          </EmptyState.Description>
+        </EmptyState.Header>
+        <EmptyState.Content>
+          <Button size="sm" variant="outline" onPress={onBack}>
+            <Button.Label>Go back</Button.Label>
+          </Button>
+        </EmptyState.Content>
+      </EmptyState>
+    </View>
+  );
+}
+
+function PrintReceiptToolbar({
+  color,
+  isPrinting,
+  onPrint,
+}: {
+  color: string;
+  isPrinting: boolean;
+  onPrint: () => void;
+}) {
+  return (
+    <Stack.Toolbar placement="right">
+      <Stack.Toolbar.Button
+        {...getToolbarIcon("printer")}
+        tintColor={color}
+        accessibilityLabel={isPrinting ? "Printing receipt" : "Print receipt"}
+        disabled={isPrinting}
+        onPress={onPrint}
+      />
+    </Stack.Toolbar>
+  );
+}
+
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -128,26 +304,7 @@ export default function OrderDetailScreen() {
   if (isError) return <ErrorState error={error} onRetry={refetch} />;
 
   if (!order) {
-    return (
-      <View className="flex-1 justify-center bg-background">
-        <EmptyState>
-          <EmptyState.Header>
-            <EmptyState.Media variant="icon">
-              <Ionicons name="receipt-outline" size={20} color={themeColorMuted} />
-            </EmptyState.Media>
-            <EmptyState.Title>Order not found</EmptyState.Title>
-            <EmptyState.Description>
-              This order may have been removed or is no longer available.
-            </EmptyState.Description>
-          </EmptyState.Header>
-          <EmptyState.Content>
-            <Button size="sm" variant="outline" onPress={() => router.back()}>
-              <Button.Label>Go back</Button.Label>
-            </Button>
-          </EmptyState.Content>
-        </EmptyState>
-      </View>
-    );
+    return <OrderNotFound iconColor={themeColorMuted} onBack={() => router.back()} />;
   }
 
   const orderStatus = getOrderStatus(order.order_status);
@@ -195,21 +352,13 @@ export default function OrderDetailScreen() {
   const feeAmount = extractNumber(order.payment_fee);
   const canRefreshPayment = !isCashPayment && !!paymentExpiresAt && !paymentExpired;
 
-  const handlePrintReceipt = async () => {
-    await printReceipt(order, "reprint");
-  };
-
   return (
     <>
-      <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button
-          {...getToolbarIcon("printer")}
-          tintColor={navigationTheme.foreground}
-          accessibilityLabel={isPrinting ? "Printing receipt" : "Print receipt"}
-          disabled={isPrinting}
-          onPress={handlePrintReceipt}
-        />
-      </Stack.Toolbar>
+      <PrintReceiptToolbar
+        color={navigationTheme.foreground}
+        isPrinting={isPrinting}
+        onPrint={() => void printReceipt(order, "reprint")}
+      />
 
       <View className="flex-1 bg-background">
         <ScrollView className="flex-1" contentContainerClassName="p-4 pb-8">
@@ -405,112 +554,32 @@ export default function OrderDetailScreen() {
                   </Surface>
                 </View>
 
-                {/* ── Status actions ── */}
-                {/* cancelled is not a merchant-settable transition via this endpoint
-                    (it's system/customer-initiated) — display only, no action. */}
-                {(statusCode === "new" || statusCode === "process") && (
-                  <View className="gap-2">
-                    <SectionTitle>Update Status</SectionTitle>
-                    <View className="flex-row gap-3">
-                      {statusCode === "new" && (
-                        <Button
-                          className="flex-1"
-                          onPress={() => updateStatus.mutate({ id: order.id, status: "process" })}
-                          isDisabled={updateStatus.isPending}
-                        >
-                          <Ionicons name="checkmark-circle-outline" size={16} color="white" />
-                          <Button.Label className="ml-1.5">Accept</Button.Label>
-                        </Button>
-                      )}
-                      {statusCode === "process" && (
-                        <Button
-                          className="flex-1"
-                          onPress={() => updateStatus.mutate({ id: order.id, status: "completed" })}
-                          isDisabled={updateStatus.isPending}
-                        >
-                          <Ionicons name="checkmark-circle-outline" size={16} color="white" />
-                          <Button.Label className="ml-1.5">Mark Completed</Button.Label>
-                        </Button>
-                      )}
-                      {/* Reject remains a supported status transition, but its interaction is
-                        intentionally hidden until the rejection flow is ready to expose. */}
-                    </View>
-                    {updateStatus.isError && (
-                      <Typography className="text-xs text-danger">
-                        {getErrorMessage(updateStatus.error)}
-                      </Typography>
-                    )}
-                    {updateStatus.isSuccess && (
-                      <Typography className="text-xs text-success">
-                        Order status updated.
-                      </Typography>
-                    )}
-                  </View>
-                )}
+                <OrderStatusActions
+                  status={statusCode}
+                  orderId={order.id}
+                  isPending={updateStatus.isPending}
+                  error={updateStatus.isError ? updateStatus.error : null}
+                  isSuccess={updateStatus.isSuccess}
+                  onUpdate={updateStatus.mutate}
+                />
               </View>
             </View>
           </View>
         </ScrollView>
 
-        <Dialog isOpen={isQrOpen && canShowQr} onOpenChange={setIsQrOpen}>
-          <Dialog.Portal>
-            <Dialog.Overlay />
-            <Dialog.Content
-              isSwipeable={false}
-              className="w-full max-w-md self-center bg-background p-0 overflow-hidden"
-            >
-              <DialogCloseButton />
-              <View className="bg-surface p-4 pr-14">
-                <View className="gap-0.5">
-                  <Dialog.Title>QRIS Payment</Dialog.Title>
-                  <Typography className="text-sm text-muted-foreground">{order.code}</Typography>
-                </View>
-              </View>
-              <Separator />
-              <View className="items-center gap-3 p-6">
-                <View className="w-64 h-64 bg-white rounded-lg border border-border items-center justify-center">
-                  <Image
-                    source={{ uri: paymentQrUrl! }}
-                    className="w-60 h-60"
-                    resizeMode="contain"
-                  />
-                </View>
-                <Typography className="text-base font-semibold text-foreground">
-                  {formatRupiah(order.total)}
-                </Typography>
-                <Countdown
-                  expiresAt={paymentExpiresAt}
-                  prefix="QR berlaku"
-                  className="text-xs text-warning font-semibold"
-                  onExpire={() => setIsQrOpen(false)}
-                />
-              </View>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog>
-
-        <Dialog isOpen={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-          <Dialog.Portal>
-            <Dialog.Overlay />
-            <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-              <DialogCloseButton />
-              <View className="mb-5 gap-1.5 pr-10">
-                <Dialog.Title>{prompt?.title}</Dialog.Title>
-                {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
-              </View>
-              <View className="flex-row justify-end gap-3">
-                <Button variant="ghost" size="sm" onPress={() => setPrompt(null)}>
-                  <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
-                </Button>
-                {prompt?.actionLabel ? (
-                  <Button size="sm" onPress={handlePromptAction}>
-                    <Button.Label>{prompt.actionLabel}</Button.Label>
-                  </Button>
-                ) : null}
-              </View>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog>
+        <PaymentQrDialog
+          isOpen={isQrOpen && canShowQr}
+          onOpenChange={setIsQrOpen}
+          code={order.code}
+          qrUrl={paymentQrUrl ?? ""}
+          total={order.total}
+          expiresAt={paymentExpiresAt}
+        />
+        <PrinterPromptDialog
+          prompt={prompt}
+          onClose={() => setPrompt(null)}
+          onAction={handlePromptAction}
+        />
       </View>
     </>
   );

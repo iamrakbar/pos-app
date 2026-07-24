@@ -152,11 +152,11 @@ export default function PrinterFormScreen(): React.JSX.Element {
     });
   }, [hasHydrated, isCreate, printer, reset]);
 
-  const openAppSettings = React.useCallback(async () => {
+  const openAppSettings = async () => {
     await Linking.openSettings();
-  }, []);
+  };
 
-  const openBluetoothSettings = React.useCallback(async () => {
+  const openBluetoothSettings = async () => {
     if (Platform.OS === "android") {
       try {
         const IntentLauncher =
@@ -170,9 +170,9 @@ export default function PrinterFormScreen(): React.JSX.Element {
     }
 
     await Linking.openSettings();
-  }, []);
+  };
 
-  const getBluetoothPermissions = React.useCallback(() => {
+  const getBluetoothPermissions = () => {
     if (Platform.OS !== "android") return [];
 
     if (Number(Platform.Version) >= 31) {
@@ -183,9 +183,9 @@ export default function PrinterFormScreen(): React.JSX.Element {
     }
 
     return [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
-  }, []);
+  };
 
-  const requestBluetoothPermissions = React.useCallback(async () => {
+  const requestBluetoothPermissions = async () => {
     const permissions = getBluetoothPermissions();
     if (permissions.length === 0) return true;
 
@@ -209,27 +209,27 @@ export default function PrinterFormScreen(): React.JSX.Element {
     }
 
     return granted;
-  }, [getBluetoothPermissions, openAppSettings]);
+  };
 
-  const handleScan = React.useCallback(async () => {
+  const handleScan = async () => {
     setScanning(true);
     setDevices([]);
 
     try {
       const granted = await requestBluetoothPermissions();
-      if (!granted) return;
-
-      await BLEPrinter.init();
-      const results = await BLEPrinter.getDeviceList();
-      setDevices(
-        results?.map((device: IBLEPrinter) => {
-          const deviceId = device.inner_mac_address || device.device_name;
-          return {
-            id: deviceId,
-            name: device.device_name || deviceId,
-          };
-        }) ?? []
-      );
+      if (granted) {
+        await BLEPrinter.init();
+        const results = await BLEPrinter.getDeviceList();
+        setDevices(
+          results?.map((device: IBLEPrinter) => {
+            const deviceId = device.inner_mac_address || device.device_name;
+            return {
+              id: deviceId,
+              name: device.device_name || deviceId,
+            };
+          }) ?? []
+        );
+      }
     } catch (err: unknown) {
       setPrompt({
         title: "Scan failed",
@@ -237,10 +237,9 @@ export default function PrinterFormScreen(): React.JSX.Element {
         actionLabel: Platform.OS === "android" ? "Open Bluetooth Settings" : "Open Settings",
         onAction: openBluetoothSettings,
       });
-    } finally {
-      setScanning(false);
     }
-  }, [openBluetoothSettings, requestBluetoothPermissions]);
+    setScanning(false);
+  };
 
   const handleSelectDevice = (device: DiscoveredDevice) => {
     setValue("selectedDeviceId", device.id, { shouldDirty: true, shouldValidate: true });
@@ -291,8 +290,10 @@ export default function PrinterFormScreen(): React.JSX.Element {
     try {
       if (values.connection === "bluetooth") {
         const granted = await requestBluetoothPermissions();
-        if (!granted) return;
-
+        if (!granted) {
+          setConnecting(false);
+          return;
+        }
         const address = values.macAddress || values.selectedDeviceId;
         await BLEPrinter.init();
         await BLEPrinter.closeConn();
@@ -349,9 +350,8 @@ export default function PrinterFormScreen(): React.JSX.Element {
             ? openBluetoothSettings
             : undefined,
       });
-    } finally {
-      setConnecting(false);
     }
+    setConnecting(false);
   });
 
   const handlePrintCalibration = handleSubmit(async (values) => {

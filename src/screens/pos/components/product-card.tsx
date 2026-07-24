@@ -1,9 +1,9 @@
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { Card, Typography, useThemeColor } from "heroui-native";
+import { Image } from "expo-image";
 import type { JSX } from "react";
-import { memo, useCallback } from "react";
-import { Image, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
@@ -17,9 +17,9 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
   const isDiscounted = product.original_price !== null;
   const isOutOfStock = product.stock_enabled && (product.stock_qty ?? 0) <= 0;
   const effectivePrice = product.price;
-  const handlePress = useCallback(() => {
+  const handlePress = () => {
     onPress(product);
-  }, [onPress, product]);
+  };
 
   return (
     <Pressable
@@ -38,7 +38,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
             <Image
               source={{ uri: product.image_url }}
               className="w-full h-full"
-              resizeMode="cover"
+              contentFit="cover"
             />
           ) : (
             <Ionicons name="fast-food-outline" size={30} color={themeColorMuted} />
@@ -77,4 +77,4 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
   );
 }
 
-export default memo(ProductCard);
+export default ProductCard;

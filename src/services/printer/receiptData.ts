@@ -86,26 +86,24 @@ export function toReceiptData(order: ReceiptOrder): ReceiptPreviewData {
       ),
     })),
     subtotal,
-    discounts: coupons
-      .map((coupon, index) => {
-        const value = record(coupon);
-        return {
-          id: `discount-${index}`,
-          name: typeof value?.code === "string" ? `Discount (${value.code})` : "Discount",
-          amount: extractNumber(value?.discount_amount),
-        };
-      })
-      .filter((discount) => discount.amount > 0),
-    fees: rawFees
-      .map((fee, index) => {
-        const value = record(fee);
-        return {
-          id: `${String(value?.type ?? "fee")}-${index}`,
-          name: typeof value?.name === "string" ? value.name : "Fee",
-          amount: extractNumber(value?.amount),
-        };
-      })
-      .filter((fee) => fee.amount > 0),
+    discounts: coupons.flatMap((coupon, index) => {
+      const value = record(coupon);
+      const discount = {
+        id: `discount-${index}`,
+        name: typeof value?.code === "string" ? `Discount (${value.code})` : "Discount",
+        amount: extractNumber(value?.discount_amount),
+      };
+      return discount.amount > 0 ? [discount] : [];
+    }),
+    fees: rawFees.flatMap((fee, index) => {
+      const value = record(fee);
+      const receiptFee = {
+        id: `${String(value?.type ?? "fee")}-${index}`,
+        name: typeof value?.name === "string" ? value.name : "Fee",
+        amount: extractNumber(value?.amount),
+      };
+      return receiptFee.amount > 0 ? [receiptFee] : [];
+    }),
     tax: taxIsEnabled
       ? {
           name:

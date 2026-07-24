@@ -9,7 +9,6 @@ import { usePOSStore } from "@/stores/usePOSStore";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
 import { useFocusEffect } from "expo-router";
-import { useCallback } from "react";
 import { Platform, StatusBar, View, useWindowDimensions } from "react-native";
 import { useNavigationTheme } from "@/utils/navigationTheme";
 
@@ -20,32 +19,27 @@ export default function POSScreen(): JSX.Element {
   const theme = useNavigationTheme();
   const cartPanelWidth = Math.floor(viewportWidth / 3);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (Platform.OS !== "android") return;
+  useFocusEffect(() => {
+    if (Platform.OS !== "android") return;
 
-      StatusBar.setBackgroundColor(theme.surface, true);
-      return () => StatusBar.setBackgroundColor(theme.background, true);
-    }, [theme.background, theme.surface])
-  );
+    StatusBar.setBackgroundColor(theme.surface, true);
+    return () => StatusBar.setBackgroundColor(theme.background, true);
+  });
 
-  const handleSelectProduct = useCallback(
-    (product: POSProduct) => {
-      if (product.add_ons.length > 0) {
-        openAddonModal(product);
-      } else {
-        addItem({
-          product_id: product.id,
-          name: product.name,
-          price: product.price,
-          qty: 1,
-          notes: null,
-          add_ons: [],
-        });
-      }
-    },
-    [addItem, openAddonModal]
-  );
+  const handleSelectProduct = (product: POSProduct) => {
+    if (product.add_ons.length > 0) {
+      openAddonModal(product);
+    } else {
+      addItem({
+        product_id: product.id,
+        name: product.name,
+        price: product.price,
+        qty: 1,
+        notes: null,
+        add_ons: [],
+      });
+    }
+  };
 
   return (
     <View className="flex-1 flex-row bg-surface p-safe">

@@ -22,7 +22,8 @@ import {
 } from "heroui-native";
 import React from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { Image, Platform, Pressable, ScrollView, View } from "react-native";
+import { Image } from "expo-image";
+import { Platform, Pressable, ScrollView, View } from "react-native";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
 import ErrorState from "@/components/common/ErrorState";
 import LoadingState from "@/components/common/LoadingState";
@@ -73,10 +74,16 @@ async function optimizeProductImage(
     compress: PRODUCT_IMAGE_QUALITY,
     format: SaveFormat.JPEG,
   });
-  const size =
-    Platform.OS === "web"
-      ? (await (await fetch(optimizedImage.uri)).blob()).size
-      : (new File(optimizedImage.uri).size ?? 0);
+  let size: number;
+  if (Platform.OS === "web") {
+    const response = await fetch(optimizedImage.uri);
+    if (!response.ok) {
+      throw new Error(`The optimized image could not be read (status ${response.status}).`);
+    }
+    size = (await response.blob()).size;
+  } else {
+    size = new File(optimizedImage.uri).size ?? 0;
+  }
 
   if (size > PRODUCT_IMAGE_MAX_BYTES) {
     throw new Error("The optimized image is still larger than 4 MB. Choose a smaller image.");
@@ -471,7 +478,7 @@ export default function ProductFormScreen(): React.JSX.Element {
                     <Image
                       source={{ uri: imageUri }}
                       className="h-full w-full"
-                      resizeMode="contain"
+                      contentFit="contain"
                     />
                   ) : (
                     <>

@@ -230,8 +230,8 @@ export function useUpdateProduct(productId: string) {
       const optimistic = optimisticListProduct(payload, productId);
       for (const [queryKey, current] of snapshots) {
         if (!current) continue;
-        const next = current
-          .map((item) =>
+        const next = current.flatMap((item) => {
+          const nextItem =
             item.id === productId
               ? {
                   ...item,
@@ -241,9 +241,11 @@ export function useUpdateProduct(productId: string) {
                   image_url: payload.image?.uri ?? item.image_url,
                   thumbnail_url: payload.image?.uri ?? item.thumbnail_url,
                 }
-              : item
-          )
-          .filter((item) => item.id !== productId || productMatchesManagementQuery(item, queryKey));
+              : item;
+          return item.id !== productId || productMatchesManagementQuery(nextItem, queryKey)
+            ? [nextItem]
+            : [];
+        });
         queryClient.setQueryData(queryKey, next);
       }
       if (detail) {

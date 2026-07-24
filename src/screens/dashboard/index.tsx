@@ -255,6 +255,81 @@ function OrdersChart({ data }: { data: ChartPoint[] }) {
   );
 }
 
+function CustomDateRangeDialog({
+  isOpen,
+  onOpenChange,
+  start,
+  end,
+  onStartChange,
+  onEndChange,
+  error,
+  onApply,
+  onCancel,
+  isApplying,
+}: {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  start: NonNullable<DatePickerOption>;
+  end: NonNullable<DatePickerOption>;
+  onStartChange: (value: DatePickerOption | undefined) => void;
+  onEndChange: (value: DatePickerOption | undefined) => void;
+  error: string | null;
+  onApply: () => void;
+  onCancel: () => void;
+  isApplying: boolean;
+}) {
+  return (
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content isSwipeable={false} className="w-full max-w-lg self-center">
+          <DialogCloseButton />
+          <View className="mb-5 gap-1.5 pr-10">
+            <Dialog.Title>Custom Date Range</Dialog.Title>
+            <Dialog.Description>Select the reporting period to display.</Dialog.Description>
+          </View>
+
+          <View className="gap-4">
+            <View className="flex-row flex-wrap items-start gap-4">
+              <DashboardDatePicker
+                label="From"
+                value={start}
+                onValueChange={onStartChange}
+                isInvalid={error !== null}
+              />
+              <DashboardDatePicker
+                label="To"
+                value={end}
+                onValueChange={onEndChange}
+                isInvalid={error !== null}
+              />
+            </View>
+
+            {error ? (
+              <Typography type="body-xs" className="text-danger">
+                {error}
+              </Typography>
+            ) : (
+              <Typography type="body-xs" color="muted">
+                Maximum range: 366 days. Future dates are not included.
+              </Typography>
+            )}
+
+            <View className="flex-row justify-end gap-3">
+              <Button variant="ghost" size="sm" onPress={onCancel}>
+                <Button.Label>Cancel</Button.Label>
+              </Button>
+              <Button size="sm" onPress={onApply} isDisabled={isApplying}>
+                <Button.Label>{isApplying ? "Applying…" : "Apply"}</Button.Label>
+              </Button>
+            </View>
+          </View>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
+  );
+}
+
 export default function DashboardScreen(): React.JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
@@ -504,70 +579,27 @@ export default function DashboardScreen(): React.JSX.Element {
         </View>
       </ScrollView>
 
-      <Dialog
+      <CustomDateRangeDialog
         isOpen={isCustomRangeOpen}
         onOpenChange={(isOpen) => {
           setIsCustomRangeOpen(isOpen);
           if (!isOpen) setCustomRangeError(null);
         }}
-      >
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content isSwipeable={false} className="w-full max-w-lg self-center">
-            <DialogCloseButton />
-            <View className="mb-5 gap-1.5 pr-10">
-              <Dialog.Title>Custom Date Range</Dialog.Title>
-              <Dialog.Description>Select the reporting period to display.</Dialog.Description>
-            </View>
-
-            <View className="gap-4">
-              <View className="flex-row flex-wrap items-start gap-4">
-                <DashboardDatePicker
-                  label="From"
-                  value={customStart}
-                  onValueChange={(value) => {
-                    if (value) setCustomStart(value);
-                    setCustomRangeError(null);
-                  }}
-                  isInvalid={customRangeError !== null}
-                />
-                <DashboardDatePicker
-                  label="To"
-                  value={customEnd}
-                  onValueChange={(value) => {
-                    if (value) setCustomEnd(value);
-                    setCustomRangeError(null);
-                  }}
-                  isInvalid={customRangeError !== null}
-                />
-              </View>
-
-              {customRangeError ? (
-                <Typography type="body-xs" className="text-danger">
-                  {customRangeError}
-                </Typography>
-              ) : (
-                <Typography type="body-xs" color="muted">
-                  Maximum range: 366 days. Future dates are not included.
-                </Typography>
-              )}
-
-              <View className="flex-row justify-end gap-3">
-                <Button variant="ghost" size="sm" onPress={() => setIsCustomRangeOpen(false)}>
-                  <Button.Label>Cancel</Button.Label>
-                </Button>
-                <Button
-                  size="sm"
-                  onPress={handleApplyCustomRange}
-                  isDisabled={dashboard.isFetching}
-                >
-                  <Button.Label>{dashboard.isFetching ? "Applying…" : "Apply"}</Button.Label>
-                </Button>
-              </View>
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+        start={customStart}
+        end={customEnd}
+        onStartChange={(value) => {
+          if (value) setCustomStart(value);
+          setCustomRangeError(null);
+        }}
+        onEndChange={(value) => {
+          if (value) setCustomEnd(value);
+          setCustomRangeError(null);
+        }}
+        error={customRangeError}
+        onApply={handleApplyCustomRange}
+        onCancel={() => setIsCustomRangeOpen(false)}
+        isApplying={dashboard.isFetching}
+      />
     </>
   );
 }

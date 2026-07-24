@@ -6,6 +6,7 @@ import { usePrinterStore, type PaperWidth } from "@/stores/usePrinterStore";
 import { optimizeReceiptLogo } from "@/utils/receiptLogo";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
@@ -19,16 +20,9 @@ import {
   useThemeColor,
   useToast,
 } from "heroui-native";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, View, useWindowDimensions } from "react-native";
 
 const SAMPLE_RECEIPT: ReceiptPreviewData = {
   code: "ORD-2026-0142",
@@ -105,6 +99,15 @@ function FieldLabel({ children }: { children: string }) {
   );
 }
 
+function PrinterSetupButton({ color, onPress }: { color: string; onPress: () => void }) {
+  return (
+    <Button className="w-full" variant="outline" onPress={onPress}>
+      <Ionicons name="print-outline" size={18} color={color} />
+      <Button.Label>Setup Printer</Button.Label>
+    </Button>
+  );
+}
+
 export default function ReceiptSetupScreen(): React.JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
@@ -124,16 +127,12 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
   const [previewPaperWidth, setPreviewPaperWidth] = useState<PaperWidth>(configuredPaperWidth);
 
-  const merchantDefaults = useMemo(
-    () => ({
+  useEffect(() => {
+    const merchantDefaults = {
       id: activeMerchant?.id ?? null,
       name: merchantProfile.data?.name ?? activeMerchant?.name ?? "",
       logo: merchantProfile.data?.logo_url ?? activeMerchant?.logo_url ?? null,
-    }),
-    [activeMerchant, merchantProfile.data]
-  );
-
-  useEffect(() => {
+    };
     if (!merchantDefaults.id || settings.initializedMerchantId === merchantDefaults.id) return;
 
     const shouldOptimizeMerchantLogo = !settings.storeLogo && !!merchantDefaults.logo;
@@ -153,7 +152,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
         })
         .catch(() => undefined);
     }
-  }, [merchantDefaults, settings, updateSettings]);
+  }, [activeMerchant, merchantProfile.data, settings, updateSettings]);
 
   useEffect(() => {
     const merchantId = merchantProfile.data?.id;
@@ -184,19 +183,24 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
     if (result.canceled) return;
 
     setIsProcessingLogo(true);
-    try {
-      const storeLogo = await optimizeReceiptLogo(result.assets[0].uri);
-      updateSettings({ storeLogo });
-      toast.show({ variant: "success", label: "Receipt logo updated" });
-    } catch (error: unknown) {
-      toast.show({
-        variant: "danger",
-        label: "Logo processing failed",
-        description: error instanceof Error ? error.message : "Choose another image and try again.",
+    await optimizeReceiptLogo(result.assets[0].uri)
+      .then(
+        (storeLogo) => {
+          updateSettings({ storeLogo });
+          toast.show({ variant: "success", label: "Receipt logo updated" });
+        },
+        (error: unknown) => {
+          toast.show({
+            variant: "danger",
+            label: "Logo processing failed",
+            description:
+              error instanceof Error ? error.message : "Choose another image and try again.",
+          });
+        }
+      )
+      .finally(() => {
+        setIsProcessingLogo(false);
       });
-    } finally {
-      setIsProcessingLogo(false);
-    }
   };
 
   return (
@@ -276,7 +280,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                         <Image
                           source={{ uri: settings.storeLogo }}
                           className="h-20 w-40"
-                          resizeMode="contain"
+                          contentFit="contain"
                         />
                         <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
                           <Ionicons name="camera" size={15} color="white" />
@@ -334,14 +338,10 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   />
                 </View>
 
-                <Button
-                  className="w-full"
-                  variant="outline"
+                <PrinterSetupButton
+                  color={themeColorForeground}
                   onPress={() => router.push("/settings/printers")}
-                >
-                  <Ionicons name="print-outline" size={18} color={themeColorForeground} />
-                  <Button.Label>Setup Printer</Button.Label>
-                </Button>
+                />
               </View>
             </KeyboardAwareScrollView>
 

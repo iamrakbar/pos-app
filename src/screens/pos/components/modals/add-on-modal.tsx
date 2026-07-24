@@ -19,8 +19,8 @@ import {
   Description,
 } from "heroui-native";
 import type { JSX } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
-import React, { memo, useCallback, useMemo, useEffect, useState } from "react";
+import { FlatList, View, useWindowDimensions } from "react-native";
+import React, { useEffect, useState } from "react";
 import DialogCloseButton from "@/components/common/DialogCloseButton";
 import { useForm, Controller, type Control } from "react-hook-form";
 
@@ -41,14 +41,8 @@ type AddOnSelectionControlProps = {
   group: AddOnGroup;
 };
 
-const AddOnRadioGroup = memo(function AddOnRadioGroup({
-  control,
-  group,
-}: AddOnSelectionControlProps): JSX.Element {
-  const options = useMemo(
-    () => group.options.map((option) => ({ ...option, label: optionLabel(option) })),
-    [group.options]
-  );
+function AddOnRadioGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
+  const options = group.options.map((option) => ({ ...option, label: optionLabel(option) }));
 
   return (
     <Controller
@@ -70,16 +64,10 @@ const AddOnRadioGroup = memo(function AddOnRadioGroup({
       )}
     />
   );
-});
+}
 
-const AddOnCheckboxGroup = memo(function AddOnCheckboxGroup({
-  control,
-  group,
-}: AddOnSelectionControlProps): JSX.Element {
-  const options = useMemo(
-    () => group.options.map((option) => ({ ...option, label: optionLabel(option) })),
-    [group.options]
-  );
+function AddOnCheckboxGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
+  const options = group.options.map((option) => ({ ...option, label: optionLabel(option) }));
 
   return (
     <Controller
@@ -87,10 +75,11 @@ const AddOnCheckboxGroup = memo(function AddOnCheckboxGroup({
       name={`checkboxSelections.${group.id}`}
       render={({ field }) => {
         const selected: string[] = field.value ?? [];
+        const selectedIds = new Set(selected);
         return (
           <Surface className="py-5 w-full">
             {options.map((option, index) => {
-              const isSelected = selected.includes(option.id);
+              const isSelected = selectedIds.has(option.id);
               const maxReached = !isSelected && selected.length >= group.max;
               return (
                 <React.Fragment key={option.id}>
@@ -120,7 +109,7 @@ const AddOnCheckboxGroup = memo(function AddOnCheckboxGroup({
       }}
     />
   );
-});
+}
 
 export default function AddOnModal(): JSX.Element {
   const modal = usePOSStore((s) => s.modal);
@@ -178,61 +167,51 @@ export default function AddOnModal(): JSX.Element {
     }
   }, [isOpen, editingCartItemId, editingCartItem, product, reset]);
 
-  const buildCartAddOns = useCallback(
-    (values: AddOnFormValues) => {
-      if (!product) return [];
+  const buildCartAddOns = (values: AddOnFormValues) => {
+    if (!product) return [];
 
-      return product.add_ons
-        .map((group) => {
-          const selectedOptionIds = group.multiple
-            ? (values.checkboxSelections[group.id] ?? [])
-            : values.radioSelections[group.id]
-              ? [values.radioSelections[group.id]]
-              : [];
-          const options = group.options.filter((o) => selectedOptionIds.includes(o.id));
-          if (options.length === 0) return null;
-          return { id: group.id, name: group.name, options };
-        })
-        .filter(Boolean) as { id: string; name: string; options: AddOnOption[] }[];
-    },
-    [product]
-  );
+    return product.add_ons.flatMap((group) => {
+      const selectedOptionIds = new Set(
+        group.multiple
+          ? (values.checkboxSelections[group.id] ?? [])
+          : values.radioSelections[group.id]
+            ? [values.radioSelections[group.id]]
+            : []
+      );
+      const options = group.options.filter((option) => selectedOptionIds.has(option.id));
+      return options.length > 0 ? [{ id: group.id, name: group.name, options }] : [];
+    });
+  };
 
-  const onSubmit = useCallback(
-    (values: AddOnFormValues) => {
-      if (!product) return;
+  const onSubmit = (values: AddOnFormValues) => {
+    if (!product) return;
 
-      setSubmitError(null);
-      const addOns = buildCartAddOns(values);
-      if (editingCartItemId) removeItem(editingCartItemId);
-      addItem({
-        product_id: product.id,
-        name: product.name,
-        price: product.price,
-        qty: editingCartItem?.qty ?? 1,
-        notes: values.notes.trim() || null,
-        add_ons: addOns,
-      });
-      closeModal();
-    },
-    [addItem, buildCartAddOns, closeModal, editingCartItem, editingCartItemId, product, removeItem]
-  );
+    setSubmitError(null);
+    const addOns = buildCartAddOns(values);
+    if (editingCartItemId) removeItem(editingCartItemId);
+    addItem({
+      product_id: product.id,
+      name: product.name,
+      price: product.price,
+      qty: editingCartItem?.qty ?? 1,
+      notes: values.notes.trim() || null,
+      add_ons: addOns,
+    });
+    closeModal();
+  };
 
-  const onInvalid = useCallback(() => {
+  const onInvalid = () => {
     setSubmitError("Lengkapi pilihan add-on yang wajib diisi sebelum menambahkan produk.");
-  }, []);
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     setSubmitError(null);
     closeModal();
-  }, [closeModal]);
+  };
 
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (!open) handleCancel();
-    },
-    [handleCancel]
-  );
+  const handleOpenChange = (open: boolean) => {
+    if (!open) handleCancel();
+  };
 
   if (!product) return <></>;
 
@@ -257,20 +236,22 @@ export default function AddOnModal(): JSX.Element {
 
           <Separator />
 
-          <ScrollView
+          <FlatList
+            data={product.add_ons}
+            keyExtractor={(group) => group.id}
             showsVerticalScrollIndicator
             keyboardShouldPersistTaps="handled"
             style={{ maxHeight: scrollMaxHeight }}
             contentContainerClassName="p-4 gap-6 bg-background"
-          >
-            {submitError && (
-              <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
-                <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
-              </View>
-            )}
-
-            {product.add_ons.map((group) => (
-              <View key={group.id} className="gap-2">
+            ListHeaderComponent={
+              submitError ? (
+                <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
+                  <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
+                </View>
+              ) : null
+            }
+            renderItem={({ item: group }) => (
+              <View className="gap-2">
                 <View className="flex-row items-center justify-between gap-2">
                   <Label isRequired={group.required}>
                     <Label.Text>{group.name}</Label.Text>
@@ -291,24 +272,25 @@ export default function AddOnModal(): JSX.Element {
                     errors.checkboxSelections?.[group.id]?.message}
                 </FieldError>
               </View>
-            ))}
-
-            <View className="gap-2">
-              <Typography className="text-sm font-semibold text-foreground">Catatan</Typography>
-              <Controller
-                control={control}
-                name="notes"
-                render={({ field }) => (
-                  <TextArea
-                    value={field.value}
-                    onChangeText={field.onChange}
-                    placeholder=""
-                    className="min-h-20"
-                  />
-                )}
-              />
-            </View>
-          </ScrollView>
+            )}
+            ListFooterComponent={
+              <View className="gap-2">
+                <Typography className="text-sm font-semibold text-foreground">Catatan</Typography>
+                <Controller
+                  control={control}
+                  name="notes"
+                  render={({ field }) => (
+                    <TextArea
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      placeholder=""
+                      className="min-h-20"
+                    />
+                  )}
+                />
+              </View>
+            }
+          />
 
           <Separator />
 

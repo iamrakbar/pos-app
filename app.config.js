@@ -141,6 +141,7 @@ module.exports = {
       ],
       "expo-status-bar",
       "expo-font",
+      "expo-image",
     ],
     experiments: {
       typedRoutes: true,

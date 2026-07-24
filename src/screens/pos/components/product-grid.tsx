@@ -8,7 +8,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
-import { useCallback } from "react";
 import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
 import ProductCard from "./product-card";
 
@@ -54,11 +53,8 @@ export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props):
       return right.price - left.price;
     });
 
-  const renderProduct = useCallback(
-    ({ item }: { item: POSProduct }) => (
-      <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
-    ),
-    [cardWidth, onSelectProduct]
+  const renderProduct = ({ item }: { item: POSProduct }) => (
+    <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
   );
 
   if (isLoading) return <LoadingState message="Loading products…" />;

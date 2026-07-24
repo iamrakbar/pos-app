@@ -8,8 +8,9 @@ import { useNavigationTheme } from "@/utils/navigationTheme";
 import { getToolbarIcon } from "@/utils/toolbarIcons";
 import { Ionicons } from "@expo/vector-icons";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { Image } from "expo-image";
 import React from "react";
-import { Image, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { EmptyState } from "heroui-native-pro";
 
@@ -143,7 +144,7 @@ export default function ProductsScreen(): React.JSX.Element {
                           <Image
                             source={{ uri: product.thumbnail_url }}
                             className="w-full h-full"
-                            resizeMode="cover"
+                            contentFit="cover"
                           />
                         ) : (
                           <Ionicons name="fast-food-outline" size={24} color={themeColorMuted} />
