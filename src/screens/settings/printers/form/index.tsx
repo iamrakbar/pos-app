@@ -20,7 +20,15 @@ import {
   useThemeColor,
 } from "heroui-native";
 import React from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import {
+  Controller,
+  useForm,
+  useWatch,
+  type Control,
+  type FieldErrors,
+  type UseFormReset,
+  type UseFormSetValue,
+} from "react-hook-form";
 import { Linking, PermissionsAndroid, Platform, Pressable, ScrollView, View } from "react-native";
 import { printerSchema, type PrinterFormValues } from "@/schemas/printer";
 import {
@@ -91,6 +99,615 @@ function toPrinterSettings(values: PrinterFormValues): PrinterSettings {
   };
 }
 
+type PrinterFieldsProps = {
+  control: Control<PrinterFormValues>;
+  errors: FieldErrors<PrinterFormValues>;
+  setValue: UseFormSetValue<PrinterFormValues>;
+};
+
+function PrinterDetailsCard({
+  control,
+  errors,
+  setValue,
+  onConnectionChange,
+}: PrinterFieldsProps & {
+  onConnectionChange: (connection: ConnectionType) => void;
+}) {
+  return (
+    <Card>
+      <SectionHeading
+        title="Printer Details"
+        description="Name the printer and choose how it connects."
+      />
+      <Card.Body className="gap-4">
+        <View>
+          <FieldLabel label="Name" required />
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { value, onChange } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                placeholder="Printer name"
+                variant="secondary"
+              />
+            )}
+          />
+          <FieldError message={errors.name?.message} />
+        </View>
+
+        <View>
+          <FieldLabel label="Connection" required />
+          <Controller
+            control={control}
+            name="connection"
+            render={({ field: { value, onChange } }) => (
+              <Select
+                value={CONNECTION_TYPES.find((item) => item.value === value)}
+                onValueChange={(option) => {
+                  if (!option) return;
+                  const nextConnection = option.value as ConnectionType;
+                  onChange(nextConnection);
+                  setValue("selectedDeviceId", "", { shouldDirty: true });
+                  setValue("macAddress", "", { shouldDirty: true, shouldValidate: true });
+                  onConnectionChange(nextConnection);
+                }}
+              >
+                <Select.Trigger>
+                  <Select.Value placeholder="Select connection" numberOfLines={1} />
+                  <Select.TriggerIndicator />
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Overlay />
+                  <Select.Content presentation="popover" width="trigger">
+                    <Select.ListLabel className="mb-2">Connection type</Select.ListLabel>
+                    {CONNECTION_TYPES.map((item, index, arr) => (
+                      <React.Fragment key={item.value}>
+                        <Select.Item value={item.value} label={item.label} />
+                        {index < arr.length - 1 ? <Separator /> : null}
+                      </React.Fragment>
+                    ))}
+                  </Select.Content>
+                </Select.Portal>
+              </Select>
+            )}
+          />
+        </View>
+      </Card.Body>
+    </Card>
+  );
+}
+
+function PrinterConnectionCard({
+  control,
+  errors,
+  connection,
+  devices,
+  scanning,
+  selectedDeviceId,
+  colors,
+  onScan,
+  onSelectDevice,
+}: Pick<PrinterFieldsProps, "control" | "errors"> & {
+  connection: ConnectionType;
+  devices: DiscoveredDevice[];
+  scanning: boolean;
+  selectedDeviceId: string;
+  colors: { muted: string; foreground: string; accent: string };
+  onScan: () => void;
+  onSelectDevice: (device: DiscoveredDevice) => void;
+}) {
+  return (
+    <Card>
+      <SectionHeading
+        title="Connection"
+        description={
+          connection === "bluetooth"
+            ? "Find a nearby thermal printer or enter its address."
+            : "Enter the network address used by the printer."
+        }
+      />
+      <Card.Body className="gap-4">
+        {connection === "bluetooth" ? (
+          <View className="gap-3">
+            <View>
+              <View className="flex-row items-center justify-between mb-2">
+                <FieldLabel label="Device" />
+                <Button variant="ghost" size="sm" isIconOnly onPress={onScan} isDisabled={scanning}>
+                  <Ionicons name="refresh" size={18} color={colors.foreground} />
+                </Button>
+              </View>
+
+              <View className="bg-surface-secondary rounded-panel overflow-hidden">
+                {scanning ? (
+                  <View className="py-6 items-center">
+                    <Typography type="body-sm" color="muted">
+                      Scanning...
+                    </Typography>
+                  </View>
+                ) : devices.length === 0 ? (
+                  <EmptyState className="px-4 py-6">
+                    <EmptyState.Header>
+                      <EmptyState.Media variant="icon">
+                        <Ionicons name="bluetooth-outline" size={20} color={colors.foreground} />
+                      </EmptyState.Media>
+                      <EmptyState.Title>No Bluetooth printers found</EmptyState.Title>
+                      <EmptyState.Description>
+                        Turn on the printer, then tap refresh.
+                      </EmptyState.Description>
+                    </EmptyState.Header>
+                  </EmptyState>
+                ) : (
+                  devices.map((device, index) => (
+                    <React.Fragment key={device.id}>
+                      <Pressable
+                        className="flex-row items-center gap-3 px-4 py-3.5 active:bg-surface-tertiary"
+                        onPress={() => onSelectDevice(device)}
+                      >
+                        <Ionicons
+                          name={
+                            selectedDeviceId === device.id ? "radio-button-on" : "radio-button-off"
+                          }
+                          size={20}
+                          color={selectedDeviceId === device.id ? colors.accent : colors.muted}
+                        />
+                        <View className="flex-1">
+                          <Typography type="body-sm" weight="medium" numberOfLines={1}>
+                            {device.name}
+                          </Typography>
+                          <Typography type="body-xs" color="muted" numberOfLines={1}>
+                            {device.id}
+                          </Typography>
+                        </View>
+                      </Pressable>
+                      {index < devices.length - 1 ? <Separator className="mx-4" /> : null}
+                    </React.Fragment>
+                  ))
+                )}
+              </View>
+            </View>
+
+            <View>
+              <FieldLabel label="MAC Address" />
+              <Controller
+                control={control}
+                name="macAddress"
+                render={({ field: { value, onChange } }) => (
+                  <Input
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder="00:00:00:00:00:00"
+                    autoCapitalize="characters"
+                    variant="secondary"
+                  />
+                )}
+              />
+              <FieldError message={errors.macAddress?.message} />
+            </View>
+          </View>
+        ) : (
+          <View className="gap-5">
+            <View>
+              <FieldLabel label="IP Address" required />
+              <Controller
+                control={control}
+                name="ipAddress"
+                render={({ field: { value, onChange } }) => (
+                  <Input
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder="192.168.1.100"
+                    keyboardType="decimal-pad"
+                    variant="secondary"
+                  />
+                )}
+              />
+              <FieldError message={errors.ipAddress?.message} />
+            </View>
+
+            <View>
+              <FieldLabel label="Port" required />
+              <Controller
+                control={control}
+                name="port"
+                render={({ field: { value, onChange } }) => (
+                  <Input
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder={PORT}
+                    keyboardType="number-pad"
+                    variant="secondary"
+                  />
+                )}
+              />
+              <FieldError message={errors.port?.message} />
+            </View>
+          </View>
+        )}
+      </Card.Body>
+    </Card>
+  );
+}
+
+function ReceiptSetupCard({
+  control,
+  errors,
+  setValue,
+  paperWidth,
+}: PrinterFieldsProps & { paperWidth: PaperWidth }) {
+  return (
+    <Card>
+      <SectionHeading
+        title="Receipt Setup"
+        description="Configure paper width and printable content size."
+      />
+      <Card.Body className="gap-4">
+        <View>
+          <FieldLabel label="Receipt Size" required />
+          <Controller
+            control={control}
+            name="paperWidth"
+            render={({ field: { value, onChange } }) => (
+              <Select
+                value={PAPER_WIDTHS.find((item) => item.value === value)}
+                onValueChange={(option) => {
+                  if (!option) return;
+                  onChange(option.value);
+                  setValue("charactersPerLine", option.value === "80mm" ? "46" : "32", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  setValue("logoWidthDots", option.value === "80mm" ? "380" : "300", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }}
+              >
+                <Select.Trigger>
+                  <Select.Value placeholder="Select size" numberOfLines={1} />
+                  <Select.TriggerIndicator />
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Overlay />
+                  <Select.Content presentation="popover" width="trigger">
+                    <Select.ListLabel className="mb-2">Receipt size</Select.ListLabel>
+                    {PAPER_WIDTHS.map((item, index, arr) => (
+                      <React.Fragment key={item.value}>
+                        <Select.Item value={item.value} label={item.label} />
+                        {index < arr.length - 1 ? <Separator /> : null}
+                      </React.Fragment>
+                    ))}
+                  </Select.Content>
+                </Select.Portal>
+              </Select>
+            )}
+          />
+        </View>
+
+        <View>
+          <FieldLabel label="Characters per line" required />
+          <Controller
+            control={control}
+            name="charactersPerLine"
+            render={({ field: { value, onChange } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                placeholder={paperWidth === "80mm" ? "46" : "32"}
+                keyboardType="number-pad"
+                variant="secondary"
+              />
+            )}
+          />
+          <Typography type="body-xs" color="muted" className="mt-1">
+            Recommended: 32 for 58mm, 46 for 80mm. Use calibration to verify.
+          </Typography>
+          <FieldError message={errors.charactersPerLine?.message} />
+        </View>
+
+        <View>
+          <FieldLabel label="Logo width (dots)" required />
+          <Controller
+            control={control}
+            name="logoWidthDots"
+            render={({ field: { value, onChange } }) => (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                placeholder={paperWidth === "80mm" ? "380" : "300"}
+                keyboardType="number-pad"
+                variant="secondary"
+              />
+            )}
+          />
+          <Typography type="body-xs" color="muted" className="mt-1">
+            Recommended: 300 for 58mm, 380 for 80mm.
+          </Typography>
+          <FieldError message={errors.logoWidthDots?.message} />
+        </View>
+      </Card.Body>
+    </Card>
+  );
+}
+
+function HardwareOptionsCard({ control }: Pick<PrinterFieldsProps, "control">) {
+  return (
+    <Card>
+      <SectionHeading
+        title="Hardware Options"
+        description="Enable only the features supported by this printer."
+      />
+      <Card.Body className="gap-4">
+        {(["cutReceipt", "openDrawer"] as const).map((name, index) => (
+          <React.Fragment key={name}>
+            {index > 0 ? <Separator /> : null}
+            <Controller
+              control={control}
+              name={name}
+              render={({ field: { value, onChange } }) => (
+                <Pressable
+                  className="flex-row items-center justify-between"
+                  onPress={() => onChange(!value)}
+                >
+                  <View className="flex-1 mr-4">
+                    <Typography type="body-sm" weight="semibold">
+                      {name === "cutReceipt"
+                        ? "Cut receipt after printing"
+                        : "Open drawer after printing"}
+                    </Typography>
+                    <Typography type="body-xs" color="muted" className="mt-0.5">
+                      Only enable this option if your printer supports it.
+                    </Typography>
+                  </View>
+                  <Switch isSelected={value} onSelectedChange={onChange} />
+                </Pressable>
+              )}
+            />
+          </React.Fragment>
+        ))}
+      </Card.Body>
+    </Card>
+  );
+}
+
+function PrinterDiagnosticsCard({
+  connecting,
+  printingCalibration,
+  foregroundColor,
+  onTestConnection,
+  onPrintCalibration,
+}: {
+  connecting: boolean;
+  printingCalibration: boolean;
+  foregroundColor: string;
+  onTestConnection: () => void;
+  onPrintCalibration: () => void;
+}) {
+  return (
+    <Card>
+      <SectionHeading
+        title="Diagnostics"
+        description="Verify the connection and receipt alignment before saving."
+      />
+      <Card.Body className="gap-3">
+        <Button variant="outline" onPress={onTestConnection} isDisabled={connecting}>
+          <Ionicons name="link-outline" size={16} color={foregroundColor} />
+          <Button.Label>{connecting ? "Connecting..." : "Test Connection"}</Button.Label>
+        </Button>
+        <Button
+          variant="outline"
+          onPress={onPrintCalibration}
+          isDisabled={printingCalibration || connecting}
+        >
+          {printingCalibration ? (
+            <Spinner size="sm" />
+          ) : (
+            <Ionicons name="receipt-outline" size={16} color={foregroundColor} />
+          )}
+          <Button.Label>
+            {printingCalibration ? "Printing calibration..." : "Print Calibration"}
+          </Button.Label>
+        </Button>
+      </Card.Body>
+    </Card>
+  );
+}
+
+async function openAppSettings() {
+  await Linking.openSettings();
+}
+
+async function openBluetoothSettings() {
+  if (Platform.OS === "android") {
+    try {
+      const IntentLauncher =
+        require("expo-intent-launcher") as typeof import("expo-intent-launcher");
+      await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.BLUETOOTH_SETTINGS);
+      return;
+    } catch {
+      await Linking.openSettings();
+      return;
+    }
+  }
+
+  await Linking.openSettings();
+}
+
+function getBluetoothPermissions() {
+  if (Platform.OS !== "android") return [];
+
+  if (Number(Platform.Version) >= 31) {
+    return [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ];
+  }
+
+  return [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
+}
+
+async function requestBluetoothPermissions(
+  setPrompt: React.Dispatch<React.SetStateAction<PromptState | null>>
+) {
+  const permissions = getBluetoothPermissions();
+  if (permissions.length === 0) return true;
+
+  const results = await PermissionsAndroid.requestMultiple(permissions);
+  const granted = permissions.every(
+    (permission) => results[permission] === PermissionsAndroid.RESULTS.GRANTED
+  );
+  const blocked = permissions.some(
+    (permission) => results[permission] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
+  );
+
+  if (!granted) {
+    setPrompt({
+      title: "Bluetooth permission required",
+      message: blocked
+        ? "Bluetooth printer access is blocked. Enable Bluetooth permissions in system settings."
+        : "Bluetooth printer access is required to scan and connect to Bluetooth printers.",
+      actionLabel: "Open Settings",
+      onAction: openAppSettings,
+    });
+  }
+
+  return granted;
+}
+
+function PrinterDialogs({
+  prompt,
+  deletePromptOpen,
+  setPrompt,
+  setDeletePromptOpen,
+  onDelete,
+}: {
+  prompt: PromptState | null;
+  deletePromptOpen: boolean;
+  setPrompt: React.Dispatch<React.SetStateAction<PromptState | null>>;
+  setDeletePromptOpen: (open: boolean) => void;
+  onDelete: () => void;
+}) {
+  const handlePromptAction = async () => {
+    const action = prompt?.onAction;
+    setPrompt(null);
+    await action?.();
+  };
+
+  return (
+    <>
+      <Dialog isOpen={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
+            <DialogCloseButton />
+            <View className="mb-5 gap-1.5 pr-10">
+              <Dialog.Title>{prompt?.title}</Dialog.Title>
+              {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
+            </View>
+            <View className="flex-row justify-end gap-3">
+              <Button variant="ghost" size="sm" onPress={() => setPrompt(null)}>
+                <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
+              </Button>
+              {prompt?.actionLabel ? (
+                <Button size="sm" onPress={handlePromptAction}>
+                  <Button.Label>{prompt.actionLabel}</Button.Label>
+                </Button>
+              ) : null}
+            </View>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
+
+      <Dialog isOpen={deletePromptOpen} onOpenChange={setDeletePromptOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
+            <DialogCloseButton />
+            <View className="mb-5 gap-1.5 pr-10">
+              <Dialog.Title>Delete printer?</Dialog.Title>
+              <Dialog.Description>
+                This printer will be removed from saved printers.
+              </Dialog.Description>
+            </View>
+            <View className="flex-row justify-end gap-3">
+              <Button variant="ghost" size="sm" onPress={() => setDeletePromptOpen(false)}>
+                <Button.Label>Cancel</Button.Label>
+              </Button>
+              <Button variant="danger" size="sm" onPress={onDelete}>
+                <Button.Label>Delete</Button.Label>
+              </Button>
+            </View>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
+    </>
+  );
+}
+
+function useSyncPrinterForm({
+  hasHydrated,
+  isCreate,
+  printer,
+  reset,
+}: {
+  hasHydrated: boolean;
+  isCreate: boolean;
+  printer: PrinterSettings | undefined;
+  reset: UseFormReset<PrinterFormValues>;
+}) {
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (hasHydrated && !isCreate && !printer) {
+      router.replace("/settings/printers" as never);
+    }
+  }, [hasHydrated, isCreate, printer, router]);
+
+  React.useEffect(() => {
+    if (!hasHydrated || isCreate || !printer) return;
+    reset({
+      ...DEFAULT_PRINTER_SETTINGS,
+      ...printer,
+      port: printer.port || PORT,
+    });
+  }, [hasHydrated, isCreate, printer, reset]);
+}
+
+function initializeConnection(
+  connection: ConnectionType,
+  clearDevices: () => void,
+  scan: () => Promise<void>
+) {
+  if (connection === "bluetooth") {
+    void scan();
+  } else {
+    clearDevices();
+    void NetPrinter.init().catch(() => undefined);
+  }
+}
+
+async function printCalibration(
+  values: PrinterFormValues,
+  setPrompt: React.Dispatch<React.SetStateAction<PromptState | null>>,
+  setPrinting: (printing: boolean) => void
+) {
+  setPrinting(true);
+  try {
+    await printCalibrationReceipt(toPrinterSettings(values));
+    setPrompt({
+      title: "Calibration sent",
+      message: "Check that the numbered ruler prints on one line without clipping or wrapping.",
+    });
+  } catch (error) {
+    setPrompt({
+      title: "Calibration failed",
+      message: error instanceof Error ? error.message : "Could not print the calibration receipt.",
+    });
+  }
+  setPrinting(false);
+}
+
 export default function PrinterFormScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -134,89 +751,19 @@ export default function PrinterFormScreen(): React.JSX.Element {
   const selectedDeviceId = useWatch({ control, name: "selectedDeviceId" });
   const currentName = useWatch({ control, name: "name" });
 
-  React.useEffect(() => {
-    if (!hasHydrated) return;
-
-    if (!isCreate && !printer) {
-      router.replace("/settings/printers" as never);
-    }
-  }, [hasHydrated, isCreate, printer, router]);
-
-  React.useEffect(() => {
-    if (!hasHydrated || isCreate || !printer) return;
-
-    reset({
-      ...DEFAULT_PRINTER_SETTINGS,
-      ...printer,
-      port: printer.port || PORT,
-    });
-  }, [hasHydrated, isCreate, printer, reset]);
-
-  const openAppSettings = async () => {
-    await Linking.openSettings();
-  };
-
-  const openBluetoothSettings = async () => {
-    if (Platform.OS === "android") {
-      try {
-        const IntentLauncher =
-          require("expo-intent-launcher") as typeof import("expo-intent-launcher");
-        await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.BLUETOOTH_SETTINGS);
-        return;
-      } catch {
-        await Linking.openSettings();
-        return;
-      }
-    }
-
-    await Linking.openSettings();
-  };
-
-  const getBluetoothPermissions = () => {
-    if (Platform.OS !== "android") return [];
-
-    if (Number(Platform.Version) >= 31) {
-      return [
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      ];
-    }
-
-    return [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
-  };
-
-  const requestBluetoothPermissions = async () => {
-    const permissions = getBluetoothPermissions();
-    if (permissions.length === 0) return true;
-
-    const results = await PermissionsAndroid.requestMultiple(permissions);
-    const granted = permissions.every(
-      (permission) => results[permission] === PermissionsAndroid.RESULTS.GRANTED
-    );
-    const blocked = permissions.some(
-      (permission) => results[permission] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
-    );
-
-    if (!granted) {
-      setPrompt({
-        title: "Bluetooth permission required",
-        message: blocked
-          ? "Bluetooth printer access is blocked. Enable Bluetooth permissions in system settings."
-          : "Bluetooth printer access is required to scan and connect to Bluetooth printers.",
-        actionLabel: "Open Settings",
-        onAction: openAppSettings,
-      });
-    }
-
-    return granted;
-  };
+  useSyncPrinterForm({
+    hasHydrated,
+    isCreate,
+    printer,
+    reset,
+  });
 
   const handleScan = async () => {
     setScanning(true);
     setDevices([]);
 
     try {
-      const granted = await requestBluetoothPermissions();
+      const granted = await requestBluetoothPermissions(setPrompt);
       if (granted) {
         await BLEPrinter.init();
         const results = await BLEPrinter.getDeviceList();
@@ -289,7 +836,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
 
     try {
       if (values.connection === "bluetooth") {
-        const granted = await requestBluetoothPermissions();
+        const granted = await requestBluetoothPermissions(setPrompt);
         if (!granted) {
           setConnecting(false);
           return;
@@ -354,29 +901,9 @@ export default function PrinterFormScreen(): React.JSX.Element {
     setConnecting(false);
   });
 
-  const handlePrintCalibration = handleSubmit(async (values) => {
-    setPrintingCalibration(true);
-    try {
-      await printCalibrationReceipt(toPrinterSettings(values));
-      setPrompt({
-        title: "Calibration sent",
-        message: "Check that the numbered ruler prints on one line without clipping or wrapping.",
-      });
-    } catch (error) {
-      setPrompt({
-        title: "Calibration failed",
-        message:
-          error instanceof Error ? error.message : "Could not print the calibration receipt.",
-      });
-    }
-    setPrintingCalibration(false);
-  });
-
-  const handlePromptAction = async () => {
-    const action = prompt?.onAction;
-    setPrompt(null);
-    await action?.();
-  };
+  const handlePrintCalibration = handleSubmit((values) =>
+    printCalibration(values, setPrompt, setPrintingCalibration)
+  );
 
   return (
     <>
@@ -404,388 +931,45 @@ export default function PrinterFormScreen(): React.JSX.Element {
           keyboardShouldPersistTaps="handled"
         >
           <View className="w-full max-w-3xl gap-4">
-            <Card>
-              <SectionHeading
-                title="Printer Details"
-                description="Name the printer and choose how it connects."
-              />
-              <Card.Body className="gap-4">
-                <View>
-                  <FieldLabel label="Name" required />
-                  <Controller
-                    control={control}
-                    name="name"
-                    render={({ field: { value, onChange } }) => (
-                      <Input
-                        value={value}
-                        onChangeText={onChange}
-                        placeholder="Printer name"
-                        variant="secondary"
-                      />
-                    )}
-                  />
-                  <FieldError message={errors.name?.message} />
-                </View>
+            <PrinterDetailsCard
+              control={control}
+              errors={errors}
+              setValue={setValue}
+              onConnectionChange={(nextConnection) =>
+                initializeConnection(nextConnection, () => setDevices([]), handleScan)
+              }
+            />
 
-                <View>
-                  <FieldLabel label="Connection" required />
-                  <Controller
-                    control={control}
-                    name="connection"
-                    render={({ field: { value, onChange } }) => (
-                      <Select
-                        value={CONNECTION_TYPES.find((item) => item.value === value)}
-                        onValueChange={(option) => {
-                          if (!option) return;
-                          onChange(option.value);
-                          setValue("selectedDeviceId", "", { shouldDirty: true });
-                          setValue("macAddress", "", { shouldDirty: true, shouldValidate: true });
-                          if (option.value === "bluetooth") {
-                            void handleScan();
-                          } else {
-                            setDevices([]);
-                            void NetPrinter.init().catch(() => undefined);
-                          }
-                        }}
-                      >
-                        <Select.Trigger>
-                          <Select.Value placeholder="Select connection" numberOfLines={1} />
-                          <Select.TriggerIndicator />
-                        </Select.Trigger>
-                        <Select.Portal>
-                          <Select.Overlay />
-                          <Select.Content presentation="popover" width="trigger">
-                            <Select.ListLabel className="mb-2">Connection type</Select.ListLabel>
-                            {CONNECTION_TYPES.map((item, index, arr) => (
-                              <React.Fragment key={item.value}>
-                                <Select.Item value={item.value} label={item.label} />
-                                {index < arr.length - 1 ? <Separator /> : null}
-                              </React.Fragment>
-                            ))}
-                          </Select.Content>
-                        </Select.Portal>
-                      </Select>
-                    )}
-                  />
-                </View>
-              </Card.Body>
-            </Card>
+            <PrinterConnectionCard
+              control={control}
+              errors={errors}
+              connection={connection}
+              devices={devices}
+              scanning={scanning}
+              selectedDeviceId={selectedDeviceId}
+              colors={{
+                muted: themeColorMuted,
+                foreground: themeColorForeground,
+                accent: themeColorAccent,
+              }}
+              onScan={handleScan}
+              onSelectDevice={handleSelectDevice}
+            />
 
-            <Card>
-              <SectionHeading
-                title="Connection"
-                description={
-                  connection === "bluetooth"
-                    ? "Find a nearby thermal printer or enter its address."
-                    : "Enter the network address used by the printer."
-                }
-              />
-              <Card.Body className="gap-4">
-                {connection === "bluetooth" ? (
-                  <View className="gap-3">
-                    <View>
-                      <View className="flex-row items-center justify-between mb-2">
-                        <FieldLabel label="Device" />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          isIconOnly
-                          onPress={handleScan}
-                          isDisabled={scanning}
-                        >
-                          <Ionicons name="refresh" size={18} color={themeColorForeground} />
-                        </Button>
-                      </View>
-
-                      <View className="bg-surface-secondary rounded-panel overflow-hidden">
-                        {scanning ? (
-                          <View className="py-6 items-center">
-                            <Typography type="body-sm" color="muted">
-                              Scanning...
-                            </Typography>
-                          </View>
-                        ) : devices.length === 0 ? (
-                          <EmptyState className="px-4 py-6">
-                            <EmptyState.Header>
-                              <EmptyState.Media variant="icon">
-                                <Ionicons
-                                  name="bluetooth-outline"
-                                  size={20}
-                                  color={themeColorForeground}
-                                />
-                              </EmptyState.Media>
-                              <EmptyState.Title>No Bluetooth printers found</EmptyState.Title>
-                              <EmptyState.Description>
-                                Turn on the printer, then tap refresh.
-                              </EmptyState.Description>
-                            </EmptyState.Header>
-                          </EmptyState>
-                        ) : (
-                          devices.map((device, index) => (
-                            <React.Fragment key={device.id}>
-                              <Pressable
-                                className="flex-row items-center gap-3 px-4 py-3.5 active:bg-surface-tertiary"
-                                onPress={() => handleSelectDevice(device)}
-                              >
-                                <Ionicons
-                                  name={
-                                    selectedDeviceId === device.id
-                                      ? "radio-button-on"
-                                      : "radio-button-off"
-                                  }
-                                  size={20}
-                                  color={
-                                    selectedDeviceId === device.id
-                                      ? themeColorAccent
-                                      : themeColorMuted
-                                  }
-                                />
-                                <View className="flex-1">
-                                  <Typography type="body-sm" weight="medium" numberOfLines={1}>
-                                    {device.name}
-                                  </Typography>
-                                  <Typography type="body-xs" color="muted" numberOfLines={1}>
-                                    {device.id}
-                                  </Typography>
-                                </View>
-                              </Pressable>
-                              {index < devices.length - 1 ? <Separator className="mx-4" /> : null}
-                            </React.Fragment>
-                          ))
-                        )}
-                      </View>
-                    </View>
-
-                    <View>
-                      <FieldLabel label="MAC Address" />
-                      <Controller
-                        control={control}
-                        name="macAddress"
-                        render={({ field: { value, onChange } }) => (
-                          <Input
-                            value={value}
-                            onChangeText={onChange}
-                            placeholder="00:00:00:00:00:00"
-                            autoCapitalize="characters"
-                            variant="secondary"
-                          />
-                        )}
-                      />
-                      <FieldError message={errors.macAddress?.message} />
-                    </View>
-                  </View>
-                ) : (
-                  <View className="gap-5">
-                    <View>
-                      <FieldLabel label="IP Address" required />
-                      <Controller
-                        control={control}
-                        name="ipAddress"
-                        render={({ field: { value, onChange } }) => (
-                          <Input
-                            value={value}
-                            onChangeText={onChange}
-                            placeholder="192.168.1.100"
-                            keyboardType="decimal-pad"
-                            variant="secondary"
-                          />
-                        )}
-                      />
-                      <FieldError message={errors.ipAddress?.message} />
-                    </View>
-
-                    <View>
-                      <FieldLabel label="Port" required />
-                      <Controller
-                        control={control}
-                        name="port"
-                        render={({ field: { value, onChange } }) => (
-                          <Input
-                            value={value}
-                            onChangeText={onChange}
-                            placeholder={PORT}
-                            keyboardType="number-pad"
-                            variant="secondary"
-                          />
-                        )}
-                      />
-                      <FieldError message={errors.port?.message} />
-                    </View>
-                  </View>
-                )}
-              </Card.Body>
-            </Card>
-
-            <Card>
-              <SectionHeading
-                title="Receipt Setup"
-                description="Configure paper width and printable content size."
-              />
-              <Card.Body className="gap-4">
-                <View>
-                  <FieldLabel label="Receipt Size" required />
-                  <Controller
-                    control={control}
-                    name="paperWidth"
-                    render={({ field: { value, onChange } }) => (
-                      <Select
-                        value={PAPER_WIDTHS.find((item) => item.value === value)}
-                        onValueChange={(option) => {
-                          if (!option) return;
-                          onChange(option.value);
-                          setValue("charactersPerLine", option.value === "80mm" ? "46" : "32", {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                          setValue("logoWidthDots", option.value === "80mm" ? "380" : "300", {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }}
-                      >
-                        <Select.Trigger>
-                          <Select.Value placeholder="Select size" numberOfLines={1} />
-                          <Select.TriggerIndicator />
-                        </Select.Trigger>
-                        <Select.Portal>
-                          <Select.Overlay />
-                          <Select.Content presentation="popover" width="trigger">
-                            <Select.ListLabel className="mb-2">Receipt size</Select.ListLabel>
-                            {PAPER_WIDTHS.map((item, index, arr) => (
-                              <React.Fragment key={item.value}>
-                                <Select.Item value={item.value} label={item.label} />
-                                {index < arr.length - 1 ? <Separator /> : null}
-                              </React.Fragment>
-                            ))}
-                          </Select.Content>
-                        </Select.Portal>
-                      </Select>
-                    )}
-                  />
-                </View>
-
-                <View>
-                  <FieldLabel label="Characters per line" required />
-                  <Controller
-                    control={control}
-                    name="charactersPerLine"
-                    render={({ field: { value, onChange } }) => (
-                      <Input
-                        value={value}
-                        onChangeText={onChange}
-                        placeholder={paperWidth === "80mm" ? "46" : "32"}
-                        keyboardType="number-pad"
-                        variant="secondary"
-                      />
-                    )}
-                  />
-                  <Typography type="body-xs" color="muted" className="mt-1">
-                    Recommended: 32 for 58mm, 46 for 80mm. Use calibration to verify.
-                  </Typography>
-                  <FieldError message={errors.charactersPerLine?.message} />
-                </View>
-
-                <View>
-                  <FieldLabel label="Logo width (dots)" required />
-                  <Controller
-                    control={control}
-                    name="logoWidthDots"
-                    render={({ field: { value, onChange } }) => (
-                      <Input
-                        value={value}
-                        onChangeText={onChange}
-                        placeholder={paperWidth === "80mm" ? "380" : "300"}
-                        keyboardType="number-pad"
-                        variant="secondary"
-                      />
-                    )}
-                  />
-                  <Typography type="body-xs" color="muted" className="mt-1">
-                    Recommended: 300 for 58mm, 380 for 80mm.
-                  </Typography>
-                  <FieldError message={errors.logoWidthDots?.message} />
-                </View>
-              </Card.Body>
-            </Card>
-
-            <Card>
-              <SectionHeading
-                title="Hardware Options"
-                description="Enable only the features supported by this printer."
-              />
-              <Card.Body className="gap-4">
-                <Controller
-                  control={control}
-                  name="cutReceipt"
-                  render={({ field: { value, onChange } }) => (
-                    <Pressable
-                      className="flex-row items-center justify-between"
-                      onPress={() => onChange(!value)}
-                    >
-                      <View className="flex-1 mr-4">
-                        <Typography type="body-sm" weight="semibold">
-                          Cut receipt after printing
-                        </Typography>
-                        <Typography type="body-xs" color="muted" className="mt-0.5">
-                          Only enable this option if your printer supports it.
-                        </Typography>
-                      </View>
-                      <Switch isSelected={value} onSelectedChange={onChange} />
-                    </Pressable>
-                  )}
-                />
-
-                <Separator />
-
-                <Controller
-                  control={control}
-                  name="openDrawer"
-                  render={({ field: { value, onChange } }) => (
-                    <Pressable
-                      className="flex-row items-center justify-between"
-                      onPress={() => onChange(!value)}
-                    >
-                      <View className="flex-1 mr-4">
-                        <Typography type="body-sm" weight="semibold">
-                          Open drawer after printing
-                        </Typography>
-                        <Typography type="body-xs" color="muted" className="mt-0.5">
-                          Only enable this option if your printer supports it.
-                        </Typography>
-                      </View>
-                      <Switch isSelected={value} onSelectedChange={onChange} />
-                    </Pressable>
-                  )}
-                />
-              </Card.Body>
-            </Card>
-
-            <Card>
-              <SectionHeading
-                title="Diagnostics"
-                description="Verify the connection and receipt alignment before saving."
-              />
-              <Card.Body className="gap-3">
-                <Button variant="outline" onPress={handleTestConnection} isDisabled={connecting}>
-                  <Ionicons name="link-outline" size={16} color={themeColorForeground} />
-                  <Button.Label>{connecting ? "Connecting..." : "Test Connection"}</Button.Label>
-                </Button>
-                <Button
-                  variant="outline"
-                  onPress={handlePrintCalibration}
-                  isDisabled={printingCalibration || connecting}
-                >
-                  {printingCalibration ? (
-                    <Spinner size="sm" />
-                  ) : (
-                    <Ionicons name="receipt-outline" size={16} color={themeColorForeground} />
-                  )}
-                  <Button.Label>
-                    {printingCalibration ? "Printing calibration..." : "Print Calibration"}
-                  </Button.Label>
-                </Button>
-              </Card.Body>
-            </Card>
+            <ReceiptSetupCard
+              control={control}
+              errors={errors}
+              setValue={setValue}
+              paperWidth={paperWidth}
+            />
+            <HardwareOptionsCard control={control} />
+            <PrinterDiagnosticsCard
+              connecting={connecting}
+              printingCalibration={printingCalibration}
+              foregroundColor={themeColorForeground}
+              onTestConnection={handleTestConnection}
+              onPrintCalibration={handlePrintCalibration}
+            />
 
             <View className="gap-3 pt-2">
               {errors.root?.server?.message ? (
@@ -807,51 +991,13 @@ export default function PrinterFormScreen(): React.JSX.Element {
           </View>
         </ScrollView>
 
-        <Dialog isOpen={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-          <Dialog.Portal>
-            <Dialog.Overlay />
-            <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-              <DialogCloseButton />
-              <View className="mb-5 gap-1.5 pr-10">
-                <Dialog.Title>{prompt?.title}</Dialog.Title>
-                {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
-              </View>
-              <View className="flex-row justify-end gap-3">
-                <Button variant="ghost" size="sm" onPress={() => setPrompt(null)}>
-                  <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
-                </Button>
-                {prompt?.actionLabel ? (
-                  <Button size="sm" onPress={handlePromptAction}>
-                    <Button.Label>{prompt.actionLabel}</Button.Label>
-                  </Button>
-                ) : null}
-              </View>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog>
-
-        <Dialog isOpen={deletePromptOpen} onOpenChange={setDeletePromptOpen}>
-          <Dialog.Portal>
-            <Dialog.Overlay />
-            <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-              <DialogCloseButton />
-              <View className="mb-5 gap-1.5 pr-10">
-                <Dialog.Title>Delete printer?</Dialog.Title>
-                <Dialog.Description>
-                  This printer will be removed from saved printers.
-                </Dialog.Description>
-              </View>
-              <View className="flex-row justify-end gap-3">
-                <Button variant="ghost" size="sm" onPress={() => setDeletePromptOpen(false)}>
-                  <Button.Label>Cancel</Button.Label>
-                </Button>
-                <Button variant="danger" size="sm" onPress={handleDelete}>
-                  <Button.Label>Delete</Button.Label>
-                </Button>
-              </View>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog>
+        <PrinterDialogs
+          prompt={prompt}
+          deletePromptOpen={deletePromptOpen}
+          setPrompt={setPrompt}
+          setDeletePromptOpen={setDeletePromptOpen}
+          onDelete={handleDelete}
+        />
       </View>
     </>
   );
