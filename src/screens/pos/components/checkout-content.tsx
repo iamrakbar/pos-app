@@ -30,11 +30,12 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import type { PaymentSession, POSTable } from "@/types/pos";
+import type { PaymentSession, POSPaymentGroup, POSTable } from "@/types/pos";
 import {
   useForm,
   Controller,
   useWatch,
+  type Control,
   type FieldErrors,
   type UseFormSetValue,
 } from "react-hook-form";
@@ -376,6 +377,265 @@ function CheckoutActions({
   );
 }
 
+function PaymentFields({
+  paymentGroups,
+  paymentGroup,
+  paymentId,
+  isPending,
+  isCashPayment,
+  cashPresets,
+  cashReceived,
+  cashReceivedAmount,
+  change,
+  errors,
+  setValue,
+  setCashReceived,
+}: {
+  paymentGroups: POSPaymentGroup[];
+  paymentGroup: string;
+  paymentId: string;
+  isPending: boolean;
+  isCashPayment: boolean;
+  cashPresets: number[];
+  cashReceived: string;
+  cashReceivedAmount: number;
+  change: number;
+  errors: FieldErrors<CheckoutFormValues>;
+  setValue: UseFormSetValue<CheckoutFormValues>;
+  setCashReceived: (value: string) => void;
+}) {
+  return (
+    <>
+      <View className="gap-2">
+        <Typography type="body-sm" weight="semibold">
+          Metode pembayaran
+        </Typography>
+        {isPending ? (
+          <PaymentButtonSkeleton widths={[104, 88, 112]} />
+        ) : (
+          <View className="min-h-8 flex-row flex-wrap gap-2">
+            {paymentGroups.map((group) => {
+              const isActive = paymentGroup === group.group_type;
+              return (
+                <Button
+                  key={group.group_type}
+                  size="sm"
+                  variant={isActive ? "primary" : "outline"}
+                  onPress={() => {
+                    setValue("payment_group", group.group_type);
+                    setValue("payment_id", group.payments[0]?.id ?? "");
+                    setCashReceived("");
+                  }}
+                >
+                  <Button.Label>{group.group_label}</Button.Label>
+                </Button>
+              );
+            })}
+          </View>
+        )}
+      </View>
+
+      {!isCashPayment ? (
+        <View className="gap-2">
+          <Typography type="body-sm" weight="semibold">
+            Pembayaran
+          </Typography>
+          {isPending ? (
+            <PaymentButtonSkeleton widths={[96, 120, 88]} />
+          ) : (
+            <View className="min-h-8 flex-row flex-wrap gap-2">
+              {paymentGroups
+                .find((group) => group.group_type === paymentGroup)
+                ?.payments.map((payment) => (
+                  <Button
+                    key={payment.id}
+                    size="sm"
+                    variant={paymentId === payment.id ? "primary" : "outline"}
+                    onPress={() => setValue("payment_id", payment.id)}
+                  >
+                    <Button.Label>{payment.name}</Button.Label>
+                  </Button>
+                ))}
+            </View>
+          )}
+          {errors.payment_id ? (
+            <Typography type="body-xs" className="text-danger">
+              {errors.payment_id.message}
+            </Typography>
+          ) : null}
+        </View>
+      ) : (
+        <View className="gap-3">
+          <View className="gap-2">
+            <Typography type="body-sm" weight="semibold">
+              Nominal tunai
+            </Typography>
+            <View className="flex-row flex-wrap gap-2">
+              {cashPresets.map((amount, index) => (
+                <Button
+                  key={amount}
+                  size="sm"
+                  variant={cashReceivedAmount === amount ? "primary" : "outline"}
+                  onPress={() => setCashReceived(String(amount))}
+                >
+                  <Button.Label>
+                    {index === 0 ? `Uang pas · ${formatRupiah(amount)}` : formatRupiah(amount)}
+                  </Button.Label>
+                </Button>
+              ))}
+            </View>
+          </View>
+          <View className="flex-row items-end gap-4">
+            <View className="min-w-48 flex-1 gap-1.5">
+              <Typography type="body-sm" weight="semibold">
+                Nominal lain
+              </Typography>
+              <MiniInput
+                value={cashReceived ? formatRupiah(cashReceivedAmount) : ""}
+                onChangeText={(value) => setCashReceived(value.replace(/\D/g, ""))}
+                placeholder="Rp0"
+                keyboardType="phone-pad"
+              />
+            </View>
+            <View className="min-w-32 gap-1">
+              <Typography type="body-xs" color="muted">
+                Kembalian
+              </Typography>
+              <Typography weight="semibold" className="tabular-nums">
+                {formatRupiah(change)}
+              </Typography>
+            </View>
+          </View>
+        </View>
+      )}
+    </>
+  );
+}
+
+function CustomerFields({
+  control,
+  customerType,
+  guestId,
+  customerId,
+  guests,
+  customerResults,
+  errors,
+  setValue,
+}: {
+  control: Control<CheckoutFormValues>;
+  customerType: CheckoutFormValues["customer_type"];
+  guestId: string | null;
+  customerId: string | null;
+  guests: App.Data.Merchant.Guest.GuestData[];
+  customerResults: App.Data.Merchant.Customer.CustomerSearchData[];
+  errors: FieldErrors<CheckoutFormValues>;
+  setValue: UseFormSetValue<CheckoutFormValues>;
+}) {
+  return (
+    <View className="gap-2">
+      <Typography type="body-sm" weight="semibold">
+        Pelanggan
+      </Typography>
+      <View className="flex-row gap-2">
+        {(
+          [
+            ["guest", "Merchant"],
+            ["customer", "Pelanggan terdaftar"],
+            ["anonymous", "Walk-in"],
+          ] as const
+        ).map(([type, label]) => (
+          <Button
+            key={type}
+            size="sm"
+            variant={customerType === type ? "primary" : "outline"}
+            onPress={() => {
+              setValue("customer_type", type);
+              setValue("guest_id", null);
+              setValue("customer_id", null);
+              setValue("customer_search", "");
+            }}
+          >
+            <Button.Label>{label}</Button.Label>
+          </Button>
+        ))}
+      </View>
+
+      {customerType === "guest" ? (
+        <View className="gap-2">
+          <Select
+            value={
+              guestId
+                ? {
+                    value: guestId,
+                    label: guests.find((guest) => guest.id === guestId)?.name ?? "Merchant",
+                  }
+                : undefined
+            }
+            onValueChange={(option) => setValue("guest_id", option?.value || null)}
+          >
+            <Select.Trigger>
+              <Select.Value placeholder="Pilih merchant customer" />
+              <Select.TriggerIndicator />
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Overlay />
+              <Select.Content presentation="popover" width="trigger">
+                {guests.map((guest) => (
+                  <Select.Item key={guest.id} value={guest.id} label={guest.name} />
+                ))}
+              </Select.Content>
+            </Select.Portal>
+          </Select>
+          {errors.guest_id ? (
+            <Typography type="body-xs" className="text-danger">
+              {errors.guest_id.message}
+            </Typography>
+          ) : null}
+        </View>
+      ) : null}
+
+      {customerType === "customer" ? (
+        <View className="gap-2">
+          <Controller
+            control={control}
+            name="customer_search"
+            render={({ field }) => (
+              <SearchField value={field.value} onChange={field.onChange}>
+                <SearchField.Group>
+                  <SearchField.SearchIcon />
+                  <SearchField.Input placeholder="Cari email pelanggan" />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
+            )}
+          />
+          {customerResults.map((customer) => (
+            <Pressable
+              key={customer.id}
+              onPress={() => setValue("customer_id", customer.id)}
+              className={`rounded-lg px-3 py-2 ${customerId === customer.id ? "bg-accent/10" : "bg-surface-secondary"}`}
+            >
+              <Typography type="body-sm" weight="semibold">
+                {customer.name}
+              </Typography>
+              {customer.email || customer.phone ? (
+                <Typography type="body-xs" color="muted">
+                  {[customer.email, customer.phone].filter(Boolean).join(" · ")}
+                </Typography>
+              ) : null}
+            </Pressable>
+          ))}
+          {errors.customer_id ? (
+            <Typography type="body-xs" className="text-danger">
+              {errors.customer_id.message}
+            </Typography>
+          ) : null}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentProps): JSX.Element {
   const closeModal = usePOSStore((s) => s.closeModal);
 
@@ -553,210 +813,31 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           setValue={setValue}
         />
 
-        <View className="gap-2">
-          <Typography type="body-sm" weight="semibold">
-            Metode pembayaran
-          </Typography>
-          {arePaymentGroupsPending ? (
-            <PaymentButtonSkeleton widths={[104, 88, 112]} />
-          ) : (
-            <View className="min-h-8 flex-row flex-wrap gap-2">
-              {paymentGroups.map((group) => {
-                const isActive = paymentGroup === group.group_type;
-                return (
-                  <Button
-                    key={group.group_type}
-                    size="sm"
-                    variant={isActive ? "primary" : "outline"}
-                    onPress={() => {
-                      setValue("payment_group", group.group_type);
-                      setValue("payment_id", group.payments[0]?.id ?? "");
-                      setCashReceived("");
-                    }}
-                  >
-                    <Button.Label>{group.group_label}</Button.Label>
-                  </Button>
-                );
-              })}
-            </View>
-          )}
-        </View>
+        <PaymentFields
+          paymentGroups={paymentGroups}
+          paymentGroup={paymentGroup}
+          paymentId={paymentId}
+          isPending={arePaymentGroupsPending}
+          isCashPayment={isCashPayment}
+          cashPresets={cashPresets}
+          cashReceived={cashReceived}
+          cashReceivedAmount={cashReceivedAmount}
+          change={change}
+          errors={errors}
+          setValue={setValue}
+          setCashReceived={setCashReceived}
+        />
 
-        {!isCashPayment ? (
-          <View className="gap-2">
-            <Typography type="body-sm" weight="semibold">
-              Pembayaran
-            </Typography>
-            {arePaymentGroupsPending ? (
-              <PaymentButtonSkeleton widths={[96, 120, 88]} />
-            ) : (
-              <View className="min-h-8 flex-row flex-wrap gap-2">
-                {paymentGroups
-                  .find((group) => group.group_type === paymentGroup)
-                  ?.payments.map((payment) => (
-                    <Button
-                      key={payment.id}
-                      size="sm"
-                      variant={paymentId === payment.id ? "primary" : "outline"}
-                      onPress={() => setValue("payment_id", payment.id)}
-                    >
-                      <Button.Label>{payment.name}</Button.Label>
-                    </Button>
-                  ))}
-              </View>
-            )}
-            {errors.payment_id ? (
-              <Typography type="body-xs" className="text-danger">
-                {errors.payment_id.message}
-              </Typography>
-            ) : null}
-          </View>
-        ) : (
-          <View className="gap-3">
-            <View className="gap-2">
-              <Typography type="body-sm" weight="semibold">
-                Nominal tunai
-              </Typography>
-              <View className="flex-row flex-wrap gap-2">
-                {cashPresets.map((amount, index) => (
-                  <Button
-                    key={amount}
-                    size="sm"
-                    variant={cashReceivedAmount === amount ? "primary" : "outline"}
-                    onPress={() => setCashReceived(String(amount))}
-                  >
-                    <Button.Label>
-                      {index === 0 ? `Uang pas · ${formatRupiah(amount)}` : formatRupiah(amount)}
-                    </Button.Label>
-                  </Button>
-                ))}
-              </View>
-            </View>
-            <View className="flex-row items-end gap-4">
-              <View className="min-w-48 flex-1 gap-1.5">
-                <Typography type="body-sm" weight="semibold">
-                  Nominal lain
-                </Typography>
-                <MiniInput
-                  value={cashReceived ? formatRupiah(cashReceivedAmount) : ""}
-                  onChangeText={(value) => setCashReceived(value.replace(/\D/g, ""))}
-                  placeholder="Rp0"
-                  keyboardType="phone-pad"
-                />
-              </View>
-              <View className="min-w-32 gap-1">
-                <Typography type="body-xs" color="muted">
-                  Kembalian
-                </Typography>
-                <Typography weight="semibold" className="tabular-nums">
-                  {formatRupiah(change)}
-                </Typography>
-              </View>
-            </View>
-          </View>
-        )}
-
-        <View className="gap-2">
-          <Typography type="body-sm" weight="semibold">
-            Pelanggan
-          </Typography>
-          <View className="flex-row gap-2">
-            {(
-              [
-                ["guest", "Merchant"],
-                ["customer", "Pelanggan terdaftar"],
-                ["anonymous", "Walk-in"],
-              ] as const
-            ).map(([type, label]) => (
-              <Button
-                key={type}
-                size="sm"
-                variant={customerType === type ? "primary" : "outline"}
-                onPress={() => {
-                  setValue("customer_type", type);
-                  setValue("guest_id", null);
-                  setValue("customer_id", null);
-                  setValue("customer_search", "");
-                }}
-              >
-                <Button.Label>{label}</Button.Label>
-              </Button>
-            ))}
-          </View>
-
-          {customerType === "guest" ? (
-            <View className="gap-2">
-              <Select
-                value={
-                  guestId
-                    ? {
-                        value: guestId,
-                        label: guests.find((guest) => guest.id === guestId)?.name ?? "Merchant",
-                      }
-                    : undefined
-                }
-                onValueChange={(option) => setValue("guest_id", option?.value || null)}
-              >
-                <Select.Trigger>
-                  <Select.Value placeholder="Pilih merchant customer" />
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content presentation="popover" width="trigger">
-                    {guests.map((guest) => (
-                      <Select.Item key={guest.id} value={guest.id} label={guest.name} />
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-              {errors.guest_id ? (
-                <Typography type="body-xs" className="text-danger">
-                  {errors.guest_id.message}
-                </Typography>
-              ) : null}
-            </View>
-          ) : null}
-
-          {customerType === "customer" ? (
-            <View className="gap-2">
-              <Controller
-                control={control}
-                name="customer_search"
-                render={({ field }) => (
-                  <SearchField value={field.value} onChange={field.onChange}>
-                    <SearchField.Group>
-                      <SearchField.SearchIcon />
-                      <SearchField.Input placeholder="Cari email pelanggan" />
-                      <SearchField.ClearButton />
-                    </SearchField.Group>
-                  </SearchField>
-                )}
-              />
-              {customerResults.map((customer) => (
-                <Pressable
-                  key={customer.id}
-                  onPress={() => setValue("customer_id", customer.id)}
-                  className={`rounded-lg px-3 py-2 ${customerId === customer.id ? "bg-accent/10" : "bg-surface-secondary"}`}
-                >
-                  <Typography type="body-sm" weight="semibold">
-                    {customer.name}
-                  </Typography>
-                  {customer.email || customer.phone ? (
-                    <Typography type="body-xs" color="muted">
-                      {[customer.email, customer.phone].filter(Boolean).join(" · ")}
-                    </Typography>
-                  ) : null}
-                </Pressable>
-              ))}
-              {errors.customer_id ? (
-                <Typography type="body-xs" className="text-danger">
-                  {errors.customer_id.message}
-                </Typography>
-              ) : null}
-            </View>
-          ) : null}
-        </View>
+        <CustomerFields
+          control={control}
+          customerType={customerType}
+          guestId={guestId}
+          customerId={customerId}
+          guests={guests}
+          customerResults={customerResults}
+          errors={errors}
+          setValue={setValue}
+        />
 
         <View className="gap-1.5">
           <Typography type="body-sm" weight="semibold">
