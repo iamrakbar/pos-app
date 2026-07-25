@@ -7,7 +7,7 @@ import { formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { Button, Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import { Image } from "expo-image";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -111,6 +111,21 @@ export default function ProductsScreen(): React.JSX.Element {
         </Stack.Toolbar.Menu>
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
+        <View className="flex-row items-center justify-between gap-4 border-b border-border bg-surface px-5 py-3">
+          <View className="flex-1">
+            <Typography type="body-sm" weight="semibold">
+              Product catalog
+            </Typography>
+            <Typography type="body-xs" color="muted">
+              Organize products into categories.
+            </Typography>
+          </View>
+          <Button size="sm" variant="outline" onPress={() => router.push("/products/categories")}>
+            <Ionicons name="grid-outline" size={16} color={theme.foreground} />
+            <Button.Label>Categories</Button.Label>
+          </Button>
+        </View>
+
         {/* Product list */}
         {isLoading ? (
           <LoadingState message="Loading products…" />
