@@ -314,36 +314,36 @@ function ProductDetailsCard({
           render={({ field: { value, onChange } }) => (
             <TextField isRequired isInvalid={!!errors.category_id}>
               <Label>Category</Label>
-              <Select
-                value={categoryOptions.find((option) => option.value === value)}
-                onValueChange={(option) => onChange(option?.value ?? "")}
-                isDisabled={areCategoriesLoading || didCategoriesFail}
-              >
-                <Select.Trigger>
-                  <Select.Value placeholder="Select a category" numberOfLines={1} />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    isIconOnly
-                    accessibilityLabel="Add category"
-                    onPress={(event) => {
-                      event.stopPropagation();
-                      onAddCategory();
-                    }}
-                  >
-                    <Ionicons name="add" size={18} />
-                  </Button>
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content presentation="popover" width="trigger">
-                    {categoryOptions.map((option) => (
-                      <Select.Item key={option.value} {...option} />
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
+              <View className="relative">
+                <Select
+                  value={categoryOptions.find((option) => option.value === value)}
+                  onValueChange={(option) => onChange(option?.value ?? "")}
+                  isDisabled={areCategoriesLoading || didCategoriesFail}
+                >
+                  <Select.Trigger className="pr-20">
+                    <Select.Value placeholder="Select a category" numberOfLines={1} />
+                    <Select.TriggerIndicator />
+                  </Select.Trigger>
+                  <Select.Portal>
+                    <Select.Overlay />
+                    <Select.Content presentation="popover" width="trigger">
+                      {categoryOptions.map((option) => (
+                        <Select.Item key={option.value} {...option} />
+                      ))}
+                    </Select.Content>
+                  </Select.Portal>
+                </Select>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  isIconOnly
+                  accessibilityLabel="Add category"
+                  className="absolute right-9 top-1/2 z-10 -translate-y-1/2"
+                  onPress={onAddCategory}
+                >
+                  <Ionicons name="add" size={18} />
+                </Button>
+              </View>
               {didCategoriesFail ? (
                 <View className="flex-row items-center justify-between gap-3">
                   <Description className="flex-1 text-danger">
