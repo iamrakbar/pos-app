@@ -30,7 +30,7 @@ function decrementCachedProductStock(
   if (!products) return products;
   return products.map((product) => {
     const checkoutQty = qtyByProductId.get(product.id);
-    if (!checkoutQty || !product.stock.enabled) return product;
+    if (!checkoutQty || !product.stock.enabled || product.stock.qty === null) return product;
 
     const nextQty = Math.max(0, product.stock.qty - checkoutQty);
     return {
@@ -51,11 +51,11 @@ function toOrderListData(checkoutData: CheckoutData): App.Data.Merchant.Order.Or
     customer: checkoutData.customer ? [checkoutData.customer] : [],
     payment: checkoutData.payment ? [checkoutData.payment] : [],
     order_type: checkoutData.order_type,
-    order_status: checkoutData.order_status as unknown as Array<any>,
-    payment_status: [] as Array<any>,
+    order_status: checkoutData.order_status as unknown as any[],
+    payment_status: [] as any[],
     total: checkoutData.pricing.total,
     products_count: checkoutData.products.reduce((total, product) => total + product.qty, 0),
-    orderable: checkoutData.table ? ([checkoutData.table] as Array<any>) : null,
+    orderable: checkoutData.table ? ([checkoutData.table] as any[]) : null,
     created_at: checkoutData.created_at,
   };
 }

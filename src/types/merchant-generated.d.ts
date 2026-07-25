@@ -837,7 +837,7 @@ in_days: number | null;
 };
 export type ProductStockData = {
 enabled: boolean;
-qty: number;
+qty: number | null;
 };
 }
 declare namespace App.Data.Merchant.Product {
@@ -863,8 +863,14 @@ active: boolean;
 image_url: string | null;
 thumbnail_url: string | null;
 category: App.Data.Merchant.Product.ProductCategoryData | null;
+discount: App.Data.Merchant.Product.ProductDiscountData | null;
 created_at: string;
 updated_at: string;
+};
+export type ProductDiscountData = {
+unit: string;
+value: number;
+price: number;
 };
 }
 declare namespace App.Data.Merchant.Profile {

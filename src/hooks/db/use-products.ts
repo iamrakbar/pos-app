@@ -31,22 +31,19 @@ export function mapProduct(raw: App.Data.Merchant.Pos.ProductData): POSProduct {
   };
 }
 
-function mapManagementProduct(
-  raw: App.Data.Merchant.Product.ProductData,
-  posProduct?: App.Data.Merchant.Pos.ProductData
-): POSProduct {
+function mapManagementProduct(raw: App.Data.Merchant.Product.ProductData): POSProduct {
   return {
     id: raw.id,
     name: raw.name,
-    price: posProduct ? extractSellingPrice(posProduct.discount, posProduct.price) : raw.price,
-    original_price: posProduct ? extractOriginalPrice(posProduct.discount, posProduct.price) : null,
+    price: extractSellingPrice(raw.discount, raw.price),
+    original_price: extractOriginalPrice(raw.discount, raw.price),
     image_url: raw.image_url,
     thumbnail_url: raw.thumbnail_url,
     category_id: raw.category_id,
     stock_enabled: raw.stock_enabled,
     stock_qty: raw.stock_enabled ? raw.stock : null,
     is_active: raw.active,
-    add_ons: posProduct?.add_ons ?? [],
+    add_ons: [],
   };
 }
 
@@ -119,21 +116,12 @@ export function useManagementProducts(
   return useQuery({
     queryKey: ["management-products", merchantId, search, categoryId, active],
     queryFn: async () => {
-      const [managementResponse, posResponse] = await Promise.all([
-        getProducts(merchantId!, {
-          search,
-          category_id: categoryId ?? undefined,
-          active,
-        }),
-        getPosProducts(merchantId!, {
-          search,
-          category_id: categoryId ?? undefined,
-        }),
-      ]);
-      const posProductsById = new Map(posResponse.data.map((product) => [product.id, product]));
-      return managementResponse.data.map((product) =>
-        mapManagementProduct(product, posProductsById.get(product.id))
-      );
+      const response = await getProducts(merchantId!, {
+        search,
+        category_id: categoryId ?? undefined,
+        active,
+      });
+      return response.data.map(mapManagementProduct);
     },
     enabled: !!merchantId,
     staleTime: PRODUCTS_STALE_TIME_MS,
