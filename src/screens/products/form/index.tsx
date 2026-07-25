@@ -39,6 +39,7 @@ import {
   type ProductFormPayload,
 } from "@/hooks/db/use-products";
 import { productSchema, type ProductFormValues } from "@/schemas/product";
+import ProductAddOnsCard from "./product-add-ons-card";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -705,17 +706,12 @@ export default function ProductFormScreen(): React.JSX.Element {
             </Card>
 
             {!isNew ? (
-              <Card className="overflow-hidden">
-                <SectionHeading
-                  title="Add-ons"
-                  description="Configure choices such as toppings, sizes, and spice levels."
-                />
-                <Card.Footer>
-                  <Button variant="outline" onPress={() => router.push(`/products/${id}/add-ons`)}>
-                    <Button.Label>Manage add-ons</Button.Label>
-                  </Button>
-                </Card.Footer>
-              </Card>
+              <ProductAddOnsCard
+                addOns={productQuery.data?.add_ons ?? []}
+                onAdd={() => router.push(`/products/${id}/add-ons/new`)}
+                onEdit={(addOnId) => router.push(`/products/${id}/add-ons/${addOnId}`)}
+                onManageAll={() => router.push(`/products/${id}/add-ons`)}
+              />
             ) : null}
 
             <Card className="overflow-hidden">

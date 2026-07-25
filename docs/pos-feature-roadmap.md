@@ -616,6 +616,8 @@ API and data:
 Routes and UI:
 
 - [x] Add an add-on management section to product detail/edit.
+- [x] Render the product response's embedded add-on groups directly in the
+      product form with edit, add, and manage-all actions.
 - [x] Support group name, minimum, maximum, option name, and option price.
 - [x] Support adding, editing, removing, and restoring option rows before save.
 - [x] Add destructive confirmation for deleting an add-on group.
