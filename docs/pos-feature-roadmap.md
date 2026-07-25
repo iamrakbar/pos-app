@@ -566,33 +566,38 @@ supports parent categories.
 
 ### Task 2: Area and table CRUD
 
-**Status:** Not started
+**Status:** In progress
 
 API and data:
 
-- [ ] Add typed area list, detail, create, update, and delete endpoints.
-- [ ] Add typed nested table list, create, update, and delete endpoints.
-- [ ] Add area and table query-key factories and cache invalidation.
-- [ ] Preserve the flat POS table query used by checkout.
-- [ ] Add area and table form schemas.
+- [x] Add typed area list, detail, create, update, and delete endpoints.
+- [x] Add typed nested table list, create, update, and delete endpoints.
+- [x] Add area and table query-key factories and cache invalidation.
+- [x] Preserve the flat POS table query used by checkout.
+- [x] Add area and table form schemas.
 
 Routes and UI:
 
-- [ ] Add area list, area form, and nested table management routes.
-- [ ] Add an Areas and Tables entry point under operational settings.
-- [ ] Show table count per area.
-- [ ] Support table name, capacity, and active status.
-- [ ] Handle deletion conflicts and referenced-table errors clearly.
-- [ ] Provide loading, empty, error, retry, and pending states.
+- [x] Add area list, area form, and nested table management routes.
+- [x] Add an Areas and Tables entry point under operational settings.
+- [x] Show table count per area.
+- [x] Support table name, capacity, and active status.
+- [x] Handle deletion conflicts and referenced-table errors clearly.
+- [x] Provide loading, empty, error, retry, and pending states.
 
 Validation:
 
-- [ ] TypeScript passes.
-- [ ] ESLint passes for changed area and table files.
-- [ ] Android Expo/Metro export passes.
-- [ ] React Doctor remains at 100/100 with `vendor/**` excluded.
+- [x] TypeScript passes.
+- [x] ESLint passes for changed area and table files.
+- [x] Android Expo/Metro export passes.
+- [x] React Doctor remains at 100/100 with `vendor/**` excluded.
 - [ ] Manual CRUD smoke test passes against an authenticated merchant.
 - [ ] Checkout still lists active POS tables grouped by area.
+
+Manual test blocker: these final checks require a reachable API, an
+authenticated merchant with the `dine_in` feature, and disposable area/table
+records. Keep the task in progress until CRUD and the refreshed checkout table
+picker have both been exercised against that account.
 
 ### Task 3: Product add-on CRUD
 

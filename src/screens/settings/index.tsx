@@ -20,6 +20,13 @@ type SettingsItem = {
 
 const SETTINGS_ITEMS: SettingsItem[] = [
   {
+    id: "areas",
+    href: "/settings/areas",
+    icon: "storefront-outline",
+    label: "Areas & Tables",
+    description: "Manage dine-in seating and table capacity",
+  },
+  {
     id: "printer",
     href: "/settings/printers",
     icon: "print-outline",

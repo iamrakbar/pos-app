@@ -33,6 +33,9 @@ export default function SettingsLayout() {
       <Stack.Screen name="printers/[id]" options={{ title: "Printer" }} />
       <Stack.Screen name="receipt" options={{ title: "Receipt Setup" }} />
       <Stack.Screen name="updates" options={{ title: "App Updates" }} />
+      <Stack.Screen name="areas/index" options={{ title: "Areas & Tables" }} />
+      <Stack.Screen name="areas/[id]" options={{ title: "Area" }} />
+      <Stack.Screen name="areas/[areaId]/tables" options={{ title: "Tables" }} />
     </Stack>
   );
 }
