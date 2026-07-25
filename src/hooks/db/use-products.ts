@@ -37,13 +37,13 @@ function mapManagementProduct(raw: App.Data.Merchant.Product.ProductData): POSPr
     name: raw.name,
     price: extractSellingPrice(raw.discount, raw.price),
     original_price: extractOriginalPrice(raw.discount, raw.price),
-    image_url: raw.image_url,
-    thumbnail_url: raw.thumbnail_url,
-    category_id: raw.category_id,
-    stock_enabled: raw.stock_enabled,
-    stock_qty: raw.stock_enabled ? raw.stock : null,
+    image_url: raw.image.default,
+    thumbnail_url: raw.image.thumbnail,
+    category_id: raw.category?.id ?? null,
+    stock_enabled: raw.stock.enabled,
+    stock_qty: raw.stock.enabled ? raw.stock.qty : null,
     is_active: raw.active,
-    add_ons: [],
+    add_ons: raw.add_ons,
   };
 }
 
@@ -249,11 +249,23 @@ export function useUpdateProduct(productId: string) {
         queryClient.setQueryData(queryKey, next);
       }
       if (detail) {
+        const values = payload.values;
         queryClient.setQueryData(["product", merchantId, productId], {
           ...detail,
-          ...payload.values,
-          image_url: payload.image?.uri ?? detail.image_url,
-          thumbnail_url: payload.image?.uri ?? detail.thumbnail_url,
+          name: values.name,
+          code: values.code ?? null,
+          description: values.description ?? null,
+          price: values.price,
+          active: values.active ?? true,
+          category: detail.category?.id === values.category_id ? detail.category : null,
+          stock: {
+            enabled: values.stock_enabled ?? false,
+            qty: values.stock_enabled ? (values.stock ?? null) : null,
+            alert: values.stock_alert ?? null,
+          },
+          image: payload.image
+            ? { default: payload.image.uri, thumbnail: payload.image.uri }
+            : detail.image,
         });
       }
       return { snapshots, detail };

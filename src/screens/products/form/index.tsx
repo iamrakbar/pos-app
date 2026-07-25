@@ -522,14 +522,14 @@ export default function ProductFormScreen(): React.JSX.Element {
     if (isNew || !product || hydratedProductId.current === product.id) return;
 
     reset({
-      category_id: product.category_id ?? "",
+      category_id: product.category?.id ?? "",
       name: product.name,
       description: product.description ?? "",
       price: String(product.price),
       code: product.code ?? "",
-      stock_enabled: product.stock_enabled,
-      stock: product.stock_enabled ? String(product.stock) : "",
-      stock_alert: product.stock_alert === null ? "" : String(product.stock_alert),
+      stock_enabled: product.stock.enabled,
+      stock: product.stock.enabled && product.stock.qty !== null ? String(product.stock.qty) : "",
+      stock_alert: product.stock.alert === null ? "" : String(product.stock.alert),
       active: product.active,
       image: null,
     });
@@ -545,7 +545,7 @@ export default function ProductFormScreen(): React.JSX.Element {
   }
 
   const isSaving = createProductMutation.isPending || updateProductMutation.isPending;
-  const imageUri = imageAsset?.uri ?? (!isNew ? productQuery.data?.image_url : null);
+  const imageUri = imageAsset?.uri ?? (!isNew ? productQuery.data?.image.default : null);
 
   const applyServerErrors = (error: unknown) => {
     if (!isApiError(error) || !error.errors) return false;

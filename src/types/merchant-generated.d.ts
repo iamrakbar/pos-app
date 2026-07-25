@@ -841,6 +841,15 @@ qty: number | null;
 };
 }
 declare namespace App.Data.Merchant.Product {
+export type ProductAddOnData = {
+id: string;
+name: string;
+min: number;
+max: number;
+required: boolean;
+multiple: boolean;
+options: Array<App.Data.Merchant.Product.ProductOptionData>;
+};
 export type ProductCategoryData = {
 id: string;
 name: string;
@@ -849,21 +858,18 @@ slug: string | null;
 export type ProductData = {
 id: string;
 merchant_id: string;
-category_id: string | null;
 name: string;
 slug: string;
 code: string | null;
 description: string | null;
 price: number;
 cost: number | null;
-stock_enabled: boolean;
-stock: number;
-stock_alert: number | null;
+stock: App.Data.Merchant.Product.ProductStockData;
 active: boolean;
-image_url: string | null;
-thumbnail_url: string | null;
+image: App.Data.Merchant.Product.ProductImageData;
 category: App.Data.Merchant.Product.ProductCategoryData | null;
 discount: App.Data.Merchant.Product.ProductDiscountData | null;
+add_ons: Array<App.Data.Merchant.Product.ProductAddOnData>;
 created_at: string;
 updated_at: string;
 };
@@ -871,6 +877,20 @@ export type ProductDiscountData = {
 unit: string;
 value: number;
 price: number;
+};
+export type ProductImageData = {
+default: string | null;
+thumbnail: string | null;
+};
+export type ProductOptionData = {
+id: string;
+name: string;
+price: number;
+};
+export type ProductStockData = {
+enabled: boolean;
+qty: number | null;
+alert: number | null;
 };
 }
 declare namespace App.Data.Merchant.Profile {

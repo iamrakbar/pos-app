@@ -2644,7 +2644,7 @@
                 }
               ]
             },
-    "description": "**Purpose:** List menu items (products).\n\n**Auth required:** Yes.\n\n**Response:** Each menu includes `discount` as `{ unit, value, price }` when it has an active discount, otherwise `null`. `price` is the final discounted price.\n\n**Query params (Spatie QueryBuilder):** `filter[category_id]`, `filter[active]`, `filter[stock_enabled]` (exact); `filter[search]` (matches name/code/description); `sort` (allowed `name`,`price`,`stock`,`created_at`, default `-created_at`); `per_page` (default 10, max 50)."
+    "description": "**Purpose:** List menu items (products).\n\n**Auth required:** Yes.\n\n**Response contract:** Each menu includes nested `stock` (`enabled`, `qty`, `alert`), `image` (`default`, `thumbnail`), nullable `category`, nullable `discount` (`unit`, `value`, `price`), and an `add_ons` array with nested `options`. Legacy flat response fields `category_id`, `stock_enabled`, `stock_alert`, `image_url`, and `thumbnail_url` are not returned.\n\n**Query params (Spatie QueryBuilder):** `filter[category_id]`, `filter[active]`, `filter[stock_enabled]` (exact); `filter[search]` (matches name/code/description); `sort` (allowed `name`,`price`,`stock`,`created_at`, default `-created_at`); `per_page` (default 10, max 50)."
           },
           "response": [],
           "event": [
@@ -2675,13 +2675,22 @@
           "        pm.expect(json.data).to.be.an(\"array\");",
           "    });",
           "",
-          "    pm.test(\"Menus include discount data\", function () {",
+          "    pm.test(\"Menus use the standardized nested contract\", function () {",
           "        const menus = pm.response.json().data;",
           "        menus.forEach(function (menu) {",
+          "            pm.expect(menu.stock).to.have.all.keys(\"enabled\", \"qty\", \"alert\");",
+          "            pm.expect(menu.image).to.have.all.keys(\"default\", \"thumbnail\");",
+          "            pm.expect(menu).to.have.property(\"category\");",
           "            pm.expect(menu).to.have.property(\"discount\");",
+          "            pm.expect(menu.add_ons).to.be.an(\"array\");",
           "            if (menu.discount !== null) {",
           "                pm.expect(menu.discount).to.have.all.keys(\"unit\", \"value\", \"price\");",
           "            }",
+          "            menu.add_ons.forEach(function (addOn) {",
+          "                pm.expect(addOn).to.include.all.keys(\"id\", \"name\", \"min\", \"max\", \"required\", \"multiple\", \"options\");",
+          "                pm.expect(addOn.options).to.be.an(\"array\");",
+          "            });",
+          "            pm.expect(menu).not.to.have.any.keys(\"category_id\", \"stock_enabled\", \"stock_alert\", \"image_url\", \"thumbnail_url\");",
           "        });",
           "    });",
           "}"
@@ -2836,7 +2845,7 @@
                 "{{product_id}}"
               ]
             },
-    "description": "**Purpose:** Get a single menu item.\n\n**Auth required:** Yes.\n\n**Response:** Includes `discount` as `{ unit, value, price }` when the menu has an active discount, otherwise `null`. `price` is the final discounted price."
+    "description": "**Purpose:** Get a single menu item.\n\n**Auth required:** Yes.\n\n**Response contract:** Includes nested `stock` (`enabled`, `qty`, `alert`), `image` (`default`, `thumbnail`), nullable `category`, nullable `discount` (`unit`, `value`, `price`), and an `add_ons` array with nested `options`. Legacy flat response fields `category_id`, `stock_enabled`, `stock_alert`, `image_url`, and `thumbnail_url` are not returned."
           },
           "response": [],
           "event": [
@@ -2859,12 +2868,21 @@
           "        pm.expect(json.success).to.eql(true);",
           "    });",
           "",
-          "    pm.test(\"Menu includes discount data\", function () {",
+          "    pm.test(\"Menu uses the standardized nested contract\", function () {",
           "        const menu = pm.response.json().data;",
+          "        pm.expect(menu.stock).to.have.all.keys(\"enabled\", \"qty\", \"alert\");",
+          "        pm.expect(menu.image).to.have.all.keys(\"default\", \"thumbnail\");",
+          "        pm.expect(menu).to.have.property(\"category\");",
           "        pm.expect(menu).to.have.property(\"discount\");",
+          "        pm.expect(menu.add_ons).to.be.an(\"array\");",
           "        if (menu.discount !== null) {",
           "            pm.expect(menu.discount).to.have.all.keys(\"unit\", \"value\", \"price\");",
           "        }",
+          "        menu.add_ons.forEach(function (addOn) {",
+          "            pm.expect(addOn).to.include.all.keys(\"id\", \"name\", \"min\", \"max\", \"required\", \"multiple\", \"options\");",
+          "            pm.expect(addOn.options).to.be.an(\"array\");",
+          "        });",
+          "        pm.expect(menu).not.to.have.any.keys(\"category_id\", \"stock_enabled\", \"stock_alert\", \"image_url\", \"thumbnail_url\");",
           "    });",
           "}"
                 ]
