@@ -8,7 +8,6 @@ type ProductAddOnsCardProps = {
   addOns: ProductAddOn[];
   onAdd: () => void;
   onEdit: (addOnId: string) => void;
-  onManageAll: () => void;
 };
 
 function selectionRule(addOn: ProductAddOn): string {
@@ -22,12 +21,7 @@ function selectionRule(addOn: ProductAddOn): string {
   return `${requirement} · ${selection} · ${optionCount}`;
 }
 
-export default function ProductAddOnsCard({
-  addOns,
-  onAdd,
-  onEdit,
-  onManageAll,
-}: ProductAddOnsCardProps) {
+export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddOnsCardProps) {
   const mutedColor = useThemeColor("muted");
 
   return (
@@ -37,6 +31,9 @@ export default function ProductAddOnsCard({
           <Card.Title>Add-ons</Card.Title>
           <Card.Description>Choice groups shown to the cashier.</Card.Description>
         </View>
+        <Button variant="ghost" className="self-center" onPress={onAdd}>
+          <Button.Label>+ Add</Button.Label>
+        </Button>
       </Card.Header>
       <Card.Body className="gap-0">
         {addOns.length === 0 ? (
@@ -78,15 +75,6 @@ export default function ProductAddOnsCard({
           </Typography>
         ) : null}
       </Card.Body>
-      <Card.Footer>
-        <Button
-          variant={addOns.length === 0 ? "primary" : "outline"}
-          className="flex-1"
-          onPress={addOns.length === 0 ? onAdd : onManageAll}
-        >
-          <Button.Label>{addOns.length === 0 ? "Add group" : "Manage add-ons"}</Button.Label>
-        </Button>
-      </Card.Footer>
     </Card>
   );
 }

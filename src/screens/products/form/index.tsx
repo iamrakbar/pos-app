@@ -733,7 +733,6 @@ export default function ProductFormScreen(): React.JSX.Element {
                 addOns={productQuery.data?.add_ons ?? []}
                 onAdd={() => router.push(`/products/${id}/add-ons/new`)}
                 onEdit={(addOnId) => router.push(`/products/${id}/add-ons/${addOnId}`)}
-                onManageAll={() => router.push(`/products/${id}/add-ons`)}
               />
             ) : null}
 
