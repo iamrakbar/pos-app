@@ -9,7 +9,8 @@ export default function EarningsLayout() {
     <Stack
       screenOptions={{
         headerBackTitle: "",
-        headerStyle: { backgroundColor: theme.surface },
+        headerStyle: { backgroundColor: theme.background },
+        headerShadowVisible: false,
         headerTintColor: theme.foreground,
         headerTitleStyle: { color: theme.foreground },
         contentStyle: { backgroundColor: theme.background },

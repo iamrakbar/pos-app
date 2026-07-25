@@ -22,8 +22,9 @@ export default function AppLayout() {
         drawerActiveTintColor: theme.foreground,
         drawerInactiveTintColor: theme.muted,
         headerStyle: {
-          backgroundColor: theme.surface,
+          backgroundColor: theme.background,
         },
+        headerShadowVisible: false,
         headerTintColor: theme.foreground,
         sceneStyle: {
           backgroundColor: theme.background,

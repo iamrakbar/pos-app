@@ -9,8 +9,9 @@ export default function POSFlowLayout() {
       screenOptions={{
         headerBackTitle: "",
         headerStyle: {
-          backgroundColor: theme.surface,
+          backgroundColor: theme.background,
         },
+        headerShadowVisible: false,
         headerTintColor: theme.foreground,
         headerTitleStyle: {
           color: theme.foreground,
