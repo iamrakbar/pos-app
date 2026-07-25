@@ -30,7 +30,6 @@ type CategoryFormDialogProps = {
 
 const CATEGORY_FIELDS = new Set<keyof CategoryFormValues>([
   "name",
-  "slug",
   "description",
   "position",
   "active",
@@ -70,14 +69,13 @@ export default function CategoryFormDialog({
     formState: { errors },
   } = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
-    defaultValues: { name: "", slug: "", description: "", position: "0", active: true },
+    defaultValues: { name: "", description: "", position: "0", active: true },
   });
 
   React.useEffect(() => {
     if (!isOpen) return;
     reset({
       name: category?.name ?? "",
-      slug: category?.slug ?? "",
       description: category?.description ?? "",
       position: String(category?.position ?? 0),
       active: category?.active ?? true,
@@ -186,25 +184,6 @@ export default function CategoryFormDialog({
                       <Label>Name</Label>
                       <Input value={value} onChangeText={onChange} placeholder="Main dishes" />
                       <FieldMessage message={errors.name?.message} />
-                    </TextField>
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="slug"
-                  render={({ field: { value, onChange } }) => (
-                    <TextField isInvalid={Boolean(errors.slug)}>
-                      <Label>Slug</Label>
-                      <Input
-                        value={value}
-                        onChangeText={onChange}
-                        placeholder="main-dishes"
-                        autoCapitalize="none"
-                      />
-                      <FieldMessage
-                        message={errors.slug?.message}
-                        fallback="Optional URL-friendly identifier."
-                      />
                     </TextField>
                   )}
                 />

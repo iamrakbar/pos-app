@@ -316,15 +316,16 @@ function ProductDetailsCard({
               <Label isRequired isInvalid={Boolean(errors.category_id)}>
                 Category
               </Label>
-              <View className="relative">
+              <View className="flex-row items-center gap-2">
                 <Select
                   value={categoryOptions.find((option) => option.value === value)}
                   onValueChange={(option) => onChange(option?.value ?? "")}
                   isDisabled={areCategoriesLoading || didCategoriesFail}
+                  className="flex-1"
                 >
                   <Select.Trigger
                     accessibilityLabel="Category"
-                    className={`pr-20 ${errors.category_id ? "border-danger" : ""}`}
+                    className={`${errors.category_id ? "border-danger" : ""}`}
                   >
                     <Select.Value placeholder="Select a category" numberOfLines={1} />
                     <Select.TriggerIndicator />
@@ -339,11 +340,9 @@ function ProductDetailsCard({
                   </Select.Portal>
                 </Select>
                 <Button
-                  size="sm"
                   variant="ghost"
                   isIconOnly
                   accessibilityLabel="Add category"
-                  className="absolute right-9 top-1/2 z-10 -translate-y-1/2"
                   onPress={onAddCategory}
                 >
                   <Ionicons name="add" size={18} />
