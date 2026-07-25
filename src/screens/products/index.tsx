@@ -105,6 +105,9 @@ export default function ProductsScreen(): React.JSX.Element {
               {cat.name}
             </Stack.Toolbar.MenuAction>
           ))}
+          <Stack.Toolbar.MenuAction onPress={() => router.push("/products/categories")}>
+            Manage categories
+          </Stack.Toolbar.MenuAction>
         </Stack.Toolbar.Menu>
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
