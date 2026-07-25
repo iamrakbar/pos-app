@@ -537,9 +537,8 @@ Routes and UI:
 
 - [x] Add category list and category form routes under the Products stack.
 - [x] Add a category management entry point from the Products screen.
-- [x] Keep category management out of the global sidebar and expose it through
-      a dedicated category icon in the existing Products toolbar; consolidate
-      status and category choices into the adjacent Product filters menu.
+- [x] Add Categories to the drawer as a temporary top-level destination while
+      keeping status and category filtering as separate Products toolbar menus.
 - [x] Support search and active/inactive filtering.
 - [x] Show product count, position, and active status.
 - [x] Support create and edit with field-level API validation errors.
