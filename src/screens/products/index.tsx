@@ -60,6 +60,13 @@ export default function ProductsScreen(): React.JSX.Element {
           onChangeText={(event) => setSearch(event.nativeEvent.text)}
           onClose={() => setSearch("")}
         />
+        <Stack.Toolbar.Button
+          accessibilityLabel="Manage categories"
+          accessibilityHint="Opens category management"
+          onPress={() => router.push("/products/categories")}
+        >
+          Categories
+        </Stack.Toolbar.Button>
         <Stack.Toolbar.Menu
           {...getToolbarIcon("filter")}
           tintColor={theme.foreground}
@@ -86,14 +93,12 @@ export default function ProductsScreen(): React.JSX.Element {
           </Stack.Toolbar.MenuAction>
         </Stack.Toolbar.Menu>
         <Stack.Toolbar.Menu
+          {...getToolbarIcon("category")}
           tintColor={theme.foreground}
-          accessibilityLabel="Categories"
-          title="Categories"
+          accessibilityLabel="Filter by category"
+          title="Filter by category"
         >
-          <Stack.Toolbar.Label>Categories</Stack.Toolbar.Label>
-          <Stack.Toolbar.MenuAction onPress={() => router.push("/products/categories")}>
-            Manage categories
-          </Stack.Toolbar.MenuAction>
+          <Stack.Toolbar.Label>Category filter</Stack.Toolbar.Label>
           <Stack.Toolbar.MenuAction onPress={() => setCategoryId(null)} isOn={categoryId === null}>
             All
           </Stack.Toolbar.MenuAction>
