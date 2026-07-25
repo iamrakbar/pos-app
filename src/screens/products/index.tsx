@@ -188,7 +188,7 @@ export default function ProductsScreen(): React.JSX.Element {
                           )}
                         </View>
 
-                        <View className="flex-row items-center gap-2">
+                        <View className="gap-0.5">
                           {isDiscounted && (
                             <Typography type="body-xs" color="muted" className="line-through">
                               {formatRupiah(product.original_price!)}
