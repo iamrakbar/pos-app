@@ -60,47 +60,33 @@ export default function ProductsScreen(): React.JSX.Element {
           onChangeText={(event) => setSearch(event.nativeEvent.text)}
           onClose={() => setSearch("")}
         />
-        <Stack.Toolbar.Button
-          accessibilityLabel="Manage categories"
-          accessibilityHint="Opens category management"
-          onPress={() => router.push("/products/categories")}
-        >
-          Categories
-        </Stack.Toolbar.Button>
         <Stack.Toolbar.Menu
           {...getToolbarIcon("filter")}
           tintColor={theme.foreground}
-          accessibilityLabel="Filter products"
+          accessibilityLabel="Product filters"
+          title="Product filters"
         >
-          <Stack.Toolbar.Label>Filter</Stack.Toolbar.Label>
+          <Stack.Toolbar.Label>Product filters</Stack.Toolbar.Label>
           <Stack.Toolbar.MenuAction
             onPress={() => setActiveFilter("all")}
             isOn={activeFilter === "all"}
           >
-            All
+            Status: All
           </Stack.Toolbar.MenuAction>
           <Stack.Toolbar.MenuAction
             onPress={() => setActiveFilter("active")}
             isOn={activeFilter === "active"}
           >
-            Active
+            Status: Active
           </Stack.Toolbar.MenuAction>
           <Stack.Toolbar.MenuAction
             onPress={() => setActiveFilter("inactive")}
             isOn={activeFilter === "inactive"}
           >
-            Inactive
+            Status: Inactive
           </Stack.Toolbar.MenuAction>
-        </Stack.Toolbar.Menu>
-        <Stack.Toolbar.Menu
-          {...getToolbarIcon("category")}
-          tintColor={theme.foreground}
-          accessibilityLabel="Filter by category"
-          title="Filter by category"
-        >
-          <Stack.Toolbar.Label>Category filter</Stack.Toolbar.Label>
           <Stack.Toolbar.MenuAction onPress={() => setCategoryId(null)} isOn={categoryId === null}>
-            All
+            Category: All
           </Stack.Toolbar.MenuAction>
           {categoriesList.map((cat) => (
             <Stack.Toolbar.MenuAction
@@ -108,10 +94,17 @@ export default function ProductsScreen(): React.JSX.Element {
               onPress={() => setCategoryId(cat.id)}
               isOn={categoryId === cat.id}
             >
-              {cat.name}
+              Category: {cat.name}
             </Stack.Toolbar.MenuAction>
           ))}
         </Stack.Toolbar.Menu>
+        <Stack.Toolbar.Button
+          {...getToolbarIcon("category")}
+          tintColor={theme.foreground}
+          accessibilityLabel="Manage categories"
+          accessibilityHint="Opens category management"
+          onPress={() => router.push("/products/categories")}
+        />
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
         {/* Product list */}
