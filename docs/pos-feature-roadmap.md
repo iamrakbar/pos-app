@@ -601,35 +601,40 @@ picker have both been exercised against that account.
 
 ### Task 3: Product add-on CRUD
 
-**Status:** Not started
+**Status:** In progress
 
 API and data:
 
-- [ ] Add typed list, detail, create, update, and delete endpoints scoped to a
+- [x] Add typed list, detail, create, update, and delete endpoints scoped to a
       product.
-- [ ] Add product add-on queries and mutations.
-- [ ] Invalidate management-product and POS-product caches after mutations.
-- [ ] Add schemas for add-on groups and options.
-- [ ] Validate `min <= max` and ensure selection limits are compatible with
+- [x] Add product add-on queries and mutations.
+- [x] Invalidate management-product and POS-product caches after mutations.
+- [x] Add schemas for add-on groups and options.
+- [x] Validate `min <= max` and ensure selection limits are compatible with
       available options.
 
 Routes and UI:
 
-- [ ] Add an add-on management section to product detail/edit.
-- [ ] Support group name, minimum, maximum, option name, and option price.
-- [ ] Support adding, editing, removing, and restoring option rows before save.
-- [ ] Add destructive confirmation for deleting an add-on group.
-- [ ] Preview how the group appears to the cashier.
-- [ ] Provide loading, empty, error, retry, and pending states.
+- [x] Add an add-on management section to product detail/edit.
+- [x] Support group name, minimum, maximum, option name, and option price.
+- [x] Support adding, editing, removing, and restoring option rows before save.
+- [x] Add destructive confirmation for deleting an add-on group.
+- [x] Preview how the group appears to the cashier.
+- [x] Provide loading, empty, error, retry, and pending states.
 
 Validation:
 
-- [ ] TypeScript passes.
-- [ ] ESLint passes for changed add-on files.
-- [ ] Android Expo/Metro export passes.
-- [ ] React Doctor remains at 100/100 with `vendor/**` excluded.
+- [x] TypeScript passes.
+- [x] ESLint passes for changed add-on files.
+- [x] Android Expo/Metro export passes.
+- [x] React Doctor remains at 100/100 with `vendor/**` excluded.
 - [ ] Manual CRUD smoke test passes.
 - [ ] POS selection rules and prices match the saved add-on configuration.
+
+Manual test blocker: these checks require a reachable API, an authenticated
+merchant, and a disposable product. Keep the task in progress until add-on
+create, edit, option removal/restoration, delete, and the resulting cashier
+selection behavior have been exercised against that product.
 
 ### Task 4: Merchant operational settings
 

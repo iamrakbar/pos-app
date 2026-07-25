@@ -704,6 +704,20 @@ export default function ProductFormScreen(): React.JSX.Element {
               </Card.Body>
             </Card>
 
+            {!isNew ? (
+              <Card className="overflow-hidden">
+                <SectionHeading
+                  title="Add-ons"
+                  description="Configure choices such as toppings, sizes, and spice levels."
+                />
+                <Card.Footer>
+                  <Button variant="outline" onPress={() => router.push(`/products/${id}/add-ons`)}>
+                    <Button.Label>Manage add-ons</Button.Label>
+                  </Button>
+                </Card.Footer>
+              </Card>
+            ) : null}
+
             <Card className="overflow-hidden">
               <Card.Header className="pb-2">
                 <View className="gap-1">
