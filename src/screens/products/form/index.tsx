@@ -312,15 +312,20 @@ function ProductDetailsCard({
           control={control}
           name="category_id"
           render={({ field: { value, onChange } }) => (
-            <TextField isRequired isInvalid={!!errors.category_id}>
-              <Label>Category</Label>
+            <View className="gap-1.5">
+              <Label isRequired isInvalid={Boolean(errors.category_id)}>
+                Category
+              </Label>
               <View className="relative">
                 <Select
                   value={categoryOptions.find((option) => option.value === value)}
                   onValueChange={(option) => onChange(option?.value ?? "")}
                   isDisabled={areCategoriesLoading || didCategoriesFail}
                 >
-                  <Select.Trigger className="pr-20">
+                  <Select.Trigger
+                    accessibilityLabel="Category"
+                    className={`pr-20 ${errors.category_id ? "border-danger" : ""}`}
+                  >
                     <Select.Value placeholder="Select a category" numberOfLines={1} />
                     <Select.TriggerIndicator />
                   </Select.Trigger>
@@ -346,7 +351,7 @@ function ProductDetailsCard({
               </View>
               {didCategoriesFail ? (
                 <View className="flex-row items-center justify-between gap-3">
-                  <Description className="flex-1 text-danger">
+                  <Description isInvalid className="flex-1 text-danger">
                     Categories could not be loaded.
                   </Description>
                   <Button size="sm" variant="ghost" onPress={onRetryCategories}>
@@ -354,7 +359,9 @@ function ProductDetailsCard({
                   </Button>
                 </View>
               ) : errors.category_id?.message ? (
-                <Description className="text-danger">{errors.category_id.message}</Description>
+                <Description isInvalid className="text-danger">
+                  {errors.category_id.message}
+                </Description>
               ) : areCategoriesLoading ? (
                 <Description>Loading categories…</Description>
               ) : categoryOptions.length === 0 ? (
@@ -362,7 +369,7 @@ function ProductDetailsCard({
                   No active categories are available.
                 </Description>
               ) : null}
-            </TextField>
+            </View>
           )}
         />
         <Controller
