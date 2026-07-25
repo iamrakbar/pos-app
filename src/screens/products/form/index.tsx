@@ -40,6 +40,7 @@ import {
 } from "@/hooks/db/use-products";
 import { productSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
+import CategoryFormDialog from "../categories/category-form-dialog";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -290,6 +291,7 @@ function ProductDetailsCard({
   areCategoriesLoading,
   didCategoriesFail,
   onRetryCategories,
+  onAddCategory,
 }: {
   control: Control<ProductFormValues>;
   errors: FieldErrors<ProductFormValues>;
@@ -297,6 +299,7 @@ function ProductDetailsCard({
   areCategoriesLoading: boolean;
   didCategoriesFail: boolean;
   onRetryCategories: () => void;
+  onAddCategory: () => void;
 }) {
   return (
     <Card className="overflow-hidden">
@@ -318,6 +321,18 @@ function ProductDetailsCard({
               >
                 <Select.Trigger>
                   <Select.Value placeholder="Select a category" numberOfLines={1} />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    isIconOnly
+                    accessibilityLabel="Add category"
+                    onPress={(event) => {
+                      event.stopPropagation();
+                      onAddCategory();
+                    }}
+                  >
+                    <Ionicons name="add" size={18} />
+                  </Button>
                   <Select.TriggerIndicator />
                 </Select.Trigger>
                 <Select.Portal>
@@ -492,6 +507,7 @@ export default function ProductFormScreen(): React.JSX.Element {
     label: item.name,
   }));
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = React.useState(false);
   const hydratedProductId = React.useRef<string | null>(null);
   const {
     control,
@@ -657,6 +673,7 @@ export default function ProductFormScreen(): React.JSX.Element {
               areCategoriesLoading={categoriesQuery.isLoading}
               didCategoriesFail={categoriesQuery.isError}
               onRetryCategories={() => void categoriesQuery.refetch()}
+              onAddCategory={() => setIsCategoryFormOpen(true)}
             />
 
             <ProductImageCard
@@ -756,6 +773,16 @@ export default function ProductFormScreen(): React.JSX.Element {
         isDeleting={deleteProductMutation.isPending}
         onOpenChange={setIsDeleteOpen}
         onDelete={handleDelete}
+      />
+      <CategoryFormDialog
+        isOpen={isCategoryFormOpen}
+        onOpenChange={setIsCategoryFormOpen}
+        onSaved={(category) => {
+          setValue("category_id", category.id, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+        }}
       />
     </>
   );

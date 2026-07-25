@@ -535,13 +535,16 @@ API and data:
 
 Routes and UI:
 
-- [x] Add category list and category form routes under the Products stack.
+- [x] Add the category list route and reusable create/edit modal under the
+      Products stack.
 - [x] Add a category management entry point from the Products screen.
 - [x] Add Categories to the drawer as a temporary top-level destination while
       keeping status and category filtering as separate Products toolbar menus.
 - [x] Support search and active/inactive filtering.
 - [x] Show product count, position, and active status.
 - [x] Support create and edit with field-level API validation errors.
+- [x] Add a category from the Product form's category-select suffix and select
+      the newly created category automatically.
 - [x] Support delete with explicit confirmation and server conflict errors.
 - [x] Support accessible move-up and move-down reordering with an explicit
       save action.

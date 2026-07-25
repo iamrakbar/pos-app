@@ -6,11 +6,12 @@ import { getErrorMessage } from "@/api/api-error";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { Button, Chip, Separator, Typography, useThemeColor, useToast } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import CategoryFormDialog from "./category-form-dialog";
 
 type ActiveFilter = "all" | "active" | "inactive";
 type Category = App.Data.Merchant.Category.CategoryData;
@@ -24,7 +25,6 @@ function moveCategory(categories: Category[], index: number, direction: -1 | 1):
 }
 
 export default function CategoriesScreen(): React.JSX.Element {
-  const router = useRouter();
   const { toast } = useToast();
   const theme = useNavigationTheme();
   const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
@@ -39,10 +39,17 @@ export default function CategoriesScreen(): React.JSX.Element {
   });
   const reorderMutation = useReorderCategories();
   const [draftOrder, setDraftOrder] = React.useState<Category[] | null>(null);
+  const [editingCategory, setEditingCategory] = React.useState<Category | null>(null);
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = React.useState(false);
   const orderedCategories = draftOrder ?? categoryQuery.data ?? [];
   const isOrderDirty = draftOrder !== null;
 
   const canReorder = !deferredSearch && activeFilter === "all";
+
+  const openCategoryForm = (category: Category | null) => {
+    setEditingCategory(category);
+    setIsCategoryFormOpen(true);
+  };
 
   const handleMove = (index: number, direction: -1 | 1) => {
     setDraftOrder(moveCategory(orderedCategories, index, direction));
@@ -146,7 +153,7 @@ export default function CategoriesScreen(): React.JSX.Element {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Edit ${category.name}`}
-                      onPress={() => router.push(`/products/categories/${category.id}`)}
+                      onPress={() => openCategoryForm(category)}
                       className="flex-1 flex-row items-center gap-3 active:opacity-70"
                     >
                       <View className="size-11 items-center justify-center rounded-panel-inner bg-accent-soft">
@@ -207,11 +214,15 @@ export default function CategoriesScreen(): React.JSX.Element {
             )}
           </ScrollView>
         )}
-        <CreateFAB
-          accessibilityLabel="Add category"
-          onPress={() => router.push("/products/categories/new")}
-        />
+        <CreateFAB accessibilityLabel="Add category" onPress={() => openCategoryForm(null)} />
       </View>
+      <CategoryFormDialog
+        isOpen={isCategoryFormOpen}
+        category={editingCategory}
+        onOpenChange={setIsCategoryFormOpen}
+        onSaved={() => setDraftOrder(null)}
+        onDeleted={() => setDraftOrder(null)}
+      />
     </>
   );
 }
