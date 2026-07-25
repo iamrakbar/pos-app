@@ -1,4 +1,3 @@
-import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Separator, Typography, useThemeColor } from "heroui-native";
 import { Pressable, View } from "react-native";
@@ -13,16 +12,14 @@ type ProductAddOnsCardProps = {
 };
 
 function selectionRule(addOn: ProductAddOn): string {
-  if (addOn.min === addOn.max) return `Choose ${addOn.min}`;
-  return `Choose ${addOn.min}–${addOn.max}`;
-}
-
-function optionSummary(addOn: ProductAddOn): string {
-  return addOn.options
-    .map((option) =>
-      option.price > 0 ? `${option.name} +${formatRupiah(option.price)}` : option.name
-    )
-    .join(", ");
+  const requirement = addOn.required ? "Required" : "Optional";
+  const selection = addOn.multiple
+    ? addOn.required
+      ? `Choose ${addOn.min}–${addOn.max}`
+      : `Up to ${addOn.max}`
+    : "Choose one";
+  const optionCount = `${addOn.options.length} option${addOn.options.length === 1 ? "" : "s"}`;
+  return `${requirement} · ${selection} · ${optionCount}`;
 }
 
 export default function ProductAddOnsCard({
@@ -38,9 +35,7 @@ export default function ProductAddOnsCard({
       <Card.Header>
         <View className="flex-1 gap-1">
           <Card.Title>Add-ons</Card.Title>
-          <Card.Description>
-            Choices such as toppings, sizes, and spice levels shown to the cashier.
-          </Card.Description>
+          <Card.Description>Choice groups shown to the cashier.</Card.Description>
         </View>
       </Card.Header>
       <Card.Body className="gap-0">
@@ -55,40 +50,41 @@ export default function ProductAddOnsCard({
             </Typography>
           </View>
         ) : (
-          addOns.map((addOn, index) => (
+          addOns.slice(0, 3).map((addOn, index) => (
             <View key={addOn.id}>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Edit ${addOn.name}`}
                 onPress={() => onEdit(addOn.id)}
-                className="flex-row items-center gap-3 py-3 active:opacity-70"
+                className="flex-row items-center gap-3 py-2.5 active:opacity-70"
               >
-                <View className="flex-1 gap-1">
-                  <View className="flex-row items-center gap-2">
-                    <Typography type="body-sm" weight="semibold" className="flex-1">
-                      {addOn.name}
-                    </Typography>
-                    <Typography type="body-xs" color="muted">
-                      {selectionRule(addOn)}
-                    </Typography>
-                  </View>
-                  <Typography type="body-xs" color="muted" numberOfLines={2}>
-                    {optionSummary(addOn)}
+                <View className="flex-1 gap-0.5">
+                  <Typography type="body-sm" weight="semibold">
+                    {addOn.name}
+                  </Typography>
+                  <Typography type="body-xs" color="muted" numberOfLines={1}>
+                    {selectionRule(addOn)}
                   </Typography>
                 </View>
                 <Ionicons name="chevron-forward" size={17} color={mutedColor} />
               </Pressable>
-              {index < addOns.length - 1 ? <Separator /> : null}
+              {index < Math.min(addOns.length, 3) - 1 ? <Separator /> : null}
             </View>
           ))
         )}
+        {addOns.length > 3 ? (
+          <Typography type="body-xs" color="muted" className="pt-2">
+            {addOns.length - 3} more group{addOns.length - 3 === 1 ? "" : "s"}
+          </Typography>
+        ) : null}
       </Card.Body>
-      <Card.Footer className="flex-row gap-3">
-        <Button variant="outline" className="flex-1" onPress={onManageAll}>
-          <Button.Label>Manage all</Button.Label>
-        </Button>
-        <Button className="flex-1" onPress={onAdd}>
-          <Button.Label>Add group</Button.Label>
+      <Card.Footer>
+        <Button
+          variant={addOns.length === 0 ? "primary" : "outline"}
+          className="flex-1"
+          onPress={addOns.length === 0 ? onAdd : onManageAll}
+        >
+          <Button.Label>{addOns.length === 0 ? "Add group" : "Manage add-ons"}</Button.Label>
         </Button>
       </Card.Footer>
     </Card>

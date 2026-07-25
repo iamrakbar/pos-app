@@ -10,14 +10,44 @@ const optionSchema = z.object({
 export const addOnManagementSchema = z
   .object({
     name: z.string().trim().min(1, "Name is required").max(255, "Name is too long"),
-    min: z.string().regex(/^\d+$/, "Minimum must be a whole number"),
-    max: z.string().regex(/^\d+$/, "Maximum must be a whole number"),
+    required: z.boolean(),
+    multiple: z.boolean(),
+    min: z.string(),
+    max: z.string(),
     options: z.array(optionSchema),
   })
   .superRefine((values, context) => {
     const activeOptions = values.options.filter((option) => !option.destroyed);
-    const min = Number(values.min);
-    const max = Number(values.max);
+    const min = values.multiple && values.required ? Number(values.min) : values.required ? 1 : 0;
+    const max = values.multiple ? Number(values.max) : 1;
+    if (values.multiple && values.required && !/^\d+$/.test(values.min)) {
+      context.addIssue({
+        code: "custom",
+        path: ["min"],
+        message: "Minimum must be a whole number",
+      });
+    }
+    if (values.multiple && !/^\d+$/.test(values.max)) {
+      context.addIssue({
+        code: "custom",
+        path: ["max"],
+        message: "Maximum must be a whole number",
+      });
+    }
+    if (values.multiple && max < 2) {
+      context.addIssue({
+        code: "custom",
+        path: ["max"],
+        message: "Maximum must be at least 2 for multiple selection",
+      });
+    }
+    if (values.multiple && values.required && min < 1) {
+      context.addIssue({
+        code: "custom",
+        path: ["min"],
+        message: "Minimum must be at least 1 when a selection is required",
+      });
+    }
     if (min > max) {
       context.addIssue({
         code: "custom",
@@ -67,8 +97,8 @@ export type AddOnManagementRequest = {
 export function toAddOnRequest(values: AddOnManagementValues): AddOnManagementRequest {
   return {
     name: values.name.trim(),
-    min: Number(values.min),
-    max: Number(values.max),
+    min: values.multiple && values.required ? Number(values.min) : values.required ? 1 : 0,
+    max: values.multiple ? Number(values.max) : 1,
     options: values.options.map((option) => ({
       id: option.id,
       name: option.name.trim(),

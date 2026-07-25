@@ -11,21 +11,12 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Dialog,
-  Input,
-  Label,
-  TextField,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Card, Dialog, Typography, useThemeColor, useToast } from "heroui-native";
 import React from "react";
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 import OptionRow from "./option-row";
+import SelectionRulesCard from "./selection-rules-card";
 
 const EMPTY_OPTION = { id: null, name: "", price: "0", destroyed: false };
 
@@ -53,7 +44,14 @@ export default function AddOnFormScreen(): React.JSX.Element {
     formState: { errors },
   } = useForm<AddOnManagementValues>({
     resolver: zodResolver(addOnManagementSchema),
-    defaultValues: { name: "", min: "0", max: "1", options: [EMPTY_OPTION] },
+    defaultValues: {
+      name: "",
+      required: false,
+      multiple: false,
+      min: "0",
+      max: "1",
+      options: [EMPTY_OPTION],
+    },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "options" });
   const options = useWatch({ control, name: "options" });
@@ -63,6 +61,8 @@ export default function AddOnFormScreen(): React.JSX.Element {
     if (isNew || !addOn || hydratedId.current === addOn.id) return;
     reset({
       name: addOn.name,
+      required: addOn.min > 0,
+      multiple: addOn.max > 1,
       min: String(addOn.min),
       max: String(addOn.max),
       options: addOn.options.map((option) => ({
@@ -137,59 +137,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
         keyboardShouldPersistTaps="handled"
       >
         <View className="w-full max-w-3xl gap-4">
-          <Card>
-            <Card.Header>
-              <View className="gap-1">
-                <Card.Title>Selection rules</Card.Title>
-                <Card.Description>Define how many options the cashier can select.</Card.Description>
-              </View>
-            </Card.Header>
-            <Card.Body className="gap-4">
-              <Controller
-                control={control}
-                name="name"
-                render={({ field: { value, onChange } }) => (
-                  <TextField isRequired isInvalid={Boolean(errors.name)}>
-                    <Label>Group name</Label>
-                    <Input value={value} onChangeText={onChange} placeholder="Toppings" />
-                    {errors.name?.message ? (
-                      <Typography type="body-xs" className="text-danger">
-                        {errors.name.message}
-                      </Typography>
-                    ) : null}
-                  </TextField>
-                )}
-              />
-              <View className="flex-row gap-3">
-                {(["min", "max"] as const).map((fieldName) => (
-                  <Controller
-                    key={fieldName}
-                    control={control}
-                    name={fieldName}
-                    render={({ field: { value, onChange } }) => (
-                      <TextField
-                        className="flex-1"
-                        isRequired
-                        isInvalid={Boolean(errors[fieldName])}
-                      >
-                        <Label>{fieldName === "min" ? "Minimum" : "Maximum"}</Label>
-                        <Input
-                          value={value}
-                          onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                          keyboardType="number-pad"
-                        />
-                        {errors[fieldName]?.message ? (
-                          <Typography type="body-xs" className="text-danger">
-                            {errors[fieldName]?.message}
-                          </Typography>
-                        ) : null}
-                      </TextField>
-                    )}
-                  />
-                ))}
-              </View>
-            </Card.Body>
-          </Card>
+          <SelectionRulesCard control={control} errors={errors} setValue={setValue} />
 
           <Card>
             <Card.Header>
