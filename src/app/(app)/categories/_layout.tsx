@@ -2,7 +2,7 @@ import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
 
-export default function ProductsLayout() {
+export default function CategoriesLayout() {
   const theme = useNavigationTheme();
 
   return (
@@ -25,13 +25,10 @@ export default function ProductsLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Products",
+          title: "Categories",
           headerLeft: () => <DrawerMenuButton />,
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: "Product" }} />
-      <Stack.Screen name="[productId]/add-ons/index" options={{ title: "Add-ons" }} />
-      <Stack.Screen name="[productId]/add-ons/[addOnId]" options={{ title: "Add-on" }} />
     </Stack>
   );
 }

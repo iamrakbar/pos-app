@@ -48,6 +48,13 @@ export default function AppLayout() {
         }}
       />
       <Drawer.Screen
+        name="categories"
+        options={{
+          title: "Categories",
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
         name="orders"
         options={{
           title: "Orders",

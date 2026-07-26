@@ -1,4 +1,4 @@
-import CategoriesScreen from "@/screens/products/categories";
+import CategoriesScreen from "@/screens/categories";
 
 export default function CategoriesRoute() {
   return <CategoriesScreen />;

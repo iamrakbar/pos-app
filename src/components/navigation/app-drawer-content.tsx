@@ -5,23 +5,20 @@ import { useAuth } from "@/stores/use-auth";
 import { useNetworkStore } from "@/stores/use-network-store";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import { Ionicons } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
 import { Avatar, Popover, Surface, Typography, useThemeColor } from "heroui-native";
 import type { ComponentProps, JSX } from "react";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 
-type DrawerRouteName =
-  "index" | "pos" | "products" | "categories" | "orders" | "earnings" | "settings";
+type DrawerRouteName = "index" | "pos" | "products" | "orders" | "earnings" | "settings";
 
 const DRAWER_ROUTE_ORDER: DrawerRouteName[] = [
   "index",
   "pos",
   "orders",
-  "earnings",
   "products",
-  "categories",
+  "earnings",
   "settings",
 ];
 
@@ -29,7 +26,6 @@ const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof Ionicons>["nam
   index: "grid-outline",
   pos: "calculator-outline",
   products: "fast-food-outline",
-  categories: "grid-outline",
   orders: "receipt-outline",
   earnings: "wallet-outline",
   settings: "settings-outline",
@@ -39,7 +35,6 @@ const DRAWER_DESCRIPTIONS: Record<DrawerRouteName, string> = {
   index: "Business overview",
   pos: "Sales workspace",
   products: "Catalog and add-ons",
-  categories: "Organize the product catalog",
   orders: "Transactions and status",
   earnings: "Revenue and sales summary",
   settings: "Preferences and setup",
@@ -59,7 +54,6 @@ function getRouteLabel(routeName: string): string {
   if (routeName === "index") return "Dashboard";
   if (routeName === "pos") return "POS";
   if (routeName === "products") return "Products";
-  if (routeName === "categories") return "Categories";
   if (routeName === "orders") return "Orders";
   if (routeName === "earnings") return "Earnings";
   if (routeName === "settings") return "Settings";
@@ -86,8 +80,6 @@ export default function AppDrawerContent({
   ]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
   const user = useAuth((s) => s.user);
   const logout = useAuth((s) => s.logout);
   const activeMerchant = useAuth((s) => s.activeMerchant);
@@ -115,22 +107,15 @@ export default function AppDrawerContent({
           Workspace
         </Typography>
         {DRAWER_ROUTE_ORDER.map((routeName) => {
-          const isCategoriesItem = routeName === "categories";
-          const routeIndex = state.routes.findIndex(
-            (route) => route.name === (isCategoriesItem ? "products" : routeName)
-          );
+          const routeIndex = state.routes.findIndex((route) => route.name === routeName);
           if (routeIndex < 0) return null;
 
           const route = state.routes[routeIndex];
-          const isCategoriesRoute = pathname.startsWith("/products/categories");
-          const focused = isCategoriesItem
-            ? isCategoriesRoute
-            : state.index === routeIndex && !(routeName === "products" && isCategoriesRoute);
+          const focused = state.index === routeIndex;
 
           const descriptor = descriptors[route.key];
-          const label = isCategoriesItem
-            ? "Categories"
-            : typeof descriptor?.options.drawerLabel === "string"
+          const label =
+            typeof descriptor?.options.drawerLabel === "string"
               ? descriptor.options.drawerLabel
               : (descriptor?.options.title ?? getRouteLabel(route.name));
           const iconName = DRAWER_ICONS[routeName] ?? "ellipse-outline";
@@ -142,12 +127,6 @@ export default function AppDrawerContent({
               accessibilityState={focused ? { selected: true } : undefined}
               accessibilityLabel={`Open ${label}`}
               onPress={() => {
-                if (isCategoriesItem) {
-                  navigation.closeDrawer();
-                  router.push("/products/categories");
-                  return;
-                }
-
                 const event = navigation.emit({
                   type: "drawerItemPress",
                   target: route.key,

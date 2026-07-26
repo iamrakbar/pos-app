@@ -20,6 +20,13 @@ type SettingsItem = {
 
 const SETTINGS_ITEMS: SettingsItem[] = [
   {
+    id: "categories",
+    href: "/categories",
+    icon: "grid-outline",
+    label: "Categories",
+    description: "Organize products and control their display order",
+  },
+  {
     id: "areas",
     href: "/settings/areas",
     icon: "storefront-outline",

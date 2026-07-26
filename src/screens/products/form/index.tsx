@@ -40,7 +40,7 @@ import {
 } from "@/hooks/db/use-products";
 import { productSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
-import CategoryFormDialog from "../categories/category-form-dialog";
+import CategoryFormDialog from "@/screens/categories/category-form-dialog";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
