@@ -5,6 +5,7 @@ import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { useThemeColor } from 'heroui-native/hooks';
 import { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 import Animated, { useDerivedValue } from 'react-native-reanimated';
 import { HeroText } from "../../helpers/internal/components/index.js";
 import { useAugmentedRef, useControllableState } from "../../helpers/internal/hooks/index.js";
@@ -24,6 +25,7 @@ import { clampIndex, getIndexForValue, getScrollOffsetForIndex, resolveMaskHeigh
  */
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 /**
  * Animated `HeroText` used as the row label for {@link WheelPicker.ItemLabel}.
@@ -448,7 +450,7 @@ function WheelPickerRootInner(props, ref) {
         },
         pointerEvents: isDisabled || isProgrammaticScrolling ? 'none' : 'auto',
         ...restProps,
-        children: [/*#__PURE__*/_jsx(Animated.FlatList, {
+        children: [/*#__PURE__*/_jsx(AnimatedFlatList, {
           ref: listRef,
           data: items,
           renderItem: renderItem,
@@ -459,9 +461,10 @@ function WheelPickerRootInner(props, ref) {
           disableIntervalMomentum: Platform.OS === 'ios' ? true : false,
           showsVerticalScrollIndicator: false,
           scrollEnabled: !isDisabled,
-          initialNumToRender: resolvedVisibleCount + 2,
-          maxToRenderPerBatch: resolvedVisibleCount,
-          windowSize: 3,
+          initialNumToRender: resolvedVisibleCount * 3,
+          maxToRenderPerBatch: resolvedVisibleCount * 3,
+          updateCellsBatchingPeriod: 16,
+          windowSize: 7,
           removeClippedSubviews: false,
           contentContainerStyle: [{
             paddingVertical: verticalPadding

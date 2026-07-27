@@ -4,6 +4,7 @@
     "strict": true,
     "paths": {
       "@haroldtran/react-native-thermal-printer": ["./src/types/react-native-thermal-printer"],
+      "heroui-native-pro": ["./vendor/heroui-native-pro/lib/typescript/src/index.d.ts"],
       "@/*": ["./src/*"],
       "@/assets/*": ["./assets/*"]
     }
