@@ -1,6 +1,5 @@
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
-import { useTables } from "@/hooks/db/use-tables";
 import { usePaymentGroups } from "@/hooks/db/use-payments";
 import { useGuests } from "@/hooks/db/use-guests";
 import { useCustomerSearch } from "@/hooks/db/use-customers";
@@ -25,12 +24,12 @@ import {
   Typography,
   useThemeColor,
 } from "heroui-native";
-import { SlideButton, TimePicker } from "heroui-native-pro";
+import { SlideButton } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import type { PaymentSession, POSPaymentGroup, POSTable } from "@/types/pos";
+import type { PaymentSession, POSPaymentGroup } from "@/types/pos";
 import {
   useForm,
   Controller,
@@ -50,14 +49,7 @@ type CheckoutContentProps = {
   ) => void;
 };
 
-const ORDER_TYPE_LABELS: Record<string, string> = {
-  "dine-in": "Dine-In",
-  takeaway: "Takeaway",
-};
-
 const isEMoneyGroup = (groupType: string) => groupType.toLowerCase() === "e-money";
-
-const TIME_PICKER_INTERVAL_MINUTES = 5;
 
 function getCashPresets(total: number): number[] {
   if (total <= 0) return [];
@@ -66,47 +58,6 @@ function getCashPresets(total: number): number[] {
   const nextRoundedAmount = Math.ceil(total / roundingStep) * roundingStep;
 
   return nextRoundedAmount === total ? [total] : [total, nextRoundedAmount];
-}
-
-function formatTimeValue(hour: number, minute: number): string {
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
-function getNextPickupTime(): string | null {
-  const now = new Date();
-  const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes() + 1;
-  const roundedMinutes =
-    Math.ceil(minutesSinceMidnight / TIME_PICKER_INTERVAL_MINUTES) * TIME_PICKER_INTERVAL_MINUTES;
-
-  if (roundedMinutes >= 24 * 60) return null;
-
-  return formatTimeValue(Math.floor(roundedMinutes / 60), roundedMinutes % 60);
-}
-
-function isPastPickupTime(value: string): boolean {
-  const [hour, minute] = value.split(":").map(Number);
-  const now = new Date();
-
-  return hour * 60 + minute <= now.getHours() * 60 + now.getMinutes();
-}
-
-function groupTablesByArea(tables: POSTable[]) {
-  const groups = new Map<string, { id: string; name: string; tables: POSTable[] }>();
-
-  tables.forEach((table) => {
-    const existingGroup = groups.get(table.area_id);
-    if (existingGroup) {
-      existingGroup.tables.push(table);
-    } else {
-      groups.set(table.area_id, {
-        id: table.area_id,
-        name: table.area_name,
-        tables: [table],
-      });
-    }
-  });
-
-  return Array.from(groups.values());
 }
 
 function MiniInput({
@@ -155,135 +106,6 @@ function PaymentButtonSkeleton({ widths }: { widths: number[] }) {
       {widths.map((width) => (
         <View key={width} className="h-8 rounded-lg bg-surface-secondary" style={{ width }} />
       ))}
-    </View>
-  );
-}
-
-function OrderTypeFields({
-  orderType,
-  selectedTable,
-  tablesByArea,
-  pickupTime,
-  errors,
-  setValue,
-}: {
-  orderType: CheckoutFormValues["order_type"];
-  selectedTable: POSTable | undefined;
-  tablesByArea: ReturnType<typeof groupTablesByArea>;
-  pickupTime: string | null;
-  errors: FieldErrors<CheckoutFormValues>;
-  setValue: UseFormSetValue<CheckoutFormValues>;
-}) {
-  return (
-    <View className="flex-row gap-3">
-      <View className="flex-1 gap-1.5">
-        <Typography type="body-sm" weight="semibold">
-          Jenis pesanan <Typography className="text-danger">*</Typography>
-        </Typography>
-        <Select
-          value={{ value: orderType, label: ORDER_TYPE_LABELS[orderType] ?? orderType }}
-          onValueChange={(option) => {
-            if (option) setValue("order_type", option.value as "dine-in" | "takeaway");
-          }}
-        >
-          <Select.Trigger>
-            <Select.Value placeholder="Pilih jenis" />
-            <Select.TriggerIndicator />
-          </Select.Trigger>
-          <Select.Portal>
-            <Select.Overlay />
-            <Select.Content presentation="popover" width="trigger">
-              <Select.Item value="dine-in" label="Dine-In" />
-              <Select.Item value="takeaway" label="Takeaway" />
-            </Select.Content>
-          </Select.Portal>
-        </Select>
-      </View>
-
-      {orderType === "dine-in" ? (
-        <View className="flex-1 gap-1.5">
-          <Typography type="body-sm" weight="semibold">
-            Meja{" "}
-            <Typography type="body-xs" color="muted">
-              (opsional)
-            </Typography>
-          </Typography>
-          <Select
-            value={
-              selectedTable ? { value: selectedTable.id, label: selectedTable.name } : undefined
-            }
-            onValueChange={(option) => setValue("table_id", option?.value || null)}
-          >
-            <Select.Trigger>
-              <Select.Value placeholder="Pilih meja" />
-              <Select.TriggerIndicator />
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Overlay />
-              <Select.Content presentation="popover" width="trigger">
-                <Select.Item value="" label="Tanpa meja" />
-                {tablesByArea.map((area) => (
-                  <View key={area.id}>
-                    <Select.ListLabel>{area.name}</Select.ListLabel>
-                    {area.tables.map((table) => (
-                      <Select.Item key={table.id} value={table.id} label={table.name} />
-                    ))}
-                  </View>
-                ))}
-              </Select.Content>
-            </Select.Portal>
-          </Select>
-        </View>
-      ) : (
-        <View className="flex-1 gap-1.5">
-          <Typography type="body-sm" weight="semibold">
-            Waktu ambil
-          </Typography>
-          <TimePicker
-            hourFormat={24}
-            minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
-            locale="id-ID"
-            isRequired
-            isInvalid={Boolean(errors.pickup_time)}
-            value={pickupTime ? { value: `${pickupTime}:00`, label: pickupTime } : undefined}
-            onOpenChange={(isOpen) => {
-              if (!isOpen || (pickupTime && !isPastPickupTime(pickupTime))) return;
-              setValue("pickup_time", getNextPickupTime(), { shouldValidate: true });
-            }}
-            onValueChange={(option) => {
-              const nextValue = option?.value.slice(0, 5) ?? null;
-              if (nextValue && isPastPickupTime(nextValue)) return;
-              setValue("pickup_time", nextValue, { shouldValidate: true });
-            }}
-          >
-            <TimePicker.Select>
-              <TimePicker.Trigger>
-                <TimePicker.Value placeholder="Pilih waktu" />
-                <TimePicker.TriggerIndicator />
-              </TimePicker.Trigger>
-              <TimePicker.Portal>
-                <TimePicker.Overlay />
-                <TimePicker.Content
-                  presentation="popover"
-                  width="trigger"
-                  className="items-center justify-center"
-                >
-                  <TimePicker.Wheel />
-                </TimePicker.Content>
-              </TimePicker.Portal>
-            </TimePicker.Select>
-          </TimePicker>
-          {errors.pickup_time ? (
-            <Typography type="body-xs" className="text-danger">
-              {errors.pickup_time.message}
-            </Typography>
-          ) : (
-            <Typography type="body-xs" color="muted">
-              Waktu yang sudah lewat tidak dapat dipilih.
-            </Typography>
-          )}
-        </View>
-      )}
     </View>
   );
 }
@@ -638,12 +460,12 @@ function CustomerFields({
 
 export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentProps): JSX.Element {
   const closeModal = usePOSStore((s) => s.closeModal);
+  const checkoutForm = usePOSStore((s) => s.checkoutForm);
 
   const cartProducts = useCartStore((s) => s.products);
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
   const { data: paymentGroups = [], isPending: arePaymentGroupsPending } = usePaymentGroups();
-  const { data: tablesList = [] } = useTables();
   const { data: guests = [] } = useGuests();
   const validateCart = useValidateCart();
   const checkout = useCheckout();
@@ -656,9 +478,9 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const defaultPaymentId = defaultPaymentGroup?.payments[0]?.id ?? "";
 
   const DEFAULT_VALUES: CheckoutFormValues = {
-    order_type: "dine-in",
-    table_id: null,
-    pickup_time: null,
+    order_type: checkoutForm.order_type,
+    table_id: checkoutForm.table_id,
+    pickup_time: checkoutForm.pickup_time,
     payment_group: defaultPaymentGroup?.group_type ?? "E-Money",
     payment_id: defaultPaymentId,
     customer_type: "anonymous",
@@ -681,13 +503,10 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
 
   const paymentGroup = useWatch({ control, name: "payment_group" });
   const paymentId = useWatch({ control, name: "payment_id" });
-  const orderType = useWatch({ control, name: "order_type" });
-  const tableId = useWatch({ control, name: "table_id" });
   const customerType = useWatch({ control, name: "customer_type" });
   const guestId = useWatch({ control, name: "guest_id" });
   const customerId = useWatch({ control, name: "customer_id" });
   const customerSearch = useWatch({ control, name: "customer_search" });
-  const pickupTime = useWatch({ control, name: "pickup_time" });
 
   const { data: customerResults = [] } = useCustomerSearch(customerSearch);
 
@@ -718,6 +537,12 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
     });
   }, [cartProducts, setValue]);
 
+  useEffect(() => {
+    setValue("order_type", checkoutForm.order_type, { shouldValidate: true });
+    setValue("table_id", checkoutForm.table_id, { shouldValidate: true });
+    setValue("pickup_time", checkoutForm.pickup_time, { shouldValidate: true });
+  }, [checkoutForm.order_type, checkoutForm.pickup_time, checkoutForm.table_id, setValue]);
+
   const subtotal = totalPrice();
   const allPayments = paymentGroups.flatMap((g) => g.payments);
   const selectedPayment = allPayments.find((p) => p.id === paymentId);
@@ -732,9 +557,6 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
   const cashReceivedAmount = Number(cashReceived.replace(/\D/g, "")) || 0;
   const change = Math.max(0, cashReceivedAmount - total);
   const cashPresets = getCashPresets(total);
-
-  const selectedTable = tablesList.find((t) => t.id === tableId);
-  const tablesByArea = groupTablesByArea(tablesList);
 
   const onSubmit = async (values: CheckoutFormValues) => {
     setCartError(null);
@@ -804,15 +626,6 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           </View>
         ) : null}
 
-        <OrderTypeFields
-          orderType={orderType}
-          selectedTable={selectedTable}
-          tablesByArea={tablesByArea}
-          pickupTime={pickupTime}
-          errors={errors}
-          setValue={setValue}
-        />
-
         <PaymentFields
           paymentGroups={paymentGroups}
           paymentGroup={paymentGroup}
@@ -851,7 +664,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Opsional"
-                className="min-h-14"
+                className="h-6"
               />
             )}
           />
