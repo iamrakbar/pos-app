@@ -9,7 +9,7 @@ import type { DrawerContentComponentProps } from "expo-router/drawer";
 import { Avatar, Popover, Surface, Typography, useThemeColor } from "heroui-native";
 import type { ComponentProps, JSX } from "react";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 
 type DrawerRouteName = "index" | "pos" | "products" | "orders" | "earnings" | "settings";
 
@@ -89,23 +89,11 @@ export default function AppDrawerContent({
 
   return (
     <View className="flex-1 gap-4 px-3 py-safe bg-background">
-      <View className="flex-row items-center justify-between gap-3 px-3 py-4">
+      <View className="px-3 py-4">
         <Logo tintColor={themeColorAccent} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close menu"
-          hitSlop={8}
-          className="size-12 items-center justify-center rounded-full active:bg-surface-secondary"
-          onPress={() => navigation.dispatch({ type: "CLOSE_DRAWER" })}
-        >
-          <Ionicons name="close" size={22} color={themeColorMuted} />
-        </Pressable>
       </View>
 
-      <View className="gap-1 mt-4">
-        <Typography type="body-xs" weight="semibold" color="muted" className="px-3 pb-2">
-          Workspace
-        </Typography>
+      <ScrollView contentContainerClassName="gap-1">
         {DRAWER_ROUTE_ORDER.map((routeName) => {
           const routeIndex = state.routes.findIndex((route) => route.name === routeName);
           if (routeIndex < 0) return null;
@@ -164,7 +152,7 @@ export default function AppDrawerContent({
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
 
       <View className="gap-4 mt-auto">
         {isOffline && (
