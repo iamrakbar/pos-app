@@ -439,8 +439,8 @@ export default function DashboardScreen(): React.JSX.Element {
         }
       >
         <View className="w-full max-w-7xl gap-6">
-          <View className="gap-3">
-            <View className="flex-row items-center gap-3">
+          <View className="flex-col md:flex-row gap-4">
+            <View className="flex-1 flex-row items-center gap-3">
               <DrawerMenuButton />
               <View className="min-w-0 flex-1 gap-0.5">
                 <Typography type="h4" weight="bold">

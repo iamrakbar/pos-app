@@ -23,7 +23,7 @@ export default function CheckoutScreen(): JSX.Element {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background pb-safe">
       {isWide ? (
         <View className="bg-surface px-5 py-5">
           <Typography type="h4" weight="semibold">

@@ -161,7 +161,7 @@ function CheckoutActions({
   return (
     <>
       <Separator />
-      <View className="bg-surface px-5 pb-3 pt-2.5">
+      <View className="bg-surface px-5 pb-safe pt-2.5">
         <View className="flex-row items-center justify-between pb-2.5">
           <Typography type="body-sm" color="muted">
             Total

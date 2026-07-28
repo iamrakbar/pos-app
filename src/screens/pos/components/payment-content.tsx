@@ -148,7 +148,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
       <Separator />
 
-      <View className="bg-surface px-5 py-4">
+      <View className="bg-surface px-5 pb-safe pt-4">
         <View className="w-full max-w-4xl self-center flex-row gap-3">
           <Button
             className="flex-1"

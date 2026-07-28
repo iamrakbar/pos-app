@@ -227,7 +227,7 @@ export default function AddOnScreen(): JSX.Element {
   }
 
   return (
-    <View className="flex-1 overflow-hidden bg-background">
+    <View className="flex-1 overflow-hidden bg-background pb-safe">
       <View className="flex-row items-center justify-between gap-3 bg-surface p-4">
         <View className="flex-1">
           <Typography type="h4" weight="semibold" numberOfLines={1}>
@@ -307,7 +307,7 @@ export default function AddOnScreen(): JSX.Element {
 
       <Separator />
 
-      <View className="flex-row gap-3 bg-surface p-4">
+      <View className="flex-row gap-3 bg-surface px-5 py-4">
         <Button variant="outline" onPress={handleCancel}>
           Batal
         </Button>

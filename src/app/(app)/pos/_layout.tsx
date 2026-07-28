@@ -1,10 +1,13 @@
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router/stack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function POSFlowLayout() {
   const theme = useNavigationTheme();
-  const { isWide } = useResponsiveLayout();
+  const { height, isWide } = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
+  const maxSheetDetent = height > 0 ? Math.min(1, (height - insets.top) / height) : 1;
 
   return (
     <Stack
@@ -31,7 +34,7 @@ export default function POSFlowLayout() {
           title: "Add-ons",
           headerShown: false,
           presentation: "formSheet",
-          sheetAllowedDetents: [0.75, 1],
+          sheetAllowedDetents: [0.75, maxSheetDetent],
           sheetInitialDetentIndex: "last",
           sheetGrabberVisible: true,
           contentStyle: { backgroundColor: "transparent" },
@@ -43,7 +46,7 @@ export default function POSFlowLayout() {
           title: "Select Table",
           headerShown: false,
           presentation: "formSheet",
-          sheetAllowedDetents: isWide ? [0.65, 0.9] : [0.65, 0.9, 1],
+          sheetAllowedDetents: [0.65, maxSheetDetent],
           sheetInitialDetentIndex: 1,
           sheetGrabberVisible: true,
           contentStyle: { backgroundColor: "transparent" },
@@ -55,7 +58,7 @@ export default function POSFlowLayout() {
           title: "Checkout",
           headerShown: !isWide,
           presentation: isWide ? "formSheet" : "card",
-          sheetAllowedDetents: isWide ? [0.9, 1] : undefined,
+          sheetAllowedDetents: isWide ? [0.75, maxSheetDetent] : undefined,
           sheetInitialDetentIndex: isWide ? "last" : undefined,
           sheetGrabberVisible: isWide,
           contentStyle: {
@@ -69,7 +72,7 @@ export default function POSFlowLayout() {
           title: "Payment",
           headerShown: false,
           presentation: isWide ? "formSheet" : "card",
-          sheetAllowedDetents: isWide ? [0.9, 1] : undefined,
+          sheetAllowedDetents: isWide ? [0.75, maxSheetDetent] : undefined,
           sheetInitialDetentIndex: isWide ? "last" : undefined,
           sheetGrabberVisible: isWide,
           contentStyle: {
