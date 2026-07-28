@@ -193,7 +193,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
               {!receiptSettings.autoPrintOnSuccess ? (
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className={isCompact ? "w-full" : "flex-1"}
                   onPress={handlePrintReceipt}
                   isDisabled={isPrinting}
                 >
@@ -207,7 +207,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                   </Button.Label>
                 </Button>
               ) : null}
-              <Button className="flex-1" onPress={handleNewOrder}>
+              <Button className={isCompact ? "w-full" : "flex-1"} onPress={handleNewOrder}>
                 <Ionicons name="add-circle-outline" size={16} color="white" />
                 <Button.Label className="ml-2">New Order</Button.Label>
               </Button>
