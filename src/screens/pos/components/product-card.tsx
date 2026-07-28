@@ -44,7 +44,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
             <Ionicons name="fast-food-outline" size={30} color={themeColorMuted} />
           )}
         </View>
-        <Card.Body className="min-h-[82px] justify-between px-3.5 py-3">
+        <Card.Body className="min-h-20 justify-between px-3.5 py-3">
           <Typography weight="medium" truncate>
             {product.name}
           </Typography>

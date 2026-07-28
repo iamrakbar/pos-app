@@ -104,7 +104,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
             )}
           </View>
 
-          <View className={isWideLayout ? "w-[360px] gap-4" : "w-full gap-4"}>
+          <View className={isWideLayout ? "w-90 gap-4" : "w-full gap-4"}>
             <View className="flex-row items-center justify-between gap-3">
               <Typography type="body-sm" weight="semibold">
                 Payment status

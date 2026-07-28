@@ -294,7 +294,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
           <Surface
             className={
               isWide
-                ? "w-[480px] min-h-0 overflow-hidden p-0"
+                ? "w-120 min-h-0 overflow-hidden p-0"
                 : "w-full flex-[1.1] min-h-0 overflow-hidden p-0"
             }
           >

@@ -145,7 +145,7 @@ function NumberField({
   error?: string;
 }) {
   return (
-    <TextField isRequired={required} isInvalid={!!error} className="min-w-[140px] flex-1">
+    <TextField isRequired={required} isInvalid={!!error} className="min-w-35 flex-1">
       <Label>{label}</Label>
       <Input
         variant="secondary"
@@ -251,7 +251,7 @@ function ProductImageCard({
           accessibilityRole="button"
           accessibilityLabel="Choose product image"
           onPress={onSelect}
-          className="aspect-[16/9] w-full items-center justify-center gap-3 overflow-hidden rounded-panel-inner bg-surface-secondary active:opacity-80"
+          className="aspect-video w-full items-center justify-center gap-3 overflow-hidden rounded-panel-inner bg-surface-secondary active:opacity-80"
         >
           {imageUri ? (
             <Image
