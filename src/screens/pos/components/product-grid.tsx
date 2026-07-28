@@ -9,11 +9,12 @@ import type { JSX } from "react";
 import { ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import { useState } from "react";
-import { FlatList, RefreshControl } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import ProductCard from "./product-card";
 
 const CARD_MIN_WIDTH = 180;
 const GRID_HORIZONTAL_PADDING = 24;
+const GRID_COLUMN_GAP = 8;
 
 type Props = {
   onSelectProduct: (product: POSProduct) => void;
@@ -28,9 +29,12 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
   const categoryId = usePOSStore((s) => s.categoryId);
   const productSort = usePOSStore((s) => s.productSort);
 
-  const availableWidth = Math.max(containerWidth - GRID_HORIZONTAL_PADDING, CARD_MIN_WIDTH);
-  const numColumns = Math.max(1, Math.floor(availableWidth / CARD_MIN_WIDTH));
-  const cardWidth = Math.floor(availableWidth / numColumns);
+  const availableWidth = Math.max(containerWidth - GRID_HORIZONTAL_PADDING, 0);
+  const numColumns = Math.max(
+    1,
+    Math.floor((availableWidth + GRID_COLUMN_GAP) / (CARD_MIN_WIDTH + GRID_COLUMN_GAP))
+  );
+  const cardWidth = Math.floor((availableWidth - GRID_COLUMN_GAP * (numColumns - 1)) / numColumns);
 
   const {
     data: allProducts,
@@ -66,35 +70,38 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
       LinearGradientComponent={LinearGradient}
       onLayout={(event) => setContainerWidth(Math.floor(event.nativeEvent.layout.width))}
     >
-      <FlatList
-        style={{ opacity: containerWidth === 0 ? 0 : 1 }}
-        data={isError ? [] : filtered}
-        key={numColumns}
-        numColumns={numColumns}
-        keyExtractor={(item) => item.id}
-        renderItem={renderProduct}
-        contentContainerClassName="flex-grow gap-2 px-3 pt-4"
-        contentContainerStyle={{ paddingBottom: Math.max(bottomInset, 16) }}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          isError ? (
-            <ErrorState error={error} onRetry={refetch} />
-          ) : (
-            <EmptyState className="py-20">
-              <EmptyState.Header>
-                <EmptyState.Media variant="icon">
-                  <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
-                </EmptyState.Media>
-                <EmptyState.Title>No products found</EmptyState.Title>
-                <EmptyState.Description>
-                  Try another search or choose a different category.
-                </EmptyState.Description>
-              </EmptyState.Header>
-            </EmptyState>
-          )
-        }
-      />
+      <View className="flex-1">
+        {containerWidth > GRID_HORIZONTAL_PADDING ? (
+          <FlatList
+            data={isError ? [] : filtered}
+            key={`product-grid-${numColumns}`}
+            numColumns={numColumns}
+            keyExtractor={(item) => item.id}
+            renderItem={renderProduct}
+            contentContainerClassName="flex-grow gap-2 px-3 pt-4"
+            contentContainerStyle={{ paddingBottom: Math.max(bottomInset, 16) }}
+            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              isError ? (
+                <ErrorState error={error} onRetry={refetch} />
+              ) : (
+                <EmptyState className="py-20">
+                  <EmptyState.Header>
+                    <EmptyState.Media variant="icon">
+                      <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
+                    </EmptyState.Media>
+                    <EmptyState.Title>No products found</EmptyState.Title>
+                    <EmptyState.Description>
+                      Try another search or choose a different category.
+                    </EmptyState.Description>
+                  </EmptyState.Header>
+                </EmptyState>
+              )
+            }
+          />
+        ) : null}
+      </View>
     </ScrollShadow>
   );
 }
