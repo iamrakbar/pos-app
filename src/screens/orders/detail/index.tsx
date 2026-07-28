@@ -20,8 +20,8 @@ import LoadingState from "@/components/common/loading-state";
 import ErrorState from "@/components/common/error-state";
 import Countdown from "@/components/common/countdown";
 import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
-import DialogCloseButton from "@/components/common/dialog-close-button";
 import ActionDialog from "@/components/common/action-dialog";
+import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/use-receipt-printer";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
@@ -29,7 +29,7 @@ import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/api-error";
 import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "heroui-native-pro";
-import { Button, Chip, Dialog, Separator, Surface, Typography, useThemeColor } from "heroui-native";
+import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
@@ -174,42 +174,28 @@ function PaymentQrDialog({
   expiresAt: string | null | undefined;
 }) {
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content
-          isSwipeable={false}
-          className="w-full max-w-md self-center bg-background p-0 overflow-hidden"
-        >
-          <DialogCloseButton />
-          <View className="bg-surface p-4 pr-14">
-            <View className="gap-0.5">
-              <Dialog.Title>QRIS Payment</Dialog.Title>
-              <Typography className="text-sm text-muted-foreground">{code}</Typography>
-            </View>
-          </View>
-          <Separator />
-          <View className="items-center gap-3 p-6">
-            <View className="w-64 h-64 bg-white rounded-lg border border-border items-center justify-center">
-              <Image
-                source={{ uri: qrUrl }}
-                style={{ width: 240, height: 240 }}
-                contentFit="contain"
-              />
-            </View>
-            <Typography className="text-base font-semibold text-foreground">
-              {formatRupiah(total)}
-            </Typography>
-            <Countdown
-              expiresAt={expiresAt}
-              prefix="QR berlaku"
-              className="text-xs text-warning font-semibold"
-              onExpire={() => onOpenChange(false)}
-            />
-          </View>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+    <AdaptiveFormOverlay
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title="QRIS Payment"
+      description={code}
+    >
+      <Separator />
+      <View className="items-center gap-3 p-6">
+        <View className="h-64 w-64 items-center justify-center rounded-lg border border-border bg-white">
+          <Image source={{ uri: qrUrl }} style={{ width: 240, height: 240 }} contentFit="contain" />
+        </View>
+        <Typography className="text-base font-semibold text-foreground">
+          {formatRupiah(total)}
+        </Typography>
+        <Countdown
+          expiresAt={expiresAt}
+          prefix="QR berlaku"
+          className="text-xs font-semibold text-warning"
+          onExpire={() => onOpenChange(false)}
+        />
+      </View>
+    </AdaptiveFormOverlay>
   );
 }
 
