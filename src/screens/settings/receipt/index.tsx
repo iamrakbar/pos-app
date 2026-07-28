@@ -16,7 +16,6 @@ import {
   ScrollShadow,
   Select,
   Separator,
-  Surface,
   Typography,
   useThemeColor,
   useToast,
@@ -126,54 +125,54 @@ function ReceiptPreviewSection({
   surfaceColor: string;
 }) {
   return (
-    <View className="min-h-0 flex-1 gap-2">
-      <View className="flex-row items-center justify-between gap-3">
-        <Typography className="text-sm font-semibold text-foreground">Receipt preview</Typography>
-        <Select
-          value={{ value: previewPaperWidth, label: previewPaperWidth }}
-          onValueChange={(option) => {
-            if (option?.value) onPaperWidthChange(option.value as PaperWidth);
-          }}
-        >
-          <Select.Trigger className="w-32">
-            <Select.Value placeholder="Paper size" numberOfLines={1} />
-            <Select.TriggerIndicator />
-          </Select.Trigger>
-          <Select.Portal>
-            <Select.Overlay />
-            <Select.Content presentation="popover" width="trigger">
-              <Select.ListLabel className="mb-2">Preview size</Select.ListLabel>
-              {PAPER_WIDTHS.map((paperWidth, index) => (
-                <React.Fragment key={paperWidth}>
-                  <Select.Item value={paperWidth} label={paperWidth} />
-                  {index < PAPER_WIDTHS.length - 1 ? <Separator /> : null}
-                </React.Fragment>
-              ))}
-            </Select.Content>
-          </Select.Portal>
-        </Select>
-      </View>
+    <View className="min-h-0 flex-1">
       <ScrollShadow
-        className="flex-1 rounded-lg bg-surface-secondary"
+        className="flex-1 bg-surface-secondary"
         color={surfaceColor}
         orientation="vertical"
         LinearGradientComponent={LinearGradient}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View className="items-center p-4">
-            <ReceiptPaper
-              settings={settings}
-              data={SAMPLE_RECEIPT}
-              paperWidth={previewPaperWidth}
-              charactersPerLine={
-                previewPaperWidth === configuredPaperWidth
-                  ? configuredCharactersPerLine
-                  : previewPaperWidth === "80mm"
-                    ? "46"
-                    : "32"
-              }
-            />
+          <View className="flex-row items-center justify-between gap-3 p-4">
+            <Typography className="text-sm font-semibold text-foreground">
+              Receipt preview
+            </Typography>
+            <Select
+              value={{ value: previewPaperWidth, label: previewPaperWidth }}
+              onValueChange={(option) => {
+                if (option?.value) onPaperWidthChange(option.value as PaperWidth);
+              }}
+            >
+              <Select.Trigger className="w-32">
+                <Select.Value placeholder="Paper size" numberOfLines={1} />
+                <Select.TriggerIndicator />
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Overlay />
+                <Select.Content presentation="popover" width="trigger">
+                  <Select.ListLabel className="mb-2">Preview size</Select.ListLabel>
+                  {PAPER_WIDTHS.map((paperWidth, index) => (
+                    <React.Fragment key={paperWidth}>
+                      <Select.Item value={paperWidth} label={paperWidth} />
+                      {index < PAPER_WIDTHS.length - 1 ? <Separator /> : null}
+                    </React.Fragment>
+                  ))}
+                </Select.Content>
+              </Select.Portal>
+            </Select>
           </View>
+          <ReceiptPaper
+            settings={settings}
+            data={SAMPLE_RECEIPT}
+            paperWidth={previewPaperWidth}
+            charactersPerLine={
+              previewPaperWidth === configuredPaperWidth
+                ? configuredCharactersPerLine
+                : previewPaperWidth === "80mm"
+                  ? "46"
+                  : "32"
+            }
+          />
         </ScrollView>
       </ScrollShadow>
     </View>
@@ -188,9 +187,9 @@ function ReceiptSetupLayout({
 
   if (!isPortrait) {
     return (
-      <View className="min-h-0 flex-1 flex-row items-stretch gap-6">
+      <View className="min-h-0 flex-1 flex-row items-stretch">
         <View className="min-h-0 flex-1">{preview}</View>
-        <View className="min-h-0 w-2/5 min-w-80 max-w-120">{form}</View>
+        <View className="min-h-0 w-1/2 min-w-80">{form}</View>
       </View>
     );
   }
@@ -307,7 +306,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
 
   return (
     <>
-      <View className="flex-1 bg-background px-4 py-6 pb-10 md:px-6">
+      <View className="flex-1 bg-background">
         <View className="min-h-0 w-full max-w-6xl flex-1 self-center">
           <ReceiptSetupLayout isPortrait={isPortrait}>
             <ReceiptPreviewSection
@@ -319,23 +318,22 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
               surfaceColor={themeColorSurfaceSecondary}
             />
 
-            <Surface className="min-h-0 flex-1 overflow-hidden p-0">
-              <View className="px-5 pt-5 pb-4 gap-1">
-                <Typography className="text-lg font-semibold text-foreground">
-                  Receipt details
-                </Typography>
-                <Typography type="body-sm" color="muted">
-                  Changes are saved automatically and used for future prints.
-                </Typography>
-              </View>
-
+            <View className="min-h-0 flex-1 bg-surface overflow-hidden p-0">
               <KeyboardAwareScrollView
                 className="flex-1"
-                contentContainerClassName="px-5 pb-5"
+                contentContainerClassName="px-5 pt-5"
                 bottomOffset={88}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >
+                <View className="gap-1">
+                  <Typography className="text-lg font-semibold text-foreground">
+                    Receipt details
+                  </Typography>
+                  <Typography type="body-sm" color="muted">
+                    Changes are saved automatically and used for future prints.
+                  </Typography>
+                </View>
                 <View className="gap-5">
                   <View>
                     <FieldLabel>Receipt layout</FieldLabel>
@@ -448,14 +446,12 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   />
                 </View>
               </KeyboardAwareScrollView>
-
-              <Separator />
-              <View className="bg-surface px-5 py-4">
+              <View className="bg-surface px-5 py-4 pb-safe">
                 <Button className="w-full" onPress={() => router.back()}>
                   <Button.Label>Done</Button.Label>
                 </Button>
               </View>
-            </Surface>
+            </View>
           </ReceiptSetupLayout>
         </View>
       </View>
