@@ -8,7 +8,7 @@ export default function PaymentSuccessRoute(): JSX.Element {
 
   return (
     <View className="flex-1 bg-background">
-      <PaymentSuccessContent onNewOrder={() => router.replace("/" as never)} />
+      <PaymentSuccessContent onNewOrder={() => router.replace("/pos")} />
     </View>
   );
 }

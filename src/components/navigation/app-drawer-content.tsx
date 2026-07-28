@@ -124,7 +124,11 @@ export default function AppDrawerContent({
                 if (event.defaultPrevented) return;
 
                 navigation.closeDrawer();
-                if (!focused) navigation.navigate(route.name, route.params);
+                if (routeName === "pos") {
+                  navigation.navigate(route.name, { screen: "index" });
+                } else if (!focused) {
+                  navigation.navigate(route.name, route.params);
+                }
               }}
             >
               <Surface
