@@ -14,6 +14,7 @@ export const id: TranslationSchema = {
     pos: "Kasir",
     products: "Produk",
     categories: "Kategori",
+    category: "Kategori",
     orders: "Pesanan",
     earnings: "Pendapatan",
     settings: "Pengaturan",

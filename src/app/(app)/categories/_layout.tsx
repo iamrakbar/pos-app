@@ -31,6 +31,7 @@ export default function CategoriesLayout() {
           headerLeft: () => <DrawerMenuButton />,
         }}
       />
+      <Stack.Screen name="[id]" options={{ title: t("navigation.category") }} />
     </Stack>
   );
 }

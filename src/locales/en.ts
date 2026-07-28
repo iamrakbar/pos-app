@@ -12,6 +12,7 @@ export const en = {
     pos: "POS",
     products: "Products",
     categories: "Categories",
+    category: "Category",
     orders: "Orders",
     earnings: "Earnings",
     settings: "Settings",

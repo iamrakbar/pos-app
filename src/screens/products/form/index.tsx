@@ -41,7 +41,7 @@ import {
 } from "@/hooks/db/use-products";
 import { productSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
-import CategoryFormDialog from "@/screens/categories/category-form-dialog";
+import { useCategoryFormNavigation } from "@/stores/use-category-form-navigation";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -499,13 +499,19 @@ export default function ProductFormScreen(): React.JSX.Element {
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct(id);
   const deleteProductMutation = useDeleteProduct(id);
-  const categoryOptions = (categoriesQuery.data ?? []).map((item) => ({
+  const createdCategory = useCategoryFormNavigation((state) => state.createdCategory);
+  const clearCreatedCategory = useCategoryFormNavigation((state) => state.clearCreatedCategory);
+  const categoryItems = [...(categoriesQuery.data ?? [])];
+  if (createdCategory && !categoryItems.some((category) => category.id === createdCategory.id)) {
+    categoryItems.push(createdCategory);
+  }
+  const categoryOptions = categoryItems.map((item) => ({
     value: item.id,
     label: item.name,
   }));
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
-  const [isCategoryFormOpen, setIsCategoryFormOpen] = React.useState(false);
   const hydratedProductId = React.useRef<string | null>(null);
+  const handledCreatedCategoryId = React.useRef<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -549,6 +555,26 @@ export default function ProductFormScreen(): React.JSX.Element {
     });
     hydratedProductId.current = product.id;
   }, [isNew, productQuery.data, reset]);
+
+  React.useEffect(() => {
+    if (!createdCategory || handledCreatedCategoryId.current === createdCategory.id) return;
+
+    handledCreatedCategoryId.current = createdCategory.id;
+    setValue("category_id", createdCategory.id, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    void categoriesQuery.refetch();
+  }, [categoriesQuery, createdCategory, setValue]);
+
+  React.useEffect(() => {
+    if (
+      createdCategory &&
+      categoriesQuery.data?.some((category) => category.id === createdCategory.id)
+    ) {
+      clearCreatedCategory();
+    }
+  }, [categoriesQuery.data, clearCreatedCategory, createdCategory]);
 
   if (!isNew && productQuery.isLoading) {
     return <LoadingState message="Loading product…" />;
@@ -670,7 +696,13 @@ export default function ProductFormScreen(): React.JSX.Element {
               areCategoriesLoading={categoriesQuery.isLoading}
               didCategoriesFail={categoriesQuery.isError}
               onRetryCategories={() => void categoriesQuery.refetch()}
-              onAddCategory={() => setIsCategoryFormOpen(true)}
+              onAddCategory={() => {
+                clearCreatedCategory();
+                router.push({
+                  pathname: "/categories/[id]",
+                  params: { id: "new", selectForProduct: "true" },
+                });
+              }}
             />
 
             <ProductImageCard
@@ -769,16 +801,6 @@ export default function ProductFormScreen(): React.JSX.Element {
         isDeleting={deleteProductMutation.isPending}
         onOpenChange={setIsDeleteOpen}
         onDelete={handleDelete}
-      />
-      <CategoryFormDialog
-        isOpen={isCategoryFormOpen}
-        onOpenChange={setIsCategoryFormOpen}
-        onSaved={(category) => {
-          setValue("category_id", category.id, {
-            shouldDirty: true,
-            shouldValidate: true,
-          });
-        }}
       />
     </>
   );

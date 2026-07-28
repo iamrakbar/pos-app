@@ -41,6 +41,10 @@ export function getCategories(
   });
 }
 
+export function getCategory(merchantId: string, categoryId: string): Promise<CategoryResponse> {
+  return apiRequest<CategoryResponse>(`/${merchantId}/categories/${categoryId}`);
+}
+
 export function createCategory(
   merchantId: string,
   body: App.Requests.Merchant.Category.StoreCategoryRequest

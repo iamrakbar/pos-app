@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createCategory,
   deleteCategory,
+  getCategory,
   getCategories,
   reorderCategories,
   updateCategory,
@@ -47,6 +48,16 @@ export function useManagementCategories(params: CategoryListParams = {}) {
     queryKey: categoryKeys.list(merchantId, params),
     queryFn: async () => (await getCategories(merchantId!, params)).data,
     enabled: !!merchantId,
+    staleTime: CATEGORY_STALE_TIME_MS,
+  });
+}
+
+export function useCategory(categoryId: string) {
+  const merchantId = useAuth((state) => state.merchantId);
+  return useQuery({
+    queryKey: categoryKeys.detail(merchantId, categoryId),
+    queryFn: async () => (await getCategory(merchantId!, categoryId)).data,
+    enabled: !!merchantId && categoryId !== "new",
     staleTime: CATEGORY_STALE_TIME_MS,
   });
 }
