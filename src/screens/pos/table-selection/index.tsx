@@ -17,8 +17,7 @@ import {
 import { EmptyState } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { FlatList, Pressable, View } from "react-native";
 
 function groupTablesByArea(tables: POSTable[]) {
   const groups = new Map<string, { id: string; name: string; tables: POSTable[] }>();
@@ -70,6 +69,50 @@ export default function TableSelectionScreen(): JSX.Element {
     router.back();
   };
 
+  const renderArea = ({ item: group }: { item: (typeof groups)[number] }) => (
+    <Chip
+      variant={resolvedAreaId === group.id ? "primary" : "secondary"}
+      onPress={() => setActiveAreaId(group.id)}
+    >
+      <Chip.Label>{group.name}</Chip.Label>
+    </Chip>
+  );
+
+  const renderTable = ({ item: table }: { item: POSTable }) => {
+    const isSelected = table.id === selectedTableId;
+    const seatCount = getTableSeatCount(Number(table.pax));
+
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Select ${table.name}, ${table.pax} seats`}
+        accessibilityState={{ selected: isSelected }}
+        onPress={() => handleSelect(table.id)}
+        style={{ width: cardWidth, margin: 6 }}
+      >
+        <Card variant={isSelected ? "default" : "secondary"} className="gap-2">
+          <Card.Header className="flex-1 items-center justify-center py-2">
+            <TableSymbol
+              seats={seatCount}
+              width={96}
+              height={76}
+              color={isSelected ? accent : muted}
+              tableColor={isSelected ? accentSoft : undefined}
+            />
+          </Card.Header>
+          <Card.Body className="items-center gap-2">
+            <Chip color={isSelected ? "accent" : "default"}>
+              <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
+            </Chip>
+            <Typography type="body-xs" color="muted" className="tabular-nums">
+              {Number(table.pax)} {Number(table.pax) === 1 ? "seat" : "seats"}
+            </Typography>
+          </Card.Body>
+        </Card>
+      </Pressable>
+    );
+  };
+
   return (
     <View className="flex-1 overflow-hidden bg-background pb-safe">
       <View className="flex-row items-center justify-between gap-3 bg-surface px-5 py-4">
@@ -90,67 +133,29 @@ export default function TableSelectionScreen(): JSX.Element {
 
       <View className="flex-1 gap-4 px-4 pt-4">
         <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
-          <ScrollView
+          <FlatList
+            data={groups}
             horizontal
+            keyExtractor={(group) => group.id}
+            renderItem={renderArea}
             showsHorizontalScrollIndicator={false}
             contentContainerClassName="gap-2 pb-1"
-          >
-            {groups.map((group) => (
-              <Chip
-                key={group.id}
-                variant={resolvedAreaId === group.id ? "primary" : "secondary"}
-                onPress={() => setActiveAreaId(group.id)}
-              >
-                <Chip.Label>{group.name}</Chip.Label>
-              </Chip>
-            ))}
-          </ScrollView>
+          />
         </ScrollShadow>
 
         {filteredTables.length > 0 ? (
-          <ScrollView
+          <FlatList
+            key={`table-grid-${columnCount}`}
             className="flex-1"
+            data={filteredTables}
+            numColumns={columnCount}
+            keyExtractor={(table) => table.id}
+            renderItem={renderTable}
             showsVerticalScrollIndicator={false}
-            contentContainerClassName="flex-row flex-wrap items-center pb-4"
+            contentContainerClassName="pb-4"
+            columnWrapperClassName="items-center"
             onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}
-          >
-            {filteredTables.map((table) => {
-              const isSelected = table.id === selectedTableId;
-              const seatCount = getTableSeatCount(Number(table.pax));
-
-              return (
-                <Pressable
-                  key={table.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Select ${table.name}, ${table.pax} seats`}
-                  accessibilityState={{ selected: isSelected }}
-                  onPress={() => handleSelect(table.id)}
-                  style={{ width: cardWidth, margin: 6 }}
-                >
-                  <Card variant={isSelected ? "default" : "secondary"} className="gap-2">
-                    <Card.Header className="flex-1 items-center justify-center py-2">
-                      <TableSymbol
-                        key={`${table.id}-${seatCount}`}
-                        seats={seatCount}
-                        width={96}
-                        height={76}
-                        color={isSelected ? accent : muted}
-                        tableColor={isSelected ? accentSoft : undefined}
-                      />
-                    </Card.Header>
-                    <Card.Body className="items-center gap-2">
-                      <Chip color={isSelected ? "accent" : "default"}>
-                        <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
-                      </Chip>
-                      <Typography type="body-xs" color="muted" className="tabular-nums">
-                        {Number(table.pax)} {Number(table.pax) === 1 ? "seat" : "seats"}
-                      </Typography>
-                    </Card.Body>
-                  </Card>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+          />
         ) : (
           <EmptyState className="flex-1 justify-center">
             <EmptyState.Header>

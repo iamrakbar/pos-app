@@ -9,7 +9,7 @@ import type { JSX } from "react";
 import { ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import { useState } from "react";
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, Platform, RefreshControl, View } from "react-native";
 import ProductCard from "./product-card";
 
 const CARD_MIN_WIDTH = 180;
@@ -31,6 +31,7 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
   const availableWidth = Math.max(containerWidth - GRID_HORIZONTAL_PADDING, 0);
   const numColumns = Math.max(1, Math.floor(availableWidth / CARD_MIN_WIDTH));
   const cardWidth = availableWidth / numColumns;
+  const listBottomInset = Math.max(bottomInset, 16);
 
   const {
     data: allProducts,
@@ -75,9 +76,12 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
             keyExtractor={(item) => item.id}
             renderItem={renderProduct}
             contentContainerClassName="flex-grow gap-2 px-3 pt-4"
-            contentContainerStyle={{ paddingBottom: Math.max(bottomInset, 16) }}
+            contentInset={{ bottom: listBottomInset }}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              Platform.OS === "ios" ? null : <View style={{ height: listBottomInset }} />
+            }
             ListEmptyComponent={
               isError ? (
                 <ErrorState error={error} onRetry={refetch} />

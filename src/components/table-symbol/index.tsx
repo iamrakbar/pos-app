@@ -175,9 +175,9 @@ export default function TableSymbol({
           strokeWidth={6}
         />
       )}
-      {config.seats.map((seat, index) => (
+      {config.seats.map((seat) => (
         <G
-          key={`${seats}-${index}`}
+          key={`${seat.x}-${seat.y}`}
           transform={seat.rotation ? `rotate(${seat.rotation} ${seat.x} ${seat.y})` : undefined}
         >
           <Rect
