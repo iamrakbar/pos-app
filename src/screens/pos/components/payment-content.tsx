@@ -66,7 +66,7 @@ export function PaymentContent({
           : (apiPaymentStatus ?? { label: "Waiting for payment", color: "warning" as const });
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background pt-safe">
       <ScrollView
         className="flex-1 bg-surface"
         contentContainerClassName="flex-grow justify-center px-safe py-5"
@@ -112,14 +112,17 @@ export function PaymentContent({
               </Chip>
             </View>
 
-            <View className="gap-1">
-              <Typography className="text-sm font-semibold text-muted-foreground">
+            <View className="gap-1.5">
+              <Typography type="body-xs" color="muted">
+                Payment method
+              </Typography>
+              <Typography type="h4" weight="bold">
                 {paymentSession.payment_type}
               </Typography>
-              <Typography className="text-3xl font-bold text-foreground tabular-nums">
+              <Typography type="h2" weight="bold" className="tabular-nums">
                 {formatRupiah(paymentSession.amount)}
               </Typography>
-              <Typography className="text-xs text-muted-foreground font-mono">
+              <Typography type="body-xs" color="muted" className="font-mono">
                 {paymentSession.transaction_id}
               </Typography>
             </View>
