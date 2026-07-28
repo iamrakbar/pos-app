@@ -1,11 +1,11 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
+import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useCreateCategory, useDeleteCategory, useUpdateCategory } from "@/hooks/db/use-categories";
 import { categorySchema, toCategoryRequest, type CategoryFormValues } from "@/schemas/category";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
-  Dialog,
   Input,
   Label,
   Switch,
@@ -17,6 +17,7 @@ import {
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Pressable, ScrollView, View } from "react-native";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type Category = App.Data.Merchant.Category.CategoryData;
 
@@ -57,6 +58,7 @@ export default function CategoryFormDialog({
   onDeleted,
 }: CategoryFormDialogProps): React.JSX.Element {
   const { toast } = useToast();
+  const { isPhonePortrait } = useOverlayPresentation();
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory(category?.id ?? "");
   const deleteMutation = useDeleteCategory();
@@ -138,137 +140,138 @@ export default function CategoryFormDialog({
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={handleOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content isSwipeable={false} className="w-full max-w-xl self-center p-0">
-          <View className="p-5 pb-0">
-            <DialogCloseButton />
-            <View className="gap-1.5 pr-10">
-              <Dialog.Title>
-                {isConfirmingDelete
-                  ? "Delete category?"
-                  : category
-                    ? "Edit category"
-                    : "New category"}
-              </Dialog.Title>
-              <Dialog.Description>
-                {isConfirmingDelete
-                  ? "The server may reject deletion while products still use this category."
-                  : "Organize products and control whether this category is available."}
-              </Dialog.Description>
-            </View>
-          </View>
-
-          {isConfirmingDelete ? (
-            <View className="flex-row justify-end gap-3 p-5">
-              <Button variant="ghost" onPress={() => setIsConfirmingDelete(false)}>
+    <>
+      <AdaptiveFormOverlay
+        isOpen={isOpen}
+        onOpenChange={handleOpenChange}
+        title={category ? "Edit category" : "New category"}
+        description="Organize products and control whether this category is available."
+        maxWidthClassName="max-w-xl"
+        footer={
+          <View
+            className={`gap-3 border-t border-border p-5 ${
+              isPhonePortrait ? "items-stretch" : "flex-row items-center justify-between"
+            }`}
+          >
+            {category ? (
+              <Button
+                variant="danger-soft"
+                className={isPhonePortrait ? "w-full" : undefined}
+                onPress={() => setIsConfirmingDelete(true)}
+              >
+                <Button.Label>Delete</Button.Label>
+              </Button>
+            ) : (
+              <View />
+            )}
+            <View className={isPhonePortrait ? "gap-3" : "flex-row gap-3"}>
+              <Button
+                variant="ghost"
+                className={isPhonePortrait ? "w-full" : undefined}
+                onPress={() => handleOpenChange(false)}
+              >
                 <Button.Label>Cancel</Button.Label>
               </Button>
-              <Button variant="danger" onPress={handleDelete} isDisabled={deleteMutation.isPending}>
-                <Button.Label>{deleteMutation.isPending ? "Deleting…" : "Delete"}</Button.Label>
+              <Button
+                className={isPhonePortrait ? "w-full" : undefined}
+                onPress={handleSubmit(submitCategory)}
+                isDisabled={isSaving}
+              >
+                <Button.Label>{isSaving ? "Saving…" : "Save category"}</Button.Label>
               </Button>
             </View>
-          ) : (
-            <>
-              <ScrollView
-                className="max-h-[65vh]"
-                contentContainerClassName="gap-4 p-5"
-                keyboardShouldPersistTaps="handled"
+          </View>
+        }
+      >
+        <ScrollView
+          className="max-h-[65vh]"
+          contentContainerClassName="gap-4 px-5"
+          keyboardShouldPersistTaps="handled"
+        >
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { value, onChange } }) => (
+              <TextField isRequired isInvalid={Boolean(errors.name)}>
+                <Label>Name</Label>
+                <Input value={value} onChangeText={onChange} placeholder="Main dishes" />
+                <FieldMessage message={errors.name?.message} />
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { value, onChange } }) => (
+              <TextField isInvalid={Boolean(errors.description)}>
+                <Label>Description</Label>
+                <TextArea
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="Optional category description"
+                />
+                <FieldMessage message={errors.description?.message} />
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="position"
+            render={({ field: { value, onChange } }) => (
+              <TextField isRequired isInvalid={Boolean(errors.position)}>
+                <Label>Position</Label>
+                <Input
+                  value={value}
+                  onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
+                  keyboardType="number-pad"
+                />
+                <FieldMessage
+                  message={errors.position?.message}
+                  fallback="Lower positions appear first."
+                />
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="active"
+            render={({ field: { value, onChange } }) => (
+              <Pressable
+                accessibilityRole="switch"
+                accessibilityState={{ checked: value }}
+                onPress={() => onChange(!value)}
+                className="flex-row items-center justify-between gap-4 py-1"
               >
-                <Controller
-                  control={control}
-                  name="name"
-                  render={({ field: { value, onChange } }) => (
-                    <TextField isRequired isInvalid={Boolean(errors.name)}>
-                      <Label>Name</Label>
-                      <Input value={value} onChangeText={onChange} placeholder="Main dishes" />
-                      <FieldMessage message={errors.name?.message} />
-                    </TextField>
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="description"
-                  render={({ field: { value, onChange } }) => (
-                    <TextField isInvalid={Boolean(errors.description)}>
-                      <Label>Description</Label>
-                      <TextArea
-                        value={value}
-                        onChangeText={onChange}
-                        placeholder="Optional category description"
-                      />
-                      <FieldMessage message={errors.description?.message} />
-                    </TextField>
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="position"
-                  render={({ field: { value, onChange } }) => (
-                    <TextField isRequired isInvalid={Boolean(errors.position)}>
-                      <Label>Position</Label>
-                      <Input
-                        value={value}
-                        onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                        keyboardType="number-pad"
-                      />
-                      <FieldMessage
-                        message={errors.position?.message}
-                        fallback="Lower positions appear first."
-                      />
-                    </TextField>
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="active"
-                  render={({ field: { value, onChange } }) => (
-                    <Pressable
-                      accessibilityRole="switch"
-                      accessibilityState={{ checked: value }}
-                      onPress={() => onChange(!value)}
-                      className="flex-row items-center justify-between gap-4 py-1"
-                    >
-                      <View className="flex-1">
-                        <Typography type="body-sm" weight="semibold">
-                          Active
-                        </Typography>
-                        <Typography type="body-xs" color="muted">
-                          Show in product and POS category filters.
-                        </Typography>
-                      </View>
-                      <Switch isSelected={value} onSelectedChange={onChange} />
-                    </Pressable>
-                  )}
-                />
-                {errors.root?.server?.message ? (
-                  <Typography type="body-sm" className="text-danger">
-                    {errors.root.server.message}
+                <View className="flex-1">
+                  <Typography type="body-sm" weight="semibold">
+                    Active
                   </Typography>
-                ) : null}
-              </ScrollView>
-              <View className="flex-row items-center justify-between gap-3 border-t border-border p-5">
-                {category ? (
-                  <Button variant="danger-soft" onPress={() => setIsConfirmingDelete(true)}>
-                    <Button.Label>Delete</Button.Label>
-                  </Button>
-                ) : (
-                  <View />
-                )}
-                <View className="flex-row gap-3">
-                  <Button variant="ghost" onPress={() => handleOpenChange(false)}>
-                    <Button.Label>Cancel</Button.Label>
-                  </Button>
-                  <Button onPress={handleSubmit(submitCategory)} isDisabled={isSaving}>
-                    <Button.Label>{isSaving ? "Saving…" : "Save category"}</Button.Label>
-                  </Button>
+                  <Typography type="body-xs" color="muted">
+                    Show in product and POS category filters.
+                  </Typography>
                 </View>
-              </View>
-            </>
-          )}
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+                <Switch isSelected={value} onSelectedChange={onChange} />
+              </Pressable>
+            )}
+          />
+          {errors.root?.server?.message ? (
+            <Typography type="body-sm" className="text-danger">
+              {errors.root.server.message}
+            </Typography>
+          ) : null}
+        </ScrollView>
+      </AdaptiveFormOverlay>
+
+      <ActionDialog
+        isOpen={isConfirmingDelete}
+        onOpenChange={setIsConfirmingDelete}
+        title="Delete category?"
+        description="The server may reject deletion while products still use this category."
+        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        actionVariant="danger"
+        isActionDisabled={deleteMutation.isPending}
+        onAction={handleDelete}
+      />
+    </>
   );
 }

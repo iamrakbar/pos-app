@@ -1,21 +1,13 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useCreateTable, useUpdateTable } from "@/hooks/db/use-tables";
 import { tableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Button,
-  Dialog,
-  Input,
-  Label,
-  Switch,
-  TextField,
-  Typography,
-  useToast,
-} from "heroui-native";
+import { Button, Input, Label, Switch, TextField, Typography, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Pressable, View } from "react-native";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type TableData = App.Data.Merchant.Area.TableData;
 
@@ -33,6 +25,7 @@ export default function TableFormDialog({
   onOpenChange,
 }: TableFormDialogProps): React.JSX.Element {
   const { toast } = useToast();
+  const { isPhonePortrait } = useOverlayPresentation();
   const createMutation = useCreateTable(areaId);
   const updateMutation = useUpdateTable(areaId, table?.id ?? "");
   const {
@@ -79,83 +72,92 @@ export default function TableFormDialog({
   };
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-          <DialogCloseButton />
-          <View className="mb-5 gap-1.5 pr-10">
-            <Dialog.Title>{table ? "Edit table" : "New table"}</Dialog.Title>
-            <Dialog.Description>Set the table name and seating capacity.</Dialog.Description>
-          </View>
-          <View className="gap-4">
-            <Controller
-              control={control}
-              name="name"
-              render={({ field: { value, onChange } }) => (
-                <TextField isRequired isInvalid={Boolean(errors.name)}>
-                  <Label>Name</Label>
-                  <Input value={value} onChangeText={onChange} placeholder="A1" />
-                  {errors.name?.message ? (
-                    <Typography type="body-xs" className="text-danger">
-                      {errors.name.message}
-                    </Typography>
-                  ) : null}
-                </TextField>
-              )}
-            />
-            <Controller
-              control={control}
-              name="pax"
-              render={({ field: { value, onChange } }) => (
-                <TextField isRequired isInvalid={Boolean(errors.pax)}>
-                  <Label>Capacity</Label>
-                  <Input
-                    value={value}
-                    onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                    keyboardType="number-pad"
-                  />
-                  {errors.pax?.message ? (
-                    <Typography type="body-xs" className="text-danger">
-                      {errors.pax.message}
-                    </Typography>
-                  ) : null}
-                </TextField>
-              )}
-            />
-            <Controller
-              control={control}
-              name="active"
-              render={({ field: { value, onChange } }) => (
-                <Pressable
-                  accessibilityRole="switch"
-                  accessibilityState={{ checked: value }}
-                  onPress={() => onChange(!value)}
-                  className="flex-row items-center justify-between gap-4 py-1"
-                >
-                  <View className="flex-1">
-                    <Typography type="body-sm" weight="semibold">
-                      Active
-                    </Typography>
-                    <Typography type="body-xs" color="muted">
-                      Available for dine-in checkout.
-                    </Typography>
-                  </View>
-                  <Switch isSelected={value} onSelectedChange={onChange} />
-                </Pressable>
-              )}
-            />
-            <View className="flex-row justify-end gap-3 pt-2">
-              <Button variant="ghost" onPress={() => onOpenChange(false)}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button onPress={handleSubmit(submitTable)} isDisabled={isSaving}>
-                <Button.Label>{isSaving ? "Saving…" : "Save table"}</Button.Label>
-              </Button>
-            </View>
-          </View>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+    <AdaptiveFormOverlay
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title={table ? "Edit table" : "New table"}
+      description="Set the table name and seating capacity."
+      footer={
+        <View
+          className={`gap-3 px-5 pb-5 pt-4 ${
+            isPhonePortrait ? "items-stretch" : "flex-row justify-end"
+          }`}
+        >
+          <Button
+            variant="ghost"
+            className={isPhonePortrait ? "w-full" : undefined}
+            onPress={() => onOpenChange(false)}
+          >
+            <Button.Label>Cancel</Button.Label>
+          </Button>
+          <Button
+            className={isPhonePortrait ? "w-full" : undefined}
+            onPress={handleSubmit(submitTable)}
+            isDisabled={isSaving}
+          >
+            <Button.Label>{isSaving ? "Saving…" : "Save table"}</Button.Label>
+          </Button>
+        </View>
+      }
+    >
+      <View className="gap-4 px-5">
+        <Controller
+          control={control}
+          name="name"
+          render={({ field: { value, onChange } }) => (
+            <TextField isRequired isInvalid={Boolean(errors.name)}>
+              <Label>Name</Label>
+              <Input value={value} onChangeText={onChange} placeholder="A1" />
+              {errors.name?.message ? (
+                <Typography type="body-xs" className="text-danger">
+                  {errors.name.message}
+                </Typography>
+              ) : null}
+            </TextField>
+          )}
+        />
+        <Controller
+          control={control}
+          name="pax"
+          render={({ field: { value, onChange } }) => (
+            <TextField isRequired isInvalid={Boolean(errors.pax)}>
+              <Label>Capacity</Label>
+              <Input
+                value={value}
+                onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
+                keyboardType="number-pad"
+              />
+              {errors.pax?.message ? (
+                <Typography type="body-xs" className="text-danger">
+                  {errors.pax.message}
+                </Typography>
+              ) : null}
+            </TextField>
+          )}
+        />
+        <Controller
+          control={control}
+          name="active"
+          render={({ field: { value, onChange } }) => (
+            <Pressable
+              accessibilityRole="switch"
+              accessibilityState={{ checked: value }}
+              onPress={() => onChange(!value)}
+              className="flex-row items-center justify-between gap-4 py-1"
+            >
+              <View className="flex-1">
+                <Typography type="body-sm" weight="semibold">
+                  Active
+                </Typography>
+                <Typography type="body-xs" color="muted">
+                  Available for dine-in checkout.
+                </Typography>
+              </View>
+              <Switch isSelected={value} onSelectedChange={onChange} />
+            </Pressable>
+          )}
+        />
+      </View>
+    </AdaptiveFormOverlay>
   );
 }
