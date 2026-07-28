@@ -10,20 +10,24 @@ import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "her
 import type { JSX } from "react";
 import { useState } from "react";
 import { Image } from "expo-image";
-import { ActivityIndicator, ScrollView, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 
 type PaymentContentProps = {
   onClose?: () => void;
   onPaymentSuccess?: () => void;
 };
 
-export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProps): JSX.Element {
+export function PaymentContent({
+  onClose,
+  onPaymentSuccess,
+}: PaymentContentProps): JSX.Element | null {
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const themeColorMuted = useThemeColor("muted");
-  const { width: windowWidth } = useWindowDimensions();
-  const isWideLayout = windowWidth >= 760;
+  const { width } = useResponsiveLayout();
+  const isWideLayout = width >= 760;
   const [expiredSessionKey, setExpiredSessionKey] = useState<string | null>(null);
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
   const showQrUrl =
@@ -31,7 +35,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
   const paymentStatus = usePaymentStatus(paymentSession?.order_id);
 
-  if (!paymentSession) return <></>;
+  if (!paymentSession) return null;
 
   const sessionKey = `${paymentSession.order_id}:${paymentSession.expires_at ?? ""}`;
   const sessionExpired = isExpired(paymentSession.expires_at) || expiredSessionKey === sessionKey;
@@ -63,15 +67,9 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
   return (
     <View className="flex-1 bg-background">
-      <View className="bg-surface px-5 py-5 pr-14">
-        <Typography className="text-xl font-semibold text-foreground">Payment</Typography>
-      </View>
-
-      <Separator />
-
       <ScrollView
         className="flex-1 bg-surface"
-        contentContainerClassName="flex-grow justify-center p-5"
+        contentContainerClassName="flex-grow justify-center px-safe py-5"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -148,8 +146,8 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
 
       <Separator />
 
-      <View className="bg-surface px-5 pb-safe pt-4">
-        <View className="w-full max-w-4xl self-center flex-row gap-3">
+      <View className="bg-surface px-safe pb-safe">
+        <View className="w-full max-w-4xl self-center flex-row gap-3 px-5 py-4">
           <Button
             className="flex-1"
             onPress={handleCheckPayment}

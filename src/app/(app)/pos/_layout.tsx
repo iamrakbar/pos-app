@@ -70,7 +70,7 @@ export default function POSFlowLayout() {
         name="payment"
         options={{
           title: "Payment",
-          headerShown: false,
+          headerShown: !isWide,
           presentation: isWide ? "formSheet" : "card",
           sheetAllowedDetents: isWide ? [0.75, maxSheetDetent] : undefined,
           sheetInitialDetentIndex: isWide ? "last" : undefined,

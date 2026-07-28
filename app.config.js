@@ -23,9 +23,15 @@ const BUILD_VARIANTS = {
 };
 
 const EXPO_PROJECT_SLUG = "soeat-pos";
-const variantName = process.env.APP_VARIANT || "development";
-const resolvedVariantName = BUILD_VARIANTS[variantName] ? variantName : "development";
-const variant = BUILD_VARIANTS[resolvedVariantName];
+const variantName = process.env.APP_VARIANT || "production";
+
+if (!BUILD_VARIANTS[variantName]) {
+  throw new Error(
+    `Invalid APP_VARIANT "${variantName}". Expected development, preview, or production.`
+  );
+}
+
+const variant = BUILD_VARIANTS[variantName];
 const protectedEnvKeys = new Set(Object.keys(process.env));
 
 function loadEnvFile(fileName) {
@@ -56,7 +62,7 @@ function loadEnvFile(fileName) {
 }
 
 loadEnvFile(".env");
-loadEnvFile(`.env.${resolvedVariantName}`);
+loadEnvFile(`.env.${variantName}`);
 
 module.exports = {
   expo: {
@@ -151,7 +157,7 @@ module.exports = {
       policy: "appVersion",
     },
     extra: {
-      buildVariant: resolvedVariantName,
+      buildVariant: variantName,
       router: {},
       eas: {
         projectId: "0757ac22-4f65-452c-a376-ffdd8b4e290e",

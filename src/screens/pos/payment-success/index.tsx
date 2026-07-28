@@ -84,13 +84,13 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
 
   return (
     <>
-      <View className="flex-1 bg-background p-safe">
+      <View className="flex-1 bg-background">
         <ScrollView
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          contentContainerClassName="flex-grow px-5 py-8 bg-background"
+          contentContainerClassName="flex-grow bg-background px-safe pb-8 pt-safe"
         >
-          <View className="w-full max-w-xl self-center gap-6">
+          <View className="w-full max-w-xl self-center gap-6 px-5 pt-8">
             <View className="items-center gap-3 py-2">
               <View className="w-14 h-14 rounded-full bg-success items-center justify-center">
                 <Ionicons name="checkmark" size={28} color="white" />
@@ -170,8 +170,8 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         <Separator />
 
         {/* Actions */}
-        <View className="bg-surface px-5 py-4">
-          <View className="w-full max-w-xl self-center gap-3">
+        <View className="bg-surface px-safe pb-safe">
+          <View className="w-full max-w-xl self-center gap-3 px-5 py-4">
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1 gap-0.5">
                 <Typography type="body-sm" weight="semibold">

@@ -32,6 +32,20 @@ cp .env.production.example .env.production
 
 Local `.env.*` files are ignored by git. Keep real API hosts, credentials, and device-specific values in those files or in EAS environment variables.
 
+Cloud builds read `EXPO_PUBLIC_API_BASE_URL` from the EAS environment selected
+by each build profile. Configure it once for `development`, `preview`, and
+`production`, then verify the values:
+
+```sh
+eas env:set --name EXPO_PUBLIC_API_BASE_URL --environment development --visibility plaintext
+eas env:set --name EXPO_PUBLIC_API_BASE_URL --environment preview --visibility plaintext
+eas env:set --name EXPO_PUBLIC_API_BASE_URL --environment production --visibility plaintext
+
+eas env:list --environment development
+eas env:list --environment preview
+eas env:list --environment production
+```
+
 ## Environment Variants
 
 The app supports three build variants:
@@ -42,7 +56,8 @@ The app supports three build variants:
 | preview     | Soeat POS (Preview) | `id.soeat.pos.preview`          | `soeat-pos-preview` |
 | production  | Soeat POS           | `id.soeat.pos`                  | `soeat-pos`         |
 
-Variant config is resolved in `app.config.js` from `APP_VARIANT`.
+Variant config is resolved in `app.config.js` from `APP_VARIANT`. When it is
+unset, the safe default is production; unknown values fail immediately.
 All variants use the same Expo/EAS project slug, `soeat-pos`, because the configured `extra.eas.projectId` belongs to that Expo project. The installed app is separated by native package ID, display name, scheme, channel, and env values.
 
 Env loading order for local scripts:
@@ -58,21 +73,21 @@ This means explicit shell values and EAS profile values stay authoritative.
 Start the dev client bundler:
 
 ```sh
-bun run start:dev
+bun run start
 bun run start:preview
-bun run start:prod
+bun run start:production
 ```
 
 Run native builds locally:
 
 ```sh
-bun run android:dev
+bun run android
 bun run android:preview
-bun run android:prod
+bun run android:production
 
-bun run ios:dev
+bun run ios
 bun run ios:preview
-bun run ios:prod
+bun run ios:production
 ```
 
 Inspect resolved Expo config:
@@ -80,36 +95,31 @@ Inspect resolved Expo config:
 ```sh
 bun run config:dev
 bun run config:preview
-bun run config:prod
+bun run config:production
 ```
 
 ## EAS Builds
 
-Build Android:
-
-```sh
-bun run build:android:dev
-bun run build:android:preview
-bun run build:android:prod
-```
-
-Build iOS:
-
-```sh
-bun run build:ios:dev
-bun run build:ios:preview
-bun run build:ios:prod
-```
-
-Build both platforms:
+Each build script targets both platforms by default:
 
 ```sh
 bun run build:dev
 bun run build:preview
-bun run build:prod
+bun run build:production
+```
+
+Pass a platform to build only Android or iOS:
+
+```sh
+bun run build:preview -- --platform android
+bun run build:production -- --platform ios
 ```
 
 Development and preview Android builds produce APKs for internal testing. Production Android builds produce an app bundle.
+
+When switching variants for a local native build, run the matching
+`prebuild:<variant>` script first. Expo's generated `android` and `ios`
+directories contain the previously generated variant until they are regenerated.
 
 ## Printer Support
 
@@ -153,6 +163,5 @@ bun run format:check
 - `src/stores`: Zustand stores
 - `src/db`: SQLite and Drizzle setup
 - `src/types`: local type declarations
-- `scripts/with-env.js`: variant-aware env loader for local commands
 - `app.config.js`: dynamic Expo app config
 - `eas.json`: EAS build profiles

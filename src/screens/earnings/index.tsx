@@ -68,19 +68,17 @@ function SummaryWidget({
   value,
   icon,
   color,
-  width,
 }: {
   label: string;
   value: string;
   icon: React.ComponentProps<typeof Ionicons>["name"];
   color: keyof typeof SUMMARY_STYLES;
-  width: number;
 }) {
   const style = SUMMARY_STYLES[color];
   const iconColor = useThemeColor(style.token);
 
   return (
-    <Widget style={{ width }}>
+    <Widget className="grow shrink basis-2/5 landscape:basis-1/5">
       <Widget.Header>
         <Widget.Title>{label}</Widget.Title>
         <View
@@ -106,7 +104,7 @@ function SummaryWidget({
 }
 
 export default function EarningsScreen(): React.JSX.Element {
-  const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
+  const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const [period, setPeriod] = React.useState<Period>("today");
   const { dateFrom, dateTo } = getPeriodRange(period);
   const {
@@ -140,10 +138,6 @@ export default function EarningsScreen(): React.JSX.Element {
 
   const recentEntries = data.slice(0, 8);
   const periodLabel = formatPeriodLabel(dateFrom, dateTo);
-  const contentWidth = width - horizontalPagePadding * 2;
-  const summaryColumns = isCompact ? 1 : isMedium ? 2 : 4;
-  const summaryGap = 16;
-  const summaryWidth = (contentWidth - summaryGap * (summaryColumns - 1)) / summaryColumns;
 
   return (
     <ScrollView
@@ -153,38 +147,25 @@ export default function EarningsScreen(): React.JSX.Element {
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
     >
       <View className="w-full gap-6">
-        <View className="gap-3">
-          <View className="gap-3">
-            <View className="gap-1">
-              <Typography type="h3" weight="bold">
-                Earnings overview
-              </Typography>
-              <Typography type="body-sm" color="muted">
-                Settled sales for {periodLabel}
-              </Typography>
-            </View>
-            <ScrollShadow
-              orientation="horizontal"
-              size={24}
-              LinearGradientComponent={LinearGradient}
+        <View className="flex-col landscape:flex-row justify-between gap-3">
+          <Typography type="body-sm">Settled sales for {periodLabel}</Typography>
+          <ScrollShadow orientation="horizontal" size={24} LinearGradientComponent={LinearGradient}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerClassName="gap-2"
             >
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="gap-2"
-              >
-                {PERIODS.map((item) => (
-                  <Chip
-                    key={item.value}
-                    variant={period === item.value ? "primary" : "secondary"}
-                    onPress={() => setPeriod(item.value)}
-                  >
-                    <Chip.Label>{item.label}</Chip.Label>
-                  </Chip>
-                ))}
-              </ScrollView>
-            </ScrollShadow>
-          </View>
+              {PERIODS.map((item) => (
+                <Chip
+                  key={item.value}
+                  variant={period === item.value ? "primary" : "secondary"}
+                  onPress={() => setPeriod(item.value)}
+                >
+                  <Chip.Label>{item.label}</Chip.Label>
+                </Chip>
+              ))}
+            </ScrollView>
+          </ScrollShadow>
         </View>
 
         {isLoading ? (
@@ -195,28 +176,24 @@ export default function EarningsScreen(): React.JSX.Element {
           <>
             <View className="flex-row flex-wrap gap-4">
               <SummaryWidget
-                width={summaryWidth}
                 label="Settled earnings"
                 value={formatRupiah(totalEarnings)}
                 icon="wallet-outline"
                 color="success"
               />
               <SummaryWidget
-                width={summaryWidth}
                 label="Settled orders"
                 value={String(data.length)}
                 icon="receipt-outline"
                 color="accent"
               />
               <SummaryWidget
-                width={summaryWidth}
                 label="Average order"
                 value={formatRupiah(averageOrder)}
                 icon="analytics-outline"
                 color="warning"
               />
               <SummaryWidget
-                width={summaryWidth}
                 label="Items sold"
                 value={String(itemCount)}
                 icon="bag-handle-outline"

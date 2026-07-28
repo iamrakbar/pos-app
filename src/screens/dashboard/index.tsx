@@ -49,18 +49,16 @@ function SummaryWidget({
   value,
   icon,
   color = "accent",
-  width,
 }: {
   label: string;
   value: string;
   icon: React.ComponentProps<typeof Ionicons>["name"];
   color?: "accent" | "warning" | "success";
-  width: number;
 }) {
   const iconColor = useThemeColor(`${color}-soft-foreground`);
 
   return (
-    <Widget style={{ width }}>
+    <Widget className="grow shrink basis-2/5 landscape:basis-1/5">
       <Widget.Header>
         <Widget.Title>{label}</Widget.Title>
         <View
@@ -151,7 +149,7 @@ function DashboardDatePicker({
 }) {
   return (
     <DatePicker
-      className="min-w-[220px] flex-1"
+      className="min-w-55 flex-1"
       value={value}
       onValueChange={onValueChange}
       isRequired
@@ -332,7 +330,7 @@ function CustomDateRangeDialog({
 }
 
 export default function DashboardScreen(): React.JSX.Element {
-  const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
+  const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const { toast } = useToast();
   const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
     DATE_RANGE_OPTIONS[0]
@@ -365,10 +363,6 @@ export default function DashboardScreen(): React.JSX.Element {
         " – " +
         toDateOption(appliedRange.endDate).label
       : dateRange.label;
-  const contentWidth = Math.min(width - horizontalPagePadding * 2, 1280);
-  const summaryColumns = isCompact ? 1 : isMedium ? 2 : 4;
-  const summaryGap = 16;
-  const summaryWidth = (contentWidth - summaryGap * (summaryColumns - 1)) / summaryColumns;
 
   const handleRangeChange = (option: { value: string; label: string } | undefined) => {
     if (!option) return;
@@ -460,29 +454,25 @@ export default function DashboardScreen(): React.JSX.Element {
             <ErrorState error={dashboard.error} onRetry={() => void dashboard.refetch()} />
           ) : (
             <>
-              <View className="flex-row flex-wrap gap-4">
+              <View className="w-full flex-row flex-wrap gap-4">
                 <SummaryWidget
-                  width={summaryWidth}
                   label="Revenue"
                   value={formatRupiah(dashboard.data?.revenue_today ?? 0)}
                   icon="wallet-outline"
                   color="success"
                 />
                 <SummaryWidget
-                  width={summaryWidth}
                   label="Orders"
                   value={String(dashboard.data?.orders_today ?? 0)}
                   icon="receipt-outline"
                 />
                 <SummaryWidget
-                  width={summaryWidth}
                   label="Pending"
                   value={String(dashboard.data?.pending_orders ?? 0)}
                   icon="time-outline"
                   color="warning"
                 />
                 <SummaryWidget
-                  width={summaryWidth}
                   label="Completed"
                   value={String(dashboard.data?.completed_orders ?? 0)}
                   icon="checkmark-circle-outline"

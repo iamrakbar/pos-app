@@ -5,8 +5,9 @@ import { useAuth } from "@/stores/use-auth";
 import { useNetworkStore } from "@/stores/use-network-store";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
-import { Avatar, Popover, Surface, Typography, useThemeColor } from "heroui-native";
+import { Avatar, Popover, ScrollShadow, Surface, Typography, useThemeColor } from "heroui-native";
 import type { ComponentProps, JSX } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -88,79 +89,81 @@ export default function AppDrawerContent({
   const setThemeMode = useThemeStore((s) => s.setMode);
 
   return (
-    <View className="flex-1 gap-4 px-3 py-safe bg-background">
-      <View className="px-3 py-4">
+    <View className="flex-1 pt-safe bg-background">
+      <View className="px-6 py-4">
         <Logo tintColor={themeColorAccent} />
       </View>
 
-      <ScrollView contentContainerClassName="gap-1">
-        {DRAWER_ROUTE_ORDER.map((routeName) => {
-          const routeIndex = state.routes.findIndex((route) => route.name === routeName);
-          if (routeIndex < 0) return null;
+      <ScrollShadow size={32} LinearGradientComponent={LinearGradient}>
+        <ScrollView contentContainerClassName="gap-1 px-3">
+          {DRAWER_ROUTE_ORDER.map((routeName) => {
+            const routeIndex = state.routes.findIndex((route) => route.name === routeName);
+            if (routeIndex < 0) return null;
 
-          const route = state.routes[routeIndex];
-          const focused = state.index === routeIndex;
+            const route = state.routes[routeIndex];
+            const focused = state.index === routeIndex;
 
-          const descriptor = descriptors[route.key];
-          const label =
-            typeof descriptor?.options.drawerLabel === "string"
-              ? descriptor.options.drawerLabel
-              : (descriptor?.options.title ?? getRouteLabel(route.name));
-          const iconName = DRAWER_ICONS[routeName] ?? "ellipse-outline";
+            const descriptor = descriptors[route.key];
+            const label =
+              typeof descriptor?.options.drawerLabel === "string"
+                ? descriptor.options.drawerLabel
+                : (descriptor?.options.title ?? getRouteLabel(route.name));
+            const iconName = DRAWER_ICONS[routeName] ?? "ellipse-outline";
 
-          return (
-            <Pressable
-              key={routeName}
-              accessibilityRole="button"
-              accessibilityState={focused ? { selected: true } : undefined}
-              accessibilityLabel={`Open ${label}`}
-              onPress={() => {
-                const event = navigation.emit({
-                  type: "drawerItemPress",
-                  target: route.key,
-                  canPreventDefault: true,
-                });
+            return (
+              <Pressable
+                key={routeName}
+                accessibilityRole="button"
+                accessibilityState={focused ? { selected: true } : undefined}
+                accessibilityLabel={`Open ${label}`}
+                onPress={() => {
+                  const event = navigation.emit({
+                    type: "drawerItemPress",
+                    target: route.key,
+                    canPreventDefault: true,
+                  });
 
-                if (event.defaultPrevented) return;
+                  if (event.defaultPrevented) return;
 
-                navigation.closeDrawer();
-                if (routeName === "pos") {
-                  navigation.navigate(route.name, { screen: "index" });
-                } else if (!focused) {
-                  navigation.navigate(route.name, route.params);
-                }
-              }}
-            >
-              <Surface
-                variant={focused ? "default" : "transparent"}
-                className="min-h-13 flex-row items-center gap-3 px-3 py-2"
+                  navigation.closeDrawer();
+                  if (routeName === "pos") {
+                    navigation.navigate(route.name, { screen: "index" });
+                  } else if (!focused) {
+                    navigation.navigate(route.name, route.params);
+                  }
+                }}
               >
-                <View
-                  className={`h-10 w-10 items-center justify-center rounded-xl ${focused ? "bg-accent-soft" : "bg-transparent"}`}
+                <Surface
+                  variant={focused ? "default" : "transparent"}
+                  className="min-h-13 flex-row items-center gap-3 px-3 py-2"
                 >
-                  <Ionicons
-                    name={iconName}
-                    size={20}
-                    color={focused ? themeColorAccentSoftForeground : themeColorMuted}
-                  />
-                </View>
-                <View className="flex-1 gap-0.5">
-                  <Typography type="body-sm" weight={focused ? "semibold" : "medium"}>
-                    {label}
-                  </Typography>
-                  <Typography type="body-xs" color="muted" numberOfLines={1}>
-                    {DRAWER_DESCRIPTIONS[routeName] ?? ""}
-                  </Typography>
-                </View>
-              </Surface>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+                  <View
+                    className={`h-10 w-10 items-center justify-center rounded-xl ${focused ? "bg-accent-soft" : "bg-transparent"}`}
+                  >
+                    <Ionicons
+                      name={iconName}
+                      size={20}
+                      color={focused ? themeColorAccentSoftForeground : themeColorMuted}
+                    />
+                  </View>
+                  <View className="flex-1 gap-0.5">
+                    <Typography type="body-sm" weight={focused ? "semibold" : "medium"}>
+                      {label}
+                    </Typography>
+                    <Typography type="body-xs" color="muted" numberOfLines={1}>
+                      {DRAWER_DESCRIPTIONS[routeName] ?? ""}
+                    </Typography>
+                  </View>
+                </Surface>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </ScrollShadow>
 
-      <View className="gap-4 mt-auto">
+      <View className="gap-4 p-3 mt-auto">
         {isOffline && (
-          <View className="flex-row items-center gap-2 rounded-panel-inner bg-warning-soft px-3 py-2.5">
+          <View className="flex-row items-center gap-2 rounded-panel-inner bg-warning-soft px-y py-2.5">
             <Ionicons
               name="cloud-offline-outline"
               size={16}
