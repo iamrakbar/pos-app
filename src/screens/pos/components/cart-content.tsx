@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { EmptyState, TimePicker } from "heroui-native-pro";
 import CartItemRow from "./cart-item-row";
-import TableSelectionModal from "./modals/table-selection-modal";
+import TableSelectionButton from "./table-selection-button";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -100,11 +100,7 @@ export default function CartContent(): JSX.Element {
           </Select>
 
           {checkoutForm.order_type === "dine-in" ? (
-            <TableSelectionModal
-              tables={tables}
-              selectedTable={selectedTable}
-              onSelect={(tableId) => updateCheckoutForm({ table_id: tableId })}
-            />
+            <TableSelectionButton selectedTable={selectedTable} />
           ) : (
             <TimePicker
               className="h-12"

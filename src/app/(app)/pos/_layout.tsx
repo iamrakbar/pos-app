@@ -26,6 +26,30 @@ export default function POSFlowLayout() {
       <Stack.Screen name="index" options={{ title: "POS", headerShown: false }} />
       <Stack.Screen name="cart" options={{ title: "Cart" }} />
       <Stack.Screen
+        name="add-ons"
+        options={{
+          title: "Add-ons",
+          headerShown: false,
+          presentation: "formSheet",
+          sheetAllowedDetents: [0.75, 1],
+          sheetInitialDetentIndex: "last",
+          sheetGrabberVisible: true,
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+      <Stack.Screen
+        name="table-selection"
+        options={{
+          title: "Select Table",
+          headerShown: false,
+          presentation: "formSheet",
+          sheetAllowedDetents: isWide ? [0.65, 0.9] : [0.65, 0.9, 1],
+          sheetInitialDetentIndex: 1,
+          sheetGrabberVisible: true,
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+      <Stack.Screen
         name="checkout"
         options={{
           title: "Checkout",

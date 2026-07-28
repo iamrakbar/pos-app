@@ -4,11 +4,9 @@ import { zustandStorage } from "@/lib/storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-type POSModal = "addon" | "checkout" | "payment" | null;
 export type ProductSort = "name-asc" | "name-desc" | "price-asc" | "price-desc";
 
 type POSState = {
-  modal: POSModal;
   selectedProduct: POSProduct | null;
   editingCartItemId: string | null;
   paymentSession: PaymentSession | null;
@@ -21,11 +19,9 @@ type POSState = {
 };
 
 type POSAction = {
-  openAddonModal: (product: POSProduct, editingCartItemId?: string) => void;
-  openCheckoutModal: () => void;
-  openPaymentModal: (session: PaymentSession, result: MerchantCheckoutData) => void;
+  setAddonSelection: (product: POSProduct, editingCartItemId?: string) => void;
+  clearAddonSelection: () => void;
   setPaymentSession: (session: PaymentSession, result: MerchantCheckoutData) => void;
-  closeModal: () => void;
   setSearchQuery: (q: string) => void;
   setCategoryId: (id: string | null) => void;
   setProductSort: (sort: ProductSort) => void;
@@ -50,7 +46,6 @@ const DEFAULT_CHECKOUT_FORM: CheckoutFormState = {
 export const usePOSStore = create<POSState & POSAction>()(
   persist(
     (set) => ({
-      modal: null,
       selectedProduct: null,
       editingCartItemId: null,
       paymentSession: null,
@@ -61,22 +56,20 @@ export const usePOSStore = create<POSState & POSAction>()(
       areCategoriesVisible: true,
       checkoutForm: { ...DEFAULT_CHECKOUT_FORM },
 
-      openAddonModal: (product, editingCartItemId) =>
+      setAddonSelection: (product, editingCartItemId) =>
         set({
-          modal: "addon",
           selectedProduct: product,
           editingCartItemId: editingCartItemId ?? null,
         }),
 
-      openCheckoutModal: () => set({ modal: "checkout" }),
-
-      openPaymentModal: (session, result) =>
-        set({ modal: "payment", paymentSession: session, checkoutResult: result }),
+      clearAddonSelection: () =>
+        set({
+          selectedProduct: null,
+          editingCartItemId: null,
+        }),
 
       setPaymentSession: (session, result) =>
         set({ paymentSession: session, checkoutResult: result }),
-
-      closeModal: () => set({ modal: null }),
 
       setSearchQuery: (searchQuery) => set({ searchQuery }),
 

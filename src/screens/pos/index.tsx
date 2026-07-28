@@ -1,20 +1,20 @@
 import CartPanel from "./components/cart-panel";
 import ProductGrid from "./components/product-grid";
 import SearchBar from "./components/search-bar";
-import AddOnModal from "./components/modals/add-on-modal";
 import FloatingCartButton, { FLOATING_CART_BUTTON_SPACE } from "./components/floating-cart-button";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
-import { useFocusEffect, useIsFocused } from "expo-router";
+import { useFocusEffect, useIsFocused, useRouter } from "expo-router";
 import { Platform, StatusBar, View } from "react-native";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 
 export default function POSScreen(): JSX.Element {
   const { width: viewportWidth, isWide } = useResponsiveLayout();
-  const openAddonModal = usePOSStore((s) => s.openAddonModal);
+  const router = useRouter();
+  const setAddonSelection = usePOSStore((s) => s.setAddonSelection);
   const addItem = useCartStore((s) => s.addItem);
   const isFocused = useIsFocused();
   const theme = useNavigationTheme();
@@ -29,7 +29,8 @@ export default function POSScreen(): JSX.Element {
 
   const handleSelectProduct = (product: POSProduct) => {
     if (product.add_ons.length > 0) {
-      openAddonModal(product);
+      setAddonSelection(product);
+      router.push("/pos/add-ons");
     } else {
       addItem({
         product_id: product.id,
@@ -62,9 +63,6 @@ export default function POSScreen(): JSX.Element {
           <FloatingCartButton />
         )
       ) : null}
-
-      {/* Modals */}
-      <AddOnModal />
     </View>
   );
 }

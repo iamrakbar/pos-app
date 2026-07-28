@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Checkbox,
-  Dialog,
   RadioGroup,
   Separator,
   Typography,
@@ -17,12 +16,14 @@ import {
   Label,
   FieldError,
   Description,
+  useThemeColor,
 } from "heroui-native";
 import type { JSX } from "react";
-import { FlatList, View, useWindowDimensions } from "react-native";
+import { FlatList, View } from "react-native";
 import React, { useEffect, useState } from "react";
-import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useForm, Controller, type Control } from "react-hook-form";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 function constraintLabel(group: AddOnGroup): string {
   if (!group.required) {
@@ -111,11 +112,12 @@ function AddOnCheckboxGroup({ control, group }: AddOnSelectionControlProps): JSX
   );
 }
 
-export default function AddOnModal(): JSX.Element {
-  const modal = usePOSStore((s) => s.modal);
+export default function AddOnScreen(): JSX.Element {
+  const router = useRouter();
+  const foreground = useThemeColor("foreground");
   const product = usePOSStore((s) => s.selectedProduct);
   const editingCartItemId = usePOSStore((s) => s.editingCartItemId);
-  const closeModal = usePOSStore((s) => s.closeModal);
+  const clearAddonSelection = usePOSStore((s) => s.clearAddonSelection);
 
   const editingCartItem = useCartStore((s) =>
     editingCartItemId ? s.products.find((item) => item.id === editingCartItemId) : undefined
@@ -123,11 +125,6 @@ export default function AddOnModal(): JSX.Element {
   const addItem = useCartStore((s) => s.addItem);
   const removeItem = useCartStore((s) => s.removeItem);
 
-  const { height: windowHeight } = useWindowDimensions();
-  const isOpen = modal === "addon";
-
-  const dialogMaxHeight = windowHeight * 0.88;
-  const scrollMaxHeight = dialogMaxHeight - 220;
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const schema = createAddOnSchema(product?.add_ons ?? []);
@@ -162,10 +159,15 @@ export default function AddOnModal(): JSX.Element {
       }
       return;
     }
-    if (isOpen) {
-      reset({ radioSelections: {}, checkboxSelections: {}, notes: "" });
-    }
-  }, [isOpen, editingCartItemId, editingCartItem, product, reset]);
+    reset({ radioSelections: {}, checkboxSelections: {}, notes: "" });
+  }, [editingCartItemId, editingCartItem, product, reset]);
+
+  useEffect(
+    () => () => {
+      clearAddonSelection();
+    },
+    [clearAddonSelection]
+  );
 
   const buildCartAddOns = (values: AddOnFormValues) => {
     if (!product) return [];
@@ -197,7 +199,8 @@ export default function AddOnModal(): JSX.Element {
       notes: values.notes.trim() || null,
       add_ons: addOns,
     });
-    closeModal();
+    clearAddonSelection();
+    router.back();
   };
 
   const onInvalid = () => {
@@ -206,104 +209,112 @@ export default function AddOnModal(): JSX.Element {
 
   const handleCancel = () => {
     setSubmitError(null);
-    closeModal();
+    clearAddonSelection();
+    router.back();
   };
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open) handleCancel();
-  };
-
-  if (!product) return <></>;
+  if (!product) {
+    return (
+      <View className="flex-1 items-center justify-center gap-4 bg-background p-5">
+        <Typography type="body-sm" color="muted">
+          Product add-ons are no longer available.
+        </Typography>
+        <Button variant="outline" onPress={() => router.back()}>
+          Back
+        </Button>
+      </View>
+    );
+  }
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={handleOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content
-          isSwipeable={false}
-          className="w-full max-w-3xl self-center bg-background p-0 overflow-hidden"
-          style={{ maxHeight: dialogMaxHeight }}
+    <View className="flex-1 overflow-hidden bg-background">
+      <View className="flex-row items-center justify-between gap-3 bg-surface p-4">
+        <View className="flex-1">
+          <Typography type="h4" weight="semibold" numberOfLines={1}>
+            {product.name}
+          </Typography>
+          <Typography className="text-sm text-muted-foreground">
+            {formatRupiah(product.price)}
+          </Typography>
+        </View>
+        <Button
+          variant="ghost"
+          isIconOnly
+          onPress={handleCancel}
+          accessibilityLabel="Close add-on selection"
         >
-          <DialogCloseButton />
-          <View className="bg-surface p-4 pr-14">
-            <View>
-              <Dialog.Title>{product.name}</Dialog.Title>
-              <Typography className="text-sm text-muted-foreground">
-                {formatRupiah(product.price)}
-              </Typography>
+          <Ionicons name="close" size={20} color={foreground} />
+        </Button>
+      </View>
+
+      <Separator />
+
+      <FlatList
+        className="flex-1"
+        data={product.add_ons}
+        keyExtractor={(group) => group.id}
+        showsVerticalScrollIndicator
+        keyboardShouldPersistTaps="handled"
+        contentContainerClassName="p-4 gap-6 bg-background"
+        ListHeaderComponent={
+          submitError ? (
+            <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
+              <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
             </View>
-          </View>
-
-          <Separator />
-
-          <FlatList
-            data={product.add_ons}
-            keyExtractor={(group) => group.id}
-            showsVerticalScrollIndicator
-            keyboardShouldPersistTaps="handled"
-            style={{ maxHeight: scrollMaxHeight }}
-            contentContainerClassName="p-4 gap-6 bg-background"
-            ListHeaderComponent={
-              submitError ? (
-                <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
-                  <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
-                </View>
-              ) : null
-            }
-            renderItem={({ item: group }) => (
-              <View className="gap-2">
-                <View className="flex-row items-center justify-between gap-2">
-                  <Label isRequired={group.required}>
-                    <Label.Text>{group.name}</Label.Text>
-                  </Label>
-                  <Description>{constraintLabel(group)}</Description>
-                </View>
-                {!group.multiple ? (
-                  <AddOnRadioGroup control={control} group={group} />
-                ) : (
-                  <AddOnCheckboxGroup control={control} group={group} />
-                )}
-                <FieldError
-                  isInvalid={
-                    !!(errors.radioSelections?.[group.id] || errors.checkboxSelections?.[group.id])
-                  }
-                >
-                  {errors.radioSelections?.[group.id]?.message ??
-                    errors.checkboxSelections?.[group.id]?.message}
-                </FieldError>
-              </View>
+          ) : null
+        }
+        renderItem={({ item: group }) => (
+          <View className="gap-2">
+            <View className="flex-row items-center justify-between gap-2">
+              <Label isRequired={group.required}>
+                <Label.Text>{group.name}</Label.Text>
+              </Label>
+              <Description>{constraintLabel(group)}</Description>
+            </View>
+            {!group.multiple ? (
+              <AddOnRadioGroup control={control} group={group} />
+            ) : (
+              <AddOnCheckboxGroup control={control} group={group} />
             )}
-            ListFooterComponent={
-              <View className="gap-2">
-                <Typography className="text-sm font-semibold text-foreground">Catatan</Typography>
-                <Controller
-                  control={control}
-                  name="notes"
-                  render={({ field }) => (
-                    <TextArea
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      placeholder=""
-                      className="min-h-20"
-                    />
-                  )}
-                />
-              </View>
-            }
-          />
-
-          <Separator />
-
-          <View className="flex-row gap-3 bg-surface p-4">
-            <Button variant="outline" onPress={handleCancel}>
-              Batal
-            </Button>
-            <Button className="flex-1" onPress={handleSubmit(onSubmit, onInvalid)}>
-              {editingCartItemId ? "Simpan perubahan" : "Tambahkan ke keranjang"}
-            </Button>
+            <FieldError
+              isInvalid={
+                !!(errors.radioSelections?.[group.id] || errors.checkboxSelections?.[group.id])
+              }
+            >
+              {errors.radioSelections?.[group.id]?.message ??
+                errors.checkboxSelections?.[group.id]?.message}
+            </FieldError>
           </View>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+        )}
+        ListFooterComponent={
+          <View className="gap-2">
+            <Typography className="text-sm font-semibold text-foreground">Catatan</Typography>
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field }) => (
+                <TextArea
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  placeholder=""
+                  className="min-h-20"
+                />
+              )}
+            />
+          </View>
+        }
+      />
+
+      <Separator />
+
+      <View className="flex-row gap-3 bg-surface p-4">
+        <Button variant="outline" onPress={handleCancel}>
+          Batal
+        </Button>
+        <Button className="flex-1" onPress={handleSubmit(onSubmit, onInvalid)}>
+          {editingCartItemId ? "Simpan perubahan" : "Tambahkan ke keranjang"}
+        </Button>
+      </View>
+    </View>
   );
 }
