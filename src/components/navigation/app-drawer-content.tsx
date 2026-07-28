@@ -1,7 +1,7 @@
 import Logo from "@/components/common/logo";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
-import { t } from "@/locales";
 import { useAuth } from "@/stores/use-auth";
+import { useTranslation } from "@/stores/use-locale";
 import { useNetworkStore } from "@/stores/use-network-store";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,32 +32,13 @@ const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof Ionicons>["nam
   settings: "settings-outline",
 };
 
-const DRAWER_DESCRIPTIONS: Record<DrawerRouteName, string> = {
-  index: "Business overview",
-  pos: "Sales workspace",
-  products: "Catalog and add-ons",
-  orders: "Transactions and status",
-  earnings: "Revenue and sales summary",
-  settings: "Preferences and setup",
-};
-
-const THEME_ACTIONS: {
-  value: ThemeMode;
-  icon: ComponentProps<typeof Ionicons>["name"];
-  label: string;
-}[] = [
-  { value: "light", icon: "sunny-outline", label: "Use light theme" },
-  { value: "dark", icon: "moon-outline", label: "Use dark theme" },
-  { value: "system", icon: "desktop-outline", label: "Use device theme" },
-];
-
-function getRouteLabel(routeName: string): string {
-  if (routeName === "index") return "Dashboard";
-  if (routeName === "pos") return "POS";
-  if (routeName === "products") return "Products";
-  if (routeName === "orders") return "Orders";
-  if (routeName === "earnings") return "Earnings";
-  if (routeName === "settings") return "Settings";
+function getRouteLabel(routeName: string, translate: typeof import("@/locales").t): string {
+  if (routeName === "index") return translate("navigation.dashboard");
+  if (routeName === "pos") return translate("navigation.pos");
+  if (routeName === "products") return translate("navigation.products");
+  if (routeName === "orders") return translate("navigation.orders");
+  if (routeName === "earnings") return translate("navigation.earnings");
+  if (routeName === "settings") return translate("navigation.settings");
   return routeName;
 }
 
@@ -87,6 +68,24 @@ export default function AppDrawerContent({
   const isOffline = useNetworkStore((s) => s.isOffline);
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
+  const { t } = useTranslation();
+  const drawerDescriptions: Record<DrawerRouteName, string> = {
+    index: t("navigation.descriptions.dashboard"),
+    pos: t("navigation.descriptions.pos"),
+    products: t("navigation.descriptions.products"),
+    orders: t("navigation.descriptions.orders"),
+    earnings: t("navigation.descriptions.earnings"),
+    settings: t("navigation.descriptions.settings"),
+  };
+  const themeActions: {
+    value: ThemeMode;
+    icon: ComponentProps<typeof Ionicons>["name"];
+    label: string;
+  }[] = [
+    { value: "light", icon: "sunny-outline", label: t("theme.useLight") },
+    { value: "dark", icon: "moon-outline", label: t("theme.useDark") },
+    { value: "system", icon: "desktop-outline", label: t("theme.useSystem") },
+  ];
 
   return (
     <View className="flex-1 pt-safe bg-background">
@@ -107,7 +106,7 @@ export default function AppDrawerContent({
             const label =
               typeof descriptor?.options.drawerLabel === "string"
                 ? descriptor.options.drawerLabel
-                : (descriptor?.options.title ?? getRouteLabel(route.name));
+                : (descriptor?.options.title ?? getRouteLabel(route.name, t));
             const iconName = DRAWER_ICONS[routeName] ?? "ellipse-outline";
 
             return (
@@ -115,7 +114,7 @@ export default function AppDrawerContent({
                 key={routeName}
                 accessibilityRole="button"
                 accessibilityState={focused ? { selected: true } : undefined}
-                accessibilityLabel={`Open ${label}`}
+                accessibilityLabel={t("navigation.openRouteAccessibility", { route: label })}
                 onPress={() => {
                   const event = navigation.emit({
                     type: "drawerItemPress",
@@ -151,7 +150,7 @@ export default function AppDrawerContent({
                       {label}
                     </Typography>
                     <Typography type="body-xs" color="muted" numberOfLines={1}>
-                      {DRAWER_DESCRIPTIONS[routeName] ?? ""}
+                      {drawerDescriptions[routeName] ?? ""}
                     </Typography>
                   </View>
                 </Surface>
@@ -182,7 +181,7 @@ export default function AppDrawerContent({
 
         <Popover isOpen={isProfileOpen} onOpenChange={setIsProfileOpen}>
           <Popover.Trigger asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel="Open profile menu">
+            <Pressable accessibilityRole="button" accessibilityLabel={t("profile.openMenu")}>
               <Surface
                 variant={isProfileOpen ? "default" : "transparent"}
                 className="flex-row items-center gap-3 px-3 py-2"
@@ -197,7 +196,7 @@ export default function AppDrawerContent({
                     {activeMerchant?.name ?? "Soeat"}
                   </Typography>
                   <Typography type="body-xs" color="muted" numberOfLines={1}>
-                    {user?.name ?? "Merchant workspace"}
+                    {user?.name ?? t("profile.merchantWorkspace")}
                   </Typography>
                 </View>
                 <Ionicons
@@ -228,14 +227,14 @@ export default function AppDrawerContent({
               >
                 <Ionicons name="person-circle-outline" size={19} color={themeColorMuted} />
                 <Typography type="body-sm" weight="medium">
-                  Profile
+                  {t("profile.profile")}
                 </Typography>
               </Pressable>
 
               <View className="h-px bg-border" />
 
               <View className="flex-row gap-2 p-2">
-                {THEME_ACTIONS.map((action) => {
+                {themeActions.map((action) => {
                   const isSelected = themeMode === action.value;
                   return (
                     <Pressable

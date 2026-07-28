@@ -1,9 +1,11 @@
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function EarningsLayout() {
   const theme = useNavigationTheme();
+  const { t } = useTranslation();
 
   return (
     <Stack
@@ -18,7 +20,7 @@ export default function EarningsLayout() {
     >
       <Stack.Screen
         name="index"
-        options={{ title: "Earnings", headerLeft: () => <DrawerMenuButton /> }}
+        options={{ title: t("navigation.earnings"), headerLeft: () => <DrawerMenuButton /> }}
       />
     </Stack>
   );

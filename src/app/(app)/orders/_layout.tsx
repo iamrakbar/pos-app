@@ -1,9 +1,11 @@
 import { Stack } from "expo-router";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function OrdersLayout() {
   const theme = useNavigationTheme();
+  const { t } = useTranslation();
 
   return (
     <Stack
@@ -24,9 +26,9 @@ export default function OrdersLayout() {
     >
       <Stack.Screen
         name="index"
-        options={{ title: "Orders", headerLeft: () => <DrawerMenuButton /> }}
+        options={{ title: t("navigation.orders"), headerLeft: () => <DrawerMenuButton /> }}
       />
-      <Stack.Screen name="[id]" options={{ title: "Order Detail" }} />
+      <Stack.Screen name="[id]" options={{ title: t("navigation.orderDetail") }} />
     </Stack>
   );
 }

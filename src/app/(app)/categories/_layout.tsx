@@ -1,9 +1,11 @@
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function CategoriesLayout() {
   const theme = useNavigationTheme();
+  const { t } = useTranslation();
 
   return (
     <Stack
@@ -25,7 +27,7 @@ export default function CategoriesLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Categories",
+          title: t("navigation.categories"),
           headerLeft: () => <DrawerMenuButton />,
         }}
       />

@@ -5,8 +5,8 @@ import type { JSX } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useAuth } from "@/stores/use-auth";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
-import { useLocale } from "@/stores/use-locale";
-import { t } from "@/locales";
+import { useLocale, useTranslation } from "@/stores/use-locale";
+import type { Locale } from "@/locales";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useState } from "react";
@@ -19,51 +19,6 @@ type SettingsItem = {
   description: string;
 };
 
-const SETTINGS_ITEMS: SettingsItem[] = [
-  {
-    id: "categories",
-    href: "/categories",
-    icon: "grid-outline",
-    label: "Categories",
-    description: "Organize products and control their display order",
-  },
-  {
-    id: "areas",
-    href: "/settings/areas",
-    icon: "storefront-outline",
-    label: "Areas & Tables",
-    description: "Manage dine-in seating and table capacity",
-  },
-  {
-    id: "printer",
-    href: "/settings/printers",
-    icon: "print-outline",
-    label: t("settings.printer"),
-    description: t("settings.printerDescription"),
-  },
-  {
-    id: "receipt",
-    href: "/settings/receipt",
-    icon: "receipt-outline",
-    label: t("settings.receipt"),
-    description: t("settings.receiptDescription"),
-  },
-];
-
-const APP_UPDATES_ITEM: SettingsItem = {
-  id: "updates",
-  href: "/settings/updates",
-  icon: "cloud-download-outline",
-  label: t("settings.updates"),
-  description: t("settings.updatesDescription"),
-};
-
-const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
-  { value: "system", label: t("settings.themeSystem") },
-  { value: "light", label: t("settings.themeLight") },
-  { value: "dark", label: t("settings.themeDark") },
-];
-
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
   const { isCompact } = useResponsiveLayout();
@@ -73,13 +28,57 @@ export default function SettingsScreen(): JSX.Element {
   const logout = useAuth((s) => s.logout);
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
-  const locale = useLocale((s) => s.locale);
-  const localeOption = {
-    value: locale,
-    label: locale === "id" ? t("settings.indonesian") : t("settings.english"),
+  const setLocale = useLocale((s) => s.setLocale);
+  const { locale, t } = useTranslation();
+  const settingsItems: SettingsItem[] = [
+    {
+      id: "categories",
+      href: "/categories",
+      icon: "grid-outline",
+      label: t("settings.categories"),
+      description: t("settings.categoriesDescription"),
+    },
+    {
+      id: "areas",
+      href: "/settings/areas",
+      icon: "storefront-outline",
+      label: t("settings.areas"),
+      description: t("settings.areasDescription"),
+    },
+    {
+      id: "printer",
+      href: "/settings/printers",
+      icon: "print-outline",
+      label: t("settings.printer"),
+      description: t("settings.printerDescription"),
+    },
+    {
+      id: "receipt",
+      href: "/settings/receipt",
+      icon: "receipt-outline",
+      label: t("settings.receipt"),
+      description: t("settings.receiptDescription"),
+    },
+  ];
+  const appUpdatesItem: SettingsItem = {
+    id: "updates",
+    href: "/settings/updates",
+    icon: "cloud-download-outline",
+    label: t("settings.updates"),
+    description: t("settings.updatesDescription"),
   };
-  const themeOption =
-    THEME_OPTIONS.find((option) => option.value === themeMode) ?? THEME_OPTIONS[0];
+  const themeOptions: { value: ThemeMode; label: string }[] = [
+    { value: "system", label: t("settings.themeSystem") },
+    { value: "light", label: t("settings.themeLight") },
+    { value: "dark", label: t("settings.themeDark") },
+  ];
+  const languageOptions: { value: Locale; label: string }[] = [
+    { value: "en", label: t("settings.english") },
+    { value: "id", label: t("settings.indonesian") },
+  ];
+  const localeOption =
+    languageOptions.find((option) => option.value === locale) ?? languageOptions[0];
+  const themeOption = themeOptions.find((option) => option.value === themeMode) ?? themeOptions[0];
 
   return (
     <>
@@ -89,7 +88,7 @@ export default function SettingsScreen(): JSX.Element {
       >
         <View className="flex-1 justify-between gap-6">
           <Card className="p-0 overflow-hidden">
-            {SETTINGS_ITEMS.map((item) => (
+            {settingsItems.map((item) => (
               <View key={item.id}>
                 <Pressable
                   onPress={() => router.push(item.href as never)}
@@ -150,7 +149,7 @@ export default function SettingsScreen(): JSX.Element {
                   <Select.Portal>
                     <Select.Overlay />
                     <Select.Content presentation="popover" width="trigger">
-                      {THEME_OPTIONS.map((option) => (
+                      {themeOptions.map((option) => (
                         <Select.Item key={option.value} value={option.value} label={option.label} />
                       ))}
                     </Select.Content>
@@ -175,7 +174,12 @@ export default function SettingsScreen(): JSX.Element {
                 </Typography>
               </View>
               <View className={isCompact ? "w-full" : "w-36"}>
-                <Select value={localeOption} isDisabled>
+                <Select
+                  value={localeOption}
+                  onValueChange={(option) => {
+                    if (option?.value) setLocale(option.value as Locale);
+                  }}
+                >
                   <Select.Trigger>
                     <Select.Value placeholder={t("settings.language")} />
                     <Select.TriggerIndicator />
@@ -183,8 +187,9 @@ export default function SettingsScreen(): JSX.Element {
                   <Select.Portal>
                     <Select.Overlay />
                     <Select.Content presentation="popover" width="trigger">
-                      <Select.Item value="en" label={t("settings.english")} />
-                      <Select.Item value="id" label={t("settings.indonesian")} />
+                      {languageOptions.map((option) => (
+                        <Select.Item key={option.value} {...option} />
+                      ))}
                     </Select.Content>
                   </Select.Portal>
                 </Select>
@@ -193,22 +198,22 @@ export default function SettingsScreen(): JSX.Element {
             <Separator className="mx-4" />
 
             <Pressable
-              onPress={() => router.push(APP_UPDATES_ITEM.href as never)}
+              onPress={() => router.push(appUpdatesItem.href as never)}
               className="flex-row items-center gap-4 px-4 py-4 active:bg-surface-secondary"
             >
               <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
                 <Ionicons
-                  name={APP_UPDATES_ITEM.icon}
+                  name={appUpdatesItem.icon}
                   size={20}
                   color={themeColorAccentSoftForeground}
                 />
               </View>
               <View className="flex-1 gap-0.5">
                 <Typography type="body-sm" weight="semibold">
-                  {APP_UPDATES_ITEM.label}
+                  {appUpdatesItem.label}
                 </Typography>
                 <Typography type="body-xs" color="muted" numberOfLines={2}>
-                  {APP_UPDATES_ITEM.description}
+                  {appUpdatesItem.description}
                 </Typography>
               </View>
               <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />

@@ -11,6 +11,8 @@ import { useRouter } from "expo-router";
 import { EmptyState, TimePicker } from "heroui-native-pro";
 import CartItemRow from "./cart-item-row";
 import TableSelectionButton from "./table-selection-button";
+import { getLocaleTag } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -38,6 +40,7 @@ function isPastPickupTime(value: string): boolean {
 
 export default function CartContent(): JSX.Element {
   const router = useRouter();
+  const { locale } = useTranslation();
   const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
     "muted",
     "danger-soft-foreground",
@@ -106,7 +109,7 @@ export default function CartContent(): JSX.Element {
               className="h-12"
               hourFormat={24}
               minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
-              locale="id-ID"
+              locale={getLocaleTag(locale)}
               value={
                 checkoutForm.pickup_time
                   ? {

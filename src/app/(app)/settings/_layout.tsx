@@ -1,9 +1,11 @@
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function SettingsLayout() {
   const theme = useNavigationTheme();
+  const { t } = useTranslation();
 
   return (
     <Stack
@@ -25,18 +27,18 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Settings",
+          title: t("navigation.settings"),
           headerLeft: () => <DrawerMenuButton />,
         }}
       />
-      <Stack.Screen name="printer" options={{ title: "Printer" }} />
-      <Stack.Screen name="printers/index" options={{ title: "Printers" }} />
-      <Stack.Screen name="printers/[id]" options={{ title: "Printer" }} />
-      <Stack.Screen name="receipt" options={{ title: "Receipt Setup" }} />
-      <Stack.Screen name="updates" options={{ title: "App Updates" }} />
-      <Stack.Screen name="areas/index" options={{ title: "Areas & Tables" }} />
-      <Stack.Screen name="areas/[id]" options={{ title: "Area" }} />
-      <Stack.Screen name="areas/[areaId]/tables" options={{ title: "Tables" }} />
+      <Stack.Screen name="printer" options={{ title: t("settings.printer") }} />
+      <Stack.Screen name="printers/index" options={{ title: t("navigation.printers") }} />
+      <Stack.Screen name="printers/[id]" options={{ title: t("settings.printer") }} />
+      <Stack.Screen name="receipt" options={{ title: t("navigation.receiptSetup") }} />
+      <Stack.Screen name="updates" options={{ title: t("navigation.appUpdates") }} />
+      <Stack.Screen name="areas/index" options={{ title: t("navigation.areasAndTables") }} />
+      <Stack.Screen name="areas/[id]" options={{ title: t("navigation.area") }} />
+      <Stack.Screen name="areas/[areaId]/tables" options={{ title: t("navigation.tables") }} />
     </Stack>
   );
 }

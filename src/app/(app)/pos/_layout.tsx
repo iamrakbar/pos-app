@@ -2,9 +2,11 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router/stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function POSFlowLayout() {
   const theme = useNavigationTheme();
+  const { t } = useTranslation();
   const { height, isWide } = useResponsiveLayout();
   const insets = useSafeAreaInsets();
   const maxSheetDetent = height > 0 ? Math.min(1, (height - insets.top) / height) : 1;
@@ -26,12 +28,12 @@ export default function POSFlowLayout() {
         },
       }}
     >
-      <Stack.Screen name="index" options={{ title: "POS", headerShown: false }} />
-      <Stack.Screen name="cart" options={{ title: "Cart" }} />
+      <Stack.Screen name="index" options={{ title: t("navigation.pos"), headerShown: false }} />
+      <Stack.Screen name="cart" options={{ title: t("navigation.cart") }} />
       <Stack.Screen
         name="add-ons"
         options={{
-          title: "Add-ons",
+          title: t("navigation.addOns"),
           headerShown: false,
           presentation: "formSheet",
           sheetAllowedDetents: [0.75, maxSheetDetent],
@@ -43,7 +45,7 @@ export default function POSFlowLayout() {
       <Stack.Screen
         name="table-selection"
         options={{
-          title: "Select Table",
+          title: t("navigation.selectTable"),
           headerShown: false,
           presentation: "formSheet",
           sheetAllowedDetents: [0.65, maxSheetDetent],
@@ -55,7 +57,7 @@ export default function POSFlowLayout() {
       <Stack.Screen
         name="checkout"
         options={{
-          title: "Checkout",
+          title: t("navigation.checkout"),
           headerShown: !isWide,
           presentation: isWide ? "formSheet" : "card",
           sheetAllowedDetents: isWide ? [0.75, maxSheetDetent] : undefined,
@@ -69,7 +71,7 @@ export default function POSFlowLayout() {
       <Stack.Screen
         name="payment"
         options={{
-          title: "Payment",
+          title: t("navigation.payment"),
           headerShown: false,
           presentation: isWide ? "formSheet" : "card",
           sheetAllowedDetents: isWide ? [0.75, maxSheetDetent] : undefined,
@@ -82,7 +84,7 @@ export default function POSFlowLayout() {
       />
       <Stack.Screen
         name="payment-success"
-        options={{ title: "Payment Success", headerShown: false }}
+        options={{ title: t("navigation.paymentSuccess"), headerShown: false }}
       />
     </Stack>
   );

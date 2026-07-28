@@ -1,13 +1,13 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import * as Localization from 'expo-localization';
-import { i18n, type Locale } from '@/locales';
-import { zustandStorage } from '@/lib/storage';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import * as Localization from "expo-localization";
+import { i18n, isLocale, t, type Locale } from "@/locales";
+import { zustandStorage } from "@/lib/storage";
 
 // Default: detect from device; fallback to 'id'
 function detectLocale(): Locale {
-  const tag = Localization.getLocales()[0]?.languageTag ?? '';
-  return tag.startsWith('id') ? 'id' : 'en';
+  const languageCode = Localization.getLocales()[0]?.languageCode ?? "";
+  return languageCode === "id" ? "id" : "en";
 }
 
 interface UseLocaleState {
@@ -30,13 +30,25 @@ export const useLocale = create<UseLocaleState>()(
       },
     }),
     {
-      name: 'soeat-locale',
+      name: "soeat-locale",
       storage: localeStorage,
+      merge: (persistedState, currentState) => {
+        const persistedLocale = (persistedState as Partial<UseLocaleState> | undefined)?.locale;
+        return {
+          ...currentState,
+          locale: isLocale(persistedLocale) ? persistedLocale : currentState.locale,
+        };
+      },
       onRehydrateStorage: () => (state) => {
         if (state) {
           i18n.locale = state.locale;
         }
       },
-    },
-  ),
+    }
+  )
 );
+
+export function useTranslation() {
+  const locale = useLocale((state) => state.locale);
+  return { locale, t };
+}

@@ -6,10 +6,12 @@ import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function AppLayout() {
   const theme = useNavigationTheme();
   const accentForeground = useThemeColor("accent-foreground");
+  const { t } = useTranslation();
   const router = useRouter();
   const { width, isCompact } = useResponsiveLayout();
   const drawerWidth = Math.min(isCompact ? width - 48 : 320, 320);
@@ -44,8 +46,8 @@ export default function AppLayout() {
       <Drawer.Screen
         name="index"
         options={{
-          title: "Dashboard",
-          drawerLabel: "Dashboard",
+          title: t("navigation.dashboard"),
+          drawerLabel: t("navigation.dashboard"),
           headerShown: true,
           headerLeft: () => <DrawerMenuButton />,
           headerRightContainerStyle: { paddingRight: 12 },
@@ -54,10 +56,10 @@ export default function AppLayout() {
               variant="primary"
               size="sm"
               onPress={() => router.push("/pos")}
-              accessibilityLabel="Open point of sale"
+              accessibilityLabel={t("navigation.openPosAccessibility")}
             >
               <Ionicons name="calculator-outline" size={16} color={accentForeground} />
-              <Button.Label>Open POS</Button.Label>
+              <Button.Label>{t("navigation.openPos")}</Button.Label>
             </Button>
           ),
         }}
@@ -65,47 +67,47 @@ export default function AppLayout() {
       <Drawer.Screen
         name="products"
         options={{
-          title: "Products",
-          drawerLabel: "Products",
+          title: t("navigation.products"),
+          drawerLabel: t("navigation.products"),
           headerShown: false,
         }}
       />
       <Drawer.Screen
         name="categories"
         options={{
-          title: "Categories",
+          title: t("navigation.categories"),
           headerShown: false,
         }}
       />
       <Drawer.Screen
         name="orders"
         options={{
-          title: "Orders",
-          drawerLabel: "Orders",
+          title: t("navigation.orders"),
+          drawerLabel: t("navigation.orders"),
           headerShown: false,
         }}
       />
       <Drawer.Screen
         name="earnings"
         options={{
-          title: "Earnings",
-          drawerLabel: "Earnings",
+          title: t("navigation.earnings"),
+          drawerLabel: t("navigation.earnings"),
           headerShown: false,
         }}
       />
       <Drawer.Screen
         name="settings"
         options={{
-          title: "Settings",
-          drawerLabel: "Settings",
+          title: t("navigation.settings"),
+          drawerLabel: t("navigation.settings"),
           headerShown: false,
         }}
       />
       <Drawer.Screen
         name="pos"
         options={{
-          title: "POS",
-          drawerLabel: "POS",
+          title: t("navigation.pos"),
+          drawerLabel: t("navigation.pos"),
           headerShown: false,
         }}
       />
