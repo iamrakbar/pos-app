@@ -63,7 +63,7 @@ module.exports = {
     name: variant.appName,
     slug: EXPO_PROJECT_SLUG,
     version: "0.0.1",
-    orientation: "landscape",
+    orientation: "default",
     icon: "./assets/images/icon.png",
     scheme: variant.scheme,
     userInterfaceStyle: "automatic",
