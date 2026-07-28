@@ -22,7 +22,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
   ]);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQty = useCartStore((s) => s.updateQty);
-  const setAddonSelection = usePOSStore((s) => s.setAddonSelection);
+  const beginAddonSelection = usePOSStore((s) => s.beginAddonSelection);
 
   const addOnUnitTotal = item.add_ons
     .flatMap((ao) => ao.options)
@@ -32,8 +32,9 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
 
   const handleEdit = () => {
     if (product && product.add_ons.length > 0) {
-      setAddonSelection(product, item.id);
-      router.push("/pos/add-ons");
+      if (beginAddonSelection(product, item.id)) {
+        router.navigate("/pos/add-ons");
+      }
     }
   };
 

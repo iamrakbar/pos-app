@@ -14,7 +14,7 @@ import { useNavigationTheme } from "@/utils/navigation-theme";
 export default function POSScreen(): JSX.Element {
   const { width: viewportWidth, isWide } = useResponsiveLayout();
   const router = useRouter();
-  const setAddonSelection = usePOSStore((s) => s.setAddonSelection);
+  const beginAddonSelection = usePOSStore((s) => s.beginAddonSelection);
   const addItem = useCartStore((s) => s.addItem);
   const theme = useNavigationTheme();
   const cartPanelWidth = Math.min(Math.max(Math.floor(viewportWidth * 0.34), 340), 460);
@@ -28,8 +28,9 @@ export default function POSScreen(): JSX.Element {
 
   const handleSelectProduct = (product: POSProduct) => {
     if (product.add_ons.length > 0) {
-      setAddonSelection(product);
-      router.push("/pos/add-ons");
+      if (beginAddonSelection(product)) {
+        router.navigate("/pos/add-ons");
+      }
     } else {
       addItem({
         product_id: product.id,

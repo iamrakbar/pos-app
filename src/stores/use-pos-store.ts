@@ -19,7 +19,7 @@ type POSState = {
 };
 
 type POSAction = {
-  setAddonSelection: (product: POSProduct, editingCartItemId?: string) => void;
+  beginAddonSelection: (product: POSProduct, editingCartItemId?: string) => boolean;
   clearAddonSelection: () => void;
   setPaymentSession: (session: PaymentSession, result: MerchantCheckoutData) => void;
   setSearchQuery: (q: string) => void;
@@ -56,11 +56,21 @@ export const usePOSStore = create<POSState & POSAction>()(
       areCategoriesVisible: true,
       checkoutForm: { ...DEFAULT_CHECKOUT_FORM },
 
-      setAddonSelection: (product, editingCartItemId) =>
-        set({
-          selectedProduct: product,
-          editingCartItemId: editingCartItemId ?? null,
-        }),
+      beginAddonSelection: (product, editingCartItemId) => {
+        let didBegin = false;
+
+        set((state) => {
+          if (state.selectedProduct) return state;
+
+          didBegin = true;
+          return {
+            selectedProduct: product,
+            editingCartItemId: editingCartItemId ?? null,
+          };
+        });
+
+        return didBegin;
+      },
 
       clearAddonSelection: () =>
         set({
