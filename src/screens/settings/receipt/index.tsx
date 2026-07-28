@@ -156,27 +156,34 @@ function ReceiptPreviewSection({
       <ScrollShadow
         className="flex-1 rounded-lg bg-surface-secondary"
         color={surfaceColor}
+        orientation="vertical"
         LinearGradientComponent={LinearGradient}
       >
-        <ScrollView
-          horizontal
-          contentContainerClassName="min-w-full items-center p-4"
-          showsHorizontalScrollIndicator={false}
-        >
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <ReceiptPaper
-              settings={settings}
-              data={SAMPLE_RECEIPT}
-              paperWidth={previewPaperWidth}
-              charactersPerLine={
-                previewPaperWidth === configuredPaperWidth
-                  ? configuredCharactersPerLine
-                  : previewPaperWidth === "80mm"
-                    ? "46"
-                    : "32"
-              }
-            />
-          </ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollShadow
+            color={surfaceColor}
+            orientation="horizontal"
+            LinearGradientComponent={LinearGradient}
+          >
+            <ScrollView
+              horizontal
+              contentContainerClassName="min-w-full items-center p-4"
+              showsHorizontalScrollIndicator={false}
+            >
+              <ReceiptPaper
+                settings={settings}
+                data={SAMPLE_RECEIPT}
+                paperWidth={previewPaperWidth}
+                charactersPerLine={
+                  previewPaperWidth === configuredPaperWidth
+                    ? configuredCharactersPerLine
+                    : previewPaperWidth === "80mm"
+                      ? "46"
+                      : "32"
+                }
+              />
+            </ScrollView>
+          </ScrollShadow>
         </ScrollView>
       </ScrollShadow>
     </View>
