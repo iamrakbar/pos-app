@@ -425,8 +425,8 @@ export default function DashboardScreen(): React.JSX.Element {
   return (
     <>
       <ScrollView
-        className="flex-1 bg-background pt-safe"
-        contentContainerClassName="items-center py-8 pb-10"
+        className="flex-1 bg-background"
+        contentContainerClassName="items-center py-6 pb-10"
         contentContainerStyle={{ paddingHorizontal: horizontalPagePadding }}
         refreshControl={
           <RefreshControl
