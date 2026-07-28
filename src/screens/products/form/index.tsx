@@ -22,6 +22,7 @@ import {
 } from "heroui-native";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
 import { Image } from "expo-image";
 import { Platform, Pressable, ScrollView, View } from "react-native";
@@ -302,6 +303,8 @@ function ProductDetailsCard({
   onRetryCategories: () => void;
   onAddCategory: () => void;
 }) {
+  const { choicePresentation } = useOverlayPresentation();
+
   return (
     <Card className="overflow-hidden">
       <SectionHeading
@@ -319,6 +322,7 @@ function ProductDetailsCard({
               </Label>
               <View className="flex-row items-center gap-2">
                 <Select
+                  presentation={choicePresentation}
                   value={categoryOptions.find((option) => option.value === value)}
                   onValueChange={(option) => onChange(option?.value ?? "")}
                   isDisabled={areCategoriesLoading || didCategoriesFail}
@@ -333,7 +337,10 @@ function ProductDetailsCard({
                   </Select.Trigger>
                   <Select.Portal>
                     <Select.Overlay />
-                    <Select.Content presentation="popover" width="trigger">
+                    <Select.Content
+                      presentation={choicePresentation}
+                      width={choicePresentation === "popover" ? "trigger" : undefined}
+                    >
                       {categoryOptions.map((option) => (
                         <Select.Item key={option.value} {...option} />
                       ))}

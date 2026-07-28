@@ -3,6 +3,7 @@ import LoadingAnimation from "@/components/common/loading-animation";
 import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -331,6 +332,7 @@ function CustomDateRangeDialog({
 
 export default function DashboardScreen(): React.JSX.Element {
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
+  const { choicePresentation } = useOverlayPresentation();
   const { toast } = useToast();
   const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
     DATE_RANGE_OPTIONS[0]
@@ -428,7 +430,11 @@ export default function DashboardScreen(): React.JSX.Element {
       >
         <View className="w-full max-w-7xl gap-6">
           <View className="items-end">
-            <Select value={dateRange} onValueChange={handleRangeChange}>
+            <Select
+              presentation={choicePresentation}
+              value={dateRange}
+              onValueChange={handleRangeChange}
+            >
               <Select.Trigger asChild variant="unstyled">
                 <Button size="sm" variant="outline" className={isCompact ? "min-w-40" : undefined}>
                   <Button.Label numberOfLines={1}>{dateRangeLabel}</Button.Label>
@@ -437,7 +443,10 @@ export default function DashboardScreen(): React.JSX.Element {
               </Select.Trigger>
               <Select.Portal>
                 <Select.Overlay />
-                <Select.Content presentation="popover" width={200}>
+                <Select.Content
+                  presentation={choicePresentation}
+                  width={choicePresentation === "popover" ? 200 : undefined}
+                >
                   <Select.ListLabel>Date Range</Select.ListLabel>
                   {DATE_RANGE_OPTIONS.map((option) => (
                     <Select.Item key={option.value} value={option.value} label={option.label} />

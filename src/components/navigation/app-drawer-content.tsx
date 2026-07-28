@@ -11,6 +11,7 @@ import { Avatar, Popover, ScrollShadow, Surface, Typography, useThemeColor } fro
 import type { ComponentProps, JSX } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type DrawerRouteName = "index" | "pos" | "products" | "orders" | "earnings" | "settings";
 
@@ -69,6 +70,7 @@ export default function AppDrawerContent({
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
   const { t } = useTranslation();
+  const { choicePresentation } = useOverlayPresentation();
   const drawerDescriptions: Record<DrawerRouteName, string> = {
     index: t("navigation.descriptions.dashboard"),
     pos: t("navigation.descriptions.pos"),
@@ -179,7 +181,11 @@ export default function AppDrawerContent({
           </View>
         )}
 
-        <Popover isOpen={isProfileOpen} onOpenChange={setIsProfileOpen}>
+        <Popover
+          presentation={choicePresentation}
+          isOpen={isProfileOpen}
+          onOpenChange={setIsProfileOpen}
+        >
           <Popover.Trigger asChild>
             <Pressable accessibilityRole="button" accessibilityLabel={t("profile.openMenu")}>
               <Surface
@@ -210,10 +216,10 @@ export default function AppDrawerContent({
           <Popover.Portal>
             <Popover.Overlay />
             <Popover.Content
-              presentation="popover"
+              presentation={choicePresentation}
               placement="top"
               align="center"
-              width="trigger"
+              width={choicePresentation === "popover" ? "trigger" : undefined}
               className="overflow-hidden border border-border p-0"
             >
               <Pressable

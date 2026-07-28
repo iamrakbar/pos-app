@@ -10,6 +10,7 @@ import type { Locale } from "@/locales";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useState } from "react";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type SettingsItem = {
   id: string;
@@ -22,6 +23,7 @@ type SettingsItem = {
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
   const { isCompact } = useResponsiveLayout();
+  const { choicePresentation } = useOverlayPresentation();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [themeColorMuted, themeColorAccentSoftForeground, themeColorDangerSoftForeground] =
     useThemeColor(["muted", "accent-soft-foreground", "danger-soft-foreground"]);
@@ -138,6 +140,7 @@ export default function SettingsScreen(): JSX.Element {
               <View className={isCompact ? "w-full" : "w-36"}>
                 <Select
                   key={`theme-${locale}`}
+                  presentation={choicePresentation}
                   value={themeOption}
                   onValueChange={(option) => {
                     if (option?.value) setThemeMode(option.value as ThemeMode);
@@ -149,7 +152,10 @@ export default function SettingsScreen(): JSX.Element {
                   </Select.Trigger>
                   <Select.Portal>
                     <Select.Overlay />
-                    <Select.Content presentation="popover" width="trigger">
+                    <Select.Content
+                      presentation={choicePresentation}
+                      width={choicePresentation === "popover" ? "trigger" : undefined}
+                    >
                       {themeOptions.map((option) => (
                         <Select.Item key={option.value} value={option.value} label={option.label} />
                       ))}
@@ -177,6 +183,7 @@ export default function SettingsScreen(): JSX.Element {
               <View className={isCompact ? "w-full" : "w-36"}>
                 <Select
                   key={`language-${locale}`}
+                  presentation={choicePresentation}
                   value={localeOption}
                   onValueChange={(option) => {
                     if (option?.value) setLocale(option.value as Locale);
@@ -188,7 +195,10 @@ export default function SettingsScreen(): JSX.Element {
                   </Select.Trigger>
                   <Select.Portal>
                     <Select.Overlay />
-                    <Select.Content presentation="popover" width="trigger">
+                    <Select.Content
+                      presentation={choicePresentation}
+                      width={choicePresentation === "popover" ? "trigger" : undefined}
+                    >
                       {languageOptions.map((option) => (
                         <Select.Item key={option.value} {...option} />
                       ))}

@@ -39,6 +39,7 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type CheckoutContentProps = {
   onCancel: () => void;
@@ -367,6 +368,8 @@ function CustomerFields({
   errors: FieldErrors<CheckoutFormValues>;
   setValue: UseFormSetValue<CheckoutFormValues>;
 }) {
+  const { choicePresentation } = useOverlayPresentation();
+
   return (
     <View className="gap-2">
       <Typography type="body-sm" weight="semibold">
@@ -399,6 +402,7 @@ function CustomerFields({
       {customerType === "guest" ? (
         <View className="gap-2">
           <Select
+            presentation={choicePresentation}
             value={
               guestId
                 ? {
@@ -415,7 +419,10 @@ function CustomerFields({
             </Select.Trigger>
             <Select.Portal>
               <Select.Overlay />
-              <Select.Content presentation="popover" width="trigger">
+              <Select.Content
+                presentation={choicePresentation}
+                width={choicePresentation === "popover" ? "trigger" : undefined}
+              >
                 {guests.map((guest) => (
                   <Select.Item key={guest.id} value={guest.id} label={guest.name} />
                 ))}

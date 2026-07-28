@@ -21,6 +21,7 @@ import {
 } from "heroui-native";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
   Controller,
   useForm,
@@ -114,6 +115,8 @@ function PrinterDetailsCard({
 }: PrinterFieldsProps & {
   onConnectionChange: (connection: ConnectionType) => void;
 }) {
+  const { choicePresentation } = useOverlayPresentation();
+
   return (
     <Card>
       <SectionHeading
@@ -145,6 +148,7 @@ function PrinterDetailsCard({
             name="connection"
             render={({ field: { value, onChange } }) => (
               <Select
+                presentation={choicePresentation}
                 value={CONNECTION_TYPES.find((item) => item.value === value)}
                 onValueChange={(option) => {
                   if (!option) return;
@@ -161,7 +165,10 @@ function PrinterDetailsCard({
                 </Select.Trigger>
                 <Select.Portal>
                   <Select.Overlay />
-                  <Select.Content presentation="popover" width="trigger">
+                  <Select.Content
+                    presentation={choicePresentation}
+                    width={choicePresentation === "popover" ? "trigger" : undefined}
+                  >
                     <Select.ListLabel className="mb-2">Connection type</Select.ListLabel>
                     {CONNECTION_TYPES.map((item, index, arr) => (
                       <React.Fragment key={item.value}>
@@ -337,6 +344,8 @@ function ReceiptSetupCard({
   setValue,
   paperWidth,
 }: PrinterFieldsProps & { paperWidth: PaperWidth }) {
+  const { choicePresentation } = useOverlayPresentation();
+
   return (
     <Card>
       <SectionHeading
@@ -351,6 +360,7 @@ function ReceiptSetupCard({
             name="paperWidth"
             render={({ field: { value, onChange } }) => (
               <Select
+                presentation={choicePresentation}
                 value={PAPER_WIDTHS.find((item) => item.value === value)}
                 onValueChange={(option) => {
                   if (!option) return;
@@ -371,7 +381,10 @@ function ReceiptSetupCard({
                 </Select.Trigger>
                 <Select.Portal>
                   <Select.Overlay />
-                  <Select.Content presentation="popover" width="trigger">
+                  <Select.Content
+                    presentation={choicePresentation}
+                    width={choicePresentation === "popover" ? "trigger" : undefined}
+                  >
                     <Select.ListLabel className="mb-2">Receipt size</Select.ListLabel>
                     {PAPER_WIDTHS.map((item, index, arr) => (
                       <React.Fragment key={item.value}>

@@ -13,6 +13,7 @@ import CartItemRow from "./cart-item-row";
 import TableSelectionButton from "./table-selection-button";
 import { getLocaleTag } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -41,6 +42,7 @@ function isPastPickupTime(value: string): boolean {
 export default function CartContent(): JSX.Element {
   const router = useRouter();
   const { locale } = useTranslation();
+  const { choicePresentation, pickerPresentation } = useOverlayPresentation();
   const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
     "muted",
     "danger-soft-foreground",
@@ -66,6 +68,7 @@ export default function CartContent(): JSX.Element {
       <View className="flex-row items-center justify-between gap-2 px-5 py-3">
         <View className="h-12 flex-row items-center gap-2">
           <Select
+            presentation={choicePresentation}
             value={{
               value: checkoutForm.order_type,
               label: checkoutForm.order_type === "dine-in" ? "Dine-In" : "Takeaway",
@@ -95,7 +98,10 @@ export default function CartContent(): JSX.Element {
             </Select.Trigger>
             <Select.Portal>
               <Select.Overlay />
-              <Select.Content presentation="popover" width={220}>
+              <Select.Content
+                presentation={choicePresentation}
+                width={choicePresentation === "popover" ? 220 : undefined}
+              >
                 <Select.Item value="dine-in" label="Dine-In" />
                 <Select.Item value="takeaway" label="Takeaway" />
               </Select.Content>
@@ -123,7 +129,7 @@ export default function CartContent(): JSX.Element {
                 updateCheckoutForm({ pickup_time: pickupTime });
               }}
             >
-              <TimePicker.Select>
+              <TimePicker.Select presentation={pickerPresentation}>
                 <TimePicker.Trigger
                   asChild
                   className="h-12 gap-2 rounded-3xl border border-border bg-transparent px-4 py-0 shadow-none"
@@ -137,7 +143,10 @@ export default function CartContent(): JSX.Element {
                 </TimePicker.Trigger>
                 <TimePicker.Portal>
                   <TimePicker.Overlay />
-                  <TimePicker.Content presentation="popover" width={160}>
+                  <TimePicker.Content
+                    presentation={pickerPresentation}
+                    width={pickerPresentation === "popover" ? 160 : undefined}
+                  >
                     <TimePicker.Wheel />
                   </TimePicker.Content>
                 </TimePicker.Portal>

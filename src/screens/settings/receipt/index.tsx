@@ -24,6 +24,7 @@ import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { SplitView } from "heroui-native-pro";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 const SAMPLE_RECEIPT: ReceiptPreviewData = {
   code: "ORD-2026-0142",
@@ -124,6 +125,8 @@ function ReceiptPreviewSection({
   configuredCharactersPerLine: string;
   surfaceColor: string;
 }) {
+  const { choicePresentation } = useOverlayPresentation();
+
   return (
     <View className="min-h-0 flex-1">
       <ScrollShadow
@@ -138,6 +141,7 @@ function ReceiptPreviewSection({
               Receipt preview
             </Typography>
             <Select
+              presentation={choicePresentation}
               value={{ value: previewPaperWidth, label: previewPaperWidth }}
               onValueChange={(option) => {
                 if (option?.value) onPaperWidthChange(option.value as PaperWidth);
@@ -149,7 +153,10 @@ function ReceiptPreviewSection({
               </Select.Trigger>
               <Select.Portal>
                 <Select.Overlay />
-                <Select.Content presentation="popover" width="trigger">
+                <Select.Content
+                  presentation={choicePresentation}
+                  width={choicePresentation === "popover" ? "trigger" : undefined}
+                >
                   <Select.ListLabel className="mb-2">Preview size</Select.ListLabel>
                   {PAPER_WIDTHS.map((paperWidth, index) => (
                     <React.Fragment key={paperWidth}>
@@ -220,6 +227,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const configuredPaperWidth = usePrinterStore((state) => state.settings.paperWidth);
   const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const { isPortrait } = useResponsiveLayout();
+  const { choicePresentation } = useOverlayPresentation();
   const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useThemeColor([
     "muted",
     "foreground",
@@ -338,6 +346,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   <View>
                     <FieldLabel>Receipt layout</FieldLabel>
                     <Select
+                      presentation={choicePresentation}
                       value={RECEIPT_LAYOUTS.find((item) => item.value === settings.layout)}
                       onValueChange={(option) => {
                         if (option) {
@@ -353,7 +362,10 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       </Select.Trigger>
                       <Select.Portal>
                         <Select.Overlay />
-                        <Select.Content presentation="popover" width="trigger">
+                        <Select.Content
+                          presentation={choicePresentation}
+                          width={choicePresentation === "popover" ? "trigger" : undefined}
+                        >
                           {RECEIPT_LAYOUTS.map((item) => (
                             <Select.Item key={item.value} value={item.value} label={item.label} />
                           ))}

@@ -7,6 +7,7 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
   { value: "name-asc", label: "Name · A–Z" },
@@ -16,6 +17,7 @@ const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
 ];
 
 export default function SearchBar(): JSX.Element {
+  const { choicePresentation } = useOverlayPresentation();
   const [themeColorForeground, themeColorAccent] = useThemeColor(["foreground", "accent"]);
   const searchQuery = usePOSStore((s) => s.searchQuery);
   const categoryId = usePOSStore((s) => s.categoryId);
@@ -55,6 +57,7 @@ export default function SearchBar(): JSX.Element {
           />
         </Button>
         <Select
+          presentation={choicePresentation}
           value={{ value: selectedSort.value, label: selectedSort.label }}
           onValueChange={(option) => option && setProductSort(option.value as ProductSort)}
         >
@@ -69,7 +72,10 @@ export default function SearchBar(): JSX.Element {
           </Select.Trigger>
           <Select.Portal>
             <Select.Overlay />
-            <Select.Content presentation="popover" width={220}>
+            <Select.Content
+              presentation={choicePresentation}
+              width={choicePresentation === "popover" ? 220 : undefined}
+            >
               <Select.ListLabel>Sort products</Select.ListLabel>
               {SORT_OPTIONS.map((option) => (
                 <Select.Item key={option.value} value={option.value} label={option.label} />
