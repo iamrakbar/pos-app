@@ -21,7 +21,6 @@ type PaymentContentProps = {
 
 export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProps): JSX.Element {
   const paymentSession = usePOSStore((s) => s.paymentSession);
-  const closeModal = usePOSStore((s) => s.closeModal);
   const themeColorMuted = useThemeColor("muted");
   const { width: windowWidth } = useWindowDimensions();
   const isWideLayout = windowWidth >= 760;
@@ -165,7 +164,7 @@ export function PaymentContent({ onClose, onPaymentSuccess }: PaymentContentProp
               </>
             )}
           </Button>
-          <Button variant="outline" onPress={onClose ?? closeModal}>
+          <Button variant="outline" onPress={onClose}>
             Close
           </Button>
         </View>

@@ -7,6 +7,7 @@ import { Button, Select, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { EmptyState, TimePicker } from "heroui-native-pro";
 import CartItemRow from "./cart-item-row";
 import TableSelectionModal from "./modals/table-selection-modal";
@@ -36,6 +37,7 @@ function isPastPickupTime(value: string): boolean {
 }
 
 export default function CartContent(): JSX.Element {
+  const router = useRouter();
   const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
     "muted",
     "danger-soft-foreground",
@@ -46,7 +48,6 @@ export default function CartContent(): JSX.Element {
   );
   const totalPrice = useCartStore((s) => s.totalPrice);
   const clearCart = useCartStore((s) => s.clearCart);
-  const openCheckoutModal = usePOSStore((s) => s.openCheckoutModal);
   const checkoutForm = usePOSStore((s) => s.checkoutForm);
   const updateCheckoutForm = usePOSStore((s) => s.updateCheckoutForm);
   const { data: catalogProducts } = useProducts();
@@ -188,7 +189,7 @@ export default function CartContent(): JSX.Element {
         </View>
         <Button
           className="w-full"
-          onPress={openCheckoutModal}
+          onPress={() => router.push("/pos/checkout")}
           isDisabled={cartProducts.length === 0}
         >
           Checkout

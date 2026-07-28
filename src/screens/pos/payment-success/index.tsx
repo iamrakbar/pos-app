@@ -37,7 +37,6 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const receiptSettings = useReceiptStore((state) => state.settings);
   const updateReceiptSettings = useReceiptStore((state) => state.updateSettings);
-  const closeModal = usePOSStore((s) => s.closeModal);
   const resetCheckoutForm = usePOSStore((s) => s.resetCheckoutForm);
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
 
@@ -47,7 +46,6 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
   const [paidAt] = useState(() => new Date());
 
   const handleNewOrder = () => {
-    closeModal();
     resetCheckoutForm();
     onNewOrder?.();
   };

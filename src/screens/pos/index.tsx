@@ -2,8 +2,6 @@ import CartPanel from "./components/cart-panel";
 import ProductGrid from "./components/product-grid";
 import SearchBar from "./components/search-bar";
 import AddOnModal from "./components/modals/add-on-modal";
-import CheckoutModal from "./components/modals/checkout-modal";
-import PaymentModal from "./components/modals/payment-modal";
 import FloatingCartButton, { FLOATING_CART_BUTTON_SPACE } from "./components/floating-cart-button";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -67,8 +65,6 @@ export default function POSScreen(): JSX.Element {
 
       {/* Modals */}
       <AddOnModal />
-      <CheckoutModal />
-      <PaymentModal />
     </View>
   );
 }

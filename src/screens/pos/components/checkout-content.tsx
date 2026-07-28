@@ -41,8 +41,8 @@ import {
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 
 type CheckoutContentProps = {
-  onCancel?: () => void;
-  onPaymentReady?: (
+  onCancel: () => void;
+  onPaymentReady: (
     session: PaymentSession,
     result: MerchantCheckoutData,
     options: { isCash: boolean }
@@ -459,7 +459,6 @@ function CustomerFields({
 }
 
 export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentProps): JSX.Element {
-  const closeModal = usePOSStore((s) => s.closeModal);
   const checkoutForm = usePOSStore((s) => s.checkoutForm);
 
   const cartProducts = useCartStore((s) => s.products);
@@ -591,7 +590,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
         change: isCashPayment ? change : undefined,
       };
       clearCart();
-      onPaymentReady?.(session, result, { isCash: isCashPayment });
+      onPaymentReady(session, result, { isCash: isCashPayment });
     } catch (error) {
       setCartError(getErrorMessage(error));
     }
@@ -681,7 +680,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
         total={total}
         isPending={isCheckoutPending}
         isDisabled={isCheckoutDisabled}
-        onCancel={onCancel ?? closeModal}
+        onCancel={onCancel}
         onComplete={handleSubmit(onSubmit, onInvalid)}
       />
     </View>
