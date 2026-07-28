@@ -1,7 +1,7 @@
 import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/receipt-paper";
 import { useAuth } from "@/stores/use-auth";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
-import { useReceiptStore } from "@/stores/use-receipt-store";
+import { useReceiptStore, type ReceiptSettings } from "@/stores/use-receipt-store";
 import { usePrinterStore, type PaperWidth } from "@/stores/use-printer-store";
 import { optimizeReceiptLogo } from "@/utils/receipt-logo";
 import { Ionicons } from "@expo/vector-icons";
@@ -108,6 +108,81 @@ function PrinterSetupButton({ color, onPress }: { color: string; onPress: () => 
   );
 }
 
+function ReceiptPreviewSection({
+  settings,
+  previewPaperWidth,
+  onPaperWidthChange,
+  configuredPaperWidth,
+  configuredCharactersPerLine,
+  surfaceColor,
+  isWide,
+}: {
+  settings: ReceiptSettings;
+  previewPaperWidth: PaperWidth;
+  onPaperWidthChange: (paperWidth: PaperWidth) => void;
+  configuredPaperWidth: PaperWidth;
+  configuredCharactersPerLine: string;
+  surfaceColor: string;
+  isWide: boolean;
+}) {
+  return (
+    <View className={`min-h-0 gap-2 ${isWide ? "flex-1" : "min-h-64 w-full flex-[0.8]"}`}>
+      <View className="flex-row items-center justify-between gap-3">
+        <Typography className="text-sm font-semibold text-foreground">Receipt preview</Typography>
+        <Select
+          value={{ value: previewPaperWidth, label: previewPaperWidth }}
+          onValueChange={(option) => {
+            if (option?.value) onPaperWidthChange(option.value as PaperWidth);
+          }}
+        >
+          <Select.Trigger className="w-28">
+            <Select.Value placeholder="Paper size" numberOfLines={1} />
+            <Select.TriggerIndicator />
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Overlay />
+            <Select.Content presentation="popover" width="trigger">
+              <Select.ListLabel className="mb-2">Preview size</Select.ListLabel>
+              {PAPER_WIDTHS.map((paperWidth, index) => (
+                <React.Fragment key={paperWidth}>
+                  <Select.Item value={paperWidth} label={paperWidth} />
+                  {index < PAPER_WIDTHS.length - 1 ? <Separator /> : null}
+                </React.Fragment>
+              ))}
+            </Select.Content>
+          </Select.Portal>
+        </Select>
+      </View>
+      <ScrollShadow
+        className="flex-1 rounded-lg bg-surface-secondary"
+        color={surfaceColor}
+        LinearGradientComponent={LinearGradient}
+      >
+        <ScrollView
+          horizontal
+          contentContainerClassName="min-w-full items-center p-4"
+          showsHorizontalScrollIndicator={false}
+        >
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <ReceiptPaper
+              settings={settings}
+              data={SAMPLE_RECEIPT}
+              paperWidth={previewPaperWidth}
+              charactersPerLine={
+                previewPaperWidth === configuredPaperWidth
+                  ? configuredCharactersPerLine
+                  : previewPaperWidth === "80mm"
+                    ? "46"
+                    : "32"
+              }
+            />
+          </ScrollView>
+        </ScrollView>
+      </ScrollShadow>
+    </View>
+  );
+}
+
 export default function ReceiptSetupScreen(): React.JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
@@ -207,8 +282,18 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
     <>
       <View className="flex-1 bg-background p-4">
         <View
-          className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row-reverse items-stretch gap-6" : "gap-4"}`}
+          className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row items-stretch gap-6" : "gap-4"}`}
         >
+          <ReceiptPreviewSection
+            settings={settings}
+            previewPaperWidth={previewPaperWidth}
+            onPaperWidthChange={setPreviewPaperWidth}
+            configuredPaperWidth={configuredPaperWidth}
+            configuredCharactersPerLine={configuredCharactersPerLine}
+            surfaceColor={themeColorSurfaceSecondary}
+            isWide={isWide}
+          />
+
           <Surface
             className={
               isWide
@@ -352,57 +437,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
               </Button>
             </View>
           </Surface>
-
-          <View className="flex-1 min-h-0 gap-2">
-            <View className="flex-row items-center justify-between gap-3">
-              <Typography className="text-sm font-semibold text-foreground">
-                Receipt preview
-              </Typography>
-              <Select
-                value={{ value: previewPaperWidth, label: previewPaperWidth }}
-                onValueChange={(option) => {
-                  if (option?.value) setPreviewPaperWidth(option.value as PaperWidth);
-                }}
-              >
-                <Select.Trigger className="w-28">
-                  <Select.Value placeholder="Paper size" numberOfLines={1} />
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content presentation="popover" width="trigger">
-                    <Select.ListLabel className="mb-2">Preview size</Select.ListLabel>
-                    {PAPER_WIDTHS.map((paperWidth, index) => (
-                      <React.Fragment key={paperWidth}>
-                        <Select.Item value={paperWidth} label={paperWidth} />
-                        {index < PAPER_WIDTHS.length - 1 ? <Separator /> : null}
-                      </React.Fragment>
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-            </View>
-            <ScrollShadow
-              className="flex-1 rounded-lg bg-surface-secondary"
-              color={themeColorSurfaceSecondary}
-              LinearGradientComponent={LinearGradient}
-            >
-              <ScrollView contentContainerClassName="p-4" showsVerticalScrollIndicator={false}>
-                <ReceiptPaper
-                  settings={settings}
-                  data={SAMPLE_RECEIPT}
-                  paperWidth={previewPaperWidth}
-                  charactersPerLine={
-                    previewPaperWidth === configuredPaperWidth
-                      ? configuredCharactersPerLine
-                      : previewPaperWidth === "80mm"
-                        ? "46"
-                        : "32"
-                  }
-                />
-              </ScrollView>
-            </ScrollShadow>
-          </View>
         </View>
       </View>
     </>

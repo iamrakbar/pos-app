@@ -16,6 +16,7 @@ import { useEffect, useRef, useState, type JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DialogCloseButton from "@/components/common/dialog-close-button";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 
 type PaymentSuccessContentProps = {
   onNewOrder?: () => void;
@@ -32,6 +33,7 @@ function formatDateTime(date: Date): string {
 }
 
 export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps): JSX.Element {
+  const { isCompact } = useResponsiveLayout();
   const themeColorForeground = useThemeColor("foreground");
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
@@ -188,7 +190,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                 <Switch.Thumb />
               </Switch>
             </View>
-            <View className="flex-row gap-3">
+            <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
               {!receiptSettings.autoPrintOnSuccess ? (
                 <Button
                   variant="outline"
@@ -224,7 +226,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
               <Dialog.Title>{prompt?.title}</Dialog.Title>
               {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
             </View>
-            <View className="flex-row justify-end gap-3">
+            <View className={`gap-3 ${isCompact ? "" : "flex-row justify-end"}`}>
               <Button variant="ghost" size="sm" onPress={() => setPrompt(null)}>
                 <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
               </Button>

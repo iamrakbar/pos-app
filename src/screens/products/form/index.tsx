@@ -21,6 +21,7 @@ import {
   useToast,
 } from "heroui-native";
 import React from "react";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
 import { Image } from "expo-image";
 import { Platform, Pressable, ScrollView, View } from "react-native";
@@ -498,6 +499,7 @@ function InventoryCard({
 }
 
 export default function ProductFormScreen(): React.JSX.Element {
+  const { isCompact } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
@@ -752,7 +754,7 @@ export default function ProductFormScreen(): React.JSX.Element {
                       {errors.root.server.message}
                     </Typography>
                   ) : null}
-                  <View className="flex-row gap-3">
+                  <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
                     <Button variant="outline" onPress={() => router.back()} isDisabled={isSaving}>
                       <Button.Label>Cancel</Button.Label>
                     </Button>

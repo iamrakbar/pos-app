@@ -34,6 +34,7 @@ import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useState } from "react";
 import Constants from "expo-constants";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
@@ -292,6 +293,7 @@ function PrintReceiptToolbar({
 }
 
 export default function OrderDetailScreen() {
+  const { isCompact } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const navigationTheme = useNavigationTheme();
@@ -368,7 +370,7 @@ export default function OrderDetailScreen() {
         <ScrollView className="flex-1" contentContainerClassName="p-4 pb-8">
           <View className="w-full max-w-3xl self-center gap-5">
             <Surface className="w-full p-5">
-              <View className="flex-row items-start justify-between gap-4">
+              <View className={`gap-4 ${isCompact ? "" : "flex-row items-start justify-between"}`}>
                 <View className="flex-1 gap-2">
                   <View className="flex-row items-center gap-2 flex-wrap">
                     <Typography type="h4" weight="bold" className="font-mono tabular-nums">
@@ -382,7 +384,7 @@ export default function OrderDetailScreen() {
                     {formatDateTime(order.created_at)}
                   </Typography>
                 </View>
-                <View className="items-end gap-3">
+                <View className={`${isCompact ? "items-start" : "items-end"} gap-1`}>
                   <Typography type="body-xs" color="muted">
                     Total
                   </Typography>
@@ -438,7 +440,9 @@ export default function OrderDetailScreen() {
                         key={`${order.products[index]?.product_id}-${item.name}-${item.subtotal}`}
                         className={`gap-2 px-4 py-3.5 ${index < items.length - 1 ? "border-b border-border" : ""}`}
                       >
-                        <View className="flex-row items-start justify-between gap-4">
+                        <View
+                          className={`gap-2 ${isCompact ? "" : "flex-row items-start justify-between"}`}
+                        >
                           <View className="flex-1 gap-0.5">
                             <Typography type="body-sm" weight="semibold">
                               {item.name}

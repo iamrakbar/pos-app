@@ -20,6 +20,7 @@ import {
   useThemeColor,
 } from "heroui-native";
 import React from "react";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import {
   Controller,
   useForm,
@@ -709,6 +710,7 @@ async function printCalibration(
 }
 
 export default function PrinterFormScreen(): React.JSX.Element {
+  const { isCompact } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const isCreate = id === "new";
@@ -975,7 +977,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
               {errors.root?.server?.message ? (
                 <FieldError message={errors.root.server.message} />
               ) : null}
-              <View className="flex-row gap-3">
+              <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
                 <Button variant="outline" onPress={() => router.back()}>
                   <Button.Label>Cancel</Button.Label>
                 </Button>

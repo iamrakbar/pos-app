@@ -8,6 +8,7 @@ import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import { useLocale } from "@/stores/use-locale";
 import { t } from "@/locales";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useState } from "react";
 
 type SettingsItem = {
@@ -65,6 +66,7 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
 
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
+  const { isCompact } = useResponsiveLayout();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [themeColorMuted, themeColorAccentSoftForeground, themeColorDangerSoftForeground] =
     useThemeColor(["muted", "accent-soft-foreground", "danger-soft-foreground"]);
@@ -107,7 +109,9 @@ export default function SettingsScreen(): JSX.Element {
               </View>
             ))}
 
-            <View className="flex-row items-center gap-4 px-4 py-4">
+            <View
+              className={`gap-4 px-4 py-4 ${isCompact ? "items-stretch" : "flex-row items-center"}`}
+            >
               <View className="w-10 h-10 rounded-panel-inner bg-surface-secondary items-center justify-center">
                 <Ionicons
                   name={
@@ -129,7 +133,7 @@ export default function SettingsScreen(): JSX.Element {
                   {t("settings.appearanceDescription")}
                 </Typography>
               </View>
-              <View className="w-36">
+              <View className={isCompact ? "w-full" : "w-36"}>
                 <Select
                   value={themeOption}
                   onValueChange={(option) => {
@@ -153,7 +157,9 @@ export default function SettingsScreen(): JSX.Element {
             </View>
             <Separator className="mx-4" />
 
-            <View className="flex-row items-center gap-4 px-4 py-4">
+            <View
+              className={`gap-4 px-4 py-4 ${isCompact ? "items-stretch" : "flex-row items-center"}`}
+            >
               <View className="w-10 h-10 rounded-panel-inner bg-surface-secondary items-center justify-center">
                 <Ionicons name="language-outline" size={20} color={themeColorMuted} />
               </View>
@@ -165,7 +171,7 @@ export default function SettingsScreen(): JSX.Element {
                   {t("settings.languageDescription")}
                 </Typography>
               </View>
-              <View className="w-36">
+              <View className={isCompact ? "w-full" : "w-36"}>
                 <Select value={localeOption} isDisabled>
                   <Select.Trigger>
                     <Select.Value placeholder={t("settings.language")} />
