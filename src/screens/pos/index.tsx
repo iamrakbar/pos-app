@@ -10,6 +10,9 @@ import type { JSX } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Platform, StatusBar, View } from "react-native";
 import { useNavigationTheme } from "@/utils/navigation-theme";
+import { paymentGroupsQueryOptions } from "@/hooks/db/use-payments";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export default function POSScreen(): JSX.Element {
   const { width: viewportWidth, isWide } = useResponsiveLayout();
@@ -17,7 +20,12 @@ export default function POSScreen(): JSX.Element {
   const beginAddonSelection = usePOSStore((s) => s.beginAddonSelection);
   const addItem = useCartStore((s) => s.addItem);
   const theme = useNavigationTheme();
+  const queryClient = useQueryClient();
   const cartPanelWidth = Math.min(Math.max(Math.floor(viewportWidth * 0.34), 340), 460);
+
+  useEffect(() => {
+    void queryClient.prefetchQuery(paymentGroupsQueryOptions);
+  }, [queryClient]);
 
   useFocusEffect(() => {
     if (Platform.OS !== "android") return;

@@ -50,6 +50,8 @@ type CheckoutContentProps = {
 };
 
 const isEMoneyGroup = (groupType: string) => groupType.toLowerCase() === "e-money";
+const isCashPaymentSelection = (groupType: string, paymentCode?: string) =>
+  groupType.toLowerCase().includes("cash") || paymentCode === "cashier";
 
 function getCashPresets(total: number): number[] {
   if (total <= 0) return [];
@@ -208,6 +210,7 @@ function PaymentFields({
   cashPresets,
   cashReceived,
   cashReceivedAmount,
+  subtotal,
   change,
   errors,
   setValue,
@@ -221,6 +224,7 @@ function PaymentFields({
   cashPresets: number[];
   cashReceived: string;
   cashReceivedAmount: number;
+  subtotal: number;
   change: number;
   errors: FieldErrors<CheckoutFormValues>;
   setValue: UseFormSetValue<CheckoutFormValues>;
@@ -244,9 +248,19 @@ function PaymentFields({
                   size="sm"
                   variant={isActive ? "primary" : "outline"}
                   onPress={() => {
+                    const firstPayment = group.payments[0];
+                    const paymentFee = firstPayment
+                      ? firstPayment.fee_unit === "percentage"
+                        ? Math.round(subtotal * (firstPayment.fee_value / 100))
+                        : firstPayment.fee_value
+                      : 0;
                     setValue("payment_group", group.group_type);
-                    setValue("payment_id", group.payments[0]?.id ?? "");
-                    setCashReceived("");
+                    setValue("payment_id", firstPayment?.id ?? "");
+                    setCashReceived(
+                      isCashPaymentSelection(group.group_type, firstPayment?.code)
+                        ? String(subtotal + paymentFee)
+                        : ""
+                    );
                   }}
                 >
                   <Button.Label>{group.group_label}</Button.Label>
@@ -551,8 +565,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
       : selectedPayment.fee_value
     : 0;
   const total = subtotal + paymentFee;
-  const isCashPayment =
-    paymentGroup.toLowerCase().includes("cash") || selectedPayment?.code === "cashier";
+  const isCashPayment = isCashPaymentSelection(paymentGroup, selectedPayment?.code);
   const cashReceivedAmount = Number(cashReceived.replace(/\D/g, "")) || 0;
   const change = Math.max(0, cashReceivedAmount - total);
   const cashPresets = getCashPresets(total);
@@ -634,6 +647,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
           cashPresets={cashPresets}
           cashReceived={cashReceived}
           cashReceivedAmount={cashReceivedAmount}
+          subtotal={subtotal}
           change={change}
           errors={errors}
           setValue={setValue}
