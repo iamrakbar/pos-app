@@ -5,10 +5,11 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Button } from "heroui-native";
+import { Button, useThemeColor } from "heroui-native";
 
 export default function AppLayout() {
   const theme = useNavigationTheme();
+  const accentForeground = useThemeColor("accent-foreground");
   const router = useRouter();
   const { width, isCompact } = useResponsiveLayout();
   const drawerWidth = Math.min(isCompact ? width - 48 : 320, 320);
@@ -47,10 +48,16 @@ export default function AppLayout() {
           drawerLabel: "Dashboard",
           headerShown: true,
           headerLeft: () => <DrawerMenuButton />,
+          headerRightContainerStyle: { paddingRight: 12 },
           headerRight: () => (
-            <Button variant="ghost" size="sm" onPress={() => router.push("/pos")}>
-              <Ionicons name="calculator-outline" size={16} color={theme.foreground} />
-              <Button.Label>POS</Button.Label>
+            <Button
+              variant="primary"
+              size="sm"
+              onPress={() => router.push("/pos")}
+              accessibilityLabel="Open point of sale"
+            >
+              <Ionicons name="calculator-outline" size={16} color={accentForeground} />
+              <Button.Label>Open POS</Button.Label>
             </Button>
           ),
         }}
