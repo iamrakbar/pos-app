@@ -137,6 +137,7 @@ export default function SettingsScreen(): JSX.Element {
               </View>
               <View className={isCompact ? "w-full" : "w-36"}>
                 <Select
+                  key={`theme-${locale}`}
                   value={themeOption}
                   onValueChange={(option) => {
                     if (option?.value) setThemeMode(option.value as ThemeMode);
@@ -175,6 +176,7 @@ export default function SettingsScreen(): JSX.Element {
               </View>
               <View className={isCompact ? "w-full" : "w-36"}>
                 <Select
+                  key={`language-${locale}`}
                   value={localeOption}
                   onValueChange={(option) => {
                     if (option?.value) setLocale(option.value as Locale);

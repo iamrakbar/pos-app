@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import * as Localization from "expo-localization";
-import { i18n, isLocale, t, type Locale } from "@/locales";
+import { i18n, isLocale, translate, type Locale } from "@/locales";
 import { zustandStorage } from "@/lib/storage";
 
 // Default: detect from device; fallback to 'id'
@@ -50,5 +50,8 @@ export const useLocale = create<UseLocaleState>()(
 
 export function useTranslation() {
   const locale = useLocale((state) => state.locale);
-  return { locale, t };
+  return {
+    locale,
+    t: (key: string, params?: Record<string, string | number>) => translate(locale, key, params),
+  };
 }

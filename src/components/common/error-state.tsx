@@ -1,28 +1,32 @@
-import { Pressable, View } from 'react-native';
-import { Typography, useThemeColor } from 'heroui-native';
-import { Ionicons } from '@expo/vector-icons';
-import type { JSX } from 'react';
-import { getErrorMessage } from '@/api/api-error';
-import { t } from '@/locales';
+import { Pressable, View } from "react-native";
+import { Typography, useThemeColor } from "heroui-native";
+import { Ionicons } from "@expo/vector-icons";
+import type { JSX } from "react";
+import { getErrorMessage } from "@/api/api-error";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function ErrorState({
-    error,
-    onRetry,
+  error,
+  onRetry,
 }: {
-    error: unknown;
-    onRetry?: () => void;
+  error: unknown;
+  onRetry?: () => void;
 }): JSX.Element {
-    const themeColorDanger = useThemeColor('danger');
+  const themeColorDanger = useThemeColor("danger");
+  const { t } = useTranslation();
 
-    return (
-        <View className="flex-1 items-center justify-center gap-2 py-20 px-6">
-            <Ionicons name="alert-circle-outline" size={40} color={themeColorDanger} />
-            <Typography className="text-sm text-danger text-center">{getErrorMessage(error)}</Typography>
-            {onRetry && (
-                <Pressable onPress={onRetry} className="mt-2 px-4 py-2 rounded-full border border-border active:opacity-70">
-                    <Typography className="text-sm text-foreground">{t('common.retry')}</Typography>
-                </Pressable>
-            )}
-        </View>
-    );
+  return (
+    <View className="flex-1 items-center justify-center gap-2 py-20 px-6">
+      <Ionicons name="alert-circle-outline" size={40} color={themeColorDanger} />
+      <Typography className="text-sm text-danger text-center">{getErrorMessage(error)}</Typography>
+      {onRetry && (
+        <Pressable
+          onPress={onRetry}
+          className="mt-2 px-4 py-2 rounded-full border border-border active:opacity-70"
+        >
+          <Typography className="text-sm text-foreground">{t("common.retry")}</Typography>
+        </Pressable>
+      )}
+    </View>
+  );
 }
