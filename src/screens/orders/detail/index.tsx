@@ -21,6 +21,7 @@ import ErrorState from "@/components/common/error-state";
 import Countdown from "@/components/common/countdown";
 import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
 import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
 import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/use-receipt-printer";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
@@ -222,28 +223,15 @@ function PrinterPromptDialog({
   onAction: () => void | Promise<void>;
 }) {
   return (
-    <Dialog isOpen={prompt !== null} onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-          <DialogCloseButton />
-          <View className="mb-5 gap-1.5 pr-10">
-            <Dialog.Title>{prompt?.title}</Dialog.Title>
-            {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
-          </View>
-          <View className="flex-row justify-end gap-3">
-            <Button variant="ghost" size="sm" onPress={onClose}>
-              <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
-            </Button>
-            {prompt?.actionLabel ? (
-              <Button size="sm" onPress={onAction}>
-                <Button.Label>{prompt.actionLabel}</Button.Label>
-              </Button>
-            ) : null}
-          </View>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+    <ActionDialog
+      isOpen={prompt !== null}
+      onOpenChange={(open) => !open && onClose()}
+      title={prompt?.title}
+      description={prompt?.message}
+      cancelLabel={prompt?.actionLabel ? "Cancel" : "Close"}
+      actionLabel={prompt?.actionLabel}
+      onAction={onAction}
+    />
   );
 }
 

@@ -1,5 +1,5 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useArea, useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
@@ -10,7 +10,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   Button,
   Card,
-  Dialog,
   Input,
   Label,
   TextField,
@@ -152,33 +151,16 @@ export default function AreaFormScreen(): React.JSX.Element {
         </Card>
       </ScrollView>
 
-      <Dialog isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <DialogCloseButton />
-            <View className="mb-5 gap-1.5 pr-10">
-              <Dialog.Title>Delete area?</Dialog.Title>
-              <Dialog.Description>
-                The server may reject deletion while tables or orders still reference this area.
-              </Dialog.Description>
-            </View>
-            <View className="flex-row justify-end gap-3">
-              <Button variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onPress={handleDelete}
-                isDisabled={deleteMutation.isPending}
-              >
-                <Button.Label>{deleteMutation.isPending ? "Deleting…" : "Delete"}</Button.Label>
-              </Button>
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      <ActionDialog
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title="Delete area?"
+        description="The server may reject deletion while tables or orders still reference this area."
+        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        actionVariant="danger"
+        isActionDisabled={deleteMutation.isPending}
+        onAction={handleDelete}
+      />
     </>
   );
 }

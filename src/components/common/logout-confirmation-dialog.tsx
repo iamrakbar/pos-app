@@ -1,8 +1,6 @@
-import { Button, Dialog } from "heroui-native";
 import type { JSX } from "react";
-import { View } from "react-native";
-import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useTranslation } from "@/stores/use-locale";
+import ActionDialog from "@/components/common/action-dialog";
 
 type LogoutConfirmationDialogProps = {
   isOpen: boolean;
@@ -18,32 +16,15 @@ export default function LogoutConfirmationDialog({
   const { t } = useTranslation();
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-          <DialogCloseButton />
-          <View className="mb-5 gap-1.5 pr-10">
-            <Dialog.Title>{t("logout.title")}</Dialog.Title>
-            <Dialog.Description>{t("logout.description")}</Dialog.Description>
-          </View>
-          <View className="flex-row justify-end gap-3">
-            <Button variant="ghost" size="sm" onPress={() => onOpenChange(false)}>
-              <Button.Label>{t("common.cancel")}</Button.Label>
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onPress={() => {
-                onOpenChange(false);
-                onConfirm();
-              }}
-            >
-              <Button.Label>{t("logout.confirm")}</Button.Label>
-            </Button>
-          </View>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+    <ActionDialog
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title={t("logout.title")}
+      description={t("logout.description")}
+      cancelLabel={t("common.cancel")}
+      actionLabel={t("logout.confirm")}
+      actionVariant="danger"
+      onAction={onConfirm}
+    />
   );
 }

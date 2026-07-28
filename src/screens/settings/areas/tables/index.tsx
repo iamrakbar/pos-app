@@ -1,21 +1,13 @@
 import { getErrorMessage } from "@/api/api-error";
 import CreateFAB from "@/components/common/create-fab";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useArea } from "@/hooks/db/use-areas";
 import { useAreaTables, useDeleteTable } from "@/hooks/db/use-tables";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
-import {
-  Button,
-  Chip,
-  Dialog,
-  Separator,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Chip, Separator, Typography, useThemeColor, useToast } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -130,38 +122,18 @@ export default function AreaTablesScreen(): React.JSX.Element {
         isOpen={isFormOpen}
         onOpenChange={setIsFormOpen}
       />
-      <Dialog
+      <ActionDialog
         isOpen={Boolean(deletingTable)}
         onOpenChange={(open) => {
           if (!open) setDeletingTable(null);
         }}
-      >
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <DialogCloseButton />
-            <View className="mb-5 gap-1.5 pr-10">
-              <Dialog.Title>Delete table?</Dialog.Title>
-              <Dialog.Description>
-                The server may reject deletion when an order references this table.
-              </Dialog.Description>
-            </View>
-            <View className="flex-row justify-end gap-3">
-              <Button variant="ghost" size="sm" onPress={() => setDeletingTable(null)}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onPress={handleDelete}
-                isDisabled={deleteMutation.isPending}
-              >
-                <Button.Label>{deleteMutation.isPending ? "Deleting…" : "Delete"}</Button.Label>
-              </Button>
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+        title="Delete table?"
+        description="The server may reject deletion when an order references this table."
+        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        actionVariant="danger"
+        isActionDisabled={deleteMutation.isPending}
+        onAction={handleDelete}
+      />
     </>
   );
 }

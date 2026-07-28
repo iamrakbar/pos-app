@@ -1,5 +1,5 @@
 import { getErrorMessage } from "@/api/api-error";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useAddOn, useCreateAddOn, useDeleteAddOn, useUpdateAddOn } from "@/hooks/db/use-add-ons";
@@ -11,7 +11,7 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Card, Dialog, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, Card, Typography, useThemeColor, useToast } from "heroui-native";
 import React from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -203,33 +203,16 @@ export default function AddOnFormScreen(): React.JSX.Element {
         </View>
       </ScrollView>
 
-      <Dialog isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <DialogCloseButton />
-            <View className="mb-5 gap-1.5 pr-10">
-              <Dialog.Title>Delete add-on group?</Dialog.Title>
-              <Dialog.Description>
-                This removes the group and all of its options from the product.
-              </Dialog.Description>
-            </View>
-            <View className="flex-row justify-end gap-3">
-              <Button variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onPress={handleDelete}
-                isDisabled={deleteMutation.isPending}
-              >
-                <Button.Label>{deleteMutation.isPending ? "Deleting…" : "Delete"}</Button.Label>
-              </Button>
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      <ActionDialog
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title="Delete add-on group?"
+        description="This removes the group and all of its options from the product."
+        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        actionVariant="danger"
+        isActionDisabled={deleteMutation.isPending}
+        onAction={handleDelete}
+      />
     </>
   );
 }

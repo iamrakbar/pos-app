@@ -10,7 +10,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   Button,
   Card,
-  Dialog,
   Input,
   Select,
   Separator,
@@ -42,7 +41,7 @@ import {
 } from "@/stores/use-printer-store";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { printCalibrationReceipt } from "@/services/printer/print-service";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
 import { EmptyState } from "heroui-native-pro";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [
@@ -610,51 +609,25 @@ function PrinterDialogs({
 
   return (
     <>
-      <Dialog isOpen={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <DialogCloseButton />
-            <View className="mb-5 gap-1.5 pr-10">
-              <Dialog.Title>{prompt?.title}</Dialog.Title>
-              {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
-            </View>
-            <View className="flex-row justify-end gap-3">
-              <Button variant="ghost" size="sm" onPress={() => setPrompt(null)}>
-                <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
-              </Button>
-              {prompt?.actionLabel ? (
-                <Button size="sm" onPress={handlePromptAction}>
-                  <Button.Label>{prompt.actionLabel}</Button.Label>
-                </Button>
-              ) : null}
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      <ActionDialog
+        isOpen={prompt !== null}
+        onOpenChange={(open) => !open && setPrompt(null)}
+        title={prompt?.title}
+        description={prompt?.message}
+        cancelLabel={prompt?.actionLabel ? "Cancel" : "Close"}
+        actionLabel={prompt?.actionLabel}
+        onAction={handlePromptAction}
+      />
 
-      <Dialog isOpen={deletePromptOpen} onOpenChange={setDeletePromptOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <DialogCloseButton />
-            <View className="mb-5 gap-1.5 pr-10">
-              <Dialog.Title>Delete printer?</Dialog.Title>
-              <Dialog.Description>
-                This printer will be removed from saved printers.
-              </Dialog.Description>
-            </View>
-            <View className="flex-row justify-end gap-3">
-              <Button variant="ghost" size="sm" onPress={() => setDeletePromptOpen(false)}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button variant="danger" size="sm" onPress={onDelete}>
-                <Button.Label>Delete</Button.Label>
-              </Button>
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      <ActionDialog
+        isOpen={deletePromptOpen}
+        onOpenChange={setDeletePromptOpen}
+        title="Delete printer?"
+        description="This printer will be removed from saved printers."
+        actionLabel="Delete"
+        actionVariant="danger"
+        onAction={onDelete}
+      />
     </>
   );
 }

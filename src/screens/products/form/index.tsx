@@ -8,7 +8,6 @@ import {
   Button,
   Card,
   Description,
-  Dialog,
   Input,
   Label,
   Select,
@@ -29,7 +28,7 @@ import { Platform, Pressable, ScrollView, View } from "react-native";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { ProductImageAsset } from "@/api/endpoints/products";
 import { useCategories } from "@/hooks/db/use-categories";
@@ -202,33 +201,16 @@ function DeleteProductDialog({
   onDelete: () => void | Promise<void>;
 }) {
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-          <DialogCloseButton />
-          <View className="mb-5 gap-1.5 pr-10">
-            <Dialog.Title>Delete product?</Dialog.Title>
-            <Dialog.Description>
-              This product will be permanently removed from the catalog.
-            </Dialog.Description>
-          </View>
-          <View className="flex-row justify-end gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onPress={() => onOpenChange(false)}
-              isDisabled={isDeleting}
-            >
-              <Button.Label>Cancel</Button.Label>
-            </Button>
-            <Button variant="danger" size="sm" onPress={onDelete} isDisabled={isDeleting}>
-              <Button.Label>{isDeleting ? "Deleting…" : "Delete"}</Button.Label>
-            </Button>
-          </View>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+    <ActionDialog
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title="Delete product?"
+      description="This product will be permanently removed from the catalog."
+      actionLabel={isDeleting ? "Deleting…" : "Delete"}
+      actionVariant="danger"
+      isActionDisabled={isDeleting}
+      onAction={onDelete}
+    />
   );
 }
 

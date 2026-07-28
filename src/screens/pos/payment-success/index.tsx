@@ -4,7 +4,6 @@ import { useReceiptStore } from "@/stores/use-receipt-store";
 import { formatRupiah } from "@/utils/format";
 import {
   Button,
-  Dialog,
   Separator,
   Spinner,
   Surface,
@@ -15,7 +14,7 @@ import {
 import { useEffect, useRef, useState, type JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import ActionDialog from "@/components/common/action-dialog";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 
 type PaymentSuccessContentProps = {
@@ -217,28 +216,15 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         </View>
       </View>
 
-      <Dialog isOpen={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
-            <DialogCloseButton />
-            <View className="mb-5 gap-1.5 pr-10">
-              <Dialog.Title>{prompt?.title}</Dialog.Title>
-              {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
-            </View>
-            <View className={`gap-3 ${isCompact ? "" : "flex-row justify-end"}`}>
-              <Button variant="ghost" size="sm" onPress={() => setPrompt(null)}>
-                <Button.Label>{prompt?.actionLabel ? "Cancel" : "Close"}</Button.Label>
-              </Button>
-              {prompt?.actionLabel ? (
-                <Button size="sm" onPress={handlePromptAction}>
-                  <Button.Label>{prompt.actionLabel}</Button.Label>
-                </Button>
-              ) : null}
-            </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      <ActionDialog
+        isOpen={prompt !== null}
+        onOpenChange={(open) => !open && setPrompt(null)}
+        title={prompt?.title}
+        description={prompt?.message}
+        cancelLabel={prompt?.actionLabel ? "Cancel" : "Close"}
+        actionLabel={prompt?.actionLabel}
+        onAction={handlePromptAction}
+      />
     </>
   );
 }
