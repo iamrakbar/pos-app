@@ -60,12 +60,12 @@ export default function FloatingCartButton(): JSX.Element | null {
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-x-0 items-center px-4"
+      className="absolute inset-x-0 items-center p-4 pb-safe bg-surface border-t border-border"
       style={{ bottom: Math.max(insets.bottom, 16) }}
     >
       <Animated.View className="w-full items-center" style={animatedStyle}>
         <Button
-          className="w-full max-w-xl justify-between"
+          className="w-full justify-between"
           onPress={() => router.push("/pos/cart")}
           accessibilityLabel={`Open cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}, ${formatRupiah(subtotal)}`}
         >
