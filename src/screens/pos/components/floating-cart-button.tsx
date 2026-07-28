@@ -14,8 +14,8 @@ export default function FloatingCartButton(): JSX.Element | null {
   const insets = useSafeAreaInsets();
   const foreground = useThemeColor("accent-foreground");
   const products = useCartStore((state) => state.products);
-  const totalPrice = useCartStore((state) => state.totalPrice);
   const itemCount = products.reduce((total, product) => total + product.qty, 0);
+  const subtotal = products.reduce((total, product) => total + product.subtotal, 0);
 
   if (itemCount === 0) return null;
 
@@ -30,7 +30,7 @@ export default function FloatingCartButton(): JSX.Element | null {
       <Button
         className="w-full max-w-xl justify-between"
         onPress={() => router.push("/pos/cart")}
-        accessibilityLabel={`Open cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}, ${formatRupiah(totalPrice())}`}
+        accessibilityLabel={`Open cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}, ${formatRupiah(subtotal)}`}
       >
         <View className="flex-row items-center gap-2">
           <Ionicons name="cart-outline" size={18} color={foreground} />
@@ -38,7 +38,7 @@ export default function FloatingCartButton(): JSX.Element | null {
             Cart · {countLabel} {itemCount === 1 ? "item" : "items"}
           </Button.Label>
         </View>
-        <Button.Label className="tabular-nums">{formatRupiah(totalPrice())}</Button.Label>
+        <Button.Label className="tabular-nums">{formatRupiah(subtotal)}</Button.Label>
       </Button>
     </View>
   );
