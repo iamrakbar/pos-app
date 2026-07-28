@@ -8,7 +8,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
-import { FlatList, RefreshControl, useWindowDimensions } from "react-native";
+import { useState } from "react";
+import { FlatList, RefreshControl } from "react-native";
 import ProductCard from "./product-card";
 
 const CARD_MIN_WIDTH = 180;
@@ -16,19 +17,19 @@ const GRID_HORIZONTAL_PADDING = 24;
 
 type Props = {
   onSelectProduct: (product: POSProduct) => void;
-  cartPanelWidth: number;
+  bottomInset?: number;
 };
 
-export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props): JSX.Element {
-  const { width } = useWindowDimensions();
+export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props): JSX.Element {
+  const [containerWidth, setContainerWidth] = useState(0);
   const themeColorMuted = useThemeColor("muted");
 
   const searchQuery = usePOSStore((s) => s.searchQuery);
   const categoryId = usePOSStore((s) => s.categoryId);
   const productSort = usePOSStore((s) => s.productSort);
 
-  const availableWidth = width - cartPanelWidth - GRID_HORIZONTAL_PADDING;
-  const numColumns = Math.max(2, Math.floor(availableWidth / CARD_MIN_WIDTH));
+  const availableWidth = Math.max(containerWidth - GRID_HORIZONTAL_PADDING, CARD_MIN_WIDTH);
+  const numColumns = Math.max(1, Math.floor(availableWidth / CARD_MIN_WIDTH));
   const cardWidth = Math.floor(availableWidth / numColumns);
 
   const {
@@ -60,14 +61,20 @@ export default function ProductGrid({ onSelectProduct, cartPanelWidth }: Props):
   if (isLoading) return <LoadingState message="Loading products…" />;
 
   return (
-    <ScrollShadow className="flex-1" LinearGradientComponent={LinearGradient}>
+    <ScrollShadow
+      className="flex-1"
+      LinearGradientComponent={LinearGradient}
+      onLayout={(event) => setContainerWidth(Math.floor(event.nativeEvent.layout.width))}
+    >
       <FlatList
+        style={{ opacity: containerWidth === 0 ? 0 : 1 }}
         data={isError ? [] : filtered}
         key={numColumns}
         numColumns={numColumns}
         keyExtractor={(item) => item.id}
         renderItem={renderProduct}
-        contentContainerClassName="flex-grow gap-2 px-3 py-4"
+        contentContainerClassName="flex-grow gap-2 px-3 pt-4"
+        contentContainerStyle={{ paddingBottom: Math.max(bottomInset, 16) }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={

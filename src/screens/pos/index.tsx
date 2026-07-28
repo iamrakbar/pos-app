@@ -4,20 +4,23 @@ import SearchBar from "./components/search-bar";
 import AddOnModal from "./components/modals/add-on-modal";
 import CheckoutModal from "./components/modals/checkout-modal";
 import PaymentModal from "./components/modals/payment-modal";
+import FloatingCartButton, { FLOATING_CART_BUTTON_SPACE } from "./components/floating-cart-button";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
-import { useFocusEffect } from "expo-router";
-import { Platform, StatusBar, View, useWindowDimensions } from "react-native";
+import { useFocusEffect, useIsFocused } from "expo-router";
+import { Platform, StatusBar, View } from "react-native";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 
 export default function POSScreen(): JSX.Element {
-  const { width: viewportWidth } = useWindowDimensions();
+  const { width: viewportWidth, isWide } = useResponsiveLayout();
   const openAddonModal = usePOSStore((s) => s.openAddonModal);
   const addItem = useCartStore((s) => s.addItem);
+  const isFocused = useIsFocused();
   const theme = useNavigationTheme();
-  const cartPanelWidth = Math.floor(viewportWidth / 3);
+  const cartPanelWidth = Math.min(Math.max(Math.floor(viewportWidth * 0.34), 340), 460);
 
   useFocusEffect(() => {
     if (Platform.OS !== "android") return;
@@ -46,13 +49,21 @@ export default function POSScreen(): JSX.Element {
       {/* Product catalog */}
       <View className="flex-1 bg-background">
         <SearchBar />
-        <ProductGrid onSelectProduct={handleSelectProduct} cartPanelWidth={cartPanelWidth} />
+        <ProductGrid
+          onSelectProduct={handleSelectProduct}
+          bottomInset={isWide ? 0 : FLOATING_CART_BUTTON_SPACE}
+        />
       </View>
 
-      {/* Cart panel */}
-      <View style={{ width: cartPanelWidth }}>
-        <CartPanel />
-      </View>
+      {isFocused ? (
+        isWide ? (
+          <View style={{ width: cartPanelWidth }}>
+            <CartPanel />
+          </View>
+        ) : (
+          <FloatingCartButton />
+        )
+      ) : null}
 
       {/* Modals */}
       <AddOnModal />
