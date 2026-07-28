@@ -14,7 +14,6 @@ import ProductCard from "./product-card";
 
 const CARD_MIN_WIDTH = 180;
 const GRID_HORIZONTAL_PADDING = 24;
-const GRID_COLUMN_GAP = 8;
 
 type Props = {
   onSelectProduct: (product: POSProduct) => void;
@@ -30,11 +29,8 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
   const productSort = usePOSStore((s) => s.productSort);
 
   const availableWidth = Math.max(containerWidth - GRID_HORIZONTAL_PADDING, 0);
-  const numColumns = Math.max(
-    1,
-    Math.floor((availableWidth + GRID_COLUMN_GAP) / (CARD_MIN_WIDTH + GRID_COLUMN_GAP))
-  );
-  const cardWidth = Math.floor((availableWidth - GRID_COLUMN_GAP * (numColumns - 1)) / numColumns);
+  const numColumns = Math.max(1, Math.floor(availableWidth / CARD_MIN_WIDTH));
+  const cardWidth = availableWidth / numColumns;
 
   const {
     data: allProducts,
