@@ -26,19 +26,19 @@ type RectangularTable = {
 };
 
 type TableSymbolConfig = {
-  viewBox: string;
+  viewBox: readonly [width: number, height: number];
   table: RoundTable | RectangularTable;
   seats: Seat[];
 };
 
 const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
   1: {
-    viewBox: "0 0 76 113",
+    viewBox: [76, 113],
     table: { shape: "round", cx: 38, cy: 38, radius: 35 },
     seats: [{ x: 38, y: 94 }],
   },
   2: {
-    viewBox: "0 0 76 158",
+    viewBox: [76, 158],
     table: { shape: "rectangular", x: 3, y: 44, width: 70, height: 70, radius: 18 },
     seats: [
       { x: 38, y: 17 },
@@ -46,7 +46,7 @@ const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
     ],
   },
   3: {
-    viewBox: "0 0 168 147",
+    viewBox: [168, 147],
     table: { shape: "round", cx: 84, cy: 84, radius: 42 },
     seats: [
       { x: 84, y: 17 },
@@ -55,7 +55,7 @@ const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
     ],
   },
   4: {
-    viewBox: "0 0 168 168",
+    viewBox: [168, 168],
     table: { shape: "rectangular", x: 49, y: 49, width: 70, height: 70, radius: 16 },
     seats: [
       { x: 84, y: 16 },
@@ -65,7 +65,7 @@ const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
     ],
   },
   5: {
-    viewBox: "0 0 194 188",
+    viewBox: [194, 188],
     table: { shape: "round", cx: 97, cy: 94, radius: 48 },
     seats: [
       { x: 97, y: 17 },
@@ -76,7 +76,7 @@ const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
     ],
   },
   6: {
-    viewBox: "0 0 208 168",
+    viewBox: [208, 168],
     table: { shape: "rectangular", x: 49, y: 49, width: 110, height: 70, radius: 18 },
     seats: [
       { x: 74, y: 16 },
@@ -88,7 +88,7 @@ const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
     ],
   },
   7: {
-    viewBox: "0 0 228 178",
+    viewBox: [228, 178],
     table: { shape: "rectangular", x: 54, y: 49, width: 120, height: 80, radius: 22 },
     seats: [
       { x: 84, y: 16 },
@@ -101,7 +101,7 @@ const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
     ],
   },
   8: {
-    viewBox: "0 0 238 188",
+    viewBox: [238, 188],
     table: { shape: "rectangular", x: 54, y: 52, width: 130, height: 84, radius: 22 },
     seats: [
       { x: 84, y: 16 },
@@ -118,6 +118,7 @@ const TABLE_SYMBOLS: Record<TableSeatCount, TableSymbolConfig> = {
 
 export type TableSymbolProps = Omit<SvgProps, "color"> & {
   seats: TableSeatCount;
+  scale?: number;
   color?: string;
   tableColor?: string;
   chairColor?: string;
@@ -128,8 +129,9 @@ export default function TableSymbol({
   color,
   tableColor,
   chairColor,
-  width = 120,
-  height = 96,
+  scale = 0.5,
+  width,
+  height,
   accessibilityLabel,
   ...svgProps
 }: TableSymbolProps) {
@@ -142,13 +144,14 @@ export default function TableSymbol({
   const stroke = color ?? foreground;
   const tableFill = tableColor ?? surfaceSecondary;
   const chairFill = chairColor ?? surface;
+  const [viewBoxWidth, viewBoxHeight] = config.viewBox;
 
   return (
     <Svg
       {...svgProps}
-      width={width}
-      height={height}
-      viewBox={config.viewBox}
+      width={width ?? viewBoxWidth * scale}
+      height={height ?? viewBoxHeight * scale}
+      viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
       fill="none"
       accessible={Boolean(accessibilityLabel)}
       accessibilityLabel={accessibilityLabel}

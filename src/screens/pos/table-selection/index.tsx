@@ -4,16 +4,8 @@ import { usePOSStore } from "@/stores/use-pos-store";
 import type { POSTable } from "@/types/pos";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Chip,
-  ScrollShadow,
-  Separator,
-  Typography,
-  useThemeColor,
-} from "heroui-native";
+import { Stack, useRouter } from "expo-router";
+import { Button, Card, Chip, ScrollShadow, Typography, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -46,7 +38,7 @@ export default function TableSelectionScreen(): JSX.Element {
   const router = useRouter();
   const [activeAreaId, setActiveAreaId] = useState("");
   const [gridWidth, setGridWidth] = useState(0);
-  const [accent, muted, accentSoft, foreground] = useThemeColor([
+  const [accent, muted, accentSoft] = useThemeColor([
     "accent",
     "muted",
     "accent-soft",
@@ -91,11 +83,10 @@ export default function TableSelectionScreen(): JSX.Element {
         style={{ width: cardWidth, margin: 6 }}
       >
         <Card variant={isSelected ? "default" : "secondary"} className="gap-2">
-          <Card.Header className="flex-1 items-center justify-center py-2">
+          <Card.Header className="h-20 items-center justify-center py-0">
             <TableSymbol
               seats={seatCount}
-              width={96}
-              height={76}
+              scale={0.5}
               color={isSelected ? accent : muted}
               tableColor={isSelected ? accentSoft : undefined}
             />
@@ -114,71 +105,60 @@ export default function TableSelectionScreen(): JSX.Element {
   };
 
   return (
-    <View className="flex-1 overflow-hidden bg-background pb-safe">
-      <View className="flex-row items-center justify-between gap-3 bg-surface px-5 py-4">
-        <Typography type="h4" weight="semibold">
-          Select Table
-        </Typography>
-        <Button
-          variant="ghost"
-          isIconOnly
-          onPress={() => router.back()}
-          accessibilityLabel="Close table selection"
-        >
-          <Ionicons name="close" size={20} color={foreground} />
-        </Button>
+    <>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() => handleSelect(null)}
+              accessibilityLabel="Continue without selecting a table"
+            >
+              <Button.Label>No Table</Button.Label>
+            </Button>
+          ),
+        }}
+      />
+      <View className="flex-1 overflow-hidden bg-background pb-safe">
+        <View className="flex-1 gap-4 px-4 pt-4">
+          <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
+            <FlatList
+              data={groups}
+              horizontal
+              keyExtractor={(group) => group.id}
+              renderItem={renderArea}
+              showsHorizontalScrollIndicator={false}
+              contentContainerClassName="gap-2 pb-1"
+            />
+          </ScrollShadow>
+
+          {filteredTables.length > 0 ? (
+            <FlatList
+              key={`table-grid-${columnCount}`}
+              className="flex-1"
+              data={filteredTables}
+              numColumns={columnCount}
+              keyExtractor={(table) => table.id}
+              renderItem={renderTable}
+              showsVerticalScrollIndicator={false}
+              contentContainerClassName="pb-4"
+              columnWrapperClassName="items-center"
+              onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}
+            />
+          ) : (
+            <EmptyState className="flex-1 justify-center">
+              <EmptyState.Header>
+                <EmptyState.Media variant="icon">
+                  <Ionicons name="grid-outline" size={20} color={muted} />
+                </EmptyState.Media>
+                <EmptyState.Title>No tables</EmptyState.Title>
+                <EmptyState.Description>There are no tables in this area.</EmptyState.Description>
+              </EmptyState.Header>
+            </EmptyState>
+          )}
+        </View>
       </View>
-
-      <Separator />
-
-      <View className="flex-1 gap-4 px-4 pt-4">
-        <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
-          <FlatList
-            data={groups}
-            horizontal
-            keyExtractor={(group) => group.id}
-            renderItem={renderArea}
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="gap-2 pb-1"
-          />
-        </ScrollShadow>
-
-        {filteredTables.length > 0 ? (
-          <FlatList
-            key={`table-grid-${columnCount}`}
-            className="flex-1"
-            data={filteredTables}
-            numColumns={columnCount}
-            keyExtractor={(table) => table.id}
-            renderItem={renderTable}
-            showsVerticalScrollIndicator={false}
-            contentContainerClassName="pb-4"
-            columnWrapperClassName="items-center"
-            onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}
-          />
-        ) : (
-          <EmptyState className="flex-1 justify-center">
-            <EmptyState.Header>
-              <EmptyState.Media variant="icon">
-                <Ionicons name="grid-outline" size={20} color={muted} />
-              </EmptyState.Media>
-              <EmptyState.Title>No tables</EmptyState.Title>
-              <EmptyState.Description>There are no tables in this area.</EmptyState.Description>
-            </EmptyState.Header>
-          </EmptyState>
-        )}
-      </View>
-
-      <Separator />
-
-      <View className="flex-row gap-3 bg-surface px-5 py-4">
-        <Button variant="ghost" onPress={() => router.back()}>
-          Cancel
-        </Button>
-        <Button variant="outline" onPress={() => handleSelect(null)} className="flex-1">
-          No Table
-        </Button>
-      </View>
-    </View>
+    </>
   );
 }

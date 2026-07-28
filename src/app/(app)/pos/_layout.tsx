@@ -46,12 +46,6 @@ export default function POSFlowLayout() {
         name="table-selection"
         options={{
           title: t("navigation.selectTable"),
-          headerShown: false,
-          presentation: "formSheet",
-          sheetAllowedDetents: [0.65, maxSheetDetent],
-          sheetInitialDetentIndex: 1,
-          sheetGrabberVisible: true,
-          contentStyle: { backgroundColor: "transparent" },
         }}
       />
       <Stack.Screen
