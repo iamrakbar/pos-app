@@ -7,7 +7,7 @@ import { usePOSStore } from "@/stores/use-pos-store";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
-import { useFocusEffect, useIsFocused, useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Platform, StatusBar, View } from "react-native";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 
@@ -16,7 +16,6 @@ export default function POSScreen(): JSX.Element {
   const router = useRouter();
   const setAddonSelection = usePOSStore((s) => s.setAddonSelection);
   const addItem = useCartStore((s) => s.addItem);
-  const isFocused = useIsFocused();
   const theme = useNavigationTheme();
   const cartPanelWidth = Math.min(Math.max(Math.floor(viewportWidth * 0.34), 340), 460);
 
@@ -54,15 +53,13 @@ export default function POSScreen(): JSX.Element {
         />
       </View>
 
-      {isFocused ? (
-        isWide ? (
-          <View style={{ width: cartPanelWidth }}>
-            <CartPanel />
-          </View>
-        ) : (
-          <FloatingCartButton />
-        )
-      ) : null}
+      {isWide ? (
+        <View style={{ width: cartPanelWidth }}>
+          <CartPanel />
+        </View>
+      ) : (
+        <FloatingCartButton />
+      )}
     </View>
   );
 }
