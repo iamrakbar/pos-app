@@ -83,7 +83,10 @@ export default function SettingsScreen(): JSX.Element {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-background" contentContainerClassName="flex-grow p-5">
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerClassName="flex-grow px-4 py-6 pb-10 md:px-6"
+      >
         <View className="flex-1 justify-between gap-6">
           <Card className="p-0 overflow-hidden">
             {SETTINGS_ITEMS.map((item) => (

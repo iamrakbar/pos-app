@@ -134,7 +134,7 @@ export default function ProductsScreen(): React.JSX.Element {
                   <View key={product.id}>
                     <Pressable
                       onPress={() => router.push(`/products/${product.id}` as never)}
-                      className="min-h-20 flex-row items-center gap-4 px-5 py-3 active:bg-surface-secondary"
+                      className="min-h-20 flex-row items-center gap-4 px-4 py-3 active:bg-surface-secondary md:px-6"
                     >
                       {/* Thumbnail */}
                       <View className="w-14 h-14 rounded-panel-inner bg-surface-secondary overflow-hidden items-center justify-center shrink-0">

@@ -277,7 +277,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
 
   return (
     <>
-      <View className="flex-1 bg-background p-4">
+      <View className="flex-1 bg-background px-4 py-6 pb-10 md:px-6">
         <View
           className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row items-stretch gap-6" : "gap-4"}`}
         >

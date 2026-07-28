@@ -51,7 +51,7 @@ export default function PrintersScreen(): React.JSX.Element {
 
             return (
               <Pressable
-                className="px-5 py-3 active:bg-surface-secondary"
+                className="px-4 py-3 active:bg-surface-secondary md:px-6"
                 onPress={() => router.push(`/settings/printers/${printer.id}` as never)}
               >
                 <View className="flex-row items-start gap-3">

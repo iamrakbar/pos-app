@@ -104,7 +104,7 @@ export default function AreaFormScreen(): React.JSX.Element {
 
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName="items-center px-4 py-5"
+        contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
         keyboardShouldPersistTaps="handled"
       >
         <Card className="w-full max-w-3xl">

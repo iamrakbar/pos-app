@@ -74,7 +74,7 @@ export default function OrdersScreen(): React.JSX.Element {
   return (
     <View className="flex-1 bg-background">
       {/* Status filter pills */}
-      <View className="flex-row items-center gap-2 px-5 py-4 flex-wrap">
+      <View className="flex-row flex-wrap items-center gap-2 px-4 py-4 md:px-6">
         {STATUS_FILTERS.map((f) => {
           const isSelected = statusFilter === f.value;
           const status =
@@ -168,7 +168,7 @@ function OrderRow({
         : "Takeaway";
 
   return (
-    <Pressable onPress={onPress} className="px-5 py-3 active:bg-surface-secondary">
+    <Pressable onPress={onPress} className="px-4 py-3 active:bg-surface-secondary md:px-6">
       {/* Top row */}
       <View className="flex-row items-start justify-between gap-3">
         <View className="gap-0.5 flex-1">

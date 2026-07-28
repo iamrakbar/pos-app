@@ -43,7 +43,7 @@ export default function AreasScreen(): React.JSX.Element {
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${area.name}`}
                 onPress={() => router.push(`/settings/areas/${area.id}`)}
-                className="min-h-20 flex-row items-center gap-4 px-5 py-3 active:bg-surface-secondary"
+                className="min-h-20 flex-row items-center gap-4 px-4 py-3 active:bg-surface-secondary md:px-6"
               >
                 <View className="size-11 items-center justify-center rounded-panel-inner bg-accent-soft">
                   <Ionicons name="storefront-outline" size={20} color={accentColor} />

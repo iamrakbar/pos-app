@@ -116,7 +116,7 @@ export default function CategoriesScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {isOrderDirty ? (
-          <View className="flex-row items-center justify-between gap-3 border-b border-border bg-surface px-5 py-3">
+          <View className="flex-row items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 md:px-6">
             <Typography type="body-sm" color="muted" className="flex-1">
               Category order has unsaved changes.
             </Typography>
@@ -149,7 +149,7 @@ export default function CategoriesScreen(): React.JSX.Element {
             ) : (
               orderedCategories.map((category, index) => (
                 <View key={category.id}>
-                  <View className="min-h-20 flex-row items-center gap-3 px-5 py-3">
+                  <View className="min-h-20 flex-row items-center gap-3 px-4 py-3 md:px-6">
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Edit ${category.name}`}

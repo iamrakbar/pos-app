@@ -133,7 +133,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
       ) : null}
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName="items-center px-4 py-5 pb-8"
+        contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
         keyboardShouldPersistTaps="handled"
       >
         <View className="w-full max-w-3xl gap-4">

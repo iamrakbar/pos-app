@@ -367,7 +367,7 @@ export default function OrderDetailScreen() {
       />
 
       <View className="flex-1 bg-background">
-        <ScrollView className="flex-1" contentContainerClassName="p-4 pb-8">
+        <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-10 md:px-6">
           <View className="w-full max-w-3xl self-center gap-5">
             <Surface className="w-full p-5">
               <View className={`gap-4 ${isCompact ? "" : "flex-row items-start justify-between"}`}>
