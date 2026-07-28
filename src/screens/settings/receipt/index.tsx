@@ -160,30 +160,20 @@ function ReceiptPreviewSection({
         LinearGradientComponent={LinearGradient}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
-          <ScrollShadow
-            color={surfaceColor}
-            orientation="horizontal"
-            LinearGradientComponent={LinearGradient}
-          >
-            <ScrollView
-              horizontal
-              contentContainerClassName="min-w-full items-center p-4"
-              showsHorizontalScrollIndicator={false}
-            >
-              <ReceiptPaper
-                settings={settings}
-                data={SAMPLE_RECEIPT}
-                paperWidth={previewPaperWidth}
-                charactersPerLine={
-                  previewPaperWidth === configuredPaperWidth
-                    ? configuredCharactersPerLine
-                    : previewPaperWidth === "80mm"
-                      ? "46"
-                      : "32"
-                }
-              />
-            </ScrollView>
-          </ScrollShadow>
+          <View className="items-center p-4">
+            <ReceiptPaper
+              settings={settings}
+              data={SAMPLE_RECEIPT}
+              paperWidth={previewPaperWidth}
+              charactersPerLine={
+                previewPaperWidth === configuredPaperWidth
+                  ? configuredCharactersPerLine
+                  : previewPaperWidth === "80mm"
+                    ? "46"
+                    : "32"
+              }
+            />
+          </View>
         </ScrollView>
       </ScrollShadow>
     </View>
