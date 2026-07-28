@@ -5,7 +5,6 @@ import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
 import {
   Button,
   Description,
@@ -331,7 +330,6 @@ function CustomDateRangeDialog({
 }
 
 export default function DashboardScreen(): React.JSX.Element {
-  const navigation = useNavigation();
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const { toast } = useToast();
   const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
@@ -350,10 +348,6 @@ export default function DashboardScreen(): React.JSX.Element {
   const [isCustomRangeOpen, setIsCustomRangeOpen] = React.useState(false);
   const dashboard = useDashboard(appliedRange.startDate, appliedRange.endDate);
   const themeColorMuted = useThemeColor("muted");
-
-  React.useLayoutEffect(() => {
-    navigation.setOptions({ headerShown: !dashboard.isLoading });
-  }, [dashboard.isLoading, navigation]);
 
   const chart = normalizeChartRange(
     (dashboard.data?.orders_chart ?? []).map((point) => ({
@@ -416,11 +410,7 @@ export default function DashboardScreen(): React.JSX.Element {
   };
 
   if (dashboard.isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <LoadingAnimation />
-      </View>
-    );
+    return <LoadingAnimation fullScreen />;
   }
 
   return (
