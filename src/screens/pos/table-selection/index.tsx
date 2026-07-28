@@ -63,7 +63,7 @@ export default function TableSelectionScreen(): JSX.Element {
     : (selectedTable?.area_id ?? groups[0]?.id ?? "");
   const filteredTables = groups.find((group) => group.id === resolvedAreaId)?.tables ?? [];
   const columnCount = gridWidth >= 520 ? 3 : 2;
-  const cardWidth = gridWidth > 0 ? (gridWidth - (columnCount - 1) * 12) / columnCount : "48%";
+  const cardWidth = gridWidth > 0 ? gridWidth / columnCount - 12 : "48%";
 
   const handleSelect = (tableId: string | null) => {
     updateCheckoutForm({ table_id: tableId });
@@ -111,7 +111,7 @@ export default function TableSelectionScreen(): JSX.Element {
           <ScrollView
             className="flex-1"
             showsVerticalScrollIndicator={false}
-            contentContainerClassName="flex-row flex-wrap items-center gap-3 pb-4"
+            contentContainerClassName="flex-row flex-wrap items-center pb-4"
             onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}
           >
             {filteredTables.map((table) => {
@@ -125,7 +125,7 @@ export default function TableSelectionScreen(): JSX.Element {
                   accessibilityLabel={`Select ${table.name}, ${table.pax} seats`}
                   accessibilityState={{ selected: isSelected }}
                   onPress={() => handleSelect(table.id)}
-                  style={{ width: cardWidth }}
+                  style={{ width: cardWidth, margin: 6 }}
                 >
                   <Card variant={isSelected ? "default" : "secondary"} className="gap-2">
                     <Card.Header className="flex-1 items-center justify-center py-2">
