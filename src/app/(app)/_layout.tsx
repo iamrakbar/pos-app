@@ -1,9 +1,12 @@
 import { Drawer } from "expo-router/drawer";
 import AppDrawerContent from "@/components/navigation/app-drawer-content";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 
 export default function AppLayout() {
   const theme = useNavigationTheme();
+  const { width, isCompact } = useResponsiveLayout();
+  const drawerWidth = Math.min(isCompact ? width - 48 : 320, 320);
 
   return (
     <Drawer
@@ -11,6 +14,7 @@ export default function AppLayout() {
       screenOptions={{
         swipeEnabled: true,
         drawerStyle: {
+          width: drawerWidth,
           backgroundColor: theme.background,
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,

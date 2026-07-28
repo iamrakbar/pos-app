@@ -3,6 +3,7 @@ import LoadingAnimation from "@/components/common/loading-animation";
 import DialogCloseButton from "@/components/common/dialog-close-button";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useDashboard } from "@/hooks/db/use-dashboard";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -50,16 +51,18 @@ function SummaryWidget({
   value,
   icon,
   color = "accent",
+  width,
 }: {
   label: string;
   value: string;
   icon: React.ComponentProps<typeof Ionicons>["name"];
   color?: "accent" | "warning" | "success";
+  width: number;
 }) {
   const iconColor = useThemeColor(`${color}-soft-foreground`);
 
   return (
-    <Widget className="min-w-[220px] flex-1">
+    <Widget style={{ width }}>
       <Widget.Header>
         <Widget.Title>{label}</Widget.Title>
         <View
@@ -213,9 +216,9 @@ function normalizeChartRange(
   return normalized;
 }
 
-function OrdersChart({ data }: { data: ChartPoint[] }) {
+function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boolean }) {
   const [width, setWidth] = React.useState(0);
-  const height = 224;
+  const height = isCompact ? 192 : 224;
   const max = Math.max(1, ...data.map((point) => point.count));
   const domainMax = Math.max(5, Math.ceil(max / 5) * 5);
 
@@ -243,7 +246,7 @@ function OrdersChart({ data }: { data: ChartPoint[] }) {
               },
             ]}
             explicitSize={{ width, height }}
-            wrapperClassName="h-56"
+            wrapperClassName={isCompact ? "h-48" : "h-56"}
           >
             {({ points, chartBounds }) => (
               <AreaChart.Area points={points.count} y0={chartBounds.bottom} curveType="monotoneX" />
@@ -332,6 +335,7 @@ function CustomDateRangeDialog({
 
 export default function DashboardScreen(): React.JSX.Element {
   const router = useRouter();
+  const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
   const { toast } = useToast();
   const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
     DATE_RANGE_OPTIONS[0]
@@ -364,6 +368,10 @@ export default function DashboardScreen(): React.JSX.Element {
         " – " +
         toDateOption(appliedRange.endDate).label
       : dateRange.label;
+  const contentWidth = Math.min(width - horizontalPagePadding * 2, 1280);
+  const summaryColumns = isCompact ? 1 : isMedium ? 2 : 4;
+  const summaryGap = 16;
+  const summaryWidth = (contentWidth - summaryGap * (summaryColumns - 1)) / summaryColumns;
 
   const handleRangeChange = (option: { value: string; label: string } | undefined) => {
     if (!option) return;
@@ -421,7 +429,8 @@ export default function DashboardScreen(): React.JSX.Element {
     <>
       <ScrollView
         className="flex-1 bg-background pt-safe"
-        contentContainerClassName="items-center px-4 py-8 pb-10"
+        contentContainerClassName="items-center py-8 pb-10"
+        contentContainerStyle={{ paddingHorizontal: horizontalPagePadding }}
         refreshControl={
           <RefreshControl
             refreshing={dashboard.isRefetching}
@@ -430,37 +439,41 @@ export default function DashboardScreen(): React.JSX.Element {
         }
       >
         <View className="w-full max-w-7xl gap-6">
-          <View className="flex-row flex-wrap items-center gap-3">
-            <DrawerMenuButton />
-            <View className="min-w-[180px] flex-1 gap-0.5">
-              <Typography type="h4" weight="bold">
-                Dashboard
-              </Typography>
-              <Typography type="body-xs" color="muted">
-                Sales and order performance at a glance
-              </Typography>
+          <View className="gap-3">
+            <View className="flex-row items-center gap-3">
+              <DrawerMenuButton />
+              <View className="min-w-0 flex-1 gap-0.5">
+                <Typography type="h4" weight="bold">
+                  Dashboard
+                </Typography>
+                <Typography type="body-xs" color="muted">
+                  Sales and order performance at a glance
+                </Typography>
+              </View>
             </View>
-            <Select value={dateRange} onValueChange={handleRangeChange}>
-              <Select.Trigger asChild variant="unstyled">
-                <Button size="sm" variant="outline">
-                  <Button.Label>{dateRangeLabel}</Button.Label>
-                  <Ionicons name="chevron-down" size={14} color={themeColorMuted} />
-                </Button>
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Overlay />
-                <Select.Content presentation="popover" width={200}>
-                  <Select.ListLabel>Date Range</Select.ListLabel>
-                  {DATE_RANGE_OPTIONS.map((option) => (
-                    <Select.Item key={option.value} value={option.value} label={option.label} />
-                  ))}
-                </Select.Content>
-              </Select.Portal>
-            </Select>
-            <Button size="sm" variant="outline" onPress={() => router.push("/pos" as never)}>
-              <Ionicons name="calculator-outline" size={16} color={themeColorForeground} />
-              <Button.Label>POS</Button.Label>
-            </Button>
+            <View className="flex-row items-center justify-end gap-2">
+              <Select value={dateRange} onValueChange={handleRangeChange}>
+                <Select.Trigger asChild variant="unstyled">
+                  <Button size="sm" variant="outline" className={isCompact ? "flex-1" : undefined}>
+                    <Button.Label numberOfLines={1}>{dateRangeLabel}</Button.Label>
+                    <Ionicons name="chevron-down" size={14} color={themeColorMuted} />
+                  </Button>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Overlay />
+                  <Select.Content presentation="popover" width={200}>
+                    <Select.ListLabel>Date Range</Select.ListLabel>
+                    {DATE_RANGE_OPTIONS.map((option) => (
+                      <Select.Item key={option.value} value={option.value} label={option.label} />
+                    ))}
+                  </Select.Content>
+                </Select.Portal>
+              </Select>
+              <Button size="sm" variant="outline" onPress={() => router.push("/pos" as never)}>
+                <Ionicons name="calculator-outline" size={16} color={themeColorForeground} />
+                <Button.Label>POS</Button.Label>
+              </Button>
+            </View>
           </View>
 
           {dashboard.isError ? (
@@ -469,23 +482,27 @@ export default function DashboardScreen(): React.JSX.Element {
             <>
               <View className="flex-row flex-wrap gap-4">
                 <SummaryWidget
+                  width={summaryWidth}
                   label="Revenue"
                   value={formatRupiah(dashboard.data?.revenue_today ?? 0)}
                   icon="wallet-outline"
                   color="success"
                 />
                 <SummaryWidget
+                  width={summaryWidth}
                   label="Orders"
                   value={String(dashboard.data?.orders_today ?? 0)}
                   icon="receipt-outline"
                 />
                 <SummaryWidget
+                  width={summaryWidth}
                   label="Pending"
                   value={String(dashboard.data?.pending_orders ?? 0)}
                   icon="time-outline"
                   color="warning"
                 />
                 <SummaryWidget
+                  width={summaryWidth}
                   label="Completed"
                   value={String(dashboard.data?.completed_orders ?? 0)}
                   icon="checkmark-circle-outline"
@@ -519,7 +536,7 @@ export default function DashboardScreen(): React.JSX.Element {
                       </EmptyState.Header>
                     </EmptyState>
                   ) : (
-                    <OrdersChart data={chart} />
+                    <OrdersChart data={chart} isCompact={isCompact} />
                   )}
                 </Widget.Content>
                 <Widget.Footer>
@@ -550,13 +567,15 @@ export default function DashboardScreen(): React.JSX.Element {
                   ) : (
                     bestSellers.map((product, index) => (
                       <View key={product.product_id}>
-                        <View className="flex-row items-center gap-3 px-4 py-3.5">
+                        <View
+                          className={`gap-3 px-4 py-3.5 ${isCompact ? "items-start" : "flex-row items-center"}`}
+                        >
                           <View className="size-8 items-center justify-center rounded-full bg-surface-secondary">
                             <Typography type="body-xs" weight="bold" className="tabular-nums">
                               {index + 1}
                             </Typography>
                           </View>
-                          <View className="flex-1 gap-0.5">
+                          <View className="min-w-0 flex-1 gap-0.5">
                             <Typography type="body-sm" weight="semibold" numberOfLines={1}>
                               {product.name}
                             </Typography>
