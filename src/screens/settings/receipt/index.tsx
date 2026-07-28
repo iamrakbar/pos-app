@@ -135,7 +135,7 @@ function ReceiptPreviewSection({
             if (option?.value) onPaperWidthChange(option.value as PaperWidth);
           }}
         >
-          <Select.Trigger className="w-28">
+          <Select.Trigger className="w-32">
             <Select.Value placeholder="Paper size" numberOfLines={1} />
             <Select.TriggerIndicator />
           </Select.Trigger>
