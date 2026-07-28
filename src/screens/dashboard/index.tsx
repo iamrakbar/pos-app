@@ -1,6 +1,6 @@
 import ErrorState from "@/components/common/error-state";
 import LoadingAnimation from "@/components/common/loading-animation";
-import DialogCloseButton from "@/components/common/dialog-close-button";
+import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
@@ -9,7 +9,6 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   Button,
   Description,
-  Dialog,
   Label,
   Select,
   Separator,
@@ -141,12 +140,14 @@ function DashboardDatePicker({
   onValueChange,
   description,
   isInvalid,
+  presentation,
 }: {
   label: string;
   value: NonNullable<DatePickerOption>;
   onValueChange: (value: DatePickerOption | undefined) => void;
   description?: string;
   isInvalid?: boolean;
+  presentation: "dialog" | "popover";
 }) {
   return (
     <DatePicker
@@ -159,14 +160,17 @@ function DashboardDatePicker({
       dateDisplayFormat="medium"
     >
       <Label>{label}</Label>
-      <DatePicker.Select>
+      <DatePicker.Select presentation={presentation}>
         <DatePicker.Trigger>
           <DatePicker.Value />
           <DatePicker.TriggerIndicator />
         </DatePicker.Trigger>
         <DatePicker.Portal>
           <DatePicker.Overlay />
-          <DatePicker.Content presentation="popover" width="trigger">
+          <DatePicker.Content
+            presentation={presentation}
+            width={presentation === "popover" ? "trigger" : undefined}
+          >
             <DatePicker.Calendar>
               <Calendar.Header>
                 <Calendar.Heading />
@@ -278,55 +282,70 @@ function CustomDateRangeDialog({
   onCancel: () => void;
   isApplying: boolean;
 }) {
+  const { isPhonePortrait } = useOverlayPresentation();
+  const pickerPresentation = isPhonePortrait ? "dialog" : "popover";
+
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content isSwipeable={false} className="w-full max-w-lg self-center">
-          <DialogCloseButton />
-          <View className="mb-5 gap-1.5 pr-10">
-            <Dialog.Title>Custom Date Range</Dialog.Title>
-            <Dialog.Description>Select the reporting period to display.</Dialog.Description>
-          </View>
+    <AdaptiveFormOverlay
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title="Custom Date Range"
+      description="Select the reporting period to display."
+      maxWidthClassName="max-w-lg"
+      footer={
+        <View
+          className={`gap-3 px-5 pb-5 pt-4 ${
+            isPhonePortrait ? "items-stretch" : "flex-row justify-end"
+          }`}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className={isPhonePortrait ? "w-full" : undefined}
+            onPress={onCancel}
+          >
+            <Button.Label>Cancel</Button.Label>
+          </Button>
+          <Button
+            size="sm"
+            className={isPhonePortrait ? "w-full" : undefined}
+            onPress={onApply}
+            isDisabled={isApplying}
+          >
+            <Button.Label>{isApplying ? "Applying…" : "Apply"}</Button.Label>
+          </Button>
+        </View>
+      }
+    >
+      <View className="gap-4 px-5">
+        <View className={`${isPhonePortrait ? "gap-4" : "flex-row flex-wrap items-start gap-4"}`}>
+          <DashboardDatePicker
+            label="From"
+            value={start}
+            onValueChange={onStartChange}
+            isInvalid={error !== null}
+            presentation={pickerPresentation}
+          />
+          <DashboardDatePicker
+            label="To"
+            value={end}
+            onValueChange={onEndChange}
+            isInvalid={error !== null}
+            presentation={pickerPresentation}
+          />
+        </View>
 
-          <View className="gap-4">
-            <View className="flex-row flex-wrap items-start gap-4">
-              <DashboardDatePicker
-                label="From"
-                value={start}
-                onValueChange={onStartChange}
-                isInvalid={error !== null}
-              />
-              <DashboardDatePicker
-                label="To"
-                value={end}
-                onValueChange={onEndChange}
-                isInvalid={error !== null}
-              />
-            </View>
-
-            {error ? (
-              <Typography type="body-xs" className="text-danger">
-                {error}
-              </Typography>
-            ) : (
-              <Typography type="body-xs" color="muted">
-                Maximum range: 366 days. Future dates are not included.
-              </Typography>
-            )}
-
-            <View className="flex-row justify-end gap-3">
-              <Button variant="ghost" size="sm" onPress={onCancel}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button size="sm" onPress={onApply} isDisabled={isApplying}>
-                <Button.Label>{isApplying ? "Applying…" : "Apply"}</Button.Label>
-              </Button>
-            </View>
-          </View>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+        {error ? (
+          <Typography type="body-xs" className="text-danger">
+            {error}
+          </Typography>
+        ) : (
+          <Typography type="body-xs" color="muted">
+            Maximum range: 366 days. Future dates are not included.
+          </Typography>
+        )}
+      </View>
+    </AdaptiveFormOverlay>
   );
 }
 
