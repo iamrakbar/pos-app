@@ -1,12 +1,10 @@
 import ErrorState from "@/components/common/error-state";
 import LoadingAnimation from "@/components/common/loading-animation";
 import DialogCloseButton from "@/components/common/dialog-close-button";
-import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import {
   Button,
   Description,
@@ -334,7 +332,6 @@ function CustomDateRangeDialog({
 }
 
 export default function DashboardScreen(): React.JSX.Element {
-  const router = useRouter();
   const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
   const { toast } = useToast();
   const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
@@ -352,7 +349,7 @@ export default function DashboardScreen(): React.JSX.Element {
   const [customRangeError, setCustomRangeError] = React.useState<string | null>(null);
   const [isCustomRangeOpen, setIsCustomRangeOpen] = React.useState(false);
   const dashboard = useDashboard(appliedRange.startDate, appliedRange.endDate);
-  const [themeColorMuted, themeColorForeground] = useThemeColor(["muted", "foreground"]);
+  const themeColorMuted = useThemeColor("muted");
   const chart = normalizeChartRange(
     (dashboard.data?.orders_chart ?? []).map((point) => ({
       date: point.date,
@@ -439,41 +436,24 @@ export default function DashboardScreen(): React.JSX.Element {
         }
       >
         <View className="w-full max-w-7xl gap-6">
-          <View className="flex-col md:flex-row gap-4">
-            <View className="flex-1 flex-row items-center gap-3">
-              <DrawerMenuButton />
-              <View className="min-w-0 flex-1 gap-0.5">
-                <Typography type="h4" weight="bold">
-                  Dashboard
-                </Typography>
-                <Typography type="body-xs" color="muted">
-                  Sales and order performance at a glance
-                </Typography>
-              </View>
-            </View>
-            <View className="flex-row items-center justify-end gap-2">
-              <Select value={dateRange} onValueChange={handleRangeChange}>
-                <Select.Trigger asChild variant="unstyled">
-                  <Button size="sm" variant="outline" className={isCompact ? "flex-1" : undefined}>
-                    <Button.Label numberOfLines={1}>{dateRangeLabel}</Button.Label>
-                    <Ionicons name="chevron-down" size={14} color={themeColorMuted} />
-                  </Button>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content presentation="popover" width={200}>
-                    <Select.ListLabel>Date Range</Select.ListLabel>
-                    {DATE_RANGE_OPTIONS.map((option) => (
-                      <Select.Item key={option.value} value={option.value} label={option.label} />
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-              <Button size="sm" variant="outline" onPress={() => router.push("/pos" as never)}>
-                <Ionicons name="calculator-outline" size={16} color={themeColorForeground} />
-                <Button.Label>POS</Button.Label>
-              </Button>
-            </View>
+          <View className="items-end">
+            <Select value={dateRange} onValueChange={handleRangeChange}>
+              <Select.Trigger asChild variant="unstyled">
+                <Button size="sm" variant="outline" className={isCompact ? "min-w-40" : undefined}>
+                  <Button.Label numberOfLines={1}>{dateRangeLabel}</Button.Label>
+                  <Ionicons name="chevron-down" size={14} color={themeColorMuted} />
+                </Button>
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Overlay />
+                <Select.Content presentation="popover" width={200}>
+                  <Select.ListLabel>Date Range</Select.ListLabel>
+                  {DATE_RANGE_OPTIONS.map((option) => (
+                    <Select.Item key={option.value} value={option.value} label={option.label} />
+                  ))}
+                </Select.Content>
+              </Select.Portal>
+            </Select>
           </View>
 
           {dashboard.isError ? (

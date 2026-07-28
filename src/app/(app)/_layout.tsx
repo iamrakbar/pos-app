@@ -1,10 +1,15 @@
 import { Drawer } from "expo-router/drawer";
 import AppDrawerContent from "@/components/navigation/app-drawer-content";
+import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useNavigationTheme } from "@/utils/navigation-theme";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Button } from "heroui-native";
 
 export default function AppLayout() {
   const theme = useNavigationTheme();
+  const router = useRouter();
   const { width, isCompact } = useResponsiveLayout();
   const drawerWidth = Math.min(isCompact ? width - 48 : 320, 320);
 
@@ -40,7 +45,14 @@ export default function AppLayout() {
         options={{
           title: "Dashboard",
           drawerLabel: "Dashboard",
-          headerShown: false,
+          headerShown: true,
+          headerLeft: () => <DrawerMenuButton />,
+          headerRight: () => (
+            <Button variant="ghost" size="sm" onPress={() => router.push("/pos")}>
+              <Ionicons name="calculator-outline" size={16} color={theme.foreground} />
+              <Button.Label>POS</Button.Label>
+            </Button>
+          ),
         }}
       />
       <Drawer.Screen
