@@ -4,6 +4,7 @@ import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
 import { useReceiptStore, type ReceiptSettings } from "@/stores/use-receipt-store";
 import { usePrinterStore, type PaperWidth } from "@/stores/use-printer-store";
 import { optimizeReceiptLogo } from "@/utils/receipt-logo";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
@@ -22,7 +23,8 @@ import {
 } from "heroui-native";
 import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { ActivityIndicator, Pressable, ScrollView, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import { SplitView } from "heroui-native-pro";
 
 const SAMPLE_RECEIPT: ReceiptPreviewData = {
   code: "ORD-2026-0142",
@@ -115,7 +117,6 @@ function ReceiptPreviewSection({
   configuredPaperWidth,
   configuredCharactersPerLine,
   surfaceColor,
-  isWide,
 }: {
   settings: ReceiptSettings;
   previewPaperWidth: PaperWidth;
@@ -123,10 +124,9 @@ function ReceiptPreviewSection({
   configuredPaperWidth: PaperWidth;
   configuredCharactersPerLine: string;
   surfaceColor: string;
-  isWide: boolean;
 }) {
   return (
-    <View className={`min-h-0 gap-2 ${isWide ? "flex-1" : "min-h-64 w-full flex-[0.8]"}`}>
+    <View className="min-h-0 flex-1 gap-2">
       <View className="flex-row items-center justify-between gap-3">
         <Typography className="text-sm font-semibold text-foreground">Receipt preview</Typography>
         <Select
@@ -180,6 +180,37 @@ function ReceiptPreviewSection({
   );
 }
 
+function ReceiptSetupLayout({
+  isPortrait,
+  children,
+}: React.PropsWithChildren<{ isPortrait: boolean }>) {
+  const [preview, form] = React.Children.toArray(children);
+
+  if (!isPortrait) {
+    return (
+      <View className="min-h-0 flex-1 flex-row items-stretch gap-6">
+        <View className="min-h-0 flex-1">{preview}</View>
+        <View className="min-h-0 w-2/5 min-w-80 max-w-120">{form}</View>
+      </View>
+    );
+  }
+
+  return (
+    <SplitView
+      snapPoints={[0.32, 0.42, 0.52]}
+      defaultSnapIndex={1}
+      minHeight={0.28}
+      maxHeight={0.58}
+    >
+      <SplitView.TopSection className="min-h-0">{preview}</SplitView.TopSection>
+      <SplitView.DragArea accessibilityLabel="Resize receipt preview">
+        <SplitView.DragHandle />
+      </SplitView.DragArea>
+      <SplitView.BottomSection className="min-h-0">{form}</SplitView.BottomSection>
+    </SplitView>
+  );
+}
+
 export default function ReceiptSetupScreen(): React.JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
@@ -189,8 +220,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const updateSettings = useReceiptStore((state) => state.updateSettings);
   const configuredPaperWidth = usePrinterStore((state) => state.settings.paperWidth);
   const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
-  const { width } = useWindowDimensions();
-  const isWide = width >= 900;
+  const { isPortrait } = useResponsiveLayout();
   const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useThemeColor([
     "muted",
     "foreground",
@@ -278,162 +308,155 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   return (
     <>
       <View className="flex-1 bg-background px-4 py-6 pb-10 md:px-6">
-        <View
-          className={`w-full max-w-6xl flex-1 min-h-0 self-center ${isWide ? "flex-row items-stretch gap-6" : "gap-4"}`}
-        >
-          <ReceiptPreviewSection
-            settings={settings}
-            previewPaperWidth={previewPaperWidth}
-            onPaperWidthChange={setPreviewPaperWidth}
-            configuredPaperWidth={configuredPaperWidth}
-            configuredCharactersPerLine={configuredCharactersPerLine}
-            surfaceColor={themeColorSurfaceSecondary}
-            isWide={isWide}
-          />
+        <View className="min-h-0 w-full max-w-6xl flex-1 self-center">
+          <ReceiptSetupLayout isPortrait={isPortrait}>
+            <ReceiptPreviewSection
+              settings={settings}
+              previewPaperWidth={previewPaperWidth}
+              onPaperWidthChange={setPreviewPaperWidth}
+              configuredPaperWidth={configuredPaperWidth}
+              configuredCharactersPerLine={configuredCharactersPerLine}
+              surfaceColor={themeColorSurfaceSecondary}
+            />
 
-          <Surface
-            className={
-              isWide
-                ? "w-120 min-h-0 overflow-hidden p-0"
-                : "w-full flex-[1.1] min-h-0 overflow-hidden p-0"
-            }
-          >
-            <View className="px-5 pt-5 pb-4 gap-1">
-              <Typography className="text-lg font-semibold text-foreground">
-                Receipt details
-              </Typography>
-              <Typography type="body-sm" color="muted">
-                Changes are saved automatically and used for future prints.
-              </Typography>
-            </View>
-
-            <KeyboardAwareScrollView
-              className="flex-1"
-              contentContainerClassName="px-5 pb-5"
-              bottomOffset={88}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              <View className="gap-5">
-                <View>
-                  <FieldLabel>Receipt layout</FieldLabel>
-                  <Select
-                    value={RECEIPT_LAYOUTS.find((item) => item.value === settings.layout)}
-                    onValueChange={(option) => {
-                      if (option) {
-                        updateSettings({
-                          layout: option.value as "standard" | "compact" | "customer" | "kitchen",
-                        });
-                      }
-                    }}
-                  >
-                    <Select.Trigger>
-                      <Select.Value placeholder="Select layout" />
-                      <Select.TriggerIndicator />
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Overlay />
-                      <Select.Content presentation="popover" width="trigger">
-                        {RECEIPT_LAYOUTS.map((item) => (
-                          <Select.Item key={item.value} value={item.value} label={item.label} />
-                        ))}
-                      </Select.Content>
-                    </Select.Portal>
-                  </Select>
-                </View>
-                <View>
-                  <FieldLabel>Store logo</FieldLabel>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Change store logo"
-                    onPress={handleSelectLogo}
-                    disabled={isProcessingLogo}
-                    className="h-28 w-full items-center justify-center overflow-hidden rounded-lg bg-surface-secondary active:opacity-70"
-                  >
-                    {isProcessingLogo ? (
-                      <View className="items-center gap-2">
-                        <ActivityIndicator />
-                        <Typography type="body-xs" color="muted">
-                          Optimizing logo
-                        </Typography>
-                      </View>
-                    ) : settings.storeLogo ? (
-                      <>
-                        <Image
-                          source={{ uri: settings.storeLogo }}
-                          style={{ width: 160, height: 80 }}
-                          contentFit="contain"
-                        />
-                        <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
-                          <Ionicons name="camera" size={15} color="white" />
-                        </View>
-                      </>
-                    ) : (
-                      <View className="items-center gap-1.5">
-                        <Ionicons name="image-outline" size={26} color={themeColorMuted} />
-                        <Typography type="body-xs" color="muted">
-                          Choose image
-                        </Typography>
-                      </View>
-                    )}
-                  </Pressable>
-                  <Typography type="body-xs" color="muted" className="mt-1.5">
-                    Stored locally as a grayscale image optimized for thermal printing.
-                  </Typography>
-                </View>
-
-                <View>
-                  <FieldLabel>Store name</FieldLabel>
-                  <Input
-                    value={settings.storeName}
-                    onChangeText={(storeName) => updateSettings({ storeName })}
-                    placeholder="Store name"
-                    variant="secondary"
-                  />
-                </View>
-
-                <View>
-                  <FieldLabel>Header</FieldLabel>
-                  <Input
-                    value={settings.header}
-                    onChangeText={(header) => updateSettings({ header })}
-                    placeholder="Address and phone number"
-                    multiline
-                    numberOfLines={3}
-                    textAlignVertical="top"
-                    variant="secondary"
-                    className="min-h-24 py-3"
-                  />
-                </View>
-
-                <View>
-                  <FieldLabel>Footer</FieldLabel>
-                  <Input
-                    value={settings.footer}
-                    onChangeText={(footer) => updateSettings({ footer })}
-                    placeholder="Thank you!"
-                    multiline
-                    numberOfLines={2}
-                    textAlignVertical="top"
-                    variant="secondary"
-                    className="min-h-20 py-3"
-                  />
-                </View>
-
-                <PrinterSetupButton
-                  color={themeColorForeground}
-                  onPress={() => router.push("/settings/printers")}
-                />
+            <Surface className="min-h-0 flex-1 overflow-hidden p-0">
+              <View className="px-5 pt-5 pb-4 gap-1">
+                <Typography className="text-lg font-semibold text-foreground">
+                  Receipt details
+                </Typography>
+                <Typography type="body-sm" color="muted">
+                  Changes are saved automatically and used for future prints.
+                </Typography>
               </View>
-            </KeyboardAwareScrollView>
 
-            <Separator />
-            <View className="bg-surface px-5 py-4">
-              <Button className="w-full" onPress={() => router.back()}>
-                <Button.Label>Done</Button.Label>
-              </Button>
-            </View>
-          </Surface>
+              <KeyboardAwareScrollView
+                className="flex-1"
+                contentContainerClassName="px-5 pb-5"
+                bottomOffset={88}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                <View className="gap-5">
+                  <View>
+                    <FieldLabel>Receipt layout</FieldLabel>
+                    <Select
+                      value={RECEIPT_LAYOUTS.find((item) => item.value === settings.layout)}
+                      onValueChange={(option) => {
+                        if (option) {
+                          updateSettings({
+                            layout: option.value as "standard" | "compact" | "customer" | "kitchen",
+                          });
+                        }
+                      }}
+                    >
+                      <Select.Trigger>
+                        <Select.Value placeholder="Select layout" />
+                        <Select.TriggerIndicator />
+                      </Select.Trigger>
+                      <Select.Portal>
+                        <Select.Overlay />
+                        <Select.Content presentation="popover" width="trigger">
+                          {RECEIPT_LAYOUTS.map((item) => (
+                            <Select.Item key={item.value} value={item.value} label={item.label} />
+                          ))}
+                        </Select.Content>
+                      </Select.Portal>
+                    </Select>
+                  </View>
+                  <View>
+                    <FieldLabel>Store logo</FieldLabel>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Change store logo"
+                      onPress={handleSelectLogo}
+                      disabled={isProcessingLogo}
+                      className="h-28 w-full items-center justify-center overflow-hidden rounded-lg bg-surface-secondary active:opacity-70"
+                    >
+                      {isProcessingLogo ? (
+                        <View className="items-center gap-2">
+                          <ActivityIndicator />
+                          <Typography type="body-xs" color="muted">
+                            Optimizing logo
+                          </Typography>
+                        </View>
+                      ) : settings.storeLogo ? (
+                        <>
+                          <Image
+                            source={{ uri: settings.storeLogo }}
+                            style={{ width: 160, height: 80 }}
+                            contentFit="contain"
+                          />
+                          <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
+                            <Ionicons name="camera" size={15} color="white" />
+                          </View>
+                        </>
+                      ) : (
+                        <View className="items-center gap-1.5">
+                          <Ionicons name="image-outline" size={26} color={themeColorMuted} />
+                          <Typography type="body-xs" color="muted">
+                            Choose image
+                          </Typography>
+                        </View>
+                      )}
+                    </Pressable>
+                    <Typography type="body-xs" color="muted" className="mt-1.5">
+                      Stored locally as a grayscale image optimized for thermal printing.
+                    </Typography>
+                  </View>
+
+                  <View>
+                    <FieldLabel>Store name</FieldLabel>
+                    <Input
+                      value={settings.storeName}
+                      onChangeText={(storeName) => updateSettings({ storeName })}
+                      placeholder="Store name"
+                      variant="secondary"
+                    />
+                  </View>
+
+                  <View>
+                    <FieldLabel>Header</FieldLabel>
+                    <Input
+                      value={settings.header}
+                      onChangeText={(header) => updateSettings({ header })}
+                      placeholder="Address and phone number"
+                      multiline
+                      numberOfLines={3}
+                      textAlignVertical="top"
+                      variant="secondary"
+                      className="min-h-24 py-3"
+                    />
+                  </View>
+
+                  <View>
+                    <FieldLabel>Footer</FieldLabel>
+                    <Input
+                      value={settings.footer}
+                      onChangeText={(footer) => updateSettings({ footer })}
+                      placeholder="Thank you!"
+                      multiline
+                      numberOfLines={2}
+                      textAlignVertical="top"
+                      variant="secondary"
+                      className="min-h-20 py-3"
+                    />
+                  </View>
+
+                  <PrinterSetupButton
+                    color={themeColorForeground}
+                    onPress={() => router.push("/settings/printers")}
+                  />
+                </View>
+              </KeyboardAwareScrollView>
+
+              <Separator />
+              <View className="bg-surface px-5 py-4">
+                <Button className="w-full" onPress={() => router.back()}>
+                  <Button.Label>Done</Button.Label>
+                </Button>
+              </View>
+            </Surface>
+          </ReceiptSetupLayout>
         </View>
       </View>
     </>
