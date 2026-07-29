@@ -22,8 +22,7 @@ import {
 } from "heroui-native";
 import React from "react";
 import { Controller, type Control, useForm, useWatch } from "react-hook-form";
-import { FlatList, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { FlatList, Keyboard, View } from "react-native";
 
 const EMPTY_FORM_VALUES: AddOnFormValues = {
   radioSelections: {},
@@ -172,7 +171,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
 }
 
 export default function POSAddOnSheet(): React.JSX.Element {
-  const { dismiss } = useTrueSheet();
+  const { dismiss, resize } = useTrueSheet();
   const [backgroundColor, borderColor] = useThemeColor(["background", "border"]);
   const product = usePOSStore((state) => state.selectedProduct);
   const editingCartItemId = usePOSStore((state) => state.editingCartItemId);
@@ -183,7 +182,9 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const addItem = useCartStore((state) => state.addItem);
   const removeItem = useCartStore((state) => state.removeItem);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const [footerHeight, setFooterHeight] = React.useState(0);
   const listRef = React.useRef<FlatList<AddOnGroup>>(null);
+  const isNotesFocused = React.useRef(false);
   const schema = React.useMemo(() => createAddOnSchema(product?.add_ons ?? []), [product]);
   const {
     control,
@@ -233,6 +234,17 @@ export default function POSAddOnSheet(): React.JSX.Element {
     .flatMap((group) => group.options)
     .reduce((total, option) => total + option.price, 0);
   const configuredPrice = (product?.price ?? 0) + addOnTotal;
+
+  const scrollToNotes = React.useCallback(() => {
+    listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
+  }, []);
+
+  React.useEffect(() => {
+    const subscription = Keyboard.addListener("keyboardDidShow", () => {
+      if (isNotesFocused.current) scrollToNotes();
+    });
+    return () => subscription.remove();
+  }, [scrollToNotes]);
 
   const closeSheet = () => {
     void dismiss(POS_ADD_ON_SHEET_NAME);
@@ -284,7 +296,15 @@ export default function POSAddOnSheet(): React.JSX.Element {
   );
 
   const footer = (
-    <View className="bg-surface pb-safe">
+    <View
+      className="bg-surface pb-safe"
+      onLayout={(event) => {
+        const nextHeight = Math.ceil(event.nativeEvent.layout.height);
+        setFooterHeight((currentHeight) =>
+          currentHeight === nextHeight ? currentHeight : nextHeight
+        );
+      }}
+    >
       <Separator />
       <View className="gap-3 px-5 pb-4 pt-3">
         <View className="flex-row items-center justify-between gap-4">
@@ -318,74 +338,85 @@ export default function POSAddOnSheet(): React.JSX.Element {
       grabber
       dimmed
       scrollable
-      scrollableOptions={{ scrollingExpandsSheet: true, keyboardScrollOffset: 16 }}
+      scrollableOptions={{ scrollingExpandsSheet: true, keyboardScrollOffset: 24 }}
       header={header}
       headerStyle={{ backgroundColor, borderColor }}
       footer={footer}
       footerStyle={{ backgroundColor, borderColor }}
       onDidDismiss={handleDidDismiss}
     >
-      <GestureHandlerRootView style={{ flexGrow: 1, backgroundColor }}>
-        <FlatList
-          ref={listRef}
-          data={product?.add_ons ?? []}
-          keyExtractor={(group) => group.id}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator
-          contentContainerClassName="gap-6 px-5 py-5"
-          ListHeaderComponent={
-            submitError ? (
-              <Surface variant="secondary" className="bg-danger-soft p-3">
-                <Typography type="body-sm" className="text-danger-soft-foreground">
-                  {submitError}
-                </Typography>
-              </Surface>
-            ) : null
-          }
-          renderItem={({ item: group }) => {
-            const error =
-              errors.radioSelections?.[group.id]?.message ??
-              errors.checkboxSelections?.[group.id]?.message;
-
-            return (
-              <View className="gap-3">
-                <View className="flex-row items-start justify-between gap-3">
-                  <View className="min-w-0 flex-1 gap-1">
-                    <Typography type="body-sm" weight="semibold">
-                      {group.name}
-                    </Typography>
-                    <Description>{constraintLabel(group)}</Description>
-                  </View>
-                  <Chip size="sm" color={group.required ? "accent" : "default"} variant="soft">
-                    <Chip.Label>{group.required ? "Required" : "Optional"}</Chip.Label>
-                  </Chip>
-                </View>
-                <AddOnSelection control={control} group={group} />
-                <FieldError isInvalid={Boolean(error)}>{error}</FieldError>
-              </View>
-            );
-          }}
-          ListFooterComponent={
-            <View className="gap-2 pb-2">
-              <Typography type="body-sm" weight="semibold">
-                Notes
+      <FlatList
+        ref={listRef}
+        data={product?.add_ons ?? []}
+        keyExtractor={(group) => group.id}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        showsVerticalScrollIndicator
+        contentContainerStyle={{
+          gap: 24,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: footerHeight + 24,
+        }}
+        ListHeaderComponent={
+          submitError ? (
+            <Surface variant="secondary" className="bg-danger-soft p-3">
+              <Typography type="body-sm" className="text-danger-soft-foreground">
+                {submitError}
               </Typography>
-              <Controller
-                control={control}
-                name="notes"
-                render={({ field }) => (
-                  <TextArea
-                    value={field.value}
-                    onChangeText={field.onChange}
-                    placeholder="Special instructions"
-                    className="min-h-24"
-                  />
-                )}
-              />
+            </Surface>
+          ) : null
+        }
+        renderItem={({ item: group }) => {
+          const error =
+            errors.radioSelections?.[group.id]?.message ??
+            errors.checkboxSelections?.[group.id]?.message;
+
+          return (
+            <View className="gap-3">
+              <View className="flex-row items-start justify-between gap-3">
+                <View className="min-w-0 flex-1 gap-1">
+                  <Typography type="body-sm" weight="semibold">
+                    {group.name}
+                  </Typography>
+                  <Description>{constraintLabel(group)}</Description>
+                </View>
+                <Chip size="sm" color={group.required ? "accent" : "default"} variant="soft">
+                  <Chip.Label>{group.required ? "Required" : "Optional"}</Chip.Label>
+                </Chip>
+              </View>
+              <AddOnSelection control={control} group={group} />
+              <FieldError isInvalid={Boolean(error)}>{error}</FieldError>
             </View>
-          }
-        />
-      </GestureHandlerRootView>
+          );
+        }}
+        ListFooterComponent={
+          <View className="gap-2 pb-2">
+            <Typography type="body-sm" weight="semibold">
+              Notes
+            </Typography>
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field }) => (
+                <TextArea
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onFocus={() => {
+                    isNotesFocused.current = true;
+                    void resize(POS_ADD_ON_SHEET_NAME, 1).then(scrollToNotes);
+                  }}
+                  onBlur={() => {
+                    isNotesFocused.current = false;
+                  }}
+                  placeholder="Special instructions"
+                  className="min-h-24"
+                />
+              )}
+            />
+          </View>
+        }
+      />
     </TrueSheet>
   );
 }
