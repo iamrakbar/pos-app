@@ -40,14 +40,6 @@ export default function POSFlowLayout() {
         name="checkout"
         options={{
           title: t("navigation.checkout"),
-          headerShown: !isWide,
-          presentation: isWide ? "formSheet" : "card",
-          sheetAllowedDetents: isWide ? [0.75, maxSheetDetent] : undefined,
-          sheetInitialDetentIndex: isWide ? "last" : undefined,
-          sheetGrabberVisible: isWide,
-          contentStyle: {
-            backgroundColor: isWide ? "transparent" : theme.background,
-          },
         }}
       />
       <Stack.Screen

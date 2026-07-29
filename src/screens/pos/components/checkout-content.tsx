@@ -680,12 +680,7 @@ export function CheckoutContent({ onCancel, onPaymentReady }: CheckoutContentPro
             control={control}
             name="notes"
             render={({ field }) => (
-              <TextArea
-                value={field.value}
-                onChangeText={field.onChange}
-                placeholder="Opsional"
-                className="h-6"
-              />
+              <TextArea value={field.value} onChangeText={field.onChange} placeholder="Opsional" />
             )}
           />
         </View>

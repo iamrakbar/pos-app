@@ -4,7 +4,6 @@ import { CheckoutContent } from "@/screens/pos/components/checkout-content";
 import { usePOSStore } from "@/stores/use-pos-store";
 import type { PaymentSession } from "@/types/pos";
 import { useRouter } from "expo-router";
-import { Typography } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
 
@@ -24,13 +23,6 @@ export default function CheckoutScreen(): JSX.Element {
 
   return (
     <View className="flex-1 bg-background pb-safe">
-      {isWide ? (
-        <View className="px-5 py-5">
-          <Typography type="h4" weight="semibold">
-            Checkout
-          </Typography>
-        </View>
-      ) : null}
       <CheckoutContent onCancel={() => router.back()} onPaymentReady={handlePaymentReady} />
     </View>
   );
