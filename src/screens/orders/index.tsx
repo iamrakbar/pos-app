@@ -13,22 +13,25 @@ import LoadingState from "@/components/common/loading-state";
 import ErrorState from "@/components/common/error-state";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
-import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Chip, ScrollShadow, Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { useTables } from "@/hooks/db/use-tables";
 import { EmptyState } from "heroui-native-pro";
 
-type StatusFilter = "all" | "new" | "process" | "completed" | "cancelled" | "rejected";
+// type StatusFilter = "all" | "new" | "process" | "completed" | "cancelled" | "rejected";
+type StatusFilter = "all" | "new" | "process" | "completed";
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "new", label: "New" },
   { value: "process", label: "Process" },
   { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "rejected", label: "Rejected" },
+  //   { value: "cancelled", label: "Cancelled" },
+  //   { value: "rejected", label: "Rejected" },
 ];
 
 function formatTime(iso: string): string {
@@ -73,31 +76,30 @@ export default function OrdersScreen(): React.JSX.Element {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Status filter pills */}
-      <View className="flex-row flex-wrap items-center gap-2 px-4 py-4 md:px-6">
-        {STATUS_FILTERS.map((f) => {
-          const isSelected = statusFilter === f.value;
-          const status =
-            f.value === "all"
-              ? { label: f.label, color: "default" as const }
-              : getOrderStatus(f.value);
-          return (
-            <Chip
-              key={f.value}
-              onPress={() => setStatusFilter(f.value)}
-              variant={isSelected ? "primary" : "secondary"}
-              color={status.color}
-            >
-              <Chip.Label>{status.label}</Chip.Label>
-            </Chip>
-          );
-        })}
-        <Typography type="body-xs" color="muted" className="ml-auto">
-          {orders.length} order{orders.length !== 1 ? "s" : ""}
-        </Typography>
-      </View>
+      <View className="py-3">
+        <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-2 px-4 md:px-6"
+          >
+            {STATUS_FILTERS.map((filter) => {
+              const status =
+                filter.value === "all" ? { label: filter.label } : getOrderStatus(filter.value);
 
-      <Separator />
+              return (
+                <Chip
+                  key={filter.value}
+                  onPress={() => setStatusFilter(filter.value)}
+                  variant={statusFilter === filter.value ? "primary" : "secondary"}
+                >
+                  <Chip.Label>{status.label}</Chip.Label>
+                </Chip>
+              );
+            })}
+          </ScrollView>
+        </ScrollShadow>
+      </View>
 
       {isLoading ? (
         <LoadingState message="Loading orders…" />
