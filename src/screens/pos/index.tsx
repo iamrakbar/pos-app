@@ -3,11 +3,11 @@ import ProductGrid from "./components/product-grid";
 import SearchBar from "./components/search-bar";
 import FloatingCartButton, { FLOATING_CART_BUTTON_SPACE } from "./components/floating-cart-button";
 import { useCartStore } from "@/stores/use-cart-store";
-import { usePOSStore } from "@/stores/use-pos-store";
+import { usePOSAddOnSheet } from "@/hooks/use-pos-add-on-sheet";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { Platform, StatusBar, View } from "react-native";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { paymentGroupsQueryOptions } from "@/hooks/db/use-payments";
@@ -16,8 +16,7 @@ import { useEffect } from "react";
 
 export default function POSScreen(): JSX.Element {
   const { width: viewportWidth, isWide } = useResponsiveLayout();
-  const router = useRouter();
-  const beginAddonSelection = usePOSStore((s) => s.beginAddonSelection);
+  const openAddOnSheet = usePOSAddOnSheet();
   const addItem = useCartStore((s) => s.addItem);
   const theme = useNavigationTheme();
   const queryClient = useQueryClient();
@@ -36,9 +35,7 @@ export default function POSScreen(): JSX.Element {
 
   const handleSelectProduct = (product: POSProduct) => {
     if (product.add_ons.length > 0) {
-      if (beginAddonSelection(product)) {
-        router.navigate("/pos/add-ons");
-      }
+      void openAddOnSheet(product);
     } else {
       addItem({
         product_id: product.id,

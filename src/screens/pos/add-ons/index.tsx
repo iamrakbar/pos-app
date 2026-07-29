@@ -1,107 +1,166 @@
+import { POS_ADD_ON_SHEET_NAME } from "@/hooks/use-pos-add-on-sheet";
+import { createAddOnSchema, type AddOnFormValues } from "@/schemas/addon";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
-import { createAddOnSchema, type AddOnFormValues } from "@/schemas/addon";
-import type { AddOnGroup, AddOnOption } from "@/types/pos";
+import type { AddOnGroup, AddOnOption, POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { TrueSheet, useTrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
   Checkbox,
-  RadioGroup,
-  Separator,
-  Typography,
-  TextArea,
-  Surface,
+  Chip,
   ControlField,
-  Label,
-  FieldError,
   Description,
+  FieldError,
+  Radio,
+  Separator,
+  Surface,
+  TextArea,
+  Typography,
   useThemeColor,
 } from "heroui-native";
-import type { JSX } from "react";
+import React from "react";
+import { Controller, type Control, useForm, useWatch } from "react-hook-form";
 import { FlatList, View } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useForm, Controller, type Control } from "react-hook-form";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+const EMPTY_FORM_VALUES: AddOnFormValues = {
+  radioSelections: {},
+  checkboxSelections: {},
+  notes: "",
+};
 
 function constraintLabel(group: AddOnGroup): string {
   if (!group.required) {
-    return `Opsional${group.max > 0 ? `, maks. ${group.max}` : ""}`;
+    return group.max > 0 ? `Optional · Up to ${group.max}` : "Optional";
   }
-  return `Wajib, min. ${group.min}, pilih ${group.max}`;
+  if (group.min === group.max) return `Choose ${group.min}`;
+  return `Choose ${group.min}–${group.max}`;
 }
 
-function optionLabel(option: AddOnOption): string {
-  if (option.price === 0) return `${option.name} +Rp0`;
-  return `${option.name} +${formatRupiah(option.price)}`;
+function selectedOptionIds(group: AddOnGroup, values: AddOnFormValues): Set<string> {
+  const ids = group.multiple
+    ? (values.checkboxSelections?.[group.id] ?? [])
+    : values.radioSelections?.[group.id]
+      ? [values.radioSelections[group.id]]
+      : [];
+  return new Set(ids);
 }
 
-type AddOnSelectionControlProps = {
+function buildCartAddOns(product: POSProduct, values: AddOnFormValues) {
+  return product.add_ons.flatMap((group) => {
+    const selectedIds = selectedOptionIds(group, values);
+    const options = group.options.filter((option) => selectedIds.has(option.id));
+    return options.length > 0 ? [{ id: group.id, name: group.name, options }] : [];
+  });
+}
+
+type OptionRowProps = {
+  option: AddOnOption;
+  isSelected: boolean;
+  isDisabled?: boolean;
+  type: "radio" | "checkbox";
+  onSelect: () => void;
+};
+
+function OptionRow({
+  option,
+  isSelected,
+  isDisabled = false,
+  type,
+  onSelect,
+}: OptionRowProps): React.JSX.Element {
+  return (
+    <ControlField
+      accessibilityRole={type}
+      accessibilityLabel={`${option.name}, ${
+        option.price > 0 ? `add ${formatRupiah(option.price)}` : "no additional charge"
+      }`}
+      accessibilityState={{ checked: isSelected, disabled: isDisabled }}
+      isSelected={isSelected}
+      isDisabled={isDisabled}
+      onSelectedChange={onSelect}
+      className={`min-h-15 flex-row items-center gap-4 px-4 py-3 ${
+        isSelected ? "bg-accent-soft" : ""
+      }`}
+    >
+      <View className="min-w-0 flex-1 gap-0.5">
+        <Typography type="body-sm" weight="semibold" numberOfLines={2}>
+          {option.name}
+        </Typography>
+        <Typography type="body-xs" color="muted" className="tabular-nums">
+          {option.price > 0 ? `+${formatRupiah(option.price)}` : "No additional charge"}
+        </Typography>
+      </View>
+      <ControlField.Indicator variant={type}>
+        {type === "radio" ? <Radio /> : <Checkbox />}
+      </ControlField.Indicator>
+    </ControlField>
+  );
+}
+
+type AddOnSelectionProps = {
   control: Control<AddOnFormValues>;
   group: AddOnGroup;
 };
 
-function AddOnRadioGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
-  const options = group.options.map((option) => ({ ...option, label: optionLabel(option) }));
-
-  return (
-    <Controller
-      control={control}
-      name={`radioSelections.${group.id}`}
-      render={({ field }) => (
-        <ControlField>
-          <Surface className="py-5 w-full">
-            <RadioGroup value={field.value ?? ""} onValueChange={field.onChange}>
-              {options.map((option, index) => (
-                <React.Fragment key={option.id}>
-                  {index > 0 && <Separator className="my-1" />}
-                  <RadioGroup.Item value={option.id}>{option.label}</RadioGroup.Item>
-                </React.Fragment>
-              ))}
-            </RadioGroup>
+function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Element {
+  if (!group.multiple) {
+    return (
+      <Controller
+        control={control}
+        name={`radioSelections.${group.id}`}
+        render={({ field }) => (
+          <Surface variant="secondary" className="w-full overflow-hidden p-0">
+            {group.options.map((option, index) => (
+              <React.Fragment key={option.id}>
+                {index > 0 ? <Separator /> : null}
+                <OptionRow
+                  option={option}
+                  type="radio"
+                  isSelected={field.value === option.id}
+                  onSelect={() => field.onChange(option.id)}
+                />
+              </React.Fragment>
+            ))}
           </Surface>
-        </ControlField>
-      )}
-    />
-  );
-}
-
-function AddOnCheckboxGroup({ control, group }: AddOnSelectionControlProps): JSX.Element {
-  const options = group.options.map((option) => ({ ...option, label: optionLabel(option) }));
+        )}
+      />
+    );
+  }
 
   return (
     <Controller
       control={control}
       name={`checkboxSelections.${group.id}`}
       render={({ field }) => {
-        const selected: string[] = field.value ?? [];
+        const selected = field.value ?? [];
         const selectedIds = new Set(selected);
+        const hasLimit = group.max > 0;
+
         return (
-          <Surface className="py-5 w-full">
-            {options.map((option, index) => {
+          <Surface variant="secondary" className="w-full overflow-hidden p-0">
+            {group.options.map((option, index) => {
               const isSelected = selectedIds.has(option.id);
-              const maxReached = !isSelected && selected.length >= group.max;
+              const isDisabled = !isSelected && hasLimit && selected.length >= group.max;
+
               return (
                 <React.Fragment key={option.id}>
-                  {index > 0 && <Separator className="my-4" />}
-                  <ControlField
+                  {index > 0 ? <Separator /> : null}
+                  <OptionRow
+                    option={option}
+                    type="checkbox"
                     isSelected={isSelected}
-                    isDisabled={maxReached}
-                    onSelectedChange={() => {
-                      const next = isSelected
-                        ? selected.filter((id) => id !== option.id)
-                        : [...selected, option.id];
-                      field.onChange(next);
+                    isDisabled={isDisabled}
+                    onSelect={() => {
+                      field.onChange(
+                        isSelected
+                          ? selected.filter((id) => id !== option.id)
+                          : [...selected, option.id]
+                      );
                     }}
-                  >
-                    <View className="flex-1">
-                      <Label>{option.label}</Label>
-                    </View>
-                    <ControlField.Indicator>
-                      <Checkbox className="mt-0.5" />
-                    </ControlField.Indicator>
-                  </ControlField>
+                  />
                 </React.Fragment>
               );
             })}
@@ -112,23 +171,20 @@ function AddOnCheckboxGroup({ control, group }: AddOnSelectionControlProps): JSX
   );
 }
 
-export default function AddOnScreen(): JSX.Element {
-  const router = useRouter();
-  const foreground = useThemeColor("foreground");
-  const product = usePOSStore((s) => s.selectedProduct);
-  const editingCartItemId = usePOSStore((s) => s.editingCartItemId);
-  const clearAddonSelection = usePOSStore((s) => s.clearAddonSelection);
-
-  const editingCartItem = useCartStore((s) =>
-    editingCartItemId ? s.products.find((item) => item.id === editingCartItemId) : undefined
+export default function POSAddOnSheet(): React.JSX.Element {
+  const { dismiss } = useTrueSheet();
+  const [backgroundColor, borderColor] = useThemeColor(["background", "border"]);
+  const product = usePOSStore((state) => state.selectedProduct);
+  const editingCartItemId = usePOSStore((state) => state.editingCartItemId);
+  const clearAddonSelection = usePOSStore((state) => state.clearAddonSelection);
+  const editingCartItem = useCartStore((state) =>
+    editingCartItemId ? state.products.find((item) => item.id === editingCartItemId) : undefined
   );
-  const addItem = useCartStore((s) => s.addItem);
-  const removeItem = useCartStore((s) => s.removeItem);
-
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const schema = createAddOnSchema(product?.add_ons ?? []);
-
+  const addItem = useCartStore((state) => state.addItem);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const listRef = React.useRef<FlatList<AddOnGroup>>(null);
+  const schema = React.useMemo(() => createAddOnSchema(product?.add_ons ?? []), [product]);
   const {
     control,
     handleSubmit,
@@ -136,185 +192,200 @@ export default function AddOnScreen(): JSX.Element {
     formState: { errors },
   } = useForm<AddOnFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { radioSelections: {}, checkboxSelections: {}, notes: "" },
+    defaultValues: EMPTY_FORM_VALUES,
   });
+  const values = useWatch({ control }) as AddOnFormValues;
 
-  useEffect(() => {
-    if (editingCartItemId && product) {
-      const existing = editingCartItem;
-      if (existing) {
-        const radioSelections: Record<string, string> = {};
-        const checkboxSelections: Record<string, string[]> = {};
-        existing.add_ons.forEach((ao) => {
-          const group = product.add_ons.find((g) => g.id === ao.id);
-          if (!group) return;
-          if (group.multiple) {
-            checkboxSelections[ao.id] = ao.options.map((o) => o.id);
-          } else {
-            const first = ao.options[0];
-            if (first) radioSelections[ao.id] = first.id;
-          }
-        });
-        reset({ radioSelections, checkboxSelections, notes: existing.notes ?? "" });
-      }
+  React.useEffect(() => {
+    if (!product) return;
+
+    if (editingCartItemId && editingCartItem) {
+      const radioSelections: Record<string, string> = {};
+      const checkboxSelections: Record<string, string[]> = {};
+
+      editingCartItem.add_ons.forEach((addOn) => {
+        const group = product.add_ons.find((candidate) => candidate.id === addOn.id);
+        if (!group) return;
+        if (group.multiple) {
+          checkboxSelections[addOn.id] = addOn.options.map((option) => option.id);
+        } else if (addOn.options[0]) {
+          radioSelections[addOn.id] = addOn.options[0].id;
+        }
+      });
+
+      reset({
+        radioSelections,
+        checkboxSelections,
+        notes: editingCartItem.notes ?? "",
+      });
       return;
     }
-    reset({ radioSelections: {}, checkboxSelections: {}, notes: "" });
-  }, [editingCartItemId, editingCartItem, product, reset]);
 
-  useEffect(
-    () => () => {
-      clearAddonSelection();
-    },
-    [clearAddonSelection]
+    reset(EMPTY_FORM_VALUES);
+  }, [editingCartItem, editingCartItemId, product, reset]);
+
+  const selectedAddOns = product ? buildCartAddOns(product, values) : [];
+  const selectedOptionCount = selectedAddOns.reduce(
+    (total, group) => total + group.options.length,
+    0
   );
+  const addOnTotal = selectedAddOns
+    .flatMap((group) => group.options)
+    .reduce((total, option) => total + option.price, 0);
+  const configuredPrice = (product?.price ?? 0) + addOnTotal;
 
-  const buildCartAddOns = (values: AddOnFormValues) => {
-    if (!product) return [];
-
-    return product.add_ons.flatMap((group) => {
-      const selectedOptionIds = new Set(
-        group.multiple
-          ? (values.checkboxSelections[group.id] ?? [])
-          : values.radioSelections[group.id]
-            ? [values.radioSelections[group.id]]
-            : []
-      );
-      const options = group.options.filter((option) => selectedOptionIds.has(option.id));
-      return options.length > 0 ? [{ id: group.id, name: group.name, options }] : [];
-    });
+  const closeSheet = () => {
+    void dismiss(POS_ADD_ON_SHEET_NAME);
   };
 
-  const onSubmit = (values: AddOnFormValues) => {
+  const handleDidDismiss = () => {
+    setSubmitError(null);
+    reset(EMPTY_FORM_VALUES);
+    clearAddonSelection();
+  };
+
+  const onSubmit = (formValues: AddOnFormValues) => {
     if (!product) return;
 
     setSubmitError(null);
-    const addOns = buildCartAddOns(values);
     if (editingCartItemId) removeItem(editingCartItemId);
     addItem({
       product_id: product.id,
       name: product.name,
       price: product.price,
       qty: editingCartItem?.qty ?? 1,
-      notes: values.notes.trim() || null,
-      add_ons: addOns,
+      notes: formValues.notes.trim() || null,
+      add_ons: buildCartAddOns(product, formValues),
     });
-    clearAddonSelection();
-    router.back();
+    closeSheet();
   };
 
   const onInvalid = () => {
-    setSubmitError("Lengkapi pilihan add-on yang wajib diisi sebelum menambahkan produk.");
+    setSubmitError("Complete the required add-on choices before continuing.");
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
-  const handleCancel = () => {
-    setSubmitError(null);
-    clearAddonSelection();
-    router.back();
+  const handleSave = () => {
+    void handleSubmit(onSubmit, onInvalid)();
   };
 
-  if (!product) {
-    return (
-      <View className="flex-1 items-center justify-center gap-4 bg-background p-5">
-        <Typography type="body-sm" color="muted">
-          Product add-ons are no longer available.
+  const header = (
+    <View className="bg-background">
+      <View className="gap-1 px-5 pb-4 pt-3">
+        <Typography type="h4" weight="semibold" numberOfLines={1}>
+          {product?.name ?? "Customize product"}
         </Typography>
-        <Button variant="outline" onPress={() => router.back()}>
-          Back
-        </Button>
+        <Typography type="body-sm" color="muted" className="tabular-nums">
+          Base price {formatRupiah(product?.price ?? 0)}
+        </Typography>
       </View>
-    );
-  }
+      <Separator />
+    </View>
+  );
 
-  return (
-    <View className="flex-1 overflow-hidden bg-background pb-safe">
-      <View className="flex-row items-center justify-between gap-3 bg-surface p-4">
-        <View className="flex-1">
-          <Typography type="h4" weight="semibold" numberOfLines={1}>
-            {product.name}
+  const footer = (
+    <View className="bg-background">
+      <Separator />
+      <View className="gap-3 px-5 pb-4 pt-3">
+        <View className="flex-row items-center justify-between gap-4">
+          <Typography type="body-xs" color="muted">
+            {selectedOptionCount} selected
           </Typography>
-          <Typography className="text-sm text-muted-foreground">
-            {formatRupiah(product.price)}
+          <Typography type="body-sm" weight="semibold" className="tabular-nums">
+            {formatRupiah(configuredPrice)}
           </Typography>
         </View>
-        <Button
-          variant="ghost"
-          isIconOnly
-          onPress={handleCancel}
-          accessibilityLabel="Close add-on selection"
-        >
-          <Ionicons name="close" size={20} color={foreground} />
-        </Button>
-      </View>
-
-      <Separator />
-
-      <FlatList
-        className="flex-1"
-        data={product.add_ons}
-        keyExtractor={(group) => group.id}
-        showsVerticalScrollIndicator
-        keyboardShouldPersistTaps="handled"
-        contentContainerClassName="p-4 gap-6 bg-background"
-        ListHeaderComponent={
-          submitError ? (
-            <View className="flex-row items-start gap-3 rounded-lg border border-danger bg-danger/10 px-3 py-3">
-              <Typography className="text-sm text-danger flex-1">{submitError}</Typography>
-            </View>
-          ) : null
-        }
-        renderItem={({ item: group }) => (
-          <View className="gap-2">
-            <View className="flex-row items-center justify-between gap-2">
-              <Label isRequired={group.required}>
-                <Label.Text>{group.name}</Label.Text>
-              </Label>
-              <Description>{constraintLabel(group)}</Description>
-            </View>
-            {!group.multiple ? (
-              <AddOnRadioGroup control={control} group={group} />
-            ) : (
-              <AddOnCheckboxGroup control={control} group={group} />
-            )}
-            <FieldError
-              isInvalid={
-                !!(errors.radioSelections?.[group.id] || errors.checkboxSelections?.[group.id])
-              }
-            >
-              {errors.radioSelections?.[group.id]?.message ??
-                errors.checkboxSelections?.[group.id]?.message}
-            </FieldError>
-          </View>
-        )}
-        ListFooterComponent={
-          <View className="gap-2">
-            <Typography className="text-sm font-semibold text-foreground">Catatan</Typography>
-            <Controller
-              control={control}
-              name="notes"
-              render={({ field }) => (
-                <TextArea
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  placeholder=""
-                  className="min-h-20"
-                />
-              )}
-            />
-          </View>
-        }
-      />
-
-      <Separator />
-
-      <View className="flex-row gap-3 bg-surface px-5 py-4">
-        <Button variant="outline" onPress={handleCancel}>
-          Batal
-        </Button>
-        <Button className="flex-1" onPress={handleSubmit(onSubmit, onInvalid)}>
-          {editingCartItemId ? "Simpan perubahan" : "Tambahkan ke keranjang"}
-        </Button>
+        <View className="flex-row gap-3">
+          <Button variant="outline" onPress={closeSheet}>
+            <Button.Label>Cancel</Button.Label>
+          </Button>
+          <Button className="flex-1" onPress={handleSave}>
+            <Button.Label>{editingCartItemId ? "Save changes" : "Add to cart"}</Button.Label>
+          </Button>
+        </View>
       </View>
     </View>
+  );
+
+  return (
+    <TrueSheet
+      name={POS_ADD_ON_SHEET_NAME}
+      detents={[0.72, 0.96]}
+      presentation="form"
+      maxContentWidth={680}
+      cornerRadius={24}
+      backgroundColor={backgroundColor}
+      grabber
+      dimmed
+      scrollable
+      scrollableOptions={{ scrollingExpandsSheet: true, keyboardScrollOffset: 16 }}
+      header={header}
+      headerStyle={{ backgroundColor, borderColor }}
+      footer={footer}
+      footerStyle={{ backgroundColor, borderColor }}
+      onDidDismiss={handleDidDismiss}
+    >
+      <GestureHandlerRootView style={{ flexGrow: 1, backgroundColor }}>
+        <FlatList
+          ref={listRef}
+          data={product?.add_ons ?? []}
+          keyExtractor={(group) => group.id}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator
+          contentContainerClassName="gap-6 px-5 py-5"
+          ListHeaderComponent={
+            submitError ? (
+              <Surface variant="secondary" className="bg-danger-soft p-3">
+                <Typography type="body-sm" className="text-danger-soft-foreground">
+                  {submitError}
+                </Typography>
+              </Surface>
+            ) : null
+          }
+          renderItem={({ item: group }) => {
+            const error =
+              errors.radioSelections?.[group.id]?.message ??
+              errors.checkboxSelections?.[group.id]?.message;
+
+            return (
+              <View className="gap-3">
+                <View className="flex-row items-start justify-between gap-3">
+                  <View className="min-w-0 flex-1 gap-1">
+                    <Typography type="body-sm" weight="semibold">
+                      {group.name}
+                    </Typography>
+                    <Description>{constraintLabel(group)}</Description>
+                  </View>
+                  <Chip size="sm" color={group.required ? "accent" : "default"} variant="soft">
+                    <Chip.Label>{group.required ? "Required" : "Optional"}</Chip.Label>
+                  </Chip>
+                </View>
+                <AddOnSelection control={control} group={group} />
+                <FieldError isInvalid={Boolean(error)}>{error}</FieldError>
+              </View>
+            );
+          }}
+          ListFooterComponent={
+            <View className="gap-2 pb-2">
+              <Typography type="body-sm" weight="semibold">
+                Notes
+              </Typography>
+              <Controller
+                control={control}
+                name="notes"
+                render={({ field }) => (
+                  <TextArea
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    placeholder="Special instructions"
+                    className="min-h-24"
+                  />
+                )}
+              />
+            </View>
+          }
+        />
+      </GestureHandlerRootView>
+    </TrueSheet>
   );
 }

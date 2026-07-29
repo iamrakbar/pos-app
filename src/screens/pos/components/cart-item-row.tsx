@@ -1,5 +1,5 @@
 import { useCartStore } from "@/stores/use-cart-store";
-import { usePOSStore } from "@/stores/use-pos-store";
+import { usePOSAddOnSheet } from "@/hooks/use-pos-add-on-sheet";
 import type { CartItem } from "@/types/cart";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
@@ -7,7 +7,6 @@ import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
 type Props = {
   item: CartItem;
@@ -15,14 +14,13 @@ type Props = {
 };
 
 export default function CartItemRow({ item, product }: Props): JSX.Element {
-  const router = useRouter();
   const [themeColorForeground, themeColorDangerSoftForeground] = useThemeColor([
     "foreground",
     "danger-soft-foreground",
   ]);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQty = useCartStore((s) => s.updateQty);
-  const beginAddonSelection = usePOSStore((s) => s.beginAddonSelection);
+  const openAddOnSheet = usePOSAddOnSheet();
 
   const addOnUnitTotal = item.add_ons
     .flatMap((ao) => ao.options)
@@ -32,9 +30,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
 
   const handleEdit = () => {
     if (product && product.add_ons.length > 0) {
-      if (beginAddonSelection(product, item.id)) {
-        router.navigate("/pos/add-ons");
-      }
+      void openAddOnSheet(product, item.id);
     }
   };
 

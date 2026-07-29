@@ -200,7 +200,7 @@ export default function DashboardScreen(): React.JSX.Element {
       }
     >
       <View className="w-full max-w-7xl gap-6">
-        <View className="flex-col landscape:flex-row items-center justify-between gap-3">
+        <View className="flex-col landscape:flex-row items-start landscape:items-center justify-between gap-3">
           <Typography type="body-sm">Order and sales performance for {dateRangeLabel}</Typography>
           <View className="flex-row flex-wrap justify-center gap-2">
             {PERIODS.map((item) => (
