@@ -7,9 +7,10 @@ import { Button, Select, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { EmptyState, TimePicker } from "heroui-native-pro";
+import { useTrueSheet } from "@lodev09/react-native-true-sheet";
 import CartItemRow from "./cart-item-row";
+import CheckoutSheet, { POS_CHECKOUT_SHEET_NAME } from "./checkout-sheet";
 import TableSelectionButton from "./table-selection-button";
 import { getLocaleTag } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
@@ -40,13 +41,10 @@ function isPastPickupTime(value: string): boolean {
 }
 
 export default function CartContent(): JSX.Element {
-  const router = useRouter();
+  const { present } = useTrueSheet();
   const { locale } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
-  const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
-    "muted",
-    "danger-soft-foreground",
-  ]);
+  const themeColorMuted = useThemeColor("muted");
   const cartProducts = useCartStore((s) => s.products);
   const itemCount = useCartStore((s) =>
     s.products.reduce((total, product) => total + product.qty, 0)
@@ -196,12 +194,13 @@ export default function CartContent(): JSX.Element {
         </View>
         <Button
           className="w-full"
-          onPress={() => router.push("/pos/checkout")}
+          onPress={() => void present(POS_CHECKOUT_SHEET_NAME, 1)}
           isDisabled={cartProducts.length === 0}
         >
           Checkout
         </Button>
       </View>
+      <CheckoutSheet />
     </View>
   );
 }

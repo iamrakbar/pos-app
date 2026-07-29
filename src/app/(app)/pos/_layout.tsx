@@ -37,12 +37,6 @@ export default function POSFlowLayout() {
         }}
       />
       <Stack.Screen
-        name="checkout"
-        options={{
-          title: t("navigation.checkout"),
-        }}
-      />
-      <Stack.Screen
         name="payment"
         options={{
           title: t("navigation.payment"),
