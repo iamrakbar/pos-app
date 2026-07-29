@@ -31,18 +31,6 @@ export default function POSFlowLayout() {
       <Stack.Screen name="index" options={{ title: t("navigation.pos"), headerShown: false }} />
       <Stack.Screen name="cart" options={{ title: t("navigation.cart") }} />
       <Stack.Screen
-        name="add-ons"
-        options={{
-          title: t("navigation.addOns"),
-          headerShown: false,
-          presentation: "formSheet",
-          sheetAllowedDetents: [0.75, maxSheetDetent],
-          sheetInitialDetentIndex: "last",
-          sheetGrabberVisible: true,
-          contentStyle: { backgroundColor: "transparent" },
-        }}
-      />
-      <Stack.Screen
         name="table-selection"
         options={{
           title: t("navigation.selectTable"),

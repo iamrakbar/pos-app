@@ -15,6 +15,8 @@ import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import OfflineBanner from "@/components/common/offline-banner";
 import AppUpdateManager from "@/components/common/app-update-manager";
+import POSAddOnSheet from "@/screens/pos/add-ons";
+import { TrueSheetProvider } from "@lodev09/react-native-true-sheet";
 
 import "../global.css";
 
@@ -66,28 +68,31 @@ export default function RootLayout(): JSX.Element {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: navigationTheme.background }}>
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
-          <HeroUINativeProvider config={{ toast: { contentWrapper: wrapToastContent } }}>
-            {Platform.OS === "android" && (
-              <NavigationBar style={isDarkMode ? "dark" : "light"} hidden={false} />
-            )}
-            <ExpoStatusBar style={isDarkMode ? "light" : "dark"} />
-            <ErrorBoundary>
-              {isAppReady && (
-                <View className="flex-1" onLayout={handleAppLayout}>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Protected guard={session}>
-                      <Stack.Screen name="(app)" />
-                    </Stack.Protected>
-                    <Stack.Protected guard={!session}>
-                      <Stack.Screen name="(auth)" />
-                    </Stack.Protected>
-                  </Stack>
-                </View>
+          <TrueSheetProvider>
+            <HeroUINativeProvider config={{ toast: { contentWrapper: wrapToastContent } }}>
+              {Platform.OS === "android" && (
+                <NavigationBar style={isDarkMode ? "dark" : "light"} hidden={false} />
               )}
-              <OfflineBanner />
-              <AppUpdateManager mode="banner" />
-            </ErrorBoundary>
-          </HeroUINativeProvider>
+              <ExpoStatusBar style={isDarkMode ? "light" : "dark"} />
+              <ErrorBoundary>
+                {isAppReady && (
+                  <View className="flex-1" onLayout={handleAppLayout}>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Protected guard={session}>
+                        <Stack.Screen name="(app)" />
+                      </Stack.Protected>
+                      <Stack.Protected guard={!session}>
+                        <Stack.Screen name="(auth)" />
+                      </Stack.Protected>
+                    </Stack>
+                    {session ? <POSAddOnSheet /> : null}
+                  </View>
+                )}
+                <OfflineBanner />
+                <AppUpdateManager mode="banner" />
+              </ErrorBoundary>
+            </HeroUINativeProvider>
+          </TrueSheetProvider>
         </QueryClientProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
