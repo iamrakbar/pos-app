@@ -52,9 +52,9 @@ export default function POSScreen(): JSX.Element {
   };
 
   return (
-    <View className="flex-1 flex-row bg-surface p-safe">
+    <View className="flex-1 flex-row p-safe">
       {/* Product catalog */}
-      <View className="flex-1 bg-background">
+      <View className="flex-1">
         <SearchBar />
         <ProductGrid
           onSelectProduct={handleSelectProduct}

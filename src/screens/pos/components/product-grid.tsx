@@ -75,7 +75,7 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
             numColumns={numColumns}
             keyExtractor={(item) => item.id}
             renderItem={renderProduct}
-            contentContainerClassName="flex-grow gap-2 px-3 pt-4"
+            contentContainerClassName="flex-grow gap-2 px-3"
             contentInset={{ bottom: listBottomInset }}
             refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
             showsVerticalScrollIndicator={false}

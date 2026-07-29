@@ -32,7 +32,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
       accessibilityRole="button"
       accessibilityLabel={`Add ${product.name}`}
     >
-      <Card className="overflow-hidden p-0">
+      <Card className="flex-1 overflow-hidden p-0">
         <View className="aspect-square bg-surface-secondary items-center justify-center">
           {product.image_url ? (
             <Image

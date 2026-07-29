@@ -66,9 +66,9 @@ export function PaymentContent({
           : (apiPaymentStatus ?? { label: "Waiting for payment", color: "warning" as const });
 
   return (
-    <View className="flex-1 bg-background pt-safe">
+    <View className="flex-1 bg-background">
       <ScrollView
-        className="flex-1 bg-surface"
+        className="flex-1"
         contentContainerClassName="flex-grow justify-center px-safe py-5"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

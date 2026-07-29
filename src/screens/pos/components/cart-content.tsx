@@ -63,7 +63,7 @@ export default function CartContent(): JSX.Element {
   const selectedTable = tables.find((table) => table.id === checkoutForm.table_id);
 
   return (
-    <View className="flex-1 bg-surface">
+    <View className="flex-1">
       {/* Header */}
       <View className="flex-row items-center justify-between gap-2 px-5 py-3">
         <View className="h-12 flex-row items-center gap-2">
@@ -156,7 +156,6 @@ export default function CartContent(): JSX.Element {
         </View>
         {cartProducts.length > 0 && (
           <Button variant="danger-soft" size="sm" onPress={clearCart}>
-            <Ionicons name="trash-outline" size={16} color={themeColorDangerSoftForeground} />
             <Button.Label>Clear</Button.Label>
           </Button>
         )}

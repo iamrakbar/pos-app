@@ -32,14 +32,14 @@ export default function SearchBar(): JSX.Element {
   const selectedSort = SORT_OPTIONS.find((option) => option.value === productSort)!;
 
   return (
-    <View className="border-b border-border bg-surface">
-      <View className="flex-row items-center gap-3 px-5 pb-3 pt-4">
+    <View className="">
+      <View className="flex-row items-center gap-3 px-2 py-4">
         <DrawerMenuButton />
         <View className="flex-1">
           <SearchField value={searchQuery} onChange={setSearchQuery}>
             <SearchField.Group>
               <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Search products" className="bg-background" />
+              <SearchField.Input placeholder="Search products" />
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
@@ -51,7 +51,7 @@ export default function SearchBar(): JSX.Element {
           accessibilityLabel={areCategoriesVisible ? "Hide categories" : "Show categories"}
         >
           <Ionicons
-            name={areCategoriesVisible ? "albums" : "albums-outline"}
+            name={"albums-outline"}
             size={18}
             color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
           />
@@ -90,7 +90,7 @@ export default function SearchBar(): JSX.Element {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerClassName="gap-2 px-5 pb-3"
+            contentContainerClassName="gap-2 px-5 pb-4"
           >
             <Chip
               variant={categoryId === null ? "primary" : "secondary"}

@@ -82,22 +82,22 @@ export default function TableSelectionScreen(): JSX.Element {
         onPress={() => handleSelect(table.id)}
         style={{ width: cardWidth, margin: 6 }}
       >
-        <Card variant={isSelected ? "default" : "secondary"} className="gap-2">
-          <Card.Header className="h-20 items-center justify-center py-0">
+        <Card variant={isSelected ? "default" : "secondary"} className="flex-1">
+          <Card.Body className="flex-1 h-full min-h-32 items-center justify-center gap-2 py-4 p-0">
+            <Chip color="default">
+              <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
+            </Chip>
             <TableSymbol
               seats={seatCount}
               scale={0.5}
               color={isSelected ? accent : muted}
               tableColor={isSelected ? accentSoft : undefined}
             />
-          </Card.Header>
-          <Card.Body className="items-center gap-2">
-            <Chip color={isSelected ? "accent" : "default"}>
-              <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
+            <Chip color="default" className="self-end">
+              <Chip.Label numberOfLines={1}>
+                {Number(table.pax)} {Number(table.pax) === 1 ? "seat" : "seats"}
+              </Chip.Label>
             </Chip>
-            <Typography type="body-xs" color="muted" className="tabular-nums">
-              {Number(table.pax)} {Number(table.pax) === 1 ? "seat" : "seats"}
-            </Typography>
           </Card.Body>
         </Card>
       </Pressable>
