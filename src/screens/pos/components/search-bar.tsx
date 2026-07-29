@@ -44,45 +44,47 @@ export default function SearchBar(): JSX.Element {
             </SearchField.Group>
           </SearchField>
         </View>
-        <Button
-          variant="ghost"
-          isIconOnly
-          onPress={toggleCategories}
-          accessibilityLabel={areCategoriesVisible ? "Hide categories" : "Show categories"}
-        >
-          <Ionicons
-            name={"albums-outline"}
-            size={18}
-            color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
-          />
-        </Button>
-        <Select
-          presentation={choicePresentation}
-          value={{ value: selectedSort.value, label: selectedSort.label }}
-          onValueChange={(option) => option && setProductSort(option.value as ProductSort)}
-        >
-          <Select.Trigger asChild variant="unstyled">
-            <Button
-              variant="ghost"
-              isIconOnly
-              accessibilityLabel={`Sort products: ${selectedSort.label}`}
-            >
-              <Ionicons name="swap-vertical-outline" size={18} color={themeColorForeground} />
-            </Button>
-          </Select.Trigger>
-          <Select.Portal>
-            <Select.Overlay />
-            <Select.Content
-              presentation={choicePresentation}
-              width={choicePresentation === "popover" ? 220 : undefined}
-            >
-              <Select.ListLabel>Sort products</Select.ListLabel>
-              {SORT_OPTIONS.map((option) => (
-                <Select.Item key={option.value} value={option.value} label={option.label} />
-              ))}
-            </Select.Content>
-          </Select.Portal>
-        </Select>
+        <View className="flex-row items-center gap-1">
+          <Button
+            variant="ghost"
+            isIconOnly
+            onPress={toggleCategories}
+            accessibilityLabel={areCategoriesVisible ? "Hide categories" : "Show categories"}
+          >
+            <Ionicons
+              name={"albums-outline"}
+              size={18}
+              color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
+            />
+          </Button>
+          <Select
+            presentation={choicePresentation}
+            value={{ value: selectedSort.value, label: selectedSort.label }}
+            onValueChange={(option) => option && setProductSort(option.value as ProductSort)}
+          >
+            <Select.Trigger asChild variant="unstyled">
+              <Button
+                variant="ghost"
+                isIconOnly
+                accessibilityLabel={`Sort products: ${selectedSort.label}`}
+              >
+                <Ionicons name="swap-vertical-outline" size={18} color={themeColorForeground} />
+              </Button>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Overlay />
+              <Select.Content
+                presentation={choicePresentation}
+                width={choicePresentation === "popover" ? 220 : undefined}
+              >
+                <Select.ListLabel>Sort products</Select.ListLabel>
+                {SORT_OPTIONS.map((option) => (
+                  <Select.Item key={option.value} value={option.value} label={option.label} />
+                ))}
+              </Select.Content>
+            </Select.Portal>
+          </Select>
+        </View>
       </View>
 
       {areCategoriesVisible ? (

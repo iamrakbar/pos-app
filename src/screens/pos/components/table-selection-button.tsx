@@ -12,11 +12,11 @@ export default function TableSelectionButton({
   selectedTable,
 }: TableSelectionButtonProps): JSX.Element {
   const router = useRouter();
-  const muted = useThemeColor("muted");
+  const colorAccent = useThemeColor("accent");
 
   return (
     <Button
-      variant="outline"
+      variant="secondary"
       className="min-w-28 flex-1 justify-between"
       onPress={() => router.push("/pos/table-selection")}
       accessibilityLabel={
@@ -26,7 +26,7 @@ export default function TableSelectionButton({
       <Button.Label className="text-sm" numberOfLines={1}>
         {selectedTable?.name ?? "Table"}
       </Button.Label>
-      <Ionicons name="grid-outline" size={16} color={muted} />
+      <Ionicons name="grid-outline" size={16} color={colorAccent} />
     </Button>
   );
 }

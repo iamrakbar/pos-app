@@ -17,17 +17,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
+  Input,
   SearchField,
   Select,
   Surface,
   TextArea,
+  TextField,
   Typography,
   useThemeColor,
 } from "heroui-native";
 import { SlideButton } from "heroui-native-pro";
 import type { JSX, ReactElement } from "react";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import type { PaymentSession, POSPaymentGroup } from "@/types/pos";
@@ -63,46 +65,6 @@ function getCashPresets(total: number): number[] {
   const nextRoundedAmount = Math.ceil(total / roundingStep) * roundingStep;
 
   return nextRoundedAmount === total ? [total] : [total, nextRoundedAmount];
-}
-
-function MiniInput({
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType,
-}: {
-  value: string;
-  onChangeText: (v: string) => void;
-  placeholder?: string;
-  keyboardType?: "default" | "email-address" | "phone-pad";
-}) {
-  const [background, border, foreground, placeholderColor] = useThemeColor([
-    "background",
-    "border",
-    "foreground",
-    "field-placeholder",
-  ]);
-
-  return (
-    <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={placeholderColor}
-      keyboardType={keyboardType ?? "default"}
-      autoCapitalize="none"
-      style={{
-        borderWidth: 1,
-        borderColor: border,
-        borderRadius: 10,
-        height: 40,
-        paddingHorizontal: 12,
-        fontSize: 14,
-        color: foreground,
-        backgroundColor: background,
-      }}
-    />
-  );
 }
 
 function PaymentButtonSkeleton({ widths }: { widths: number[] }) {
@@ -243,7 +205,7 @@ function PaymentFields({
                 <Button
                   key={group.group_type}
                   size="sm"
-                  variant={isActive ? "primary" : "outline"}
+                  variant={isActive ? "primary" : "secondary"}
                   onPress={() => {
                     const firstPayment = group.payments[0];
                     const paymentFee = firstPayment
@@ -283,7 +245,7 @@ function PaymentFields({
                   <Button
                     key={payment.id}
                     size="sm"
-                    variant={paymentId === payment.id ? "primary" : "outline"}
+                    variant={paymentId === payment.id ? "primary" : "secondary"}
                     onPress={() => setValue("payment_id", payment.id)}
                   >
                     <Button.Label>{payment.name}</Button.Label>
@@ -308,7 +270,7 @@ function PaymentFields({
                 <Button
                   key={amount}
                   size="sm"
-                  variant={cashReceivedAmount === amount ? "primary" : "outline"}
+                  variant={cashReceivedAmount === amount ? "primary" : "secondary"}
                   onPress={() => setCashReceived(String(amount))}
                 >
                   <Button.Label>
@@ -323,12 +285,14 @@ function PaymentFields({
               <Typography type="body-sm" weight="semibold">
                 Nominal lain
               </Typography>
-              <MiniInput
-                value={cashReceived ? formatRupiah(cashReceivedAmount) : ""}
-                onChangeText={(value) => setCashReceived(value.replace(/\D/g, ""))}
-                placeholder="Rp0"
-                keyboardType="phone-pad"
-              />
+              <TextField>
+                <Input
+                  value={cashReceived ? formatRupiah(cashReceivedAmount) : ""}
+                  onChangeText={(value) => setCashReceived(value.replace(/\D/g, ""))}
+                  placeholder="Rp0"
+                  keyboardType="phone-pad"
+                />
+              </TextField>
             </View>
             <View className="min-w-32 gap-1">
               <Typography type="body-xs" color="muted">
@@ -382,7 +346,7 @@ function CustomerFields({
           <Button
             key={type}
             size="sm"
-            variant={customerType === type ? "primary" : "outline"}
+            variant={customerType === type ? "primary" : "secondary"}
             onPress={() => {
               setValue("customer_type", type);
               setValue("guest_id", null);

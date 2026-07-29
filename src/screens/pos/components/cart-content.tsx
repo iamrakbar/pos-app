@@ -44,7 +44,7 @@ export default function CartContent(): JSX.Element {
   const { present } = useTrueSheet();
   const { locale } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
-  const themeColorMuted = useThemeColor("muted");
+  const [colorMuted, colorAccent] = useThemeColor(["muted", "accent"]);
   const cartProducts = useCartStore((s) => s.products);
   const itemCount = useCartStore((s) =>
     s.products.reduce((total, product) => total + product.qty, 0)
@@ -88,7 +88,7 @@ export default function CartContent(): JSX.Element {
             }}
           >
             <Select.Trigger asChild variant="unstyled">
-              <Button variant="outline" className="min-w-28">
+              <Button variant="secondary" className="min-w-28">
                 <Button.Label className="text-sm" numberOfLines={1}>
                   {checkoutForm.order_type === "dine-in" ? "Dine-In" : "Takeaway"}
                 </Button.Label>
@@ -128,15 +128,12 @@ export default function CartContent(): JSX.Element {
               }}
             >
               <TimePicker.Select presentation={pickerPresentation}>
-                <TimePicker.Trigger
-                  asChild
-                  className="h-12 gap-2 rounded-3xl border border-border bg-transparent px-4 py-0 shadow-none"
-                >
-                  <Button variant="outline" className="justify-between min-w-28">
+                <TimePicker.Trigger asChild>
+                  <Button variant="secondary" className="justify-between min-w-28 rounded-full">
                     <Button.Label className="text-sm" numberOfLines={1}>
                       {checkoutForm.pickup_time ?? "Pickup time"}
                     </Button.Label>
-                    <Ionicons name="time-outline" size={16} color={themeColorMuted} />
+                    <Ionicons name="time-outline" size={16} color={colorAccent} />
                   </Button>
                 </TimePicker.Trigger>
                 <TimePicker.Portal>
@@ -169,7 +166,7 @@ export default function CartContent(): JSX.Element {
           <EmptyState className="py-16">
             <EmptyState.Header>
               <EmptyState.Media variant="icon">
-                <Ionicons name="cart-outline" size={20} color={themeColorMuted} />
+                <Ionicons name="cart-outline" size={20} color={colorMuted} />
               </EmptyState.Media>
               <EmptyState.Title>Cart is empty</EmptyState.Title>
               <EmptyState.Description>Add products to get started.</EmptyState.Description>
