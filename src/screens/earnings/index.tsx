@@ -391,7 +391,7 @@ export default function EarningsScreen(): React.JSX.Element {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       >
         <View className="w-full gap-6">
-          <View className="flex-row justify-between gap-3">
+          <View className="flex-col landscape:flex-row items-start landscape:items-center justify-between gap-3">
             <Typography type="body-sm">Settled sales for {periodLabel}</Typography>
             <Select
               presentation={choicePresentation}
