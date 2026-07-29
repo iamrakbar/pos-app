@@ -27,11 +27,11 @@ import {
   useThemeColor,
 } from "heroui-native";
 import { SlideButton } from "heroui-native-pro";
-import type { JSX, ReactElement } from "react";
+import type { ComponentProps, JSX, ReactElement } from "react";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { ActivityIndicator, Keyboard, Pressable, View, type LayoutChangeEvent } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { KeyboardAwareScrollView, useKeyboardState } from "react-native-keyboard-controller";
 import type { PaymentSession, POSPaymentGroup } from "@/types/pos";
 import {
   useForm,
@@ -45,8 +45,9 @@ import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type CheckoutContentProps = {
-  sheetName: string;
-  header: ReactElement;
+  presentation: "screen" | "sheet";
+  sheetName?: string;
+  header?: ReactElement;
   onPaymentReady: (
     session: PaymentSession,
     result: MerchantCheckoutData,
@@ -131,6 +132,8 @@ function CheckoutActions({
   isPending,
   isDisabled,
   onComplete,
+  shouldGrow,
+  onHeightChange,
 }: {
   subtotal: number;
   paymentFee: number;
@@ -140,10 +143,16 @@ function CheckoutActions({
   isPending: boolean;
   isDisabled: boolean;
   onComplete: () => void;
+  shouldGrow: boolean;
+  onHeightChange?: (height: number) => void;
 }) {
+  const handleLayout = (event: LayoutChangeEvent) => {
+    onHeightChange?.(event.nativeEvent.layout.height);
+  };
+
   return (
-    <GestureHandlerRootView style={{ flexGrow: 1 }}>
-      <View className="bg-surface">
+    <GestureHandlerRootView style={shouldGrow ? { flexGrow: 1 } : { flexGrow: 0 }}>
+      <View className="bg-surface" onLayout={handleLayout}>
         <View className="w-full max-w-3xl self-center gap-3 px-5 pt-5 pb-safe-offset-4">
           <CheckoutCostSummary
             subtotal={subtotal}
@@ -456,7 +465,94 @@ function CustomerFields({
   );
 }
 
+function CheckoutProcessingState({ accentColor }: { accentColor: string }) {
+  return (
+    <View className="flex-1 items-center justify-center gap-4 px-6 py-10">
+      <ActivityIndicator size="large" color={accentColor} />
+      <View className="items-center gap-1.5">
+        <Typography type="h4" weight="semibold" className="text-center">
+          Memproses pembayaran
+        </Typography>
+        <Typography type="body-sm" color="muted" className="max-w-sm text-center">
+          Jangan tutup aplikasi sampai proses selesai.
+        </Typography>
+      </View>
+    </View>
+  );
+}
+
+type CheckoutFormScrollContentProps = {
+  cartError: string | null;
+  paymentFields: ComponentProps<typeof PaymentFields>;
+  customerFields: ComponentProps<typeof CustomerFields>;
+  control: Control<CheckoutFormValues>;
+  presentation: CheckoutContentProps["presentation"];
+  isKeyboardVisible: boolean;
+  sheetFooterHeight: number;
+};
+
+function CheckoutFormScrollContent({
+  cartError,
+  paymentFields,
+  customerFields,
+  control,
+  presentation,
+  isKeyboardVisible,
+  sheetFooterHeight,
+}: CheckoutFormScrollContentProps) {
+  return (
+    <KeyboardAwareScrollView
+      bottomOffset={32}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      className="flex-1"
+      contentContainerClassName="items-center px-5 pt-4 pb-6"
+    >
+      <View className="w-full max-w-3xl gap-4">
+        {cartError ? (
+          <View className="rounded-lg bg-danger/10 px-3 py-2.5">
+            <Typography type="body-sm" className="text-danger">
+              {cartError}
+            </Typography>
+          </View>
+        ) : null}
+
+        <PaymentFields {...paymentFields} />
+        <CustomerFields {...customerFields} />
+
+        <View className="gap-1.5">
+          <Typography type="body-sm" weight="semibold">
+            Catatan
+          </Typography>
+          <Controller
+            control={control}
+            name="notes"
+            render={({ field }) => (
+              <TextArea
+                value={field.value}
+                onChangeText={field.onChange}
+                placeholder="Opsional"
+                numberOfLines={2}
+                className="h-16"
+              />
+            )}
+          />
+        </View>
+
+        {presentation === "sheet" && !isKeyboardVisible && sheetFooterHeight > 0 ? (
+          <View
+            style={{ height: sheetFooterHeight + 16 }}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        ) : null}
+      </View>
+    </KeyboardAwareScrollView>
+  );
+}
+
 export function CheckoutContent({
+  presentation,
   sheetName,
   header,
   onPaymentReady,
@@ -470,14 +566,18 @@ export function CheckoutContent({
 
   const cartProducts = useCartStore((s) => s.products);
   const totalPrice = useCartStore((s) => s.totalPrice);
-  const clearCart = useCartStore((s) => s.clearCart);
   const { data: paymentGroups = [], isPending: arePaymentGroupsPending } = usePaymentGroups();
   const { data: guests = [] } = useGuests();
   const validateCart = useValidateCart();
   const checkout = useCheckout();
+  const isControllerKeyboardVisible = useKeyboardState((state) => state.isVisible);
 
   const [cashReceived, setCashReceived] = useState("");
   const [cartError, setCartError] = useState<string | null>(null);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [sheetFooterHeight, setSheetFooterHeight] = useState(0);
+  const [isNativeKeyboardVisible, setIsNativeKeyboardVisible] = useState(false);
+  const isKeyboardVisible = isControllerKeyboardVisible || isNativeKeyboardVisible;
 
   const defaultPaymentGroup =
     paymentGroups.find((group) => isEMoneyGroup(group.group_type)) ?? paymentGroups[0];
@@ -538,6 +638,20 @@ export function CheckoutContent({
   }, [paymentGroups, paymentGroup, paymentId, setValue]);
 
   useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsNativeKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsNativeKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     setValue("products", buildCartProducts(cartProducts), {
       shouldValidate: true,
     });
@@ -595,7 +709,7 @@ export function CheckoutContent({
         cash_received: isCashPayment ? cashReceivedAmount : undefined,
         change: isCashPayment ? change : undefined,
       };
-      clearCart();
+      setIsCompleting(true);
       onPaymentReady(session, result, { isCash: isCashPayment });
     } catch (error) {
       setCartError(getErrorMessage(error));
@@ -606,13 +720,79 @@ export function CheckoutContent({
     setCartError("Lengkapi data checkout yang wajib diisi.");
   };
 
-  const isCheckoutPending = validateCart.isPending || checkout.isPending;
+  const isCheckoutPending = validateCart.isPending || checkout.isPending || isCompleting;
   const isCheckoutDisabled =
     isCheckoutPending ||
     arePaymentGroupsPending ||
     paymentGroups.length === 0 ||
     cartProducts.length === 0 ||
     (isCashPayment && cashReceivedAmount < total);
+
+  const footer =
+    isCheckoutPending || isKeyboardVisible ? undefined : (
+      <CheckoutActions
+        subtotal={subtotal}
+        paymentFee={paymentFee}
+        feeUnit={selectedPayment?.fee_unit}
+        feeValue={selectedPayment?.fee_value}
+        total={total}
+        isPending={isCheckoutPending}
+        isDisabled={isCheckoutDisabled}
+        onComplete={handleSubmit(onSubmit, onInvalid)}
+        shouldGrow={presentation === "sheet"}
+        onHeightChange={presentation === "sheet" ? setSheetFooterHeight : undefined}
+      />
+    );
+
+  const content = (
+    <GestureHandlerRootView style={{ flexGrow: 1, backgroundColor }}>
+      {isCheckoutPending ? (
+        <CheckoutProcessingState accentColor={accentColor} />
+      ) : (
+        <CheckoutFormScrollContent
+          cartError={cartError}
+          paymentFields={{
+            paymentGroups,
+            paymentGroup,
+            paymentId,
+            isPending: arePaymentGroupsPending,
+            isCashPayment,
+            cashPresets,
+            cashReceived,
+            cashReceivedAmount,
+            subtotal,
+            change,
+            errors,
+            setValue,
+            setCashReceived,
+          }}
+          customerFields={{
+            control,
+            customerType,
+            guestId,
+            customerId,
+            guests,
+            customerResults,
+            errors,
+            setValue,
+          }}
+          control={control}
+          presentation={presentation}
+          isKeyboardVisible={isKeyboardVisible}
+          sheetFooterHeight={sheetFooterHeight}
+        />
+      )}
+    </GestureHandlerRootView>
+  );
+
+  if (presentation === "screen") {
+    return (
+      <View className="flex-1 bg-background">
+        {content}
+        {footer}
+      </View>
+    );
+  }
 
   return (
     <TrueSheet
@@ -630,99 +810,10 @@ export function CheckoutContent({
       scrollableOptions={{ scrollingExpandsSheet: true, keyboardScrollOffset: 24 }}
       header={header}
       headerStyle={{ backgroundColor, borderColor }}
-      footer={
-        isCheckoutPending ? undefined : (
-          <CheckoutActions
-            subtotal={subtotal}
-            paymentFee={paymentFee}
-            feeUnit={selectedPayment?.fee_unit}
-            feeValue={selectedPayment?.fee_value}
-            total={total}
-            isPending={isCheckoutPending}
-            isDisabled={isCheckoutDisabled}
-            onComplete={handleSubmit(onSubmit, onInvalid)}
-          />
-        )
-      }
+      footer={footer}
       footerStyle={{ backgroundColor, borderColor }}
     >
-      <GestureHandlerRootView style={{ flexGrow: 1, backgroundColor }}>
-        {isCheckoutPending ? (
-          <View className="flex-1 items-center justify-center gap-4 px-6 py-10">
-            <ActivityIndicator size="large" color={accentColor} />
-            <View className="items-center gap-1.5">
-              <Typography type="h4" weight="semibold" className="text-center">
-                Memproses pembayaran
-              </Typography>
-              <Typography type="body-sm" color="muted" className="max-w-sm text-center">
-                Jangan tutup aplikasi sampai proses selesai.
-              </Typography>
-            </View>
-          </View>
-        ) : (
-          <KeyboardAwareScrollView
-            bottomOffset={24}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            className="flex-1"
-            contentContainerClassName="items-center px-5 pt-4 pb-6"
-          >
-            <View className="w-full max-w-3xl gap-4">
-              {cartError ? (
-                <View className="rounded-lg bg-danger/10 px-3 py-2.5">
-                  <Typography type="body-sm" className="text-danger">
-                    {cartError}
-                  </Typography>
-                </View>
-              ) : null}
-
-              <PaymentFields
-                paymentGroups={paymentGroups}
-                paymentGroup={paymentGroup}
-                paymentId={paymentId}
-                isPending={arePaymentGroupsPending}
-                isCashPayment={isCashPayment}
-                cashPresets={cashPresets}
-                cashReceived={cashReceived}
-                cashReceivedAmount={cashReceivedAmount}
-                subtotal={subtotal}
-                change={change}
-                errors={errors}
-                setValue={setValue}
-                setCashReceived={setCashReceived}
-              />
-
-              <CustomerFields
-                control={control}
-                customerType={customerType}
-                guestId={guestId}
-                customerId={customerId}
-                guests={guests}
-                customerResults={customerResults}
-                errors={errors}
-                setValue={setValue}
-              />
-
-              <View className="gap-1.5">
-                <Typography type="body-sm" weight="semibold">
-                  Catatan
-                </Typography>
-                <Controller
-                  control={control}
-                  name="notes"
-                  render={({ field }) => (
-                    <TextArea
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      placeholder="Opsional"
-                    />
-                  )}
-                />
-              </View>
-            </View>
-          </KeyboardAwareScrollView>
-        )}
-      </GestureHandlerRootView>
+      {content}
     </TrueSheet>
   );
 }

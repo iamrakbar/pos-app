@@ -30,6 +30,7 @@ export default function POSFlowLayout() {
     >
       <Stack.Screen name="index" options={{ title: t("navigation.pos"), headerShown: false }} />
       <Stack.Screen name="cart" options={{ title: t("navigation.cart") }} />
+      <Stack.Screen name="checkout" options={{ title: t("navigation.checkout") }} />
       <Stack.Screen
         name="table-selection"
         options={{

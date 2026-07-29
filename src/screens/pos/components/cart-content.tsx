@@ -3,7 +3,7 @@ import { formatRupiah } from "@/utils/format";
 import { useProducts } from "@/hooks/db/use-products";
 import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
-import { Button, Select, Typography, useThemeColor } from "heroui-native";
+import { Button, Select, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +15,8 @@ import TableSelectionButton from "./table-selection-button";
 import { getLocaleTag } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { useRouter } from "expo-router";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -41,7 +43,9 @@ function isPastPickupTime(value: string): boolean {
 }
 
 export default function CartContent(): JSX.Element {
+  const router = useRouter();
   const { present } = useTrueSheet();
+  const { isCompact, isPortrait } = useResponsiveLayout();
   const { locale } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
   const [colorMuted, colorAccent] = useThemeColor(["muted", "accent"]);
@@ -59,6 +63,16 @@ export default function CartContent(): JSX.Element {
   const subtotal = totalPrice();
   const productById = new Map((catalogProducts ?? []).map((product) => [product.id, product]));
   const selectedTable = tables.find((table) => table.id === checkoutForm.table_id);
+  const usesCheckoutScreen = isCompact && isPortrait;
+
+  const handleCheckout = () => {
+    if (usesCheckoutScreen) {
+      router.push("/pos/checkout");
+      return;
+    }
+
+    void present(POS_CHECKOUT_SHEET_NAME, 1);
+  };
 
   return (
     <View className="flex-1">
@@ -179,6 +193,8 @@ export default function CartContent(): JSX.Element {
         )}
       </ScrollView>
 
+      <Separator />
+
       {/* Footer */}
       <View className="px-5 py-4 gap-3">
         <View className="flex-row items-center justify-between">
@@ -189,15 +205,11 @@ export default function CartContent(): JSX.Element {
             {formatRupiah(subtotal)}
           </Typography>
         </View>
-        <Button
-          className="w-full"
-          onPress={() => void present(POS_CHECKOUT_SHEET_NAME, 1)}
-          isDisabled={cartProducts.length === 0}
-        >
+        <Button className="w-full" onPress={handleCheckout} isDisabled={cartProducts.length === 0}>
           Checkout
         </Button>
       </View>
-      <CheckoutSheet />
+      {usesCheckoutScreen ? null : <CheckoutSheet />}
     </View>
   );
 }
