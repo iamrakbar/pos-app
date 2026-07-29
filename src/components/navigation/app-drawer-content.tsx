@@ -7,7 +7,15 @@ import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
-import { Avatar, Popover, ScrollShadow, Surface, Typography, useThemeColor } from "heroui-native";
+import {
+  Avatar,
+  Button,
+  Popover,
+  ScrollShadow,
+  Surface,
+  Typography,
+  useThemeColor,
+} from "heroui-native";
 import type { ComponentProps, JSX } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -54,12 +62,14 @@ export default function AppDrawerContent({
     themeColorMuted,
     themeColorAccentSoftForeground,
     themeColorWarningSoftForeground,
+    themeColorDanger,
   ] = useThemeColor([
     "accent",
     "accent-foreground",
     "muted",
     "accent-soft-foreground",
     "warning-soft-foreground",
+    "danger",
   ]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
@@ -187,10 +197,14 @@ export default function AppDrawerContent({
           onOpenChange={setIsProfileOpen}
         >
           <Popover.Trigger asChild>
-            <Pressable accessibilityRole="button" accessibilityLabel={t("profile.openMenu")}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("profile.openMenu")}
+              accessibilityState={{ expanded: isProfileOpen }}
+            >
               <Surface
                 variant={isProfileOpen ? "default" : "transparent"}
-                className="flex-row items-center gap-3 px-3 py-2"
+                className="min-h-12 flex-row items-center gap-3 px-3 py-2"
               >
                 <Avatar variant="soft" size="sm">
                   <Avatar.Fallback>
@@ -220,26 +234,25 @@ export default function AppDrawerContent({
               placement="top"
               align="center"
               width={choicePresentation === "popover" ? "trigger" : undefined}
-              className="overflow-hidden border border-border p-0"
+              className={choicePresentation === "popover" ? "gap-2 p-2" : undefined}
+              contentContainerClassName={
+                choicePresentation === "bottom-sheet" ? "gap-2 px-4 pb-safe pt-2" : undefined
+              }
             >
-              <Pressable
-                accessibilityRole="button"
+              <Button
+                variant="ghost"
                 onPress={() => {
                   setIsProfileOpen(false);
                   navigation.closeDrawer();
                   navigation.navigate("settings");
                 }}
-                className="flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary"
+                className="flex-1 items-center justify-between"
               >
-                <Ionicons name="person-circle-outline" size={19} color={themeColorMuted} />
-                <Typography type="body-sm" weight="medium">
-                  {t("profile.profile")}
-                </Typography>
-              </Pressable>
+                <Button.Label>{t("profile.profile")}</Button.Label>
+                <Ionicons name="chevron-forward" size={16} color={themeColorMuted} />
+              </Button>
 
-              <View className="h-px bg-border" />
-
-              <View className="flex-row gap-2 p-2">
+              <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">
                 {themeActions.map((action) => {
                   const isSelected = themeMode === action.value;
                   return (
@@ -249,7 +262,7 @@ export default function AppDrawerContent({
                       accessibilityLabel={action.label}
                       accessibilityState={{ selected: isSelected }}
                       onPress={() => setThemeMode(action.value)}
-                      className={`h-10 flex-1 items-center justify-center rounded-full ${isSelected ? "bg-accent" : "active:bg-surface-secondary"}`}
+                      className={`h-9 flex-1 items-center justify-center rounded-full ${isSelected ? "bg-accent" : "active:bg-surface-tertiary"}`}
                     >
                       <Ionicons
                         name={action.icon}
@@ -260,22 +273,16 @@ export default function AppDrawerContent({
                   );
                 })}
               </View>
-
-              <View className="h-px bg-border" />
-
-              <Pressable
-                accessibilityRole="button"
+              <Button
+                variant="danger-soft"
                 onPress={() => {
                   setIsProfileOpen(false);
                   setIsLogoutOpen(true);
                 }}
-                className="flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary"
               >
-                <Ionicons name="log-out-outline" size={19} color={themeColorMuted} />
-                <Typography type="body-sm" weight="medium">
-                  {t("settings.logout")}
-                </Typography>
-              </Pressable>
+                <Ionicons name="log-out-outline" size={18} color={themeColorDanger} />
+                <Button.Label>{t("settings.logout")}</Button.Label>
+              </Button>
             </Popover.Content>
           </Popover.Portal>
         </Popover>
