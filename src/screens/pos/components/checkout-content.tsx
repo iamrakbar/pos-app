@@ -6,7 +6,7 @@ import { useCustomerSearch } from "@/hooks/db/use-customers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/use-cart";
 import { useCheckout } from "@/hooks/db/use-checkout";
 import { checkoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
-import { formatRupiah } from "@/utils/format";
+import { formatRupiah, IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import {
   extractCheckoutTotal,
@@ -17,12 +17,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
-  Input,
   SearchField,
   Select,
   Surface,
   TextArea,
-  TextField,
   Typography,
   useThemeColor,
 } from "heroui-native";
@@ -43,6 +41,7 @@ import {
 } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
+import StringNumberField from "@/components/common/string-number-field";
 
 type CheckoutContentProps = {
   presentation: "screen" | "sheet";
@@ -307,19 +306,16 @@ function PaymentFields({
             </View>
           </View>
           <View className="flex-row items-end gap-4">
-            <View className="min-w-48 flex-1 gap-1.5">
-              <Typography type="body-sm" weight="semibold">
-                Nominal lain
-              </Typography>
-              <TextField>
-                <Input
-                  value={cashReceived ? formatRupiah(cashReceivedAmount) : ""}
-                  onChangeText={(value) => setCashReceived(value.replace(/\D/g, ""))}
-                  placeholder="Rp0"
-                  keyboardType="phone-pad"
-                />
-              </TextField>
-            </View>
+            <StringNumberField
+              className="flex-1"
+              label="Nominal lain"
+              value={cashReceived}
+              onChange={setCashReceived}
+              placeholder="Rp0"
+              minValue={0}
+              step={1000}
+              formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
+            />
             <View className="min-w-32 gap-1">
               <Typography type="body-xs" color="muted">
                 Kembalian

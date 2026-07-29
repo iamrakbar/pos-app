@@ -1,4 +1,6 @@
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
+import StringNumberField from "@/components/common/string-number-field";
+import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Input, Label, TextField, Typography } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
@@ -63,23 +65,23 @@ export default function OptionRow({
           control={control}
           name={`options.${index}.price`}
           render={({ field: { value, onChange } }) => (
-            <TextField
-              className="w-32"
+            <StringNumberField
+              className="flex-1"
+              label="Price (Rp)"
+              value={value}
+              onChange={onChange}
+              minValue={0}
+              step={1000}
+              formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
               isRequired
               isInvalid={Boolean(errors.options?.[index]?.price)}
             >
-              <Label>Price (Rp)</Label>
-              <Input
-                value={value}
-                onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                keyboardType="number-pad"
-              />
               {errors.options?.[index]?.price?.message ? (
                 <Typography type="body-xs" className="text-danger">
                   {errors.options[index]?.price?.message}
                 </Typography>
               ) : null}
-            </TextField>
+            </StringNumberField>
           )}
         />
       </View>

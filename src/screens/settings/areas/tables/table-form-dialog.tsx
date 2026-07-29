@@ -1,6 +1,7 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
+import StringNumberField from "@/components/common/string-number-field";
 import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-tables";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { tableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
@@ -155,19 +156,20 @@ export default function TableFormDialog({
             control={control}
             name="pax"
             render={({ field: { value, onChange } }) => (
-              <TextField isRequired isInvalid={Boolean(errors.pax)}>
-                <Label>Capacity</Label>
-                <Input
-                  value={value}
-                  onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                  keyboardType="number-pad"
-                />
+              <StringNumberField
+                label="Capacity"
+                value={value}
+                onChange={onChange}
+                minValue={1}
+                isRequired
+                isInvalid={Boolean(errors.pax)}
+              >
                 {errors.pax?.message ? (
                   <Typography type="body-xs" className="text-danger">
                     {errors.pax.message}
                   </Typography>
                 ) : null}
-              </TextField>
+              </StringNumberField>
             )}
           />
           <Controller

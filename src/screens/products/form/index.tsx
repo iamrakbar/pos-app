@@ -29,6 +29,7 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import ActionDialog from "@/components/common/action-dialog";
+import StringNumberField from "@/components/common/string-number-field";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { ProductImageAsset } from "@/api/endpoints/products";
 import { useCategories } from "@/hooks/db/use-categories";
@@ -42,6 +43,7 @@ import {
 import { productSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
 import { useCategoryFormNavigation } from "@/stores/use-category-form-navigation";
+import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -127,7 +129,7 @@ function SectionHeading({ title, description }: { title: string; description?: s
   );
 }
 
-function NumberField({
+function ProductNumberField({
   label,
   placeholder,
   description,
@@ -135,31 +137,39 @@ function NumberField({
   value,
   onChangeText,
   error,
+  step = 1,
+  formatOptions,
 }: {
   label: string;
   placeholder: string;
   description?: string;
   required?: boolean;
-  value?: string;
-  onChangeText?: (value: string) => void;
+  value: string;
+  onChangeText: (value: string) => void;
   error?: string;
+  step?: number;
+  formatOptions?: Intl.NumberFormatOptions;
 }) {
   return (
-    <TextField isRequired={required} isInvalid={!!error} className="min-w-35 flex-1">
-      <Label>{label}</Label>
-      <Input
-        variant="secondary"
-        placeholder={placeholder}
-        keyboardType="decimal-pad"
-        value={value}
-        onChangeText={onChangeText}
-      />
+    <StringNumberField
+      className="flex-1"
+      label={label}
+      placeholder={placeholder}
+      inputVariant="secondary"
+      value={value}
+      onChange={onChangeText}
+      minValue={0}
+      step={step}
+      formatOptions={formatOptions}
+      isRequired={required}
+      isInvalid={!!error}
+    >
       {error ? (
         <Description className="text-danger">{error}</Description>
       ) : description ? (
         <Description>{description}</Description>
       ) : null}
-    </TextField>
+    </StringNumberField>
   );
 }
 
@@ -456,7 +466,7 @@ function InventoryCard({
               control={control}
               name="stock"
               render={({ field: { value, onChange } }) => (
-                <NumberField
+                <ProductNumberField
                   label="Available stock"
                   placeholder="0"
                   required
@@ -470,7 +480,7 @@ function InventoryCard({
               control={control}
               name="stock_alert"
               render={({ field: { value, onChange } }) => (
-                <NumberField
+                <ProductNumberField
                   label="Low-stock alert"
                   placeholder="Optional"
                   description="Notify when stock reaches this amount."
@@ -496,13 +506,15 @@ function PricingCard({ control, error }: { control: Control<ProductFormValues>; 
           control={control}
           name="price"
           render={({ field: { value, onChange } }) => (
-            <NumberField
+            <ProductNumberField
               label="Price (Rp)"
               placeholder="0"
               required
               value={value}
               onChangeText={onChange}
               error={error}
+              step={1000}
+              formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
             />
           )}
         />

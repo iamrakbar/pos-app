@@ -2,6 +2,7 @@ import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
+import StringNumberField from "@/components/common/string-number-field";
 import {
   useCategory,
   useCreateCategory,
@@ -218,18 +219,19 @@ export default function CategoryFormScreen(): React.JSX.Element {
               control={control}
               name="position"
               render={({ field: { value, onChange } }) => (
-                <TextField isRequired isInvalid={Boolean(errors.position)}>
-                  <Label>Position</Label>
-                  <Input
-                    value={value}
-                    onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                    keyboardType="number-pad"
-                  />
+                <StringNumberField
+                  label="Position"
+                  value={value}
+                  onChange={onChange}
+                  minValue={0}
+                  isRequired
+                  isInvalid={Boolean(errors.position)}
+                >
                   <FieldMessage
                     message={errors.position?.message}
                     fallback="Lower positions appear first."
                   />
-                </TextField>
+                </StringNumberField>
               )}
             />
 

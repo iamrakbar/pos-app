@@ -1,4 +1,5 @@
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
+import StringNumberField from "@/components/common/string-number-field";
 import { Card, Input, Label, Switch, TextField, Typography } from "heroui-native";
 import { Controller, useWatch } from "react-hook-form";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
@@ -104,23 +105,21 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
                 control={control}
                 name="min"
                 render={({ field: { value, onChange } }) => (
-                  <TextField
-                    className="min-w-[140px] max-w-48 flex-1"
+                  <StringNumberField
+                    className="flex-1"
+                    label="Minimum"
+                    value={value}
+                    onChange={onChange}
+                    minValue={1}
                     isRequired
                     isInvalid={Boolean(errors.min)}
                   >
-                    <Label>Minimum</Label>
-                    <Input
-                      value={value}
-                      onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                      keyboardType="number-pad"
-                    />
                     {errors.min?.message ? (
                       <Typography type="body-xs" className="text-danger">
                         {errors.min.message}
                       </Typography>
                     ) : null}
-                  </TextField>
+                  </StringNumberField>
                 )}
               />
             ) : null}
@@ -128,23 +127,21 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
               control={control}
               name="max"
               render={({ field: { value, onChange } }) => (
-                <TextField
-                  className="min-w-[140px] max-w-48 flex-1"
+                <StringNumberField
+                  className="flex-1"
+                  label="Maximum"
+                  value={value}
+                  onChange={onChange}
+                  minValue={2}
                   isRequired
                   isInvalid={Boolean(errors.max)}
                 >
-                  <Label>Maximum</Label>
-                  <Input
-                    value={value}
-                    onChangeText={(text) => onChange(text.replace(/\D/g, ""))}
-                    keyboardType="number-pad"
-                  />
                   {errors.max?.message ? (
                     <Typography type="body-xs" className="text-danger">
                       {errors.max.message}
                     </Typography>
                   ) : null}
-                </TextField>
+                </StringNumberField>
               )}
             />
           </View>

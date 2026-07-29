@@ -42,6 +42,7 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { printCalibrationReceipt } from "@/services/printer/print-service";
 import ActionDialog from "@/components/common/action-dialog";
+import StringNumberField from "@/components/common/string-number-field";
 import { EmptyState } from "heroui-native-pro";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [
@@ -314,17 +315,20 @@ function PrinterConnectionCard({
             </View>
 
             <View>
-              <FieldLabel label="Port" required />
               <Controller
                 control={control}
                 name="port"
                 render={({ field: { value, onChange } }) => (
-                  <Input
+                  <StringNumberField
+                    label="Port"
                     value={value}
-                    onChangeText={onChange}
+                    onChange={onChange}
                     placeholder={PORT}
-                    keyboardType="number-pad"
-                    variant="secondary"
+                    inputVariant="secondary"
+                    minValue={1}
+                    maxValue={65535}
+                    isRequired
+                    isInvalid={Boolean(errors.port)}
                   />
                 )}
               />
@@ -399,17 +403,20 @@ function ReceiptSetupCard({
         </View>
 
         <View>
-          <FieldLabel label="Characters per line" required />
           <Controller
             control={control}
             name="charactersPerLine"
             render={({ field: { value, onChange } }) => (
-              <Input
+              <StringNumberField
+                label="Characters per line"
                 value={value}
-                onChangeText={onChange}
+                onChange={onChange}
                 placeholder={paperWidth === "80mm" ? "46" : "32"}
-                keyboardType="number-pad"
-                variant="secondary"
+                inputVariant="secondary"
+                minValue={24}
+                maxValue={64}
+                isRequired
+                isInvalid={Boolean(errors.charactersPerLine)}
               />
             )}
           />
@@ -420,17 +427,21 @@ function ReceiptSetupCard({
         </View>
 
         <View>
-          <FieldLabel label="Logo width (dots)" required />
           <Controller
             control={control}
             name="logoWidthDots"
             render={({ field: { value, onChange } }) => (
-              <Input
+              <StringNumberField
+                label="Logo width (dots)"
                 value={value}
-                onChangeText={onChange}
+                onChange={onChange}
                 placeholder={paperWidth === "80mm" ? "380" : "300"}
-                keyboardType="number-pad"
-                variant="secondary"
+                inputVariant="secondary"
+                minValue={100}
+                maxValue={576}
+                step={10}
+                isRequired
+                isInvalid={Boolean(errors.logoWidthDots)}
               />
             )}
           />
