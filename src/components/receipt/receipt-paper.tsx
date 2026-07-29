@@ -108,7 +108,7 @@ export function ReceiptPaper({
 
   return (
     <View
-      className={`max-w-full self-center bg-white px-[32] ${isCompact ? "py-6" : "py-10"}`}
+      className={`max-w-full self-center items-center bg-white ${isCompact ? "py-6" : "py-10"}`}
       style={{ width: paperWidth === "58mm" ? 300 : 400 }}
     >
       {!isKitchen && settings.storeLogo ? (

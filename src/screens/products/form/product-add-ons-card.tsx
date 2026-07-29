@@ -31,9 +31,6 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
           <Card.Title>Add-ons</Card.Title>
           <Card.Description>Choice groups shown to the cashier.</Card.Description>
         </View>
-        <Button variant="ghost" className="self-center" onPress={onAdd}>
-          <Button.Label>+ Add</Button.Label>
-        </Button>
       </Card.Header>
       <Card.Body className="gap-0">
         {addOns.length === 0 ? (
@@ -45,6 +42,9 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
             <Typography type="body-xs" color="muted" className="text-center">
               Add optional or required choices for this product.
             </Typography>
+            <Button variant="outline" className="self-center" onPress={onAdd}>
+              <Button.Label>+ Add</Button.Label>
+            </Button>
           </View>
         ) : (
           addOns.slice(0, 3).map((addOn, index) => (

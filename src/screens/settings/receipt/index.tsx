@@ -315,7 +315,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   return (
     <>
       <View className="flex-1 bg-background">
-        <View className="min-h-0 w-full max-w-6xl flex-1 self-center">
+        <View className="min-h-0 w-full flex-1 self-center">
           <ReceiptSetupLayout isPortrait={isPortrait}>
             <ReceiptPreviewSection
               settings={settings}
