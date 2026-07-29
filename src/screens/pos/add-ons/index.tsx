@@ -23,6 +23,7 @@ import {
 import React from "react";
 import { Controller, type Control, useForm, useWatch } from "react-hook-form";
 import { FlatList, Keyboard, View } from "react-native";
+import { useKeyboardState } from "react-native-keyboard-controller";
 
 const EMPTY_FORM_VALUES: AddOnFormValues = {
   radioSelections: {},
@@ -183,6 +184,9 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const removeItem = useCartStore((state) => state.removeItem);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [footerHeight, setFooterHeight] = React.useState(0);
+  const [isNativeKeyboardVisible, setIsNativeKeyboardVisible] = React.useState(false);
+  const isControllerKeyboardVisible = useKeyboardState((state) => state.isVisible);
+  const isKeyboardVisible = isControllerKeyboardVisible || isNativeKeyboardVisible;
   const listRef = React.useRef<FlatList<AddOnGroup>>(null);
   const isNotesFocused = React.useRef(false);
   const schema = createAddOnSchema(product?.add_ons ?? []);
@@ -236,12 +240,20 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const configuredPrice = (product?.price ?? 0) + addOnTotal;
 
   React.useEffect(() => {
-    const subscription = Keyboard.addListener("keyboardDidShow", () => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsNativeKeyboardVisible(true);
       if (isNotesFocused.current) {
         listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
       }
     });
-    return () => subscription.remove();
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsNativeKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
   }, []);
 
   const scrollToNotes = () => {
@@ -343,7 +355,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
       scrollableOptions={{ scrollingExpandsSheet: true, keyboardScrollOffset: 24 }}
       header={header}
       headerStyle={{ backgroundColor, borderColor }}
-      footer={footer}
+      footer={isKeyboardVisible ? undefined : footer}
       footerStyle={{ backgroundColor, borderColor }}
       onDidDismiss={handleDidDismiss}
     >
@@ -354,7 +366,6 @@ export default function POSAddOnSheet(): React.JSX.Element {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
         showsVerticalScrollIndicator
-        contentInset={{ bottom: footerHeight }}
         contentContainerStyle={{
           gap: 24,
           paddingHorizontal: 20,
@@ -413,10 +424,18 @@ export default function POSAddOnSheet(): React.JSX.Element {
                     isNotesFocused.current = false;
                   }}
                   placeholder="Special instructions"
-                  className="min-h-24"
+                  numberOfLines={2}
+                  className="h-16"
                 />
               )}
             />
+            {!isKeyboardVisible && footerHeight > 0 ? (
+              <View
+                style={{ height: footerHeight + 16 }}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              />
+            ) : null}
           </View>
         }
       />
