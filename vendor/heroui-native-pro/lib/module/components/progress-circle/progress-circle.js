@@ -10,7 +10,7 @@ import { HeroText } from "../../helpers/internal/components/index.js";
 import { createContext } from "../../helpers/internal/utils/index.js";
 import { useProgressCircleFillAnimation, useProgressCircleIndicatorRootAnimation, useProgressCircleRootAnimation, useProgressCircleSpinAnimation } from "./progress-circle.animation.js";
 import { CENTER, DEFAULT_COLOR, DEFAULT_FORMAT_OPTIONS, DEFAULT_MAX_VALUE, DEFAULT_MIN_VALUE, DEFAULT_SIZE, DISPLAY_NAME, SIZE_MAP, STROKE_WIDTH } from "./progress-circle.constants.js";
-import { progressCircleClassNames, progressCircleStyleSheet } from "./progress-circle.styles.js";
+import { progressCircleClassNames } from "./progress-circle.styles.js";
 import { clampPercentage, formatProgressValue } from "./progress-circle.utils.js";
 
 // --------------------------------------------------
@@ -273,7 +273,6 @@ const ProgressCircleValueLabel = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
     className,
-    style,
     ...restProps
   } = props;
   const ctx = useProgressCircle();
@@ -290,7 +289,6 @@ const ProgressCircleValueLabel = /*#__PURE__*/forwardRef((props, ref) => {
     accessibilityRole: "text",
     importantForAccessibility: "no",
     className: valueLabelClassName,
-    style: [progressCircleStyleSheet.valueLabel, style],
     ...restProps,
     children: displayContent
   });

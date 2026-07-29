@@ -1,6 +1,5 @@
 "use strict";
 
-import { StyleSheet } from 'react-native';
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 
@@ -9,10 +8,10 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * Centers the indicator and optional value label.
  */
 const root = tv({
-  base: 'items-center justify-center',
+  base: 'progress-circle__root',
   variants: {
     isDisabled: {
-      true: 'opacity-disabled',
+      true: 'progress-circle__root--is-disabled',
       false: ''
     }
   },
@@ -26,12 +25,12 @@ const root = tv({
  * Absolutely centered text on top of the circle indicator.
  */
 const valueLabel = tv({
-  base: 'absolute text-foreground font-medium',
+  base: 'progress-circle__value-label',
   variants: {
     size: {
-      sm: 'text-[6px]',
-      md: 'text-[8px]',
-      lg: 'text-[10px]'
+      sm: 'progress-circle__value-label--size-sm',
+      md: 'progress-circle__value-label--size-md',
+      lg: 'progress-circle__value-label--size-lg'
     }
   },
   defaultVariants: {
@@ -41,9 +40,4 @@ const valueLabel = tv({
 export const progressCircleClassNames = combineStyles({
   root,
   valueLabel
-});
-export const progressCircleStyleSheet = StyleSheet.create({
-  valueLabel: {
-    fontVariant: ['tabular-nums']
-  }
 });

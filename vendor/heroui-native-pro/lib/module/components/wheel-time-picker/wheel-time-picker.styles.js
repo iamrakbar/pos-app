@@ -18,7 +18,7 @@ const root = tv({
  */
 const hour = tv({
   slots: {
-    itemLabel: 'tabular-nums'
+    itemLabel: 'wheel-time-picker__hour-item-label'
   }
 });
 
@@ -28,7 +28,7 @@ const hour = tv({
  */
 const minute = tv({
   slots: {
-    itemLabel: 'tabular-nums'
+    itemLabel: 'wheel-time-picker__minute-item-label'
   }
 });
 

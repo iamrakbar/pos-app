@@ -39,15 +39,15 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  */
 const root = tv({
   slots: {
-    container: 'overflow-hidden',
+    container: 'wheel-picker__container',
     contentContainer: '',
-    item: 'flex-row items-center justify-center gap-2',
-    itemLabel: 'text-lg text-foreground font-medium'
+    item: 'wheel-picker__item',
+    itemLabel: 'wheel-picker__item-label'
   },
   variants: {
     isDisabled: {
       true: {
-        container: 'opacity-disabled pointer-events-none'
+        container: 'wheel-picker__container--is-disabled'
       },
       false: {}
     }
@@ -66,8 +66,8 @@ const root = tv({
  */
 const indicator = tv({
   slots: {
-    wrapper: 'absolute left-0 right-0 justify-center -z-1',
-    highlight: 'flex-1 rounded-2xl bg-default'
+    wrapper: 'wheel-picker__indicator-wrapper',
+    highlight: 'wheel-picker__indicator-highlight'
   }
 });
 
@@ -80,8 +80,8 @@ const indicator = tv({
  */
 const mask = tv({
   slots: {
-    top: 'absolute left-0 right-0 top-0',
-    bottom: 'absolute left-0 right-0 bottom-0'
+    top: 'wheel-picker__mask-top',
+    bottom: 'wheel-picker__mask-bottom'
   }
 });
 

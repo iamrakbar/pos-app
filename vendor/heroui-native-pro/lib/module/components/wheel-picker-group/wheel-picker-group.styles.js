@@ -10,10 +10,10 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * bounds.
  */
 const root = tv({
-  base: 'flex-row overflow-hidden',
+  base: 'wheel-picker-group__root',
   variants: {
     isDisabled: {
-      true: 'opacity-disabled pointer-events-none',
+      true: 'wheel-picker-group__root--is-disabled',
       false: ''
     }
   },
@@ -31,8 +31,8 @@ const root = tv({
  */
 const indicator = tv({
   slots: {
-    wrapper: 'absolute left-0 right-0 justify-center -z-1',
-    highlight: 'flex-1 rounded-2xl bg-default'
+    wrapper: 'wheel-picker-group__indicator-wrapper',
+    highlight: 'wheel-picker-group__indicator-highlight'
   }
 });
 
@@ -45,8 +45,8 @@ const indicator = tv({
  */
 const mask = tv({
   slots: {
-    top: 'absolute left-0 right-0 top-0',
-    bottom: 'absolute left-0 right-0 bottom-0'
+    top: 'wheel-picker-group__mask-top',
+    bottom: 'wheel-picker-group__mask-bottom'
   }
 });
 

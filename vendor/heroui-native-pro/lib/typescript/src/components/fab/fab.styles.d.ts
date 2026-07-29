@@ -42,7 +42,7 @@ declare const trigger: import("tailwind-variants").TVReturnType<{
     contentContainer: string;
 }, undefined, unknown, unknown, undefined>>;
 export declare const fabClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "self-start", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "self-start", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "fab__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "fab__root", unknown, unknown, undefined>>;
     trigger: import("tailwind-variants").TVReturnType<{
         isDisabled: {
             true: {
@@ -71,15 +71,15 @@ export declare const fabClassNames: import("../../helpers/internal/types").Combi
         container: string;
         contentContainer: string;
     }, undefined, unknown, unknown, undefined>>;
-    portal: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "absolute inset-0", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "absolute inset-0", unknown, unknown, undefined>>;
-    overlay: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-1 bg-backdrop", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-1 bg-backdrop", unknown, unknown, undefined>>;
+    portal: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "fab__portal", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "fab__portal", unknown, unknown, undefined>>;
+    overlay: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "fab__overlay", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "fab__overlay", unknown, unknown, undefined>>;
     content: import("tailwind-variants").TVReturnType<{
         align: {
             start: string;
             center: string;
             end: string;
         };
-    }, undefined, "gap-3", {
+    }, undefined, "fab__content", {
         align: {
             start: string;
             center: string;
@@ -91,12 +91,12 @@ export declare const fabClassNames: import("../../helpers/internal/types").Combi
             center: string;
             end: string;
         };
-    }, undefined, "gap-3", unknown, unknown, undefined>>;
+    }, undefined, "fab__content", unknown, unknown, undefined>>;
     item: import("tailwind-variants").TVReturnType<{
         isDisabled: {
             true: string;
         };
-    }, undefined, "flex-row items-center gap-2.5 rounded-2xl shadow-overlay bg-overlay px-4 py-2.5", {
+    }, undefined, "fab__item", {
         isDisabled: {
             true: string;
         };
@@ -104,8 +104,8 @@ export declare const fabClassNames: import("../../helpers/internal/types").Combi
         isDisabled: {
             true: string;
         };
-    }, undefined, "flex-row items-center gap-2.5 rounded-2xl shadow-overlay bg-overlay px-4 py-2.5", unknown, unknown, undefined>>;
-    itemLabel: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "text-sm font-medium text-foreground", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "text-sm font-medium text-foreground", unknown, unknown, undefined>>;
+    }, undefined, "fab__item", unknown, unknown, undefined>>;
+    itemLabel: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "fab__item-label", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "fab__item-label", unknown, unknown, undefined>>;
 }>;
 export type TriggerSlots = keyof ReturnType<typeof trigger>;
 export declare const fabStyleSheet: {

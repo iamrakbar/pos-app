@@ -1,8 +1,8 @@
 export declare const ratingClassNames: import("../../helpers/internal/types").CombinedStyles<{
     root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, string[], {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, string[], unknown, unknown, undefined>>;
-    item: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "items-center justify-center", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "items-center justify-center", unknown, unknown, undefined>>;
-    iconWrapper: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "items-center justify-center", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "items-center justify-center", unknown, unknown, undefined>>;
-    iconOverlay: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "absolute inset-y-0 left-0 items-start justify-center overflow-hidden", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "absolute inset-y-0 left-0 items-start justify-center overflow-hidden", unknown, unknown, undefined>>;
+    item: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "rating__item", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "rating__item", unknown, unknown, undefined>>;
+    iconWrapper: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "rating__icon-wrapper", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "rating__icon-wrapper", unknown, unknown, undefined>>;
+    iconOverlay: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "rating__icon-overlay", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "rating__icon-overlay", unknown, unknown, undefined>>;
 }>;
 export declare const ratingStyleSheet: {
     itemPressed: {

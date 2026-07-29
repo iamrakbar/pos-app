@@ -3,7 +3,7 @@
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const label = tv({
-  base: 'text-foreground text-[10px] font-normal min-w-10 text-center'
+  base: 'chart-crosshair__label'
 });
 
 /**
@@ -27,16 +27,16 @@ const label = tv({
  */
 const value = tv({
   slots: {
-    container: 'absolute left-0 min-w-14 flex-row items-center justify-center',
-    label: 'text-foreground text-[10px] font-normal min-w-10 text-center'
+    container: 'chart-crosshair__value-container',
+    label: 'chart-crosshair__value-label'
   },
   variants: {
     variant: {
       default: {
-        container: 'bg-default rounded-2xl px-2 py-1'
+        container: 'chart-crosshair__value-container--variant-default'
       },
       ghost: {
-        container: 'bg-transparent p-1'
+        container: 'chart-crosshair__value-container--variant-ghost'
       }
     }
   },

@@ -4,7 +4,7 @@ export declare const progressBarClassNames: import("../../helpers/internal/types
             true: string;
             false: string;
         };
-    }, undefined, "w-full gap-2", {
+    }, undefined, "progress-bar__root", {
         isDisabled: {
             true: string;
             false: string;
@@ -14,15 +14,15 @@ export declare const progressBarClassNames: import("../../helpers/internal/types
             true: string;
             false: string;
         };
-    }, undefined, "w-full gap-2", unknown, unknown, undefined>>;
-    labelRow: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-row items-center justify-between", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-row items-center justify-between", unknown, unknown, undefined>>;
+    }, undefined, "progress-bar__root", unknown, unknown, undefined>>;
+    labelRow: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "progress-bar__label-row", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "progress-bar__label-row", unknown, unknown, undefined>>;
     track: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;
             md: string;
             lg: string;
         };
-    }, undefined, "w-full rounded-md bg-default overflow-hidden", {
+    }, undefined, "progress-bar__track", {
         size: {
             sm: string;
             md: string;
@@ -34,7 +34,7 @@ export declare const progressBarClassNames: import("../../helpers/internal/types
             md: string;
             lg: string;
         };
-    }, undefined, "w-full rounded-md bg-default overflow-hidden", unknown, unknown, undefined>>;
+    }, undefined, "progress-bar__track", unknown, unknown, undefined>>;
     fill: import("tailwind-variants").TVReturnType<{
         color: {
             default: string;
@@ -43,7 +43,7 @@ export declare const progressBarClassNames: import("../../helpers/internal/types
             warning: string;
             danger: string;
         };
-    }, undefined, "h-full rounded-md", {
+    }, undefined, "progress-bar__fill", {
         color: {
             default: string;
             accent: string;
@@ -59,9 +59,9 @@ export declare const progressBarClassNames: import("../../helpers/internal/types
             warning: string;
             danger: string;
         };
-    }, undefined, "h-full rounded-md", unknown, unknown, undefined>>;
-    label: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "text-sm font-medium text-foreground", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "text-sm font-medium text-foreground", unknown, unknown, undefined>>;
-    valueLabel: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "text-sm font-medium text-muted", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "text-sm font-medium text-muted", unknown, unknown, undefined>>;
+    }, undefined, "progress-bar__fill", unknown, unknown, undefined>>;
+    label: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "progress-bar__label", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "progress-bar__label", unknown, unknown, undefined>>;
+    valueLabel: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "progress-bar__value-label", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "progress-bar__value-label", unknown, unknown, undefined>>;
 }>;
 /**
  * StyleSheet for native-only properties that cannot be expressed via Tailwind.
@@ -69,9 +69,6 @@ export declare const progressBarClassNames: import("../../helpers/internal/types
 export declare const progressBarStyleSheet: {
     track: {
         borderCurve: "continuous";
-    };
-    valueLabel: {
-        fontVariant: "tabular-nums"[];
     };
 };
 //# sourceMappingURL=progress-bar.styles.d.ts.map

@@ -3,7 +3,7 @@
  * slice fills come from each data row's `colorKey` field (a Skia `Color`).
  */
 export declare const pieChartClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "w-full", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "w-full", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "pie-chart__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "pie-chart__root", unknown, unknown, undefined>>;
 }>;
 export default pieChartClassNames;
 //# sourceMappingURL=pie-chart.styles.d.ts.map

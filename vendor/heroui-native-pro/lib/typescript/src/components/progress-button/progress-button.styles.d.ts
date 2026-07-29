@@ -10,7 +10,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             true: string;
             false: string;
         };
-    }, undefined, "h-[56px] px-12 rounded-full items-center justify-center overflow-hidden bg-default", {
+    }, undefined, "progress-button__root", {
         variant: {
             default: string;
             accent: string;
@@ -32,7 +32,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             true: string;
             false: string;
         };
-    }, undefined, "h-[56px] px-12 rounded-full items-center justify-center overflow-hidden bg-default", unknown, unknown, undefined>>;
+    }, undefined, "progress-button__root", unknown, unknown, undefined>>;
     overlay: import("tailwind-variants").TVReturnType<{
         variant: {
             default: string;
@@ -40,7 +40,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             success: string;
             danger: string;
         };
-    }, undefined, "absolute h-full flex-row items-center overflow-hidden", {
+    }, undefined, "progress-button__overlay", {
         variant: {
             default: string;
             accent: string;
@@ -54,7 +54,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             success: string;
             danger: string;
         };
-    }, undefined, "absolute h-full flex-row items-center overflow-hidden", unknown, unknown, undefined>>;
+    }, undefined, "progress-button__overlay", unknown, unknown, undefined>>;
     label: import("tailwind-variants").TVReturnType<{
         variant: {
             default: string;
@@ -62,7 +62,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             success: string;
             danger: string;
         };
-    }, undefined, "text-base font-medium", {
+    }, undefined, "progress-button__label", {
         variant: {
             default: string;
             accent: string;
@@ -76,7 +76,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             success: string;
             danger: string;
         };
-    }, undefined, "text-base font-medium", unknown, unknown, undefined>>;
+    }, undefined, "progress-button__label", unknown, unknown, undefined>>;
     maskLabel: import("tailwind-variants").TVReturnType<{
         variant: {
             default: string;
@@ -84,7 +84,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             success: string;
             danger: string;
         };
-    }, undefined, "text-base font-medium", {
+    }, undefined, "progress-button__mask-label", {
         variant: {
             default: string;
             accent: string;
@@ -98,7 +98,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             success: string;
             danger: string;
         };
-    }, undefined, "text-base font-medium", unknown, unknown, undefined>>;
+    }, undefined, "progress-button__mask-label", unknown, unknown, undefined>>;
 }>;
 export declare const progressButtonStyleSheet: {
     root: {

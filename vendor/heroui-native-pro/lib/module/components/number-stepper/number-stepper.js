@@ -107,7 +107,6 @@ const NumberStepperValue = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
     className,
-    style,
     animation,
     ...restProps
   } = props;
@@ -134,7 +133,6 @@ const NumberStepperValue = /*#__PURE__*/forwardRef((props, ref) => {
       entering: entering,
       exiting: exiting,
       className: valueClassName,
-      style: [numberStepperStyleSheet.value, style],
       ...restProps,
       children: displayContent
     }, String(value))

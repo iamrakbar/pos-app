@@ -20,16 +20,16 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * ```
  */
 const root = tv({
-  base: 'h-[56px] px-12 rounded-full items-center justify-center overflow-hidden bg-default',
+  base: 'progress-button__root',
   variants: {
     variant: {
-      default: 'border-default-foreground',
-      accent: 'border-accent',
-      success: 'border-success',
-      danger: 'border-danger'
+      default: 'progress-button__root--variant-default',
+      accent: 'progress-button__root--variant-accent',
+      success: 'progress-button__root--variant-success',
+      danger: 'progress-button__root--variant-danger'
     },
     isDisabled: {
-      true: 'opacity-disabled',
+      true: 'progress-button__root--is-disabled',
       false: ''
     }
   },
@@ -47,13 +47,13 @@ const root = tv({
  * - `transform` (translateX) - Animated for the left-to-right fill sweep
  */
 const overlay = tv({
-  base: 'absolute h-full flex-row items-center overflow-hidden',
+  base: 'progress-button__overlay',
   variants: {
     variant: {
-      default: 'bg-default-foreground/5',
-      accent: 'bg-accent',
-      success: 'bg-success',
-      danger: 'bg-danger'
+      default: 'progress-button__overlay--variant-default',
+      accent: 'progress-button__overlay--variant-accent',
+      success: 'progress-button__overlay--variant-success',
+      danger: 'progress-button__overlay--variant-danger'
     }
   },
   defaultVariants: {
@@ -67,13 +67,13 @@ const overlay = tv({
  * Color matches the variant border for consistency.
  */
 const label = tv({
-  base: 'text-base font-medium',
+  base: 'progress-button__label',
   variants: {
     variant: {
-      default: 'text-default-foreground',
-      accent: 'text-accent-soft-foreground',
-      success: 'text-success-soft-foreground',
-      danger: 'text-danger-soft-foreground'
+      default: 'progress-button__label--variant-default',
+      accent: 'progress-button__label--variant-accent',
+      success: 'progress-button__label--variant-success',
+      danger: 'progress-button__label--variant-danger'
     }
   },
   defaultVariants: {
@@ -90,13 +90,13 @@ const label = tv({
  * - `transform` (translateX) - Animated for counter-translation alignment with base Label
  */
 const maskLabel = tv({
-  base: 'text-base font-medium',
+  base: 'progress-button__mask-label',
   variants: {
     variant: {
-      default: 'text-default-foreground',
-      accent: 'text-accent-foreground',
-      success: 'text-success-foreground',
-      danger: 'text-danger-foreground'
+      default: 'progress-button__mask-label--variant-default',
+      accent: 'progress-button__mask-label--variant-accent',
+      success: 'progress-button__mask-label--variant-success',
+      danger: 'progress-button__mask-label--variant-danger'
     }
   },
   defaultVariants: {

@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
-  base: 'flex-1'
+  base: 'split-view__root'
 });
 
 /**
@@ -14,21 +14,21 @@ const root = tv({
  * - `height` - Driven by `topSectionHeight` shared value
  */
 const topSection = tv({
-  base: 'overflow-hidden'
+  base: 'split-view__top-section'
 });
 
 /**
  * Bottom pane fills remaining space below the drag area.
  */
 const bottomSection = tv({
-  base: 'flex-1 overflow-hidden'
+  base: 'split-view__bottom-section'
 });
 
 /**
  * Drag hit target: wide touch area above/below the visible handle.
  */
 const dragArea = tv({
-  base: 'w-full flex-row items-center justify-center py-3'
+  base: 'split-view__drag-area'
 });
 
 /**
@@ -38,7 +38,7 @@ const dragArea = tv({
  * - `transform` (`scale`) - Driven by drag state
  */
 const dragHandle = tv({
-  base: 'h-1 w-10 rounded-full bg-separator'
+  base: 'split-view__drag-handle'
 });
 export const splitViewClassNames = combineStyles({
   root,

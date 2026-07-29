@@ -82,7 +82,7 @@ export declare const segmentClassNames: import("../../helpers/internal/types").C
             true: string;
             false: string;
         };
-    }, undefined, "flex-row items-center justify-center gap-1.5", {
+    }, undefined, "segment__item", {
         size: {
             sm: string;
             md: string;
@@ -102,7 +102,7 @@ export declare const segmentClassNames: import("../../helpers/internal/types").C
             true: string;
             false: string;
         };
-    }, undefined, "flex-row items-center justify-center gap-1.5", unknown, unknown, undefined>>;
+    }, undefined, "segment__item", unknown, unknown, undefined>>;
     label: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;

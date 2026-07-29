@@ -1,0 +1,26 @@
+.flip-card__root {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.6;
+}
+
+.flip-card__front {
+  width: 100%;
+  height: 100%;
+  padding: calc(var(--spacing) * 3);
+  overflow: hidden;
+  border-radius: var(--radius-3xl);
+  background-color: var(--color-surface);
+}
+
+.flip-card__back {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: calc(var(--spacing) * 3);
+  overflow: hidden;
+  border-radius: var(--radius-3xl);
+  background-color: var(--color-surface);
+}

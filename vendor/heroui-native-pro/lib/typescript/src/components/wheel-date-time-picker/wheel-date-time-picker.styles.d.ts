@@ -141,7 +141,7 @@ declare const period: import("tailwind-variants").TVReturnType<{
  * Combined class name definitions for every {@link WheelDateTimePicker} part.
  */
 export declare const wheelDateTimePickerClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "px-5", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "px-5", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "wheel-date-time-picker__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "wheel-date-time-picker__root", unknown, unknown, undefined>>;
     date: import("tailwind-variants").TVReturnType<{
         [key: string]: {
             [key: string]: import("tailwind-merge").ClassNameValue | {

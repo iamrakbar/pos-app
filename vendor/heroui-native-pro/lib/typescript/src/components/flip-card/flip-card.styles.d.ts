@@ -1,7 +1,7 @@
 export declare const flipCardClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "relative w-full aspect-[1.6]", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "relative w-full aspect-[1.6]", unknown, unknown, undefined>>;
-    front: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "size-full p-3 overflow-hidden rounded-3xl bg-surface", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "size-full p-3 overflow-hidden rounded-3xl bg-surface", unknown, unknown, undefined>>;
-    back: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "absolute inset-0 p-3 overflow-hidden rounded-3xl bg-surface", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "absolute inset-0 p-3 overflow-hidden rounded-3xl bg-surface", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flip-card__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flip-card__root", unknown, unknown, undefined>>;
+    front: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flip-card__front", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flip-card__front", unknown, unknown, undefined>>;
+    back: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flip-card__back", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flip-card__back", unknown, unknown, undefined>>;
 }>;
 /**
  * Native-only style sheet for properties Tailwind cannot express. The

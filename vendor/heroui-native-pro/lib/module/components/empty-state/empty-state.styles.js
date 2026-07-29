@@ -3,17 +3,17 @@
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
-  base: 'flex-col items-center gap-8 px-6 py-8'
+  base: 'empty-state__root'
 });
 const header = tv({
-  base: 'flex-col items-center gap-2'
+  base: 'empty-state__header'
 });
 const media = tv({
-  base: 'shrink-0 items-center justify-center text-muted',
+  base: 'empty-state__media',
   variants: {
     variant: {
       default: '',
-      icon: 'size-12 rounded-full bg-default text-foreground'
+      icon: 'empty-state__media--variant-icon'
     }
   },
   defaultVariants: {
@@ -21,13 +21,13 @@ const media = tv({
   }
 });
 const title = tv({
-  base: 'text-center text-base font-semibold text-foreground'
+  base: 'empty-state__title'
 });
 const description = tv({
-  base: 'text-center text-sm text-muted'
+  base: 'empty-state__description'
 });
 const content = tv({
-  base: 'flex-col items-center gap-2'
+  base: 'empty-state__content'
 });
 export const emptyStateClassNames = combineStyles({
   root,

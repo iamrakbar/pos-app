@@ -1,0 +1,7 @@
+.date-range-picker__trigger {
+  border-color: var(--color-border);
+}
+
+.date-range-picker__trigger--is-invalid {
+  border-color: var(--color-danger);
+}

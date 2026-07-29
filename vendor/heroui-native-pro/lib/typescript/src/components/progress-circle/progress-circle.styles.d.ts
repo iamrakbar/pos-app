@@ -4,7 +4,7 @@ export declare const progressCircleClassNames: import("../../helpers/internal/ty
             true: string;
             false: string;
         };
-    }, undefined, "items-center justify-center", {
+    }, undefined, "progress-circle__root", {
         isDisabled: {
             true: string;
             false: string;
@@ -14,14 +14,14 @@ export declare const progressCircleClassNames: import("../../helpers/internal/ty
             true: string;
             false: string;
         };
-    }, undefined, "items-center justify-center", unknown, unknown, undefined>>;
+    }, undefined, "progress-circle__root", unknown, unknown, undefined>>;
     valueLabel: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;
             md: string;
             lg: string;
         };
-    }, undefined, "absolute text-foreground font-medium", {
+    }, undefined, "progress-circle__value-label", {
         size: {
             sm: string;
             md: string;
@@ -33,11 +33,6 @@ export declare const progressCircleClassNames: import("../../helpers/internal/ty
             md: string;
             lg: string;
         };
-    }, undefined, "absolute text-foreground font-medium", unknown, unknown, undefined>>;
+    }, undefined, "progress-circle__value-label", unknown, unknown, undefined>>;
 }>;
-export declare const progressCircleStyleSheet: {
-    valueLabel: {
-        fontVariant: "tabular-nums"[];
-    };
-};
 //# sourceMappingURL=progress-circle.styles.d.ts.map

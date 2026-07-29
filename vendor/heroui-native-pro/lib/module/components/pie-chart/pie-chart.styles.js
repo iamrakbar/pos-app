@@ -10,7 +10,7 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * consumer via `wrapperClassName` (for example `h-[260px]`).
  */
 const root = tv({
-  base: 'w-full'
+  base: 'pie-chart__root'
 });
 
 /**

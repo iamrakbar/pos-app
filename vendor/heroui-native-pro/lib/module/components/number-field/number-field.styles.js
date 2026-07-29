@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
-  base: 'gap-1.5'
+  base: 'number-field__root'
 });
 
 /**
@@ -27,13 +27,13 @@ const root = tv({
  */
 const decrementButton = tv({
   slots: {
-    container: 'absolute left-0 top-0 bottom-0 z-10 border-r border-field-placeholder/15 rounded-tl-2xl rounded-bl-2xl data-[pressed=true]:bg-field-placeholder/5',
-    contentContainer: 'flex-1 items-center justify-center px-4'
+    container: 'number-field__decrement-button-container data-[pressed=true]:bg-field-placeholder/5',
+    contentContainer: 'number-field__decrement-button-content-container'
   },
   variants: {
     isDisabled: {
       true: {
-        container: 'opacity-disabled'
+        container: 'number-field__decrement-button-container--is-disabled'
       }
     }
   },
@@ -62,13 +62,13 @@ const decrementButton = tv({
  */
 const incrementButton = tv({
   slots: {
-    container: 'absolute right-0 top-0 bottom-0 z-10 border-l border-field-placeholder/15 rounded-tr-2xl rounded-br-2xl data-[pressed=true]:bg-field-placeholder/5',
-    contentContainer: 'flex-1 items-center justify-center px-4'
+    container: 'number-field__increment-button-container data-[pressed=true]:bg-field-placeholder/5',
+    contentContainer: 'number-field__increment-button-content-container'
   },
   variants: {
     isDisabled: {
       true: {
-        container: 'opacity-disabled'
+        container: 'number-field__increment-button-container--is-disabled'
       }
     }
   },

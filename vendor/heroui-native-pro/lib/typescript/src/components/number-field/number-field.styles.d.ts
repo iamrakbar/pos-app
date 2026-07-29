@@ -91,7 +91,7 @@ declare const incrementButton: import("tailwind-variants").TVReturnType<{
     contentContainer: string;
 }, undefined, unknown, unknown, undefined>>;
 export declare const numberFieldClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "gap-1.5", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "gap-1.5", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "number-field__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "number-field__root", unknown, unknown, undefined>>;
     decrementButton: import("tailwind-variants").TVReturnType<{
         isDisabled: {
             true: {

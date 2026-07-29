@@ -4,7 +4,7 @@ export declare const numberStepperClassNames: import("../../helpers/internal/typ
             true: string;
             false: string;
         };
-    }, undefined, "flex-row items-center gap-2 bg-default rounded-3xl p-0.5", {
+    }, undefined, "number-stepper__root", {
         isDisabled: {
             true: string;
             false: string;
@@ -14,13 +14,13 @@ export declare const numberStepperClassNames: import("../../helpers/internal/typ
             true: string;
             false: string;
         };
-    }, undefined, "flex-row items-center gap-2 bg-default rounded-3xl p-0.5", unknown, unknown, undefined>>;
+    }, undefined, "number-stepper__root", unknown, unknown, undefined>>;
     button: import("tailwind-variants").TVReturnType<{
         isDisabled: {
             true: string;
             false: string;
         };
-    }, undefined, "items-center justify-center rounded-3xl p-2.5 bg-field shadow-field", {
+    }, undefined, "number-stepper__button", {
         isDisabled: {
             true: string;
             false: string;
@@ -30,15 +30,12 @@ export declare const numberStepperClassNames: import("../../helpers/internal/typ
             true: string;
             false: string;
         };
-    }, undefined, "items-center justify-center rounded-3xl p-2.5 bg-field shadow-field", unknown, unknown, undefined>>;
-    value: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "text-foreground font-medium text-base text-center min-w-[24px]", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "text-foreground font-medium text-base text-center min-w-[24px]", unknown, unknown, undefined>>;
+    }, undefined, "number-stepper__button", unknown, unknown, undefined>>;
+    value: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "number-stepper__value", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "number-stepper__value", unknown, unknown, undefined>>;
 }>;
 export declare const numberStepperStyleSheet: {
     button: {
         borderCurve: "continuous";
-    };
-    value: {
-        fontVariant: "tabular-nums"[];
     };
 };
 //# sourceMappingURL=number-stepper.styles.d.ts.map

@@ -3,14 +3,14 @@
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
-  base: 'flex-col'
+  base: 'timeline__root'
 });
 const item = tv({
-  base: 'flex-row gap-3',
+  base: 'timeline__item',
   variants: {
     align: {
-      start: 'items-start',
-      center: 'items-center'
+      start: 'timeline__item--align-start',
+      center: 'timeline__item--align-center'
     },
     density: {
       comfortable: '',
@@ -24,11 +24,11 @@ const item = tv({
   compoundVariants: [{
     density: 'comfortable',
     isLast: false,
-    className: 'pb-5'
+    className: 'timeline__item--density-comfortable--is-last-false'
   }, {
     density: 'compact',
     isLast: false,
-    className: 'pb-3'
+    className: 'timeline__item--density-compact--is-last-false'
   }],
   defaultVariants: {
     align: 'start',
@@ -37,26 +37,26 @@ const item = tv({
   }
 });
 const leading = tv({
-  base: 'w-10'
+  base: 'timeline__leading'
 });
 const rail = tv({
-  base: 'items-center'
+  base: 'timeline__rail'
 });
 const marker = tv({
-  base: 'items-center justify-center border bg-transparent',
+  base: 'timeline__marker',
   variants: {
     size: {
-      sm: 'size-5.5 rounded-xl',
-      md: 'size-7 rounded-2xl',
-      lg: 'size-9 border-2 rounded-3xl'
+      sm: 'timeline__marker--size-sm',
+      md: 'timeline__marker--size-md',
+      lg: 'timeline__marker--size-lg'
     },
     status: {
-      default: 'border-border',
-      muted: 'border-border',
-      current: 'border-accent bg-accent-soft',
-      success: 'border-success bg-success-soft',
-      warning: 'border-warning bg-warning-soft',
-      danger: 'border-danger bg-danger-soft'
+      default: 'timeline__marker--status-default',
+      muted: 'timeline__marker--status-muted',
+      current: 'timeline__marker--status-current',
+      success: 'timeline__marker--status-success',
+      warning: 'timeline__marker--status-warning',
+      danger: 'timeline__marker--status-danger'
     }
   },
   defaultVariants: {
@@ -65,18 +65,18 @@ const marker = tv({
   }
 });
 const connector = tv({
-  base: 'w-px bg-border'
+  base: 'timeline__connector'
 });
 const content = tv({
-  base: 'min-w-0 flex-1 flex-col'
+  base: 'timeline__content'
 });
 const title = tv({
-  base: 'font-medium text-foreground',
+  base: 'timeline__title',
   variants: {
     size: {
-      sm: 'text-sm',
-      md: 'text-base',
-      lg: 'text-lg'
+      sm: 'timeline__title--size-sm',
+      md: 'timeline__title--size-md',
+      lg: 'timeline__title--size-lg'
     }
   },
   defaultVariants: {
@@ -84,12 +84,12 @@ const title = tv({
   }
 });
 const description = tv({
-  base: 'text-muted',
+  base: 'timeline__description',
   variants: {
     size: {
-      sm: 'text-xs',
-      md: 'text-sm',
-      lg: 'text-base'
+      sm: 'timeline__description--size-sm',
+      md: 'timeline__description--size-md',
+      lg: 'timeline__description--size-lg'
     }
   },
   defaultVariants: {

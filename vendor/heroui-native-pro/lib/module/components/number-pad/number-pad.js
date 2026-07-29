@@ -234,7 +234,6 @@ const NumberPadKeyLabel = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
     className,
-    style,
     ...restProps
   } = props;
   const {
@@ -246,7 +245,6 @@ const NumberPadKeyLabel = /*#__PURE__*/forwardRef((props, ref) => {
   return /*#__PURE__*/_jsx(HeroText, {
     ref: ref,
     className: labelClassName,
-    style: [numberPadStyleSheet.keyLabel, style],
     ...restProps,
     children: children ?? value
   });

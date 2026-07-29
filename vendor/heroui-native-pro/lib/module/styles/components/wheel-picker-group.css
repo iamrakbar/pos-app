@@ -1,0 +1,37 @@
+.wheel-picker-group__root {
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.wheel-picker-group__root--is-disabled {
+  opacity: var(--opacity-disabled);
+  pointer-events: none;
+}
+
+.wheel-picker-group__indicator-wrapper {
+  position: absolute;
+  left: 0;
+  right: 0;
+  justify-content: center;
+  z-index: -1;
+}
+
+.wheel-picker-group__indicator-highlight {
+  flex: 1;
+  border-radius: var(--radius-2xl);
+  background-color: var(--color-default);
+}
+
+.wheel-picker-group__mask-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.wheel-picker-group__mask-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

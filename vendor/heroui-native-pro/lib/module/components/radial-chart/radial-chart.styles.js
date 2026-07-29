@@ -8,7 +8,7 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * width as a square; override sizing via `wrapperClassName` (e.g. `w-[200px]`).
  */
 const root = tv({
-  base: 'w-full aspect-square'
+  base: 'radial-chart__root'
 });
 
 /**

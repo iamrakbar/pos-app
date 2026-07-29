@@ -1,0 +1,30 @@
+/*
+ * The `data-[size=...]` gap and `data-[disabled=true]` utilities stay in
+ * rating.styles.ts: data selectors are Tailwind variants and cannot be
+ * applied to custom CSS classes.
+ */
+
+.rating__root {
+  flex-direction: row;
+  align-items: center;
+}
+
+.rating__item {
+  align-items: center;
+  justify-content: center;
+}
+
+.rating__icon-wrapper {
+  align-items: center;
+  justify-content: center;
+}
+
+.rating__icon-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+}

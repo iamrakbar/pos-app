@@ -3,7 +3,7 @@
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
-  base: 'gap-1.5'
+  base: 'date-range-picker__root'
 });
 
 /**
@@ -11,10 +11,10 @@ const root = tv({
  * Invalid state uses semantic danger border (pairs with `FormField` / `isInvalid` on `DateRangePicker.Trigger`).
  */
 const trigger = tv({
-  base: 'border-[1.5px] border-transparent',
+  base: 'date-range-picker__trigger',
   variants: {
     isInvalid: {
-      true: 'border-danger',
+      true: 'date-range-picker__trigger--is-invalid',
       false: ''
     }
   },
@@ -27,7 +27,7 @@ const trigger = tv({
  * Select overlay backdrop behind portaled content (dialog, bottom sheet, popover).
  */
 const overlay = tv({
-  base: 'bg-backdrop'
+  base: 'date-range-picker__overlay'
 });
 export const dateRangePickerClassNames = combineStyles({
   root,

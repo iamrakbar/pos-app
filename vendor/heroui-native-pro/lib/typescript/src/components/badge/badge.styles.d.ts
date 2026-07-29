@@ -27,7 +27,7 @@ export declare const badgeClassNames: import("../../helpers/internal/types").Com
             true: string;
             false: string;
         };
-    }, undefined, "items-center justify-center rounded-2xl outline outline-background", {
+    }, undefined, "badge__root", {
         size: {
             sm: string;
             md: string;
@@ -83,7 +83,7 @@ export declare const badgeClassNames: import("../../helpers/internal/types").Com
             true: string;
             false: string;
         };
-    }, undefined, "items-center justify-center rounded-2xl outline outline-background", unknown, unknown, undefined>>;
+    }, undefined, "badge__root", unknown, unknown, undefined>>;
     label: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;
@@ -102,7 +102,7 @@ export declare const badgeClassNames: import("../../helpers/internal/types").Com
             secondary: string;
             soft: string;
         };
-    }, undefined, "font-medium", {
+    }, undefined, "badge__label", {
         size: {
             sm: string;
             md: string;
@@ -138,7 +138,7 @@ export declare const badgeClassNames: import("../../helpers/internal/types").Com
             secondary: string;
             soft: string;
         };
-    }, undefined, "font-medium", unknown, unknown, undefined>>;
+    }, undefined, "badge__label", unknown, unknown, undefined>>;
 }>;
 export declare const badgeStyleSheet: {
     root: {

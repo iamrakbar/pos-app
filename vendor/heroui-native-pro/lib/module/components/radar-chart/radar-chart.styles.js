@@ -8,7 +8,7 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * `wrapperClassName` (e.g. `h-[260px]`).
  */
 const root = tv({
-  base: 'w-full'
+  base: 'radar-chart__root'
 });
 
 /**

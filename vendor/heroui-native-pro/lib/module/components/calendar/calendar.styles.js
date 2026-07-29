@@ -7,30 +7,34 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
 
 /**
  * Root container for the calendar.
+ *
+ * @note All `data-[...]:` prefixed utilities in this file stay here: data
+ * selectors are Tailwind variants and cannot be applied to custom CSS
+ * classes. Plain base styles live in `styles/components/calendar.css`.
  */
 const root = tv({
-  base: 'w-full'
+  base: 'calendar__root'
 });
 
 /**
  * Header row: navigation + title region.
  */
 const header = tv({
-  base: 'flex-row items-center justify-between gap-2 pb-4 pl-2'
+  base: 'calendar__header'
 });
 
 /**
  * Month / year title text.
  */
 const heading = tv({
-  base: 'flex-1 text-sm font-medium text-foreground'
+  base: 'calendar__heading'
 });
 
 /**
  * Previous / next control.
  */
 const navButton = tv({
-  base: cn('size-9 items-center justify-center rounded-3xl', 'data-[pressed-not-disabled=true]:bg-default-hover/50', 'data-[disabled=true]:opacity-disabled')
+  base: cn('calendar__nav-button', 'data-[pressed-not-disabled=true]:bg-default-hover/50', 'data-[disabled=true]:opacity-disabled')
 });
 
 /**
@@ -44,21 +48,21 @@ const grid = tv({
  * Weekday header cell.
  */
 const headerCell = tv({
-  base: 'flex-1 items-center justify-center pb-2'
+  base: 'calendar__header-cell'
 });
 
 /**
  * Weekday label text inside `headerCell`.
  */
 const headerCellLabel = tv({
-  base: 'text-xs font-medium text-muted text-center'
+  base: 'calendar__header-cell-label'
 });
 
 /**
  * Day cell.
  */
 const cell = tv({
-  base: cn('flex-1 m-0.5 aspect-square items-center justify-center', 'data-[unavailable=true]:opacity-disabled', 'data-[disabled=true]:opacity-disabled', 'data-[readonly=true]:pointer-events-none')
+  base: cn('calendar__cell', 'data-[unavailable=true]:opacity-disabled', 'data-[disabled=true]:opacity-disabled', 'data-[readonly=true]:pointer-events-none')
 });
 
 /**
@@ -84,21 +88,21 @@ const cell = tv({
  * set `isAnimatedStyleActive={false}` on `Calendar.CellBody`.
  */
 const cellBody = tv({
-  base: cn('relative size-10 items-center justify-center rounded-4xl', 'data-[today=true]:bg-accent-soft', 'data-[pressed=true]:bg-default-hover/50', 'data-[selected=true]:bg-accent data-[selected=true]:shadow-sm')
+  base: cn('calendar__cell-body', 'data-[today=true]:bg-accent-soft', 'data-[pressed=true]:bg-default-hover/50', 'data-[selected=true]:bg-accent data-[selected=true]:shadow-sm')
 });
 
 /**
  * Day label.
  */
 const cellLabel = tv({
-  base: cn('text-sm font-medium text-center text-foreground', 'data-[today=true]:text-accent-soft-foreground', 'data-[outside-month=true]:text-muted', 'data-[selected=true]:text-accent-foreground')
+  base: cn('calendar__cell-label', 'data-[today=true]:text-accent-soft-foreground', 'data-[outside-month=true]:text-muted', 'data-[selected=true]:text-accent-foreground')
 });
 
 /**
  * Event / dot marker under a day.
  */
 const cellIndicator = tv({
-  base: cn('absolute bottom-1.5 size-1 rounded-full bg-muted', 'data-[selected=true]:bg-accent-foreground')
+  base: cn('calendar__cell-indicator', 'data-[selected=true]:bg-accent-foreground')
 });
 export const calendarClassNames = combineStyles({
   root,

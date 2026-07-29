@@ -7,7 +7,7 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * Root field container; spaces the label, trigger, and helper text.
  */
 const root = tv({
-  base: 'gap-1.5'
+  base: 'date-time-picker__root'
 });
 
 /**
@@ -15,10 +15,10 @@ const root = tv({
  * Invalid state uses semantic danger border (pairs with `FormField` / `isInvalid` on `DateTimePicker.Trigger`).
  */
 const trigger = tv({
-  base: 'border-[1.5px] border-transparent',
+  base: 'date-time-picker__trigger',
   variants: {
     isInvalid: {
-      true: 'border-danger',
+      true: 'date-time-picker__trigger--is-invalid',
       false: ''
     }
   },
@@ -31,7 +31,7 @@ const trigger = tv({
  * Select overlay backdrop behind portaled content (dialog, bottom sheet, popover).
  */
 const overlay = tv({
-  base: 'bg-backdrop'
+  base: 'date-time-picker__overlay'
 });
 
 /**
@@ -40,7 +40,7 @@ const overlay = tv({
  * `Select.Content` padding.
  */
 const wheel = tv({
-  base: 'w-full max-w-[320px] self-center'
+  base: 'date-time-picker__wheel'
 });
 
 /**

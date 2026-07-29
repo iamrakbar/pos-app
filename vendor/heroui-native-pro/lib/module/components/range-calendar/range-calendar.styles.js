@@ -9,28 +9,28 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * Root container for the range calendar (primitive `RangeCalendarRoot` wrapper).
  */
 const root = tv({
-  base: 'w-full'
+  base: 'range-calendar__root'
 });
 
 /**
  * Header row: navigation + title region.
  */
 const header = tv({
-  base: 'flex-row items-center justify-between gap-2 pb-4 pl-2'
+  base: 'range-calendar__header'
 });
 
 /**
  * Month / year title text.
  */
 const heading = tv({
-  base: 'flex-1 text-sm font-medium text-foreground'
+  base: 'range-calendar__heading'
 });
 
 /**
  * Previous / next control.
  */
 const navButton = tv({
-  base: cn('size-9 items-center justify-center rounded-3xl', 'data-[pressed-not-disabled=true]:bg-default-hover/50', 'data-[disabled=true]:opacity-disabled')
+  base: cn('range-calendar__nav-button', 'data-[pressed-not-disabled=true]:bg-default-hover/50', 'data-[disabled=true]:opacity-disabled')
 });
 
 /**
@@ -44,21 +44,21 @@ const grid = tv({
  * Weekday header cell.
  */
 const headerCell = tv({
-  base: 'flex-1 items-center justify-center pb-2'
+  base: 'range-calendar__header-cell'
 });
 
 /**
  * Weekday label text inside `headerCell`.
  */
 const headerCellLabel = tv({
-  base: 'text-xs font-medium text-muted text-center'
+  base: 'range-calendar__header-cell-label'
 });
 
 /**
  * Day cell (pressable): range highlight strip (`bg-accent-soft`) and row rounding; endpoints use `cellBody`.
  */
 const cell = tv({
-  base: cn('flex-1 my-0.5 aspect-square items-center justify-center', 'data-[range-start=true]:bg-accent-soft data-[range-start=true]:rounded-l-4xl', 'data-[range-end=true]:bg-accent-soft data-[range-end=true]:rounded-r-4xl', 'data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:rounded-none', 'data-[range-middle-row-start=true]:rounded-l-xl', 'data-[range-middle-row-end=true]:rounded-r-xl', 'data-[unavailable=true]:opacity-disabled', 'data-[disabled=true]:opacity-disabled', 'data-[readonly=true]:pointer-events-none')
+  base: cn('range-calendar__cell', 'data-[range-start=true]:bg-accent-soft data-[range-start=true]:rounded-l-4xl', 'data-[range-end=true]:bg-accent-soft data-[range-end=true]:rounded-r-4xl', 'data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:rounded-none', 'data-[range-middle-row-start=true]:rounded-l-xl', 'data-[range-middle-row-end=true]:rounded-r-xl', 'data-[unavailable=true]:opacity-disabled', 'data-[disabled=true]:opacity-disabled', 'data-[readonly=true]:pointer-events-none')
 });
 
 /**
@@ -84,21 +84,21 @@ const cell = tv({
  * set `isAnimatedStyleActive={false}` on `RangeCalendar.CellBody`.
  */
 const cellBody = tv({
-  base: cn('size-full items-center justify-center rounded-4xl', 'data-[today-not-in-range=true]:bg-accent-soft', 'data-[pressed=true]:bg-default-hover/50', 'data-[range-start=true]:bg-accent data-[range-start=true]:shadow-sm', 'data-[range-end=true]:bg-accent data-[range-end=true]:shadow-sm')
+  base: cn('range-calendar__cell-body', 'data-[today-not-in-range=true]:bg-accent-soft', 'data-[pressed=true]:bg-default-hover/50', 'data-[range-start=true]:bg-accent data-[range-start=true]:shadow-sm', 'data-[range-end=true]:bg-accent data-[range-end=true]:shadow-sm')
 });
 
 /**
  * Day label. Uses `data-range-start` / `data-range-end` for range-endpoint foreground color.
  */
 const cellLabel = tv({
-  base: cn('text-sm font-medium text-center text-foreground', 'data-[today-not-in-range=true]:text-accent-soft-foreground', 'data-[outside-month=true]:text-muted', 'data-[range-start=true]:text-accent-foreground data-[range-start=true]:font-medium', 'data-[range-end=true]:text-accent-foreground data-[range-end=true]:font-medium')
+  base: cn('range-calendar__cell-label', 'data-[today-not-in-range=true]:text-accent-soft-foreground', 'data-[outside-month=true]:text-muted', 'data-[range-start=true]:text-accent-foreground data-[range-start=true]:font-medium', 'data-[range-end=true]:text-accent-foreground data-[range-end=true]:font-medium')
 });
 
 /**
  * Event / dot marker under a day.
  */
 const cellIndicator = tv({
-  base: cn('absolute bottom-2 size-[3px] rounded-full bg-muted', 'data-[selected=true]:bg-accent-foreground')
+  base: cn('range-calendar__cell-indicator', 'data-[selected=true]:bg-accent-foreground')
 });
 export const rangeCalendarClassNames = combineStyles({
   root,

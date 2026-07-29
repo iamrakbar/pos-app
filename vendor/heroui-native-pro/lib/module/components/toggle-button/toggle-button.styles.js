@@ -10,11 +10,11 @@ const root = tv({
       ghost: ''
     },
     isSelected: {
-      true: 'bg-accent-soft',
+      true: 'toggle-button__root--is-selected',
       false: ''
     },
     inAttachedGroup: {
-      true: 'rounded-none',
+      true: 'toggle-button__root--in-attached-group',
       false: ''
     },
     inGroup: {
@@ -29,15 +29,15 @@ const root = tv({
   compoundVariants: [{
     variant: 'default',
     isSelected: false,
-    className: 'bg-default'
+    className: 'toggle-button__root--variant-default--is-selected-false'
   }, {
     variant: 'ghost',
     isSelected: false,
-    className: 'bg-transparent'
+    className: 'toggle-button__root--variant-ghost--is-selected-false'
   }, {
     inGroup: true,
     groupFullWidth: true,
-    className: 'flex-1'
+    className: 'toggle-button__root--in-group--group-full-width'
   }],
   defaultVariants: {
     variant: 'default',
@@ -48,11 +48,11 @@ const root = tv({
   }
 });
 const label = tv({
-  base: 'text-sm font-medium',
+  base: 'toggle-button__label',
   variants: {
     isSelected: {
-      true: 'text-accent-soft-foreground',
-      false: 'text-foreground'
+      true: 'toggle-button__label--is-selected',
+      false: 'toggle-button__label--is-selected-false'
     }
   },
   defaultVariants: {

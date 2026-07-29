@@ -1,0 +1,107 @@
+.slide-button__container {
+  height: 56px;
+  padding: calc(var(--spacing) * 1.5);
+  border-radius: var(--radius-4xl);
+  background-color: var(--color-default);
+  overflow: hidden;
+}
+
+.slide-button__container--is-disabled {
+  opacity: var(--opacity-disabled);
+}
+
+.slide-button__content-container {
+  flex: 1;
+}
+
+.slide-button__underlay-content-container {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  border-radius: var(--radius-4xl);
+}
+
+.slide-button__underlay-content-content-container {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-button__overlay-content-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  border-radius: var(--radius-4xl);
+}
+
+.slide-button__overlay-content-content-container {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Overlay content container - variant */
+
+.slide-button__overlay-content-content-container--variant-default {
+  background-color: color-mix(
+    in oklab,
+    var(--color-default-foreground) 5%,
+    transparent
+  );
+}
+
+.slide-button__overlay-content-content-container--variant-accent {
+  background-color: var(--color-accent-soft);
+}
+
+.slide-button__overlay-content-content-container--variant-success {
+  background-color: var(--color-success-soft);
+}
+
+.slide-button__overlay-content-content-container--variant-danger {
+  background-color: var(--color-danger-soft);
+}
+
+.slide-button__thumb {
+  position: absolute;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-4xl);
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.slide-button__label {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-family: var(--font-medium);
+}
+
+/* Label - variant */
+
+.slide-button__label--variant-default {
+  color: var(--color-default-soft-foreground);
+}
+
+.slide-button__label--variant-accent {
+  color: var(--color-accent-soft-foreground);
+}
+
+.slide-button__label--variant-success {
+  color: var(--color-success-soft-foreground);
+}
+
+.slide-button__label--variant-danger {
+  color: var(--color-danger-soft-foreground);
+}

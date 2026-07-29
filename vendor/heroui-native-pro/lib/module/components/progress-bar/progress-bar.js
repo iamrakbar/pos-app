@@ -271,7 +271,6 @@ const ProgressBarValueLabel = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
     className,
-    style,
     ...restProps
   } = props;
   const ctx = useProgressBar();
@@ -286,7 +285,6 @@ const ProgressBarValueLabel = /*#__PURE__*/forwardRef((props, ref) => {
     accessibilityRole: "text",
     importantForAccessibility: "no",
     className: valueLabelClassName,
-    style: [progressBarStyleSheet.valueLabel, style],
     ...restProps,
     children: displayContent
   });

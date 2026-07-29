@@ -9,35 +9,35 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * Pressable trigger (month + year + chevron).
  */
 const trigger = tv({
-  base: 'flex-row flex-1 items-center gap-1'
+  base: 'calendar-year-picker__trigger'
 });
 
 /**
  * Month + year label inside the trigger.
  */
 const triggerHeading = tv({
-  base: 'text-sm font-medium text-foreground'
+  base: 'calendar-year-picker__trigger-heading'
 });
 
 /**
  * Chevron wrapper (animated rotation).
  */
 const triggerIndicator = tv({
-  base: 'items-center justify-center'
+  base: 'calendar-year-picker__trigger-indicator'
 });
 
 /**
  * Absolutely positioned overlay over the month grid.
  */
 const yearGrid = tv({
-  base: 'absolute left-0 right-0 z-10 overflow-hidden rounded-2xl bg-overlay border border-border'
+  base: 'calendar-year-picker__year-grid'
 });
 
 /**
  * Scroll content wrapper for the year `FlatList` (`contentContainerClassName`).
  */
 const yearGridBodyContent = tv({
-  base: 'p-2'
+  base: 'calendar-year-picker__year-grid-body-content'
 });
 
 /**
@@ -51,14 +51,14 @@ const yearGridBodyContent = tv({
  * and shift the scroll target by `marginY * rowIndex` pixels.
  */
 const yearCell = tv({
-  base: cn('mx-0.5 flex-1 items-center justify-center rounded-3xl', 'data-[pressed=true]:bg-default-hover/50', 'data-[selected=true]:bg-accent data-[selected=true]:shadow-sm', 'data-[current-year=true]:border data-[current-year=true]:border-border')
+  base: cn('calendar-year-picker__year-cell', 'data-[pressed=true]:bg-default-hover/50', 'data-[selected=true]:bg-accent data-[selected=true]:shadow-sm', 'data-[current-year=true]:border data-[current-year=true]:border-border')
 });
 
 /**
  * Year label text.
  */
 const yearCellLabel = tv({
-  base: cn('text-sm font-medium text-center text-foreground', 'data-[selected=true]:text-accent-foreground')
+  base: cn('calendar-year-picker__year-cell-label', 'data-[selected=true]:text-accent-foreground')
 });
 export const calendarYearPickerClassNames = combineStyles({
   trigger,

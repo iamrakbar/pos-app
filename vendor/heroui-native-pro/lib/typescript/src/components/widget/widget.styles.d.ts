@@ -41,13 +41,13 @@ declare const legendItem: import("tailwind-variants").TVReturnType<{
     label: string;
 }, undefined, unknown, unknown, undefined>>;
 export declare const widgetClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "bg-surface-secondary rounded-2xl p-1.5", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "bg-surface-secondary rounded-2xl p-1.5", unknown, unknown, undefined>>;
-    header: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-row items-center justify-between gap-3 px-2 pb-1.5 pt-0.5", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-row items-center justify-between gap-3 px-2 pb-1.5 pt-0.5", unknown, unknown, undefined>>;
-    title: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "text-foreground text-sm font-medium", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "text-foreground text-sm font-medium", unknown, unknown, undefined>>;
-    description: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "text-muted text-xs", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "text-muted text-xs", unknown, unknown, undefined>>;
-    content: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "bg-surface overflow-hidden rounded-xl p-4 shadow-surface", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "bg-surface overflow-hidden rounded-xl p-4 shadow-surface", unknown, unknown, undefined>>;
-    footer: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-row items-center gap-3 px-2 pt-1.5 pb-0.5", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-row items-center gap-3 px-2 pt-1.5 pb-0.5", unknown, unknown, undefined>>;
-    legend: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-row items-center gap-3", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-row items-center gap-3", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__root", unknown, unknown, undefined>>;
+    header: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__header", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__header", unknown, unknown, undefined>>;
+    title: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__title", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__title", unknown, unknown, undefined>>;
+    description: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__description", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__description", unknown, unknown, undefined>>;
+    content: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__content", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__content", unknown, unknown, undefined>>;
+    footer: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__footer", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__footer", unknown, unknown, undefined>>;
+    legend: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__legend", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__legend", unknown, unknown, undefined>>;
     legendItem: import("tailwind-variants").TVReturnType<{
         [key: string]: {
             [key: string]: import("tailwind-merge").ClassNameValue | {

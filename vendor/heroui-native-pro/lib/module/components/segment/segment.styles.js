@@ -6,7 +6,7 @@ const root = tv({
   base: '',
   variants: {
     isDisabled: {
-      true: 'opacity-disabled pointer-events-none',
+      true: 'segment__root--is-disabled',
       false: ''
     }
   },
@@ -18,9 +18,9 @@ const group = tv({
   base: '',
   variants: {
     size: {
-      sm: 'p-[2px] rounded-3xl',
-      md: 'p-[3px] rounded-3xl',
-      lg: 'p-[4px] rounded-4xl'
+      sm: 'segment__group--size-sm',
+      md: 'segment__group--size-md',
+      lg: 'segment__group--size-lg'
     }
   },
   defaultVariants: {
@@ -31,9 +31,9 @@ const scrollView = tv({
   base: '',
   variants: {
     size: {
-      sm: '-my-[2px] rounded-2xl',
-      md: '-my-[3px] rounded-3xl',
-      lg: '-my-[4px] rounded-4xl'
+      sm: 'segment__scroll-view--size-sm',
+      md: 'segment__scroll-view--size-md',
+      lg: 'segment__scroll-view--size-lg'
     }
   },
   defaultVariants: {
@@ -44,9 +44,9 @@ const scrollViewContentContainer = tv({
   base: '',
   variants: {
     size: {
-      sm: 'py-[2px] px-px',
-      md: 'py-[3px] px-px',
-      lg: 'py-[4px] px-px'
+      sm: 'segment__scroll-view-content-container--size-sm',
+      md: 'segment__scroll-view-content-container--size-md',
+      lg: 'segment__scroll-view-content-container--size-lg'
     }
   },
   defaultVariants: {
@@ -54,12 +54,12 @@ const scrollViewContentContainer = tv({
   }
 });
 const item = tv({
-  base: 'flex-row items-center justify-center gap-1.5',
+  base: 'segment__item',
   variants: {
     size: {
-      sm: 'rounded-xl px-2.5 py-1',
-      md: 'rounded-3xl px-3 py-1.5',
-      lg: 'rounded-[22px] px-3.5 py-2'
+      sm: 'segment__item--size-sm',
+      md: 'segment__item--size-md',
+      lg: 'segment__item--size-lg'
     },
     isDisabled: {
       true: 'disabled:opacity-disabled disabled:pointer-events-none',
@@ -74,9 +74,9 @@ const item = tv({
 const label = tv({
   variants: {
     size: {
-      sm: 'text-sm',
-      md: 'text-base',
-      lg: 'text-lg'
+      sm: 'segment__label--size-sm',
+      md: 'segment__label--size-md',
+      lg: 'segment__label--size-lg'
     }
   },
   defaultVariants: {
@@ -109,9 +109,9 @@ const indicator = tv({
   base: '',
   variants: {
     size: {
-      sm: 'rounded-3xl',
-      md: 'rounded-3xl',
-      lg: 'rounded-4xl'
+      sm: 'segment__indicator--size-sm',
+      md: 'segment__indicator--size-md',
+      lg: 'segment__indicator--size-lg'
     },
     isScrollView: {
       true: '',
@@ -121,15 +121,15 @@ const indicator = tv({
   compoundVariants: [{
     size: 'sm',
     isScrollView: true,
-    className: 'top-[2px]'
+    className: 'segment__indicator--size-sm--is-scroll-view'
   }, {
     size: 'md',
     isScrollView: true,
-    className: 'top-[3px]'
+    className: 'segment__indicator--size-md--is-scroll-view'
   }, {
     size: 'lg',
     isScrollView: true,
-    className: 'top-[4px]'
+    className: 'segment__indicator--size-lg--is-scroll-view'
   }],
   defaultVariants: {
     size: 'md',

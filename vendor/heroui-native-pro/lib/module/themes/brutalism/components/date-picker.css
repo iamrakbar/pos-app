@@ -1,0 +1,7 @@
+.date-picker__trigger {
+  border-color: var(--color-border);
+}
+
+.date-picker__trigger--is-invalid {
+  border-color: var(--color-danger);
+}

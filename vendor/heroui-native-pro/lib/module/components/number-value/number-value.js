@@ -8,7 +8,7 @@ import { createContext } from "../../helpers/internal/utils/index.js";
 import InternationalizedNumberPackage from "../../optional/internationalized-number.js";
 import { useNumberValueRootAnimation } from "./number-value.animation.js";
 import { DISPLAY_NAME } from "./number-value.constants.js";
-import { numberValueClassNames, numberValueStyleSheet } from "./number-value.styles.js";
+import { numberValueClassNames } from "./number-value.styles.js";
 import { jsx as _jsx } from "react/jsx-runtime";
 // --------------------------------------------------
 
@@ -128,7 +128,7 @@ const NumberValueValue = /*#__PURE__*/forwardRef((props, ref) => {
   return /*#__PURE__*/_jsx(HeroText, {
     ref: ref,
     className: valueClassName,
-    style: [numberValueStyleSheet.value, ctx.valueStyle, style],
+    style: [ctx.valueStyle, style],
     ...restProps,
     children: children ?? ctx.formatted
   });

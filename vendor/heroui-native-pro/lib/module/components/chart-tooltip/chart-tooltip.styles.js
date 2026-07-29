@@ -8,31 +8,31 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * space; `transform` and `opacity` are owned by the component's animated style.
  */
 const root = tv({
-  base: 'absolute left-0 top-0 bg-overlay border border-border rounded-2xl px-3 py-2 gap-1.5 min-w-[140px] shadow-md'
+  base: 'chart-tooltip__root'
 });
 const header = tv({
-  base: 'text-muted text-xs font-medium'
+  base: 'chart-tooltip__header'
 });
 const item = tv({
-  base: 'flex-row items-center gap-2'
+  base: 'chart-tooltip__item'
 });
 const indicator = tv({
-  base: 'shrink-0',
+  base: 'chart-tooltip__indicator',
   defaultVariants: {
     variant: 'dot'
   },
   variants: {
     variant: {
-      dot: 'size-2 rounded-full',
-      line: 'h-3 w-1 rounded-full'
+      dot: 'chart-tooltip__indicator--variant-dot',
+      line: 'chart-tooltip__indicator--variant-line'
     }
   }
 });
 const label = tv({
-  base: 'flex-1 text-muted text-xs'
+  base: 'chart-tooltip__label'
 });
 const value = tv({
-  base: 'text-foreground text-xs font-semibold'
+  base: 'chart-tooltip__value'
 });
 export const chartTooltipClassNames = combineStyles({
   header,

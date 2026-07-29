@@ -9,10 +9,10 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * Wraps the label row and track in a vertical layout.
  */
 const root = tv({
-  base: 'w-full gap-2',
+  base: 'progress-bar__root',
   variants: {
     isDisabled: {
-      true: 'opacity-disabled',
+      true: 'progress-bar__root--is-disabled',
       false: ''
     }
   },
@@ -26,7 +26,7 @@ const root = tv({
  * Horizontal container for the label and value label.
  */
 const labelRow = tv({
-  base: 'flex-row items-center justify-between'
+  base: 'progress-bar__label-row'
 });
 
 /**
@@ -34,12 +34,12 @@ const labelRow = tv({
  * Background container that holds the fill element.
  */
 const track = tv({
-  base: 'w-full rounded-md bg-default overflow-hidden',
+  base: 'progress-bar__track',
   variants: {
     size: {
-      sm: 'h-1',
-      md: 'h-1.5',
-      lg: 'h-2.5'
+      sm: 'progress-bar__track--size-sm',
+      md: 'progress-bar__track--size-md',
+      lg: 'progress-bar__track--size-lg'
     }
   },
   defaultVariants: {
@@ -61,14 +61,14 @@ const track = tv({
  * `style` prop, set `isAnimatedStyleActive={false}` on `ProgressBar.Fill`.
  */
 const fill = tv({
-  base: 'h-full rounded-md',
+  base: 'progress-bar__fill',
   variants: {
     color: {
-      default: 'bg-default-foreground',
-      accent: 'bg-accent',
-      success: 'bg-success',
-      warning: 'bg-warning',
-      danger: 'bg-danger'
+      default: 'progress-bar__fill--color-default',
+      accent: 'progress-bar__fill--color-accent',
+      success: 'progress-bar__fill--color-success',
+      warning: 'progress-bar__fill--color-warning',
+      danger: 'progress-bar__fill--color-danger'
     }
   },
   defaultVariants: {
@@ -81,7 +81,7 @@ const fill = tv({
  * Text describing the progress operation.
  */
 const label = tv({
-  base: 'text-sm font-medium text-foreground'
+  base: 'progress-bar__label'
 });
 
 /**
@@ -89,7 +89,7 @@ const label = tv({
  * Displays the formatted progress value.
  */
 const valueLabel = tv({
-  base: 'text-sm font-medium text-muted'
+  base: 'progress-bar__value-label'
 });
 export const progressBarClassNames = combineStyles({
   root,
@@ -106,8 +106,5 @@ export const progressBarClassNames = combineStyles({
 export const progressBarStyleSheet = StyleSheet.create({
   track: {
     borderCurve: 'continuous'
-  },
-  valueLabel: {
-    fontVariant: ['tabular-nums']
   }
 });

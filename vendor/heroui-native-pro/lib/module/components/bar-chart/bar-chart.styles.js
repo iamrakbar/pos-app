@@ -10,7 +10,7 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * consumer via `wrapperClassName` (for example `h-52`).
  */
 const root = tv({
-  base: 'w-full'
+  base: 'bar-chart__root'
 });
 
 /**

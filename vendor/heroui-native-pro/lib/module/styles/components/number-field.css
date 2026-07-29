@@ -1,0 +1,55 @@
+/*
+ * The `data-[pressed=true]:` utilities stay in number-field.styles.ts: data
+ * selectors are Tailwind variants and cannot be applied to custom CSS
+ * classes.
+ */
+
+.number-field__root {
+  gap: calc(var(--spacing) * 1.5);
+}
+
+.number-field__decrement-button-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  border-right-width: 1px;
+  border-color: color-mix(in oklab, var(--color-field-placeholder) 15%, transparent);
+  border-top-left-radius: var(--radius-2xl);
+  border-bottom-left-radius: var(--radius-2xl);
+}
+
+.number-field__decrement-button-container--is-disabled {
+  opacity: var(--opacity-disabled);
+}
+
+.number-field__decrement-button-content-container {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding-inline: calc(var(--spacing) * 4);
+}
+
+.number-field__increment-button-container {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  border-left-width: 1px;
+  border-color: color-mix(in oklab, var(--color-field-placeholder) 15%, transparent);
+  border-top-right-radius: var(--radius-2xl);
+  border-bottom-right-radius: var(--radius-2xl);
+}
+
+.number-field__increment-button-container--is-disabled {
+  opacity: var(--opacity-disabled);
+}
+
+.number-field__increment-button-content-container {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding-inline: calc(var(--spacing) * 4);
+}

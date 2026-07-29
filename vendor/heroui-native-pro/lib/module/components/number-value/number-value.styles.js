@@ -1,6 +1,5 @@
 "use strict";
 
-import { StyleSheet } from 'react-native';
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 
@@ -14,8 +13,8 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  */
 const root = tv({
   slots: {
-    container: 'flex-row items-baseline',
-    value: 'text-foreground'
+    container: 'number-value__container',
+    value: 'number-value__value'
   }
 });
 
@@ -55,16 +54,3 @@ export const numberValueClassNames = combineStyles({
 });
 
 /** Slot names available on the `root` tv instance. */
-
-/**
- * StyleSheet for native-only style properties that cannot be expressed via
- * Tailwind classes. The `value` entry applies `fontVariant: tabular-nums`
- * so digits render in fixed-width cells and columns of numbers line up
- * vertically — mirroring the web component's `font-variant-numeric:
- * tabular-nums` rule.
- */
-export const numberValueStyleSheet = StyleSheet.create({
-  value: {
-    fontVariant: ['tabular-nums']
-  }
-});

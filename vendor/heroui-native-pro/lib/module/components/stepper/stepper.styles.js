@@ -8,28 +8,28 @@ const root = tv({
   base: 'data-[orientation=horizontal]:flex-row data-[orientation=vertical]:flex-col'
 });
 const step = tv({
-  base: cn('gap-3', 'data-[orientation=vertical]:flex-row data-[orientation=vertical]:items-start data-[orientation=vertical]:py-3', 'data-[orientation=horizontal]:flex-1 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:items-center')
+  base: cn('stepper__step', 'data-[orientation=vertical]:flex-row data-[orientation=vertical]:items-start data-[orientation=vertical]:py-3', 'data-[orientation=horizontal]:flex-1 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:items-center')
 });
 const indicator = tv({
-  base: cn('size-7 items-center justify-center rounded-3xl border-2 border-accent', 'data-[status=complete]:bg-accent', 'data-[status=inactive]:border-border')
+  base: cn('stepper__indicator', 'data-[status=complete]:bg-accent', 'data-[status=inactive]:border-border')
 });
 
 /** Wrapper for the animated check icon inside the indicator */
 const indicatorCheck = tv({
-  base: 'items-center justify-center'
+  base: 'stepper__indicator-check'
 });
 
 /** 1-based step index label inside the indicator */
 const indicatorNumber = tv({
-  base: cn('text-sm font-semibold text-accent', 'data-[status=inactive]:text-muted')
+  base: cn('stepper__indicator-number', 'data-[status=inactive]:text-muted')
 });
 const separator = tv({
-  base: cn('bg-accent', 'data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:w-0.5', 'data-[status=inactive]:bg-border')
+  base: cn('stepper__separator', 'data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:w-0.5', 'data-[status=inactive]:bg-border')
 });
 
 /** Static track (`bg-border`) inside the primitive separator bounds */
 const separatorTrack = tv({
-  base: 'absolute inset-0 bg-border'
+  base: 'stepper__separator-track'
 });
 
 /**
@@ -56,16 +56,16 @@ const separatorTrack = tv({
  * set `isAnimatedStyleActive={false}` on `Stepper.SeparatorFill`.
  */
 const separatorFill = tv({
-  base: 'absolute inset-0 bg-accent'
+  base: 'stepper__separator-fill'
 });
 const content = tv({
   base: 'data-[orientation=horizontal]:items-center'
 });
 const title = tv({
-  base: cn('text-base font-medium text-foreground', 'data-[orientation=horizontal]:text-center', 'data-[status=inactive]:opacity-50')
+  base: cn('stepper__title', 'data-[orientation=horizontal]:text-center', 'data-[status=inactive]:opacity-50')
 });
 const description = tv({
-  base: cn('text-sm text-muted', 'data-[orientation=horizontal]:text-center', 'data-[status=inactive]:opacity-50')
+  base: cn('stepper__description', 'data-[orientation=horizontal]:text-center', 'data-[status=inactive]:opacity-50')
 });
 export const stepperClassNames = combineStyles({
   root,

@@ -9,7 +9,7 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * classes (e.g. `absolute bottom-6 right-6`) via `className` on `FAB`.
  */
 const root = tv({
-  base: 'self-start'
+  base: 'fab__root'
 });
 
 /**
@@ -29,13 +29,13 @@ const root = tv({
  */
 const trigger = tv({
   slots: {
-    container: 'size-12 items-center justify-center rounded-3xl bg-accent',
-    contentContainer: 'items-center justify-center'
+    container: 'fab__trigger-container',
+    contentContainer: 'fab__trigger-content-container'
   },
   variants: {
     isDisabled: {
       true: {
-        container: 'opacity-disabled pointer-events-none'
+        container: 'fab__trigger-container--is-disabled'
       }
     }
   },
@@ -50,7 +50,7 @@ const trigger = tv({
  * the app where no FAB content is rendered.
  */
 const portal = tv({
-  base: 'absolute inset-0'
+  base: 'fab__portal'
 });
 
 /**
@@ -71,7 +71,7 @@ const portal = tv({
  * To disable animated styles, set `isAnimatedStyleActive={false}`.
  */
 const overlay = tv({
-  base: 'flex-1 bg-backdrop'
+  base: 'fab__overlay'
 });
 
 /**
@@ -79,12 +79,12 @@ const overlay = tv({
  * `align` so items hug the trigger edge.
  */
 const content = tv({
-  base: 'gap-3',
+  base: 'fab__content',
   variants: {
     align: {
-      start: 'items-start',
-      center: 'items-center',
-      end: 'items-end'
+      start: 'fab__content--align-start',
+      center: 'fab__content--align-center',
+      end: 'fab__content--align-end'
     }
   },
   defaultVariants: {
@@ -111,10 +111,10 @@ const content = tv({
  * To remove the animated wrapper styles, set `isAnimatedStyleActive={false}`.
  */
 const item = tv({
-  base: 'flex-row items-center gap-2.5 rounded-2xl shadow-overlay bg-overlay px-4 py-2.5',
+  base: 'fab__item',
   variants: {
     isDisabled: {
-      true: 'opacity-disabled pointer-events-none'
+      true: 'fab__item--is-disabled'
     }
   },
   defaultVariants: {
@@ -126,7 +126,7 @@ const item = tv({
  * Text label inside a FAB item.
  */
 const itemLabel = tv({
-  base: 'text-sm font-medium text-foreground'
+  base: 'fab__item-label'
 });
 export const fabClassNames = combineStyles({
   root,

@@ -1,5 +1,5 @@
 export declare const timelineClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-col", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-col", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "timeline__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "timeline__root", unknown, unknown, undefined>>;
     item: import("tailwind-variants").TVReturnType<{
         align: {
             start: string;
@@ -13,7 +13,7 @@ export declare const timelineClassNames: import("../../helpers/internal/types").
             true: string;
             false: string;
         };
-    }, undefined, "flex-row gap-3", {
+    }, undefined, "timeline__item", {
         align: {
             start: string;
             center: string;
@@ -39,9 +39,9 @@ export declare const timelineClassNames: import("../../helpers/internal/types").
             true: string;
             false: string;
         };
-    }, undefined, "flex-row gap-3", unknown, unknown, undefined>>;
-    leading: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "w-10", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "w-10", unknown, unknown, undefined>>;
-    rail: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "items-center", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "items-center", unknown, unknown, undefined>>;
+    }, undefined, "timeline__item", unknown, unknown, undefined>>;
+    leading: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "timeline__leading", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "timeline__leading", unknown, unknown, undefined>>;
+    rail: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "timeline__rail", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "timeline__rail", unknown, unknown, undefined>>;
     marker: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;
@@ -56,7 +56,7 @@ export declare const timelineClassNames: import("../../helpers/internal/types").
             warning: string;
             danger: string;
         };
-    }, undefined, "items-center justify-center border bg-transparent", {
+    }, undefined, "timeline__marker", {
         size: {
             sm: string;
             md: string;
@@ -84,16 +84,16 @@ export declare const timelineClassNames: import("../../helpers/internal/types").
             warning: string;
             danger: string;
         };
-    }, undefined, "items-center justify-center border bg-transparent", unknown, unknown, undefined>>;
-    connector: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "w-px bg-border", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "w-px bg-border", unknown, unknown, undefined>>;
-    content: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "min-w-0 flex-1 flex-col", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "min-w-0 flex-1 flex-col", unknown, unknown, undefined>>;
+    }, undefined, "timeline__marker", unknown, unknown, undefined>>;
+    connector: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "timeline__connector", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "timeline__connector", unknown, unknown, undefined>>;
+    content: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "timeline__content", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "timeline__content", unknown, unknown, undefined>>;
     title: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;
             md: string;
             lg: string;
         };
-    }, undefined, "font-medium text-foreground", {
+    }, undefined, "timeline__title", {
         size: {
             sm: string;
             md: string;
@@ -105,14 +105,14 @@ export declare const timelineClassNames: import("../../helpers/internal/types").
             md: string;
             lg: string;
         };
-    }, undefined, "font-medium text-foreground", unknown, unknown, undefined>>;
+    }, undefined, "timeline__title", unknown, unknown, undefined>>;
     description: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;
             md: string;
             lg: string;
         };
-    }, undefined, "text-muted", {
+    }, undefined, "timeline__description", {
         size: {
             sm: string;
             md: string;
@@ -124,6 +124,6 @@ export declare const timelineClassNames: import("../../helpers/internal/types").
             md: string;
             lg: string;
         };
-    }, undefined, "text-muted", unknown, unknown, undefined>>;
+    }, undefined, "timeline__description", unknown, unknown, undefined>>;
 }>;
 //# sourceMappingURL=timeline.styles.d.ts.map

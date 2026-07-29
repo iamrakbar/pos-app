@@ -7,19 +7,19 @@ const root = tv({
   base: '',
   variants: {
     orientation: {
-      horizontal: 'flex-row',
-      vertical: 'flex-col'
+      horizontal: 'toggle-button-group__root--orientation-horizontal',
+      vertical: 'toggle-button-group__root--orientation-vertical'
     },
     isDetached: {
-      true: 'gap-2',
-      false: 'rounded-3xl overflow-hidden'
+      true: 'toggle-button-group__root--is-detached',
+      false: 'toggle-button-group__root--is-detached-false'
     },
     fullWidth: {
-      true: 'w-full',
+      true: 'toggle-button-group__root--full-width',
       false: ''
     },
     isDisabled: {
-      true: 'opacity-disabled',
+      true: 'toggle-button-group__root--is-disabled',
       false: ''
     }
   },

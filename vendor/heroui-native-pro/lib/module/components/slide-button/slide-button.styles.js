@@ -12,13 +12,13 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  */
 const root = tv({
   slots: {
-    container: 'h-[56px] p-1.5 rounded-4xl bg-default overflow-hidden',
-    contentContainer: 'flex-1'
+    container: 'slide-button__container',
+    contentContainer: 'slide-button__content-container'
   },
   variants: {
     isDisabled: {
       true: {
-        container: 'opacity-disabled'
+        container: 'slide-button__container--is-disabled'
       },
       false: {}
     }
@@ -37,8 +37,8 @@ const root = tv({
  */
 const underlayContent = tv({
   slots: {
-    container: 'absolute right-0 top-0 bottom-0 overflow-hidden rounded-4xl',
-    contentContainer: 'absolute right-0 top-0 bottom-0 items-center justify-center'
+    container: 'slide-button__underlay-content-container',
+    contentContainer: 'slide-button__underlay-content-content-container'
   }
 });
 
@@ -51,22 +51,22 @@ const underlayContent = tv({
  */
 const overlayContent = tv({
   slots: {
-    container: 'absolute inset-0 overflow-hidden rounded-4xl',
-    contentContainer: 'flex-1 items-center justify-center'
+    container: 'slide-button__overlay-content-container',
+    contentContainer: 'slide-button__overlay-content-content-container'
   },
   variants: {
     variant: {
       default: {
-        contentContainer: 'bg-default-foreground/5'
+        contentContainer: 'slide-button__overlay-content-content-container--variant-default'
       },
       accent: {
-        contentContainer: 'bg-accent-soft'
+        contentContainer: 'slide-button__overlay-content-content-container--variant-accent'
       },
       success: {
-        contentContainer: 'bg-success-soft'
+        contentContainer: 'slide-button__overlay-content-content-container--variant-success'
       },
       danger: {
-        contentContainer: 'bg-danger-soft'
+        contentContainer: 'slide-button__overlay-content-content-container--variant-danger'
       }
     }
   },
@@ -95,7 +95,7 @@ const overlayContent = tv({
  * set `isAnimatedStyleActive={false}` on `SlideButton.Thumb`.
  */
 const thumb = tv({
-  base: 'absolute h-full aspect-video rounded-4xl items-center justify-center bg-surface shadow-sm z-10'
+  base: 'slide-button__thumb'
 });
 
 /**
@@ -103,13 +103,13 @@ const thumb = tv({
  * Text label used within underlay or overlay content parts.
  */
 const label = tv({
-  base: 'text-sm font-medium',
+  base: 'slide-button__label',
   variants: {
     variant: {
-      default: 'text-default-soft-foreground',
-      accent: 'text-accent-soft-foreground',
-      success: 'text-success-soft-foreground',
-      danger: 'text-danger-soft-foreground'
+      default: 'slide-button__label--variant-default',
+      accent: 'slide-button__label--variant-accent',
+      success: 'slide-button__label--variant-success',
+      danger: 'slide-button__label--variant-danger'
     }
   },
   defaultVariants: {

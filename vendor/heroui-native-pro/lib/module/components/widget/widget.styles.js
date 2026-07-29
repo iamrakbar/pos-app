@@ -4,25 +4,25 @@ import { StyleSheet } from 'react-native';
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
-  base: 'bg-surface-secondary rounded-2xl p-1.5'
+  base: 'widget__root'
 });
 const header = tv({
-  base: 'flex-row items-center justify-between gap-3 px-2 pb-1.5 pt-0.5'
+  base: 'widget__header'
 });
 const title = tv({
-  base: 'text-foreground text-sm font-medium'
+  base: 'widget__title'
 });
 const description = tv({
-  base: 'text-muted text-xs'
+  base: 'widget__description'
 });
 const content = tv({
-  base: 'bg-surface overflow-hidden rounded-xl p-4 shadow-surface'
+  base: 'widget__content'
 });
 const footer = tv({
-  base: 'flex-row items-center gap-3 px-2 pt-1.5 pb-0.5'
+  base: 'widget__footer'
 });
 const legend = tv({
-  base: 'flex-row items-center gap-3'
+  base: 'widget__legend'
 });
 
 /**
@@ -32,9 +32,9 @@ const legend = tv({
  */
 const legendItem = tv({
   slots: {
-    wrapper: 'flex-row items-center gap-1.5',
-    dot: 'size-2.5 rounded-full',
-    label: 'text-muted text-xs'
+    wrapper: 'widget__legend-item-wrapper',
+    dot: 'widget__legend-item-dot',
+    label: 'widget__legend-item-label'
   }
 });
 export const widgetClassNames = combineStyles({

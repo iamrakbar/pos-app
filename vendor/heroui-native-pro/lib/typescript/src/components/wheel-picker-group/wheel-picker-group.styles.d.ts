@@ -84,7 +84,7 @@ export declare const wheelPickerGroupClassNames: import("../../helpers/internal/
             true: string;
             false: string;
         };
-    }, undefined, "flex-row overflow-hidden", {
+    }, undefined, "wheel-picker-group__root", {
         isDisabled: {
             true: string;
             false: string;
@@ -94,7 +94,7 @@ export declare const wheelPickerGroupClassNames: import("../../helpers/internal/
             true: string;
             false: string;
         };
-    }, undefined, "flex-row overflow-hidden", unknown, unknown, undefined>>;
+    }, undefined, "wheel-picker-group__root", unknown, unknown, undefined>>;
     indicator: import("tailwind-variants").TVReturnType<{
         [key: string]: {
             [key: string]: import("tailwind-merge").ClassNameValue | {

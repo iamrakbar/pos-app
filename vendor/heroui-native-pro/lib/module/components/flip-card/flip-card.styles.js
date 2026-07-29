@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
-  base: 'relative w-full aspect-[1.6]'
+  base: 'flip-card__root'
 });
 
 /**
@@ -24,7 +24,7 @@ const root = tv({
  * To disable animated styles, set `isAnimatedStyleActive={false}` on the face.
  */
 const front = tv({
-  base: 'size-full p-3 overflow-hidden rounded-3xl bg-surface'
+  base: 'flip-card__front'
 });
 
 /**
@@ -36,7 +36,7 @@ const front = tv({
  * To disable animated styles, set `isAnimatedStyleActive={false}` on the face.
  */
 const back = tv({
-  base: 'absolute inset-0 p-3 overflow-hidden rounded-3xl bg-surface'
+  base: 'flip-card__back'
 });
 export const flipCardClassNames = combineStyles({
   root,

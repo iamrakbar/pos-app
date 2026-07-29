@@ -68,7 +68,7 @@ export declare const toggleButtonClassNames: import("../../helpers/internal/type
             true: string;
             false: string;
         };
-    }, undefined, "text-sm font-medium", {
+    }, undefined, "toggle-button__label", {
         isSelected: {
             true: string;
             false: string;
@@ -78,6 +78,6 @@ export declare const toggleButtonClassNames: import("../../helpers/internal/type
             true: string;
             false: string;
         };
-    }, undefined, "text-sm font-medium", unknown, unknown, undefined>>;
+    }, undefined, "toggle-button__label", unknown, unknown, undefined>>;
 }>;
 //# sourceMappingURL=toggle-button.styles.d.ts.map

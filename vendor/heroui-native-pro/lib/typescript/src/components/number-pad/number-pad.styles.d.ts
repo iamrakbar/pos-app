@@ -5,7 +5,7 @@ export declare const numberPadClassNames: import("../../helpers/internal/types")
             true: string;
             false: string;
         };
-    }, undefined, "flex-col gap-2 w-full", {
+    }, undefined, "number-pad__root", {
         isDisabled: {
             true: string;
             false: string;
@@ -15,20 +15,17 @@ export declare const numberPadClassNames: import("../../helpers/internal/types")
             true: string;
             false: string;
         };
-    }, undefined, "flex-col gap-2 w-full", unknown, unknown, undefined>>;
-    row: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-row items-stretch gap-1.5 w-full min-h-16", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-row items-stretch gap-1.5 w-full min-h-16", unknown, unknown, undefined>>;
+    }, undefined, "number-pad__root", unknown, unknown, undefined>>;
+    row: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "number-pad__row", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "number-pad__row", unknown, unknown, undefined>>;
     key: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, string[], {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, string[], unknown, unknown, undefined>>;
-    keyLabel: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "text-foreground font-semibold text-center text-3xl", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "text-foreground font-semibold text-center text-3xl", unknown, unknown, undefined>>;
-    backspace: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "bg-transparent", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "bg-transparent", unknown, unknown, undefined>>;
-    spacerActive: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "bg-transparent", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "bg-transparent", unknown, unknown, undefined>>;
-    spacerInactive: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flex-1", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flex-1", unknown, unknown, undefined>>;
+    keyLabel: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "number-pad__key-label", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "number-pad__key-label", unknown, unknown, undefined>>;
+    backspace: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "number-pad__backspace", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "number-pad__backspace", unknown, unknown, undefined>>;
+    spacerActive: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "number-pad__spacer-active", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "number-pad__spacer-active", unknown, unknown, undefined>>;
+    spacerInactive: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "number-pad__spacer-inactive", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "number-pad__spacer-inactive", unknown, unknown, undefined>>;
 }>;
 export declare const numberPadStyleSheet: {
     keyContainer: {
         borderCurve: "continuous";
-    };
-    keyLabel: {
-        fontVariant: "tabular-nums"[];
     };
 };
 //# sourceMappingURL=number-pad.styles.d.ts.map

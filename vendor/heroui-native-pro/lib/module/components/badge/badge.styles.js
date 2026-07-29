@@ -3,13 +3,20 @@
 import { StyleSheet } from 'react-native';
 import { tv } from 'tailwind-variants';
 import { combineStyles } from "../../helpers/internal/utils/index.js";
+
+/**
+ * @note The `translate-x-*` / `translate-y-*` utilities in `placement` stay
+ * here: Tailwind implements them through the composable `translate`
+ * mechanism, which has no single-declaration equivalent in the uniwind CSS
+ * parser. All other styles live in `styles/components/badge.css`.
+ */
 const root = tv({
-  base: 'items-center justify-center rounded-2xl outline outline-background',
+  base: 'badge__root',
   variants: {
     size: {
-      sm: 'min-h-3.5 min-w-3.5 px-1',
-      md: 'min-h-4.5 min-w-4.5 px-1',
-      lg: 'min-h-5.5 min-w-5.5 px-1.5'
+      sm: 'badge__root--size-sm',
+      md: 'badge__root--size-md',
+      lg: 'badge__root--size-lg'
     },
     color: {
       default: '',
@@ -20,17 +27,17 @@ const root = tv({
     },
     variant: {
       primary: '',
-      secondary: 'bg-default',
+      secondary: 'badge__root--variant-secondary',
       soft: ''
     },
     placement: {
-      'top-right': 'absolute top-0 right-0 translate-x-1/6 -translate-y-1/6',
-      'top-left': 'absolute top-0 left-0 -translate-x-1/6 -translate-y-1/6',
-      'bottom-right': 'absolute bottom-0 right-0 translate-x-1/6 translate-y-1/6',
-      'bottom-left': 'absolute bottom-0 left-0 -translate-x-1/6 translate-y-1/6'
+      'top-right': 'badge__root--placement-top-right translate-x-1/6 -translate-y-1/6',
+      'top-left': 'badge__root--placement-top-left -translate-x-1/6 -translate-y-1/6',
+      'bottom-right': 'badge__root--placement-bottom-right translate-x-1/6 translate-y-1/6',
+      'bottom-left': 'badge__root--placement-bottom-left -translate-x-1/6 translate-y-1/6'
     },
     isDot: {
-      true: 'px-0',
+      true: 'badge__root--is-dot',
       false: ''
     }
   },
@@ -39,45 +46,45 @@ const root = tv({
   {
     variant: 'primary',
     color: 'default',
-    className: 'bg-default'
+    className: 'badge__root--variant-primary--color-default'
   }, {
     variant: 'primary',
     color: 'accent',
-    className: 'bg-accent'
+    className: 'badge__root--variant-primary--color-accent'
   }, {
     variant: 'primary',
     color: 'success',
-    className: 'bg-success'
+    className: 'badge__root--variant-primary--color-success'
   }, {
     variant: 'primary',
     color: 'warning',
-    className: 'bg-warning'
+    className: 'badge__root--variant-primary--color-warning'
   }, {
     variant: 'primary',
     color: 'danger',
-    className: 'bg-danger'
+    className: 'badge__root--variant-primary--color-danger'
   },
   // Soft + color
   {
     variant: 'soft',
     color: 'default',
-    className: 'bg-default'
+    className: 'badge__root--variant-soft--color-default'
   }, {
     variant: 'soft',
     color: 'accent',
-    className: 'bg-accent-soft'
+    className: 'badge__root--variant-soft--color-accent'
   }, {
     variant: 'soft',
     color: 'success',
-    className: 'bg-success-soft'
+    className: 'badge__root--variant-soft--color-success'
   }, {
     variant: 'soft',
     color: 'warning',
-    className: 'bg-warning-soft'
+    className: 'badge__root--variant-soft--color-warning'
   }, {
     variant: 'soft',
     color: 'danger',
-    className: 'bg-danger-soft'
+    className: 'badge__root--variant-soft--color-danger'
   }],
   defaultVariants: {
     size: 'md',
@@ -88,12 +95,12 @@ const root = tv({
   }
 });
 const label = tv({
-  base: 'font-medium',
+  base: 'badge__label',
   variants: {
     size: {
-      sm: 'text-[10px]',
-      md: 'text-xs',
-      lg: 'text-sm'
+      sm: 'badge__label--size-sm',
+      md: 'badge__label--size-md',
+      lg: 'badge__label--size-lg'
     },
     color: {
       default: '',
@@ -113,67 +120,67 @@ const label = tv({
   {
     variant: 'primary',
     color: 'default',
-    className: 'text-default-foreground'
+    className: 'badge__label--variant-primary--color-default'
   }, {
     variant: 'primary',
     color: 'accent',
-    className: 'text-accent-foreground'
+    className: 'badge__label--variant-primary--color-accent'
   }, {
     variant: 'primary',
     color: 'success',
-    className: 'text-success-foreground'
+    className: 'badge__label--variant-primary--color-success'
   }, {
     variant: 'primary',
     color: 'warning',
-    className: 'text-warning-foreground'
+    className: 'badge__label--variant-primary--color-warning'
   }, {
     variant: 'primary',
     color: 'danger',
-    className: 'text-danger-foreground'
+    className: 'badge__label--variant-primary--color-danger'
   },
   // Secondary + color -> colored text on default bg
   {
     variant: 'secondary',
     color: 'default',
-    className: 'text-default-foreground'
+    className: 'badge__label--variant-secondary--color-default'
   }, {
     variant: 'secondary',
     color: 'accent',
-    className: 'text-accent-soft-foreground'
+    className: 'badge__label--variant-secondary--color-accent'
   }, {
     variant: 'secondary',
     color: 'success',
-    className: 'text-success-soft-foreground'
+    className: 'badge__label--variant-secondary--color-success'
   }, {
     variant: 'secondary',
     color: 'warning',
-    className: 'text-warning-soft-foreground'
+    className: 'badge__label--variant-secondary--color-warning'
   }, {
     variant: 'secondary',
     color: 'danger',
-    className: 'text-danger-soft-foreground'
+    className: 'badge__label--variant-secondary--color-danger'
   },
   // Soft + color -> colored text on soft bg
   {
     variant: 'soft',
     color: 'default',
-    className: 'text-default-foreground'
+    className: 'badge__label--variant-soft--color-default'
   }, {
     variant: 'soft',
     color: 'accent',
-    className: 'text-accent-soft-foreground'
+    className: 'badge__label--variant-soft--color-accent'
   }, {
     variant: 'soft',
     color: 'success',
-    className: 'text-success-soft-foreground'
+    className: 'badge__label--variant-soft--color-success'
   }, {
     variant: 'soft',
     color: 'warning',
-    className: 'text-warning-soft-foreground'
+    className: 'badge__label--variant-soft--color-warning'
   }, {
     variant: 'soft',
     color: 'danger',
-    className: 'text-danger-soft-foreground'
+    className: 'badge__label--variant-soft--color-danger'
   }],
   defaultVariants: {
     size: 'md',

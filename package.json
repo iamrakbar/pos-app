@@ -60,7 +60,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.1",
     "expo-updates": "~57.0.8",
-    "heroui-native": "^1.0.5",
+    "heroui-native": "^1.0.6",
     "heroui-native-pro": "file:vendor/heroui-native-pro",
     "react": "19.2.3",
     "react-dom": "19.2.3",

@@ -118,17 +118,5 @@ export declare const numberValueClassNames: import("../../helpers/internal/types
 }>;
 /** Slot names available on the `root` tv instance. */
 export type RootSlots = keyof ReturnType<typeof root>;
-/**
- * StyleSheet for native-only style properties that cannot be expressed via
- * Tailwind classes. The `value` entry applies `fontVariant: tabular-nums`
- * so digits render in fixed-width cells and columns of numbers line up
- * vertically — mirroring the web component's `font-variant-numeric:
- * tabular-nums` rule.
- */
-export declare const numberValueStyleSheet: {
-    value: {
-        fontVariant: "tabular-nums"[];
-    };
-};
 export {};
 //# sourceMappingURL=number-value.styles.d.ts.map

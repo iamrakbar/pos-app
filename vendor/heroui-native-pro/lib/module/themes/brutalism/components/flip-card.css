@@ -1,0 +1,5 @@
+.flip-card__front,
+.flip-card__back {
+  border-width: 1px;
+  border-color: var(--color-border);
+}

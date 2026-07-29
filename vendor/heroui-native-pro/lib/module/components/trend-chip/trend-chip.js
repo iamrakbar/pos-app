@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import { childrenToString, createContext } from "../../helpers/internal/utils/index.js";
 import { DEFAULT_SIZE, DEFAULT_TREND, DEFAULT_VARIANT, DISPLAY_NAME, INDICATOR_SIZE_MAP, TREND_TO_CHIP_COLOR_MAP } from "./trend-chip.constants.js";
 import { TrendArrowDownIcon, TrendArrowRightIcon, TrendArrowUpIcon } from "./trend-chip.icons.js";
-import { trendChipClassNames, trendChipStyleSheet } from "./trend-chip.styles.js";
+import { trendChipClassNames } from "./trend-chip.styles.js";
 import { getIndicatorColorClassName } from "./trend-chip.utils.js";
 
 // --------------------------------------------------
@@ -110,12 +110,15 @@ const TrendChipIndicator = /*#__PURE__*/forwardRef((props, ref) => {
 const TrendChipValue = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
-    style,
+    className,
     ...restProps
   } = props;
+  const valueClassName = trendChipClassNames.value({
+    className
+  });
   return /*#__PURE__*/_jsx(Chip.Label, {
     ref: ref,
-    style: [trendChipStyleSheet.value, style],
+    className: valueClassName,
     ...restProps,
     children: children
   });

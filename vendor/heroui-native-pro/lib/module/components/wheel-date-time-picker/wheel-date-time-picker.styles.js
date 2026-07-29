@@ -9,7 +9,7 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
  * corresponding subcomponents / underlying primitives.
  */
 const root = tv({
-  base: 'px-5'
+  base: 'wheel-date-time-picker__root'
 });
 
 /**
@@ -21,8 +21,8 @@ const root = tv({
  */
 const date = tv({
   slots: {
-    container: 'flex-[2]',
-    itemLabel: 'text-base'
+    container: 'wheel-date-time-picker__date-container',
+    itemLabel: 'wheel-date-time-picker__date-item-label'
   }
 });
 
@@ -33,8 +33,8 @@ const date = tv({
  */
 const hour = tv({
   slots: {
-    container: 'flex-1',
-    itemLabel: 'tabular-nums'
+    container: 'wheel-date-time-picker__hour-container',
+    itemLabel: 'wheel-date-time-picker__hour-item-label'
   }
 });
 
@@ -45,8 +45,8 @@ const hour = tv({
  */
 const minute = tv({
   slots: {
-    container: 'flex-1',
-    itemLabel: 'tabular-nums'
+    container: 'wheel-date-time-picker__minute-container',
+    itemLabel: 'wheel-date-time-picker__minute-item-label'
   }
 });
 
@@ -56,7 +56,7 @@ const minute = tv({
  */
 const period = tv({
   slots: {
-    container: 'flex-1'
+    container: 'wheel-date-time-picker__period-container'
   }
 });
 

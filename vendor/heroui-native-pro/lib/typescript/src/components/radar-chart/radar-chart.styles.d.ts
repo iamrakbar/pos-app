@@ -3,7 +3,7 @@
  * radar fills, grid strokes, and label colors come from the Skia subcomponents.
  */
 export declare const radarChartClassNames: import("../../helpers/internal/types").CombinedStyles<{
-    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "w-full", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "w-full", unknown, unknown, undefined>>;
+    root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "radar-chart__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "radar-chart__root", unknown, unknown, undefined>>;
 }>;
 export default radarChartClassNames;
 //# sourceMappingURL=radar-chart.styles.d.ts.map

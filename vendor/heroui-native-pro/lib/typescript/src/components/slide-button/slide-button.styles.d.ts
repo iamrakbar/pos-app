@@ -253,7 +253,7 @@ export declare const slideButtonClassNames: import("../../helpers/internal/types
         container: string;
         contentContainer: string;
     }, undefined, unknown, unknown, undefined>>;
-    thumb: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "absolute h-full aspect-video rounded-4xl items-center justify-center bg-surface shadow-sm z-10", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "absolute h-full aspect-video rounded-4xl items-center justify-center bg-surface shadow-sm z-10", unknown, unknown, undefined>>;
+    thumb: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "slide-button__thumb", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "slide-button__thumb", unknown, unknown, undefined>>;
     label: import("tailwind-variants").TVReturnType<{
         variant: {
             default: string;
@@ -261,7 +261,7 @@ export declare const slideButtonClassNames: import("../../helpers/internal/types
             success: string;
             danger: string;
         };
-    }, undefined, "text-sm font-medium", {
+    }, undefined, "slide-button__label", {
         variant: {
             default: string;
             accent: string;
@@ -275,7 +275,7 @@ export declare const slideButtonClassNames: import("../../helpers/internal/types
             success: string;
             danger: string;
         };
-    }, undefined, "text-sm font-medium", unknown, unknown, undefined>>;
+    }, undefined, "slide-button__label", unknown, unknown, undefined>>;
 }>;
 export declare const slideButtonStyleSheet: {
     root: {
