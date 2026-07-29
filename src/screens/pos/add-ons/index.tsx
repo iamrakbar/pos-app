@@ -112,7 +112,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
         control={control}
         name={`radioSelections.${group.id}`}
         render={({ field }) => (
-          <Surface variant="secondary" className="w-full overflow-hidden p-0">
+          <Surface className="w-full overflow-hidden p-0">
             {group.options.map((option, index) => (
               <React.Fragment key={option.id}>
                 {index > 0 ? <Separator /> : null}
@@ -140,7 +140,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
         const hasLimit = group.max > 0;
 
         return (
-          <Surface variant="secondary" className="w-full overflow-hidden p-0">
+          <Surface className="w-full overflow-hidden p-0">
             {group.options.map((option, index) => {
               const isSelected = selectedIds.has(option.id);
               const isDisabled = !isSelected && hasLimit && selected.length >= group.max;
@@ -270,8 +270,8 @@ export default function POSAddOnSheet(): React.JSX.Element {
   };
 
   const header = (
-    <View className="bg-background">
-      <View className="gap-1 px-5 pb-4 pt-3">
+    <View className="bg-surface">
+      <View className="gap-1 px-5 pb-4 pt-safe">
         <Typography type="h4" weight="semibold" numberOfLines={1}>
           {product?.name ?? "Customize product"}
         </Typography>
@@ -284,7 +284,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
   );
 
   const footer = (
-    <View className="bg-background">
+    <View className="bg-surface pb-safe">
       <Separator />
       <View className="gap-3 px-5 pb-4 pt-3">
         <View className="flex-row items-center justify-between gap-4">
