@@ -1,29 +1,11 @@
 import ErrorState from "@/components/common/error-state";
 import LoadingAnimation from "@/components/common/loading-animation";
-import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  Button,
-  Description,
-  Label,
-  Select,
-  Separator,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
-import {
-  AreaChart,
-  Calendar,
-  DatePicker,
-  EmptyState,
-  Widget,
-  type DatePickerOption,
-} from "heroui-native-pro";
+import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 
@@ -33,15 +15,14 @@ const SUMMARY_ICON_BACKGROUNDS = {
   success: "bg-success-soft",
 } as const;
 
-const DATE_RANGE_OPTIONS = [
-  { value: "last-7-days", label: "Last 7 Days" },
-  { value: "last-30-days", label: "Last 30 Days" },
-  { value: "this-week", label: "This Week" },
-  { value: "this-month", label: "This Month" },
-  { value: "custom", label: "Custom" },
-] as const;
+type Period = "today" | "7-days" | "30-days";
 
-type DateRangeValue = (typeof DATE_RANGE_OPTIONS)[number]["value"];
+const PERIODS: { value: Period; label: string; days: number }[] = [
+  { value: "today", label: "Today", days: 1 },
+  { value: "7-days", label: "7 Days", days: 7 },
+  { value: "30-days", label: "30 Days", days: 30 },
+];
+
 type AppliedDateRange = { startDate: string; endDate: string };
 
 function SummaryWidget({
@@ -108,88 +89,13 @@ function startOfToday(): Date {
   return today;
 }
 
-function getPresetRange(value: Exclude<DateRangeValue, "custom">): AppliedDateRange {
+function getPeriodRange(period: Period): AppliedDateRange {
+  const definition = PERIODS.find((item) => item.value === period) ?? PERIODS[0];
   const end = startOfToday();
   const start = new Date(end);
-
-  if (value === "last-7-days") start.setDate(start.getDate() - 6);
-  if (value === "last-30-days") start.setDate(start.getDate() - 29);
-  if (value === "this-week") {
-    const day = start.getDay();
-    start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
-  }
-  if (value === "this-month") start.setDate(1);
+  start.setDate(start.getDate() - (definition.days - 1));
 
   return { startDate: toDateKey(start), endDate: toDateKey(end) };
-}
-
-function toDateOption(value: string): NonNullable<DatePickerOption> {
-  return {
-    value,
-    label: new Date(value + "T00:00:00").toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }),
-  };
-}
-
-function DashboardDatePicker({
-  label,
-  value,
-  onValueChange,
-  description,
-  isInvalid,
-  presentation,
-}: {
-  label: string;
-  value: NonNullable<DatePickerOption>;
-  onValueChange: (value: DatePickerOption | undefined) => void;
-  description?: string;
-  isInvalid?: boolean;
-  presentation: "dialog" | "popover";
-}) {
-  return (
-    <DatePicker
-      className="min-w-55 flex-1"
-      value={value}
-      onValueChange={onValueChange}
-      isRequired
-      isInvalid={isInvalid}
-      locale="en-US"
-      dateDisplayFormat="medium"
-    >
-      <Label>{label}</Label>
-      <DatePicker.Select presentation={presentation}>
-        <DatePicker.Trigger>
-          <DatePicker.Value />
-          <DatePicker.TriggerIndicator />
-        </DatePicker.Trigger>
-        <DatePicker.Portal>
-          <DatePicker.Overlay />
-          <DatePicker.Content
-            presentation={presentation}
-            width={presentation === "popover" ? "trigger" : undefined}
-          >
-            <DatePicker.Calendar>
-              <Calendar.Header>
-                <Calendar.Heading />
-                <Calendar.NavButton slot="previous" />
-                <Calendar.NavButton slot="next" />
-              </Calendar.Header>
-              <Calendar.Grid>
-                <Calendar.GridHeader>
-                  {(day) => <Calendar.HeaderCell day={day} />}
-                </Calendar.GridHeader>
-                <Calendar.GridBody>{(date) => <Calendar.Cell date={date} />}</Calendar.GridBody>
-              </Calendar.Grid>
-            </DatePicker.Calendar>
-          </DatePicker.Content>
-        </DatePicker.Portal>
-      </DatePicker.Select>
-      {description ? <Description>{description}</Description> : null}
-    </DatePicker>
-  );
 }
 
 function normalizeChartRange(
@@ -259,114 +165,10 @@ function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boole
   );
 }
 
-function CustomDateRangeDialog({
-  isOpen,
-  onOpenChange,
-  start,
-  end,
-  onStartChange,
-  onEndChange,
-  error,
-  onApply,
-  onCancel,
-  isApplying,
-}: {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-  start: NonNullable<DatePickerOption>;
-  end: NonNullable<DatePickerOption>;
-  onStartChange: (value: DatePickerOption | undefined) => void;
-  onEndChange: (value: DatePickerOption | undefined) => void;
-  error: string | null;
-  onApply: () => void;
-  onCancel: () => void;
-  isApplying: boolean;
-}) {
-  const { isPhonePortrait } = useOverlayPresentation();
-  const pickerPresentation = isPhonePortrait ? "dialog" : "popover";
-
-  return (
-    <AdaptiveFormOverlay
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      title="Custom Date Range"
-      description="Select the reporting period to display."
-      maxWidthClassName="max-w-lg"
-      footer={
-        <View
-          className={`gap-3 px-5 pb-5 pt-4 ${
-            isPhonePortrait ? "items-stretch" : "flex-row justify-end"
-          }`}
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            className={isPhonePortrait ? "w-full" : undefined}
-            onPress={onCancel}
-          >
-            <Button.Label>Cancel</Button.Label>
-          </Button>
-          <Button
-            size="sm"
-            className={isPhonePortrait ? "w-full" : undefined}
-            onPress={onApply}
-            isDisabled={isApplying}
-          >
-            <Button.Label>{isApplying ? "Applying…" : "Apply"}</Button.Label>
-          </Button>
-        </View>
-      }
-    >
-      <View className="gap-4 px-5">
-        <View className={`${isPhonePortrait ? "gap-4" : "flex-row flex-wrap items-start gap-4"}`}>
-          <DashboardDatePicker
-            label="From"
-            value={start}
-            onValueChange={onStartChange}
-            isInvalid={error !== null}
-            presentation={pickerPresentation}
-          />
-          <DashboardDatePicker
-            label="To"
-            value={end}
-            onValueChange={onEndChange}
-            isInvalid={error !== null}
-            presentation={pickerPresentation}
-          />
-        </View>
-
-        {error ? (
-          <Typography type="body-xs" className="text-danger">
-            {error}
-          </Typography>
-        ) : (
-          <Typography type="body-xs" color="muted">
-            Maximum range: 366 days. Future dates are not included.
-          </Typography>
-        )}
-      </View>
-    </AdaptiveFormOverlay>
-  );
-}
-
 export default function DashboardScreen(): React.JSX.Element {
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
-  const { choicePresentation } = useOverlayPresentation();
-  const { toast } = useToast();
-  const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
-    DATE_RANGE_OPTIONS[0]
-  );
-  const [appliedRange, setAppliedRange] = React.useState<AppliedDateRange>(() =>
-    getPresetRange("last-7-days")
-  );
-  const [customStart, setCustomStart] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").startDate)
-  );
-  const [customEnd, setCustomEnd] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").endDate)
-  );
-  const [customRangeError, setCustomRangeError] = React.useState<string | null>(null);
-  const [isCustomRangeOpen, setIsCustomRangeOpen] = React.useState(false);
+  const [period, setPeriod] = React.useState<Period>("today");
+  const appliedRange = getPeriodRange(period);
   const dashboard = useDashboard(appliedRange.startDate, appliedRange.endDate);
   const themeColorMuted = useThemeColor("muted");
 
@@ -379,241 +181,154 @@ export default function DashboardScreen(): React.JSX.Element {
     appliedRange.endDate
   );
   const bestSellers = dashboard.data?.best_sellers ?? [];
-  const dateRangeLabel =
-    dateRange.value === "custom"
-      ? toDateOption(appliedRange.startDate).label +
-        " – " +
-        toDateOption(appliedRange.endDate).label
-      : dateRange.label;
-
-  const handleRangeChange = (option: { value: string; label: string } | undefined) => {
-    if (!option) return;
-    const nextOption = DATE_RANGE_OPTIONS.find((item) => item.value === option.value);
-    if (!nextOption) return;
-
-    setCustomRangeError(null);
-    if (nextOption.value === "custom") {
-      setIsCustomRangeOpen(true);
-      return;
-    }
-
-    setDateRange(nextOption);
-    setAppliedRange(getPresetRange(nextOption.value));
-  };
-
-  const handleApplyCustomRange = () => {
-    const start = new Date(customStart.value + "T00:00:00");
-    const end = new Date(customEnd.value + "T00:00:00");
-    const today = startOfToday();
-    let error: string | null = null;
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      error = "Select both a start and end date.";
-    } else if (start > end) {
-      error = "The start date must be on or before the end date.";
-    } else if (end > today) {
-      error = "The end date cannot be in the future.";
-    } else {
-      const inclusiveDays = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
-      if (inclusiveDays > 366) error = "Choose a range of 366 days or less.";
-    }
-
-    setCustomRangeError(error);
-    if (error) {
-      toast.show({ variant: "warning", label: "Invalid date range", description: error });
-      return;
-    }
-
-    const customOption = DATE_RANGE_OPTIONS.find((option) => option.value === "custom");
-    if (customOption) setDateRange(customOption);
-    setAppliedRange({ startDate: customStart.value, endDate: customEnd.value });
-    setIsCustomRangeOpen(false);
-  };
+  const dateRangeLabel = PERIODS.find((item) => item.value === period)?.label ?? "Today";
 
   if (dashboard.isLoading) {
     return <LoadingAnimation fullScreen />;
   }
 
   return (
-    <>
-      <ScrollView
-        className="flex-1 bg-background"
-        contentContainerClassName="items-center py-6 pb-10"
-        contentContainerStyle={{ paddingHorizontal: horizontalPagePadding }}
-        refreshControl={
-          <RefreshControl
-            refreshing={dashboard.isRefetching}
-            onRefresh={() => void dashboard.refetch()}
-          />
-        }
-      >
-        <View className="w-full max-w-7xl gap-6">
-          <View className="items-end">
-            <Select
-              presentation={choicePresentation}
-              value={dateRange}
-              onValueChange={handleRangeChange}
-            >
-              <Select.Trigger asChild variant="unstyled">
-                <Button size="sm" variant="outline" className={isCompact ? "min-w-40" : undefined}>
-                  <Button.Label numberOfLines={1}>{dateRangeLabel}</Button.Label>
-                  <Ionicons name="chevron-down" size={14} color={themeColorMuted} />
-                </Button>
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Overlay />
-                <Select.Content
-                  presentation={choicePresentation}
-                  width={choicePresentation === "popover" ? 200 : undefined}
-                >
-                  <Select.ListLabel>Date Range</Select.ListLabel>
-                  {DATE_RANGE_OPTIONS.map((option) => (
-                    <Select.Item key={option.value} value={option.value} label={option.label} />
-                  ))}
-                </Select.Content>
-              </Select.Portal>
-            </Select>
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerClassName="items-center py-6 pb-10"
+      contentContainerStyle={{ paddingHorizontal: horizontalPagePadding }}
+      refreshControl={
+        <RefreshControl
+          refreshing={dashboard.isRefetching}
+          onRefresh={() => void dashboard.refetch()}
+        />
+      }
+    >
+      <View className="w-full max-w-7xl gap-6">
+        <View className="flex-col landscape:flex-row items-center justify-between gap-3">
+          <Typography type="body-sm">Order and sales performance for {dateRangeLabel}</Typography>
+          <View className="flex-row flex-wrap justify-center gap-2">
+            {PERIODS.map((item) => (
+              <Chip
+                key={item.value}
+                variant={period === item.value ? "primary" : "secondary"}
+                onPress={() => setPeriod(item.value)}
+              >
+                <Chip.Label>{item.label}</Chip.Label>
+              </Chip>
+            ))}
           </View>
+        </View>
 
-          {dashboard.isError ? (
-            <ErrorState error={dashboard.error} onRetry={() => void dashboard.refetch()} />
-          ) : (
-            <>
-              <View className="w-full flex-row flex-wrap gap-4">
-                <SummaryWidget
-                  label="Revenue"
-                  value={formatRupiah(dashboard.data?.revenue_today ?? 0)}
-                  icon="wallet-outline"
-                  color="success"
-                />
-                <SummaryWidget
-                  label="Orders"
-                  value={String(dashboard.data?.orders_today ?? 0)}
-                  icon="receipt-outline"
-                />
-                <SummaryWidget
-                  label="Pending"
-                  value={String(dashboard.data?.pending_orders ?? 0)}
-                  icon="time-outline"
-                  color="warning"
-                />
-                <SummaryWidget
-                  label="Completed"
-                  value={String(dashboard.data?.completed_orders ?? 0)}
-                  icon="checkmark-circle-outline"
-                  color="success"
-                />
-              </View>
+        {dashboard.isError ? (
+          <ErrorState error={dashboard.error} onRetry={() => void dashboard.refetch()} />
+        ) : (
+          <>
+            <View className="w-full flex-row flex-wrap gap-4">
+              <SummaryWidget
+                label="Revenue"
+                value={formatRupiah(dashboard.data?.revenue_today ?? 0)}
+                icon="wallet-outline"
+                color="success"
+              />
+              <SummaryWidget
+                label="Orders"
+                value={String(dashboard.data?.orders_today ?? 0)}
+                icon="receipt-outline"
+              />
+              <SummaryWidget
+                label="Pending"
+                value={String(dashboard.data?.pending_orders ?? 0)}
+                icon="time-outline"
+                color="warning"
+              />
+              <SummaryWidget
+                label="Completed"
+                value={String(dashboard.data?.completed_orders ?? 0)}
+                icon="checkmark-circle-outline"
+                color="success"
+              />
+            </View>
 
-              <Widget>
-                <Widget.Header>
-                  <View className="gap-0.5">
-                    <Widget.Title>Order Activity</Widget.Title>
-                    <Widget.Description>
-                      Orders created during the selected period
-                    </Widget.Description>
-                  </View>
-                  <Widget.Legend>
-                    <Widget.LegendItem colorClassName="bg-chart-3">Orders</Widget.LegendItem>
-                  </Widget.Legend>
-                </Widget.Header>
-                <Widget.Content className="p-4">
-                  {chart.length === 0 ? (
-                    <EmptyState className="py-12">
-                      <EmptyState.Header>
-                        <EmptyState.Media variant="icon">
-                          <Ionicons name="stats-chart-outline" size={20} color={themeColorMuted} />
-                        </EmptyState.Media>
-                        <EmptyState.Title>No order activity</EmptyState.Title>
-                        <EmptyState.Description>
-                          Order activity for the dashboard period will appear here.
-                        </EmptyState.Description>
-                      </EmptyState.Header>
-                    </EmptyState>
-                  ) : (
-                    <OrdersChart data={chart} isCompact={isCompact} />
-                  )}
-                </Widget.Content>
-                <Widget.Footer>
-                  <Widget.Description>{dateRangeLabel}</Widget.Description>
-                </Widget.Footer>
-              </Widget>
+            <Widget>
+              <Widget.Header>
+                <View className="gap-0.5">
+                  <Widget.Title>Order Activity</Widget.Title>
+                  <Widget.Description>Orders created during the selected period</Widget.Description>
+                </View>
+                <Widget.Legend>
+                  <Widget.LegendItem colorClassName="bg-chart-3">Orders</Widget.LegendItem>
+                </Widget.Legend>
+              </Widget.Header>
+              <Widget.Content className="p-4">
+                {chart.length === 0 ? (
+                  <EmptyState className="py-12">
+                    <EmptyState.Header>
+                      <EmptyState.Media variant="icon">
+                        <Ionicons name="stats-chart-outline" size={20} color={themeColorMuted} />
+                      </EmptyState.Media>
+                      <EmptyState.Title>No order activity</EmptyState.Title>
+                      <EmptyState.Description>
+                        Order activity for the dashboard period will appear here.
+                      </EmptyState.Description>
+                    </EmptyState.Header>
+                  </EmptyState>
+                ) : (
+                  <OrdersChart data={chart} isCompact={isCompact} />
+                )}
+              </Widget.Content>
+              <Widget.Footer>
+                <Widget.Description>{dateRangeLabel}</Widget.Description>
+              </Widget.Footer>
+            </Widget>
 
-              <Widget>
-                <Widget.Header>
-                  <View className="gap-0.5">
-                    <Widget.Title>Best Sellers</Widget.Title>
-                    <Widget.Description>Top products by quantity sold</Widget.Description>
-                  </View>
-                </Widget.Header>
-                <Widget.Content className="overflow-hidden p-0">
-                  {bestSellers.length === 0 ? (
-                    <EmptyState className="py-12">
-                      <EmptyState.Header>
-                        <EmptyState.Media variant="icon">
-                          <Ionicons name="cube-outline" size={20} color={themeColorMuted} />
-                        </EmptyState.Media>
-                        <EmptyState.Title>No products sold</EmptyState.Title>
-                        <EmptyState.Description>
-                          Best-selling products will appear after completed sales.
-                        </EmptyState.Description>
-                      </EmptyState.Header>
-                    </EmptyState>
-                  ) : (
-                    bestSellers.map((product, index) => (
-                      <View key={product.product_id}>
-                        <View
-                          className={`gap-3 px-4 py-3.5 ${isCompact ? "items-start" : "flex-row items-center"}`}
-                        >
-                          <View className="size-8 items-center justify-center rounded-full bg-surface-secondary">
-                            <Typography type="body-xs" weight="bold" className="tabular-nums">
-                              {index + 1}
-                            </Typography>
-                          </View>
-                          <View className="min-w-0 flex-1 gap-0.5">
-                            <Typography type="body-sm" weight="semibold" numberOfLines={1}>
-                              {product.name}
-                            </Typography>
-                            <Typography type="body-xs" color="muted" className="tabular-nums">
-                              {product.qty_sold} sold
-                            </Typography>
-                          </View>
-                          <Typography type="body-sm" weight="bold" className="tabular-nums">
-                            {formatRupiah(product.revenue)}
+            <Widget>
+              <Widget.Header>
+                <View className="gap-0.5">
+                  <Widget.Title>Best Sellers</Widget.Title>
+                  <Widget.Description>Top products by quantity sold</Widget.Description>
+                </View>
+              </Widget.Header>
+              <Widget.Content className="overflow-hidden p-0">
+                {bestSellers.length === 0 ? (
+                  <EmptyState className="py-12">
+                    <EmptyState.Header>
+                      <EmptyState.Media variant="icon">
+                        <Ionicons name="cube-outline" size={20} color={themeColorMuted} />
+                      </EmptyState.Media>
+                      <EmptyState.Title>No products sold</EmptyState.Title>
+                      <EmptyState.Description>
+                        Best-selling products will appear after completed sales.
+                      </EmptyState.Description>
+                    </EmptyState.Header>
+                  </EmptyState>
+                ) : (
+                  bestSellers.map((product, index) => (
+                    <View key={product.product_id}>
+                      <View
+                        className={`gap-3 px-4 py-3.5 ${isCompact ? "items-start" : "flex-row items-center"}`}
+                      >
+                        <View className="size-8 items-center justify-center rounded-full bg-surface-secondary">
+                          <Typography type="body-xs" weight="bold" className="tabular-nums">
+                            {index + 1}
                           </Typography>
                         </View>
-                        {index < bestSellers.length - 1 ? <Separator className="mx-4" /> : null}
+                        <View className="min-w-0 flex-1 gap-0.5">
+                          <Typography type="body-sm" weight="semibold" numberOfLines={1}>
+                            {product.name}
+                          </Typography>
+                          <Typography type="body-xs" color="muted" className="tabular-nums">
+                            {product.qty_sold} sold
+                          </Typography>
+                        </View>
+                        <Typography type="body-sm" weight="bold" className="tabular-nums">
+                          {formatRupiah(product.revenue)}
+                        </Typography>
                       </View>
-                    ))
-                  )}
-                </Widget.Content>
-              </Widget>
-            </>
-          )}
-        </View>
-      </ScrollView>
-
-      <CustomDateRangeDialog
-        isOpen={isCustomRangeOpen}
-        onOpenChange={(isOpen) => {
-          setIsCustomRangeOpen(isOpen);
-          if (!isOpen) setCustomRangeError(null);
-        }}
-        start={customStart}
-        end={customEnd}
-        onStartChange={(value) => {
-          if (value) setCustomStart(value);
-          setCustomRangeError(null);
-        }}
-        onEndChange={(value) => {
-          if (value) setCustomEnd(value);
-          setCustomRangeError(null);
-        }}
-        error={customRangeError}
-        onApply={handleApplyCustomRange}
-        onCancel={() => setIsCustomRangeOpen(false)}
-        isApplying={dashboard.isFetching}
-      />
-    </>
+                      {index < bestSellers.length - 1 ? <Separator className="mx-4" /> : null}
+                    </View>
+                  ))
+                )}
+              </Widget.Content>
+            </Widget>
+          </>
+        )}
+      </View>
+    </ScrollView>
   );
 }
