@@ -85,10 +85,10 @@ export default function SettingsScreen(): JSX.Element {
   return (
     <>
       <ScrollView
-        className="flex-1 bg-background pb-safe"
+        className="flex-1 bg-background"
         contentContainerClassName="flex-grow px-4 py-3 md:px-6"
       >
-        <View className="flex-1 justify-between gap-4">
+        <View className="flex-1 justify-between gap-4 pb-safe">
           <View>
             {settingsItems.map((item) => (
               <View key={item.id}>
