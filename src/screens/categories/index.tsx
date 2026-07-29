@@ -44,11 +44,9 @@ export default function CategoriesScreen(): React.JSX.Element {
 
   const canReorder = !deferredSearch && activeFilter === "all";
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setDraftOrder(null);
-    }, [])
-  );
+  useFocusEffect(() => {
+    setDraftOrder(null);
+  });
 
   const handleMove = (index: number, direction: -1 | 1) => {
     setDraftOrder(moveCategory(orderedCategories, index, direction));

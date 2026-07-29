@@ -283,6 +283,142 @@ function CustomDateRangeDialog({
   );
 }
 
+type OrderTypeSummary = {
+  name: string;
+  amount: number;
+  count: number;
+};
+
+function OrderTypesWidget({
+  orderTypes,
+  totalEarnings,
+  periodLabel,
+  isCompact,
+  accentColor,
+}: {
+  orderTypes: OrderTypeSummary[];
+  totalEarnings: number;
+  periodLabel: string;
+  isCompact: boolean;
+  accentColor: string;
+}) {
+  return (
+    <Widget>
+      <Widget.Header>
+        <View>
+          <Widget.Title>Sales by order type</Widget.Title>
+          <Widget.Description>Revenue contribution and settled orders</Widget.Description>
+        </View>
+      </Widget.Header>
+      <Widget.Content className="overflow-hidden p-0">
+        {orderTypes.map((orderType, index) => {
+          const share = totalEarnings > 0 ? orderType.amount / totalEarnings : 0;
+          return (
+            <View key={orderType.name}>
+              <View className="gap-3 p-4">
+                <View className={`gap-3 ${isCompact ? "items-start" : "flex-row items-center"}`}>
+                  <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
+                    <Ionicons
+                      name={
+                        orderType.name === "Dine-in" ? "restaurant-outline" : "bag-handle-outline"
+                      }
+                      size={18}
+                      color={accentColor}
+                    />
+                  </View>
+                  <View className="flex-1 gap-0.5">
+                    <Typography type="body-sm" weight="semibold">
+                      {orderType.name}
+                    </Typography>
+                    <Typography type="body-xs" color="muted">
+                      {orderType.count} order{orderType.count === 1 ? "" : "s"} ·{" "}
+                      {Math.round(share * 100)}% of earnings
+                    </Typography>
+                  </View>
+                  <Typography type="body-sm" weight="bold" className="tabular-nums">
+                    {formatRupiah(orderType.amount)}
+                  </Typography>
+                </View>
+                <View className="h-1.5 overflow-hidden rounded-full bg-default">
+                  <View
+                    className="h-full rounded-full bg-accent"
+                    style={{ width: `${Math.max(share * 100, 2)}%` }}
+                  />
+                </View>
+              </View>
+              {index < orderTypes.length - 1 ? <Separator /> : null}
+            </View>
+          );
+        })}
+      </Widget.Content>
+      <Widget.Footer>
+        <Widget.Description>{periodLabel}</Widget.Description>
+      </Widget.Footer>
+    </Widget>
+  );
+}
+
+function RecentEarningsWidget({
+  entries,
+  isCompact,
+  successColor,
+}: {
+  entries: App.Data.Merchant.Earnings.EarningData[];
+  isCompact: boolean;
+  successColor: string;
+}) {
+  return (
+    <Widget>
+      <Widget.Header>
+        <View>
+          <Widget.Title>Recent earnings</Widget.Title>
+          <Widget.Description>Latest settled order entries</Widget.Description>
+        </View>
+        <Widget.Legend>
+          <Widget.LegendItem colorClassName="bg-success">Settled</Widget.LegendItem>
+        </Widget.Legend>
+      </Widget.Header>
+      <Widget.Content className="overflow-hidden p-0">
+        {entries.map((entry, index) => (
+          <View key={entry.id}>
+            <View
+              className={`gap-3 px-4 py-3.5 ${isCompact ? "items-start" : "flex-row items-center"}`}
+            >
+              <View className="size-10 items-center justify-center rounded-panel-inner bg-success-soft">
+                <Ionicons name="checkmark" size={18} color={successColor} />
+              </View>
+              <View className="min-w-0 flex-1 gap-0.5">
+                <View className="flex-row flex-wrap items-center gap-2">
+                  <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
+                    {entry.code}
+                  </Typography>
+                  <Chip color="success" size="sm" variant="soft">
+                    <Chip.Label>Settled</Chip.Label>
+                  </Chip>
+                </View>
+                <Typography type="body-xs" color="muted">
+                  {formatOrderType(entry.order_type)} · {entry.items_count} item
+                  {entry.items_count === 1 ? "" : "s"} ·{" "}
+                  {new Date(entry.created_at).toLocaleString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Typography>
+              </View>
+              <Typography type="body-sm" weight="bold" className="tabular-nums">
+                {formatRupiah(entry.total_price)}
+              </Typography>
+            </View>
+            {index < entries.length - 1 ? <Separator /> : null}
+          </View>
+        ))}
+      </Widget.Content>
+    </Widget>
+  );
+}
+
 export default function EarningsScreen(): React.JSX.Element {
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const { choicePresentation } = useOverlayPresentation();
@@ -466,117 +602,18 @@ export default function EarningsScreen(): React.JSX.Element {
                 </EmptyState>
               ) : (
                 <>
-                  <Widget>
-                    <Widget.Header>
-                      <View>
-                        <Widget.Title>Sales by order type</Widget.Title>
-                        <Widget.Description>
-                          Revenue contribution and settled orders
-                        </Widget.Description>
-                      </View>
-                    </Widget.Header>
-                    <Widget.Content className="overflow-hidden p-0">
-                      {orderTypes.map((orderType, index) => {
-                        const share = totalEarnings > 0 ? orderType.amount / totalEarnings : 0;
-                        return (
-                          <View key={orderType.name}>
-                            <View className="gap-3 p-4">
-                              <View
-                                className={`gap-3 ${isCompact ? "items-start" : "flex-row items-center"}`}
-                              >
-                                <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
-                                  <Ionicons
-                                    name={
-                                      orderType.name === "Dine-in"
-                                        ? "restaurant-outline"
-                                        : "bag-handle-outline"
-                                    }
-                                    size={18}
-                                    color={accentSoftForeground}
-                                  />
-                                </View>
-                                <View className="flex-1 gap-0.5">
-                                  <Typography type="body-sm" weight="semibold">
-                                    {orderType.name}
-                                  </Typography>
-                                  <Typography type="body-xs" color="muted">
-                                    {orderType.count} order{orderType.count === 1 ? "" : "s"} ·{" "}
-                                    {Math.round(share * 100)}% of earnings
-                                  </Typography>
-                                </View>
-                                <Typography type="body-sm" weight="bold" className="tabular-nums">
-                                  {formatRupiah(orderType.amount)}
-                                </Typography>
-                              </View>
-                              <View className="h-1.5 overflow-hidden rounded-full bg-default">
-                                <View
-                                  className="h-full rounded-full bg-accent"
-                                  style={{ width: `${Math.max(share * 100, 2)}%` }}
-                                />
-                              </View>
-                            </View>
-                            {index < orderTypes.length - 1 ? <Separator /> : null}
-                          </View>
-                        );
-                      })}
-                    </Widget.Content>
-                    <Widget.Footer>
-                      <Widget.Description>{periodLabel}</Widget.Description>
-                    </Widget.Footer>
-                  </Widget>
-
-                  <Widget>
-                    <Widget.Header>
-                      <View>
-                        <Widget.Title>Recent earnings</Widget.Title>
-                        <Widget.Description>Latest settled order entries</Widget.Description>
-                      </View>
-                      <Widget.Legend>
-                        <Widget.LegendItem colorClassName="bg-success">Settled</Widget.LegendItem>
-                      </Widget.Legend>
-                    </Widget.Header>
-                    <Widget.Content className="overflow-hidden p-0">
-                      {recentEntries.map((entry, index) => (
-                        <View key={entry.id}>
-                          <View
-                            className={`gap-3 px-4 py-3.5 ${isCompact ? "items-start" : "flex-row items-center"}`}
-                          >
-                            <View className="size-10 items-center justify-center rounded-panel-inner bg-success-soft">
-                              <Ionicons name="checkmark" size={18} color={successColor} />
-                            </View>
-                            <View className="min-w-0 flex-1 gap-0.5">
-                              <View className="flex-row flex-wrap items-center gap-2">
-                                <Typography
-                                  type="body-sm"
-                                  weight="semibold"
-                                  className="font-mono tabular-nums"
-                                >
-                                  {entry.code}
-                                </Typography>
-                                <Chip color="success" size="sm" variant="soft">
-                                  <Chip.Label>Settled</Chip.Label>
-                                </Chip>
-                              </View>
-                              <Typography type="body-xs" color="muted">
-                                {formatOrderType(entry.order_type)} · {entry.items_count} item
-                                {entry.items_count === 1 ? "" : "s"} ·{" "}
-                                {new Date(entry.created_at).toLocaleString("id-ID", {
-                                  day: "numeric",
-                                  month: "short",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </Typography>
-                            </View>
-                            <Typography type="body-sm" weight="bold" className="tabular-nums">
-                              {formatRupiah(entry.total_price)}
-                            </Typography>
-                          </View>
-                          {index < recentEntries.length - 1 ? <Separator /> : null}
-                        </View>
-                      ))}
-                    </Widget.Content>
-                  </Widget>
+                  <OrderTypesWidget
+                    orderTypes={orderTypes}
+                    totalEarnings={totalEarnings}
+                    periodLabel={periodLabel}
+                    isCompact={isCompact}
+                    accentColor={accentSoftForeground}
+                  />
+                  <RecentEarningsWidget
+                    entries={recentEntries}
+                    isCompact={isCompact}
+                    successColor={successColor}
+                  />
                 </>
               )}
             </>

@@ -185,7 +185,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const [footerHeight, setFooterHeight] = React.useState(0);
   const listRef = React.useRef<FlatList<AddOnGroup>>(null);
   const isNotesFocused = React.useRef(false);
-  const schema = React.useMemo(() => createAddOnSchema(product?.add_ons ?? []), [product]);
+  const schema = createAddOnSchema(product?.add_ons ?? []);
   const {
     control,
     handleSubmit,
@@ -235,16 +235,18 @@ export default function POSAddOnSheet(): React.JSX.Element {
     .reduce((total, option) => total + option.price, 0);
   const configuredPrice = (product?.price ?? 0) + addOnTotal;
 
-  const scrollToNotes = React.useCallback(() => {
-    listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
-  }, []);
-
   React.useEffect(() => {
     const subscription = Keyboard.addListener("keyboardDidShow", () => {
-      if (isNotesFocused.current) scrollToNotes();
+      if (isNotesFocused.current) {
+        listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
+      }
     });
     return () => subscription.remove();
-  }, [scrollToNotes]);
+  }, []);
+
+  const scrollToNotes = () => {
+    listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
+  };
 
   const closeSheet = () => {
     void dismiss(POS_ADD_ON_SHEET_NAME);
@@ -352,11 +354,12 @@ export default function POSAddOnSheet(): React.JSX.Element {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
         showsVerticalScrollIndicator
+        contentInset={{ bottom: footerHeight }}
         contentContainerStyle={{
           gap: 24,
           paddingHorizontal: 20,
           paddingTop: 20,
-          paddingBottom: footerHeight + 24,
+          paddingBottom: 24,
         }}
         ListHeaderComponent={
           submitError ? (

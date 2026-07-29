@@ -487,6 +487,100 @@ function InventoryCard({
   );
 }
 
+function PricingCard({ control, error }: { control: Control<ProductFormValues>; error?: string }) {
+  return (
+    <Card className="overflow-hidden">
+      <SectionHeading title="Pricing" description="Set the product selling price." />
+      <Card.Body className="gap-4">
+        <Controller
+          control={control}
+          name="price"
+          render={({ field: { value, onChange } }) => (
+            <NumberField
+              label="Price (Rp)"
+              placeholder="0"
+              required
+              value={value}
+              onChangeText={onChange}
+              error={error}
+            />
+          )}
+        />
+      </Card.Body>
+    </Card>
+  );
+}
+
+function AvailabilityCard({ control }: { control: Control<ProductFormValues> }) {
+  return (
+    <Card className="overflow-hidden">
+      <SectionHeading title="Availability" />
+      <Card.Body className="gap-4">
+        <Controller
+          control={control}
+          name="active"
+          render={({ field: { value, onChange } }) => (
+            <ToggleRow
+              title="Active"
+              description="Show this product on all sales channels."
+              isSelected={value}
+              onSelectedChange={onChange}
+            />
+          )}
+        />
+      </Card.Body>
+    </Card>
+  );
+}
+
+function SaveProductCard({
+  isNew,
+  isCompact,
+  isSaving,
+  serverError,
+  onCancel,
+  onSubmit,
+}: {
+  isNew: boolean;
+  isCompact: boolean;
+  isSaving: boolean;
+  serverError?: string;
+  onCancel: () => void;
+  onSubmit: React.ComponentProps<typeof Button>["onPress"];
+}) {
+  return (
+    <Card className="overflow-hidden">
+      <Card.Header className="pb-2">
+        <View className="gap-1">
+          <Card.Title>{isNew ? "Create Product" : "Save Product"}</Card.Title>
+          <Card.Description>
+            Review the product details before saving your changes.
+          </Card.Description>
+        </View>
+      </Card.Header>
+      <Card.Footer className="pt-2">
+        <View className="flex-1 gap-3">
+          {serverError ? (
+            <Typography type="body-xs" className="text-danger">
+              {serverError}
+            </Typography>
+          ) : null}
+          <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
+            <Button variant="outline" onPress={onCancel} isDisabled={isSaving}>
+              <Button.Label>Cancel</Button.Label>
+            </Button>
+            <Button className="flex-1" onPress={onSubmit} isDisabled={isSaving}>
+              <Button.Label>
+                {isSaving ? "Saving…" : isNew ? "Create product" : "Save changes"}
+              </Button.Label>
+            </Button>
+          </View>
+        </View>
+      </Card.Footer>
+    </Card>
+  );
+}
+
 export default function ProductFormScreen(): React.JSX.Element {
   const { isCompact } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -711,45 +805,11 @@ export default function ProductFormScreen(): React.JSX.Element {
               onSelect={handleSelectImage}
             />
 
-            <Card className="overflow-hidden">
-              <SectionHeading title="Pricing" description="Set the product selling price." />
-              <Card.Body className="gap-4">
-                <Controller
-                  control={control}
-                  name="price"
-                  render={({ field: { value, onChange } }) => (
-                    <NumberField
-                      label="Price (Rp)"
-                      placeholder="0"
-                      required
-                      value={value}
-                      onChangeText={onChange}
-                      error={errors.price?.message}
-                    />
-                  )}
-                />
-              </Card.Body>
-            </Card>
+            <PricingCard control={control} error={errors.price?.message} />
 
             <InventoryCard control={control} errors={errors} stockEnabled={stockEnabled} />
 
-            <Card className="overflow-hidden">
-              <SectionHeading title="Availability" />
-              <Card.Body className="gap-4">
-                <Controller
-                  control={control}
-                  name="active"
-                  render={({ field: { value, onChange } }) => (
-                    <ToggleRow
-                      title="Active"
-                      description="Show this product on all sales channels."
-                      isSelected={value}
-                      onSelectedChange={onChange}
-                    />
-                  )}
-                />
-              </Card.Body>
-            </Card>
+            <AvailabilityCard control={control} />
 
             {!isNew ? (
               <ProductAddOnsCard
@@ -759,39 +819,14 @@ export default function ProductFormScreen(): React.JSX.Element {
               />
             ) : null}
 
-            <Card className="overflow-hidden">
-              <Card.Header className="pb-2">
-                <View className="gap-1">
-                  <Card.Title>{isNew ? "Create Product" : "Save Product"}</Card.Title>
-                  <Card.Description>
-                    Review the product details before saving your changes.
-                  </Card.Description>
-                </View>
-              </Card.Header>
-              <Card.Footer className="pt-2">
-                <View className="flex-1 gap-3">
-                  {errors.root?.server?.message ? (
-                    <Typography type="body-xs" className="text-danger">
-                      {errors.root.server.message}
-                    </Typography>
-                  ) : null}
-                  <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
-                    <Button variant="outline" onPress={() => router.back()} isDisabled={isSaving}>
-                      <Button.Label>Cancel</Button.Label>
-                    </Button>
-                    <Button
-                      className="flex-1"
-                      onPress={handleSubmit(submitProduct)}
-                      isDisabled={isSaving}
-                    >
-                      <Button.Label>
-                        {isSaving ? "Saving…" : isNew ? "Create product" : "Save changes"}
-                      </Button.Label>
-                    </Button>
-                  </View>
-                </View>
-              </Card.Footer>
-            </Card>
+            <SaveProductCard
+              isNew={isNew}
+              isCompact={isCompact}
+              isSaving={isSaving}
+              serverError={errors.root?.server?.message}
+              onCancel={() => router.back()}
+              onSubmit={handleSubmit(submitProduct)}
+            />
           </View>
         </ScrollView>
       </View>
