@@ -5,7 +5,7 @@ import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { HeroUINativeProvider } from "heroui-native";
-import { useEffect, type JSX } from "react";
+import { useEffect, type JSX, type ReactNode } from "react";
 import { Platform, StatusBar as NativeStatusBar, View, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -28,6 +28,14 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function wrapToastContent(children: ReactNode): JSX.Element {
+  return (
+    <View pointerEvents="box-none" className="w-full max-w-md flex-1 self-center">
+      {children}
+    </View>
+  );
+}
 
 export default function RootLayout(): JSX.Element {
   const token = useAuth((s) => s.token);
@@ -58,7 +66,7 @@ export default function RootLayout(): JSX.Element {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: navigationTheme.background }}>
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
-          <HeroUINativeProvider>
+          <HeroUINativeProvider config={{ toast: { contentWrapper: wrapToastContent } }}>
             {Platform.OS === "android" && (
               <NavigationBar style={isDarkMode ? "dark" : "light"} hidden={false} />
             )}
