@@ -82,11 +82,13 @@ function CheckoutCostSummary({
   paymentFee,
   feeUnit,
   feeValue,
+  total,
 }: {
   subtotal: number;
   paymentFee: number;
   feeUnit?: string;
   feeValue?: number;
+  total: number;
 }) {
   return (
     <Surface variant="secondary" className="gap-2 p-3">
@@ -108,16 +110,32 @@ function CheckoutCostSummary({
           </Typography>
         </View>
       ) : null}
+      <View className="mt-1 flex-row items-center justify-between border-t border-border pt-2">
+        <Typography type="body-sm" weight="semibold">
+          Total
+        </Typography>
+        <Typography.Heading type="h5" className="tabular-nums">
+          {formatRupiah(total)}
+        </Typography.Heading>
+      </View>
     </Surface>
   );
 }
 
 function CheckoutActions({
+  subtotal,
+  paymentFee,
+  feeUnit,
+  feeValue,
   total,
   isPending,
   isDisabled,
   onComplete,
 }: {
+  subtotal: number;
+  paymentFee: number;
+  feeUnit?: string;
+  feeValue?: number;
   total: number;
   isPending: boolean;
   isDisabled: boolean;
@@ -126,15 +144,14 @@ function CheckoutActions({
   return (
     <GestureHandlerRootView style={{ flexGrow: 1 }}>
       <View className="bg-surface">
-        <View className="w-full max-w-3xl self-center px-5 pt-2.5 pb-safe-offset-4">
-          <View className="flex-row items-center justify-between pb-2.5">
-            <Typography type="body-sm" color="muted">
-              Total
-            </Typography>
-            <Typography.Heading type="h5" className="tabular-nums">
-              {formatRupiah(total)}
-            </Typography.Heading>
-          </View>
+        <View className="w-full max-w-3xl self-center gap-3 px-5 pt-5 pb-safe-offset-4">
+          <CheckoutCostSummary
+            subtotal={subtotal}
+            paymentFee={paymentFee}
+            feeUnit={feeUnit}
+            feeValue={feeValue}
+            total={total}
+          />
           <SlideButton
             variant="accent"
             className="w-full"
@@ -616,6 +633,10 @@ export function CheckoutContent({
       footer={
         isCheckoutPending ? undefined : (
           <CheckoutActions
+            subtotal={subtotal}
+            paymentFee={paymentFee}
+            feeUnit={selectedPayment?.fee_unit}
+            feeValue={selectedPayment?.fee_value}
             total={total}
             isPending={isCheckoutPending}
             isDisabled={isCheckoutDisabled}
@@ -640,11 +661,11 @@ export function CheckoutContent({
           </View>
         ) : (
           <KeyboardAwareScrollView
-            bottomOffset={144}
+            bottomOffset={24}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             className="flex-1"
-            contentContainerClassName="items-center px-5 pt-4 pb-36"
+            contentContainerClassName="items-center px-5 pt-4 pb-6"
           >
             <View className="w-full max-w-3xl gap-4">
               {cartError ? (
@@ -698,13 +719,6 @@ export function CheckoutContent({
                   )}
                 />
               </View>
-
-              <CheckoutCostSummary
-                subtotal={subtotal}
-                paymentFee={paymentFee}
-                feeUnit={selectedPayment?.fee_unit}
-                feeValue={selectedPayment?.fee_value}
-              />
             </View>
           </KeyboardAwareScrollView>
         )}
