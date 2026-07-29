@@ -139,7 +139,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
         <View className="w-full max-w-3xl gap-4">
           <SelectionRulesCard control={control} errors={errors} setValue={setValue} />
 
-          <Card>
+          <Card className="gap-3">
             <Card.Header>
               <View className="gap-1">
                 <Card.Title>Options</Card.Title>
@@ -177,29 +177,21 @@ export default function AddOnFormScreen(): React.JSX.Element {
             </Card.Body>
           </Card>
 
-          <Card>
-            <Card.Footer>
-              <View className="flex-1 gap-3">
-                {errors.root?.server?.message ? (
-                  <Typography type="body-sm" className="text-danger">
-                    {errors.root.server.message}
-                  </Typography>
-                ) : null}
-                <View className="flex-row gap-3">
-                  <Button variant="outline" onPress={() => router.back()}>
-                    <Button.Label>Cancel</Button.Label>
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onPress={handleSubmit(submitAddOn)}
-                    isDisabled={isSaving}
-                  >
-                    <Button.Label>{isSaving ? "Saving…" : "Save add-on"}</Button.Label>
-                  </Button>
-                </View>
-              </View>
-            </Card.Footer>
-          </Card>
+          <View className="flex-1 gap-3">
+            {errors.root?.server?.message ? (
+              <Typography type="body-sm" className="text-danger">
+                {errors.root.server.message}
+              </Typography>
+            ) : null}
+            <View className="flex-col md:flex-row gap-3">
+              <Button variant="secondary" onPress={() => router.back()}>
+                <Button.Label>Cancel</Button.Label>
+              </Button>
+              <Button className="flex-1" onPress={handleSubmit(submitAddOn)} isDisabled={isSaving}>
+                <Button.Label>{isSaving ? "Saving…" : "Save add-on"}</Button.Label>
+              </Button>
+            </View>
+          </View>
         </View>
       </ScrollView>
 

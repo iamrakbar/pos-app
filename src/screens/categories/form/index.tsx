@@ -9,7 +9,6 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from "@/hooks/db/use-categories";
-import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { categorySchema, toCategoryRequest, type CategoryFormValues } from "@/schemas/category";
 import { useCategoryFormNavigation } from "@/stores/use-category-form-navigation";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
@@ -60,7 +59,6 @@ export default function CategoryFormScreen(): React.JSX.Element {
   }>();
   const router = useRouter();
   const { toast } = useToast();
-  const { isCompact } = useResponsiveLayout();
   const dangerColor = useThemeColor("danger");
   const isNew = id === "new";
   const categoryQuery = useCategory(id);
@@ -173,10 +171,10 @@ export default function CategoryFormScreen(): React.JSX.Element {
 
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
+        contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6 gap-3"
         keyboardShouldPersistTaps="handled"
       >
-        <Card className="w-full max-w-3xl overflow-hidden">
+        <Card className="gap-3 w-full max-w-3xl overflow-hidden">
           <Card.Header>
             <View className="gap-1">
               <Card.Title>{isNew ? "Create Category" : "Category Details"}</Card.Title>
@@ -264,22 +262,25 @@ export default function CategoryFormScreen(): React.JSX.Element {
               </Typography>
             ) : null}
           </Card.Body>
-
-          <Card.Footer>
-            <View className={`flex-1 gap-3 ${isCompact ? "" : "flex-row justify-end"}`}>
-              <Button variant="outline" onPress={() => router.back()} isDisabled={isSaving}>
-                <Button.Label>Cancel</Button.Label>
-              </Button>
-              <Button
-                className={isCompact ? "w-full" : undefined}
-                onPress={handleSubmit(submitCategory)}
-                isDisabled={isSaving}
-              >
-                <Button.Label>{isSaving ? "Saving…" : "Save category"}</Button.Label>
-              </Button>
-            </View>
-          </Card.Footer>
         </Card>
+
+        <View className="flex-1 flex-col md:flex-row items-center gap-3 w-full">
+          <Button
+            variant="secondary"
+            className="w-full"
+            onPress={() => router.back()}
+            isDisabled={isSaving}
+          >
+            <Button.Label>Cancel</Button.Label>
+          </Button>
+          <Button
+            className="flex-1 w-full"
+            onPress={handleSubmit(submitCategory)}
+            isDisabled={isSaving}
+          >
+            <Button.Label>{isSaving ? "Saving…" : "Save category"}</Button.Label>
+          </Button>
+        </View>
       </ScrollView>
 
       <ActionDialog

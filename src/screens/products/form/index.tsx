@@ -234,7 +234,7 @@ function ProductImageCard({
   onSelect: () => void | Promise<void>;
 }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-3 overflow-hidden">
       <SectionHeading
         title="Product Image"
         description="Use a clear image with a square or landscape crop."
@@ -298,7 +298,7 @@ function ProductDetailsCard({
   const { choicePresentation } = useOverlayPresentation();
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-3 overflow-hidden">
       <SectionHeading
         title="Product Details"
         description="Information customers see across your sales channels."
@@ -425,7 +425,7 @@ function InventoryCard({
   stockEnabled: boolean;
 }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-3 overflow-hidden">
       <SectionHeading title="Inventory" description="Track this product by SKU and stock." />
       <Card.Body className="gap-4">
         <Controller
@@ -499,7 +499,7 @@ function InventoryCard({
 
 function PricingCard({ control, error }: { control: Control<ProductFormValues>; error?: string }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-3 overflow-hidden">
       <SectionHeading title="Pricing" description="Set the product selling price." />
       <Card.Body className="gap-4">
         <Controller
@@ -525,7 +525,7 @@ function PricingCard({ control, error }: { control: Control<ProductFormValues>; 
 
 function AvailabilityCard({ control }: { control: Control<ProductFormValues> }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-3 overflow-hidden">
       <SectionHeading title="Availability" />
       <Card.Body className="gap-4">
         <Controller
@@ -561,35 +561,23 @@ function SaveProductCard({
   onSubmit: React.ComponentProps<typeof Button>["onPress"];
 }) {
   return (
-    <Card className="overflow-hidden">
-      <Card.Header className="pb-2">
-        <View className="gap-1">
-          <Card.Title>{isNew ? "Create Product" : "Save Product"}</Card.Title>
-          <Card.Description>
-            Review the product details before saving your changes.
-          </Card.Description>
-        </View>
-      </Card.Header>
-      <Card.Footer className="pt-2">
-        <View className="flex-1 gap-3">
-          {serverError ? (
-            <Typography type="body-xs" className="text-danger">
-              {serverError}
-            </Typography>
-          ) : null}
-          <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
-            <Button variant="outline" onPress={onCancel} isDisabled={isSaving}>
-              <Button.Label>Cancel</Button.Label>
-            </Button>
-            <Button className="flex-1" onPress={onSubmit} isDisabled={isSaving}>
-              <Button.Label>
-                {isSaving ? "Saving…" : isNew ? "Create product" : "Save changes"}
-              </Button.Label>
-            </Button>
-          </View>
-        </View>
-      </Card.Footer>
-    </Card>
+    <View className="flex-1 gap-3">
+      {serverError ? (
+        <Typography type="body-xs" className="text-danger">
+          {serverError}
+        </Typography>
+      ) : null}
+      <View className="flex-col md:flex-row gap-3">
+        <Button variant="secondary" onPress={onCancel} isDisabled={isSaving}>
+          <Button.Label>Cancel</Button.Label>
+        </Button>
+        <Button className="flex-1" onPress={onSubmit} isDisabled={isSaving}>
+          <Button.Label>
+            {isSaving ? "Saving…" : isNew ? "Create product" : "Save changes"}
+          </Button.Label>
+        </Button>
+      </View>
+    </View>
   );
 }
 

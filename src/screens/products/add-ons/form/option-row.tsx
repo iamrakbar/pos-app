@@ -2,7 +2,7 @@ import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import StringNumberField from "@/components/common/string-number-field";
 import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Input, Label, TextField, Typography } from "heroui-native";
+import { Button, Input, Label, Surface, TextField, Typography } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { View } from "react-native";
@@ -40,14 +40,14 @@ export default function OptionRow({
   }
 
   return (
-    <View className="gap-3 rounded-panel-inner border border-border p-3">
-      <View className="flex-row items-start gap-3">
+    <Surface variant="transparent" className="gap-3 border border-border">
+      <View className="flex-1 flex-col md:flex-row items-start gap-3">
         <Controller
           control={control}
           name={`options.${index}.name`}
           render={({ field: { value, onChange } }) => (
             <TextField
-              className="flex-1"
+              className="flex-1 w-full"
               isRequired
               isInvalid={Boolean(errors.options?.[index]?.name)}
             >
@@ -66,7 +66,7 @@ export default function OptionRow({
           name={`options.${index}.price`}
           render={({ field: { value, onChange } }) => (
             <StringNumberField
-              className="flex-1"
+              className="flex-1 w-full"
               label="Price (Rp)"
               value={value}
               onChange={onChange}
@@ -89,6 +89,6 @@ export default function OptionRow({
         <Ionicons name="trash-outline" size={16} />
         <Button.Label>Remove option</Button.Label>
       </Button>
-    </View>
+    </Surface>
   );
 }

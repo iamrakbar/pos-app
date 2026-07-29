@@ -16,7 +16,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
   const multiple = useWatch({ control, name: "multiple" });
 
   return (
-    <Card>
+    <Card className="gap-3">
       <Card.Header>
         <View className="gap-1">
           <Card.Title>Selection Rules</Card.Title>
