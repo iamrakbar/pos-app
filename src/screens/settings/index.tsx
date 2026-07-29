@@ -85,16 +85,16 @@ export default function SettingsScreen(): JSX.Element {
   return (
     <>
       <ScrollView
-        className="flex-1 bg-background"
-        contentContainerClassName="flex-grow px-4 py-6 pb-10 md:px-6"
+        className="flex-1 bg-background pb-safe"
+        contentContainerClassName="flex-grow px-4 py-3 md:px-6"
       >
-        <View className="flex-1 justify-between gap-6">
-          <Card className="p-0 overflow-hidden">
+        <View className="flex-1 justify-between gap-4">
+          <View>
             {settingsItems.map((item) => (
               <View key={item.id}>
                 <Pressable
                   onPress={() => router.push(item.href as never)}
-                  className="flex-row items-center gap-4 px-4 py-4 active:bg-surface-secondary"
+                  className="flex-row items-center gap-4 py-4 active:bg-surface-secondary"
                 >
                   <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
                     <Ionicons name={item.icon} size={20} color={themeColorAccentSoftForeground} />
@@ -109,33 +109,33 @@ export default function SettingsScreen(): JSX.Element {
                   </View>
                   <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
                 </Pressable>
-                <Separator className="mx-4" />
+                <Separator />
               </View>
             ))}
 
-            <View
-              className={`gap-4 px-4 py-4 ${isCompact ? "items-stretch" : "flex-row items-center"}`}
-            >
-              <View className="w-10 h-10 rounded-panel-inner bg-surface-secondary items-center justify-center">
-                <Ionicons
-                  name={
-                    themeMode === "dark"
-                      ? "moon-outline"
-                      : themeMode === "light"
-                        ? "sunny-outline"
-                        : "desktop-outline"
-                  }
-                  size={20}
-                  color={themeColorMuted}
-                />
-              </View>
-              <View className="flex-1 gap-0.5">
-                <Typography type="body-sm" weight="semibold">
-                  {t("settings.appearance")}
-                </Typography>
-                <Typography type="body-xs" color="muted" numberOfLines={2}>
-                  {t("settings.appearanceDescription")}
-                </Typography>
+            <View className={`gap-4 py-4 ${isCompact ? "" : "flex-row items-center"}`}>
+              <View className={`flex-row items-center gap-4 ${isCompact ? "" : "flex-1"}`}>
+                <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
+                  <Ionicons
+                    name={
+                      themeMode === "dark"
+                        ? "moon-outline"
+                        : themeMode === "light"
+                          ? "sunny-outline"
+                          : "desktop-outline"
+                    }
+                    size={20}
+                    color={themeColorAccentSoftForeground}
+                  />
+                </View>
+                <View className="min-w-0 flex-1 gap-0.5">
+                  <Typography type="body-sm" weight="semibold">
+                    {t("settings.appearance")}
+                  </Typography>
+                  <Typography type="body-xs" color="muted" numberOfLines={2}>
+                    {t("settings.appearanceDescription")}
+                  </Typography>
+                </View>
               </View>
               <View className={isCompact ? "w-full" : "w-36"}>
                 <Select
@@ -164,21 +164,25 @@ export default function SettingsScreen(): JSX.Element {
                 </Select>
               </View>
             </View>
-            <Separator className="mx-4" />
+            <Separator />
 
-            <View
-              className={`gap-4 px-4 py-4 ${isCompact ? "items-stretch" : "flex-row items-center"}`}
-            >
-              <View className="w-10 h-10 rounded-panel-inner bg-surface-secondary items-center justify-center">
-                <Ionicons name="language-outline" size={20} color={themeColorMuted} />
-              </View>
-              <View className="flex-1 gap-0.5">
-                <Typography type="body-sm" weight="semibold">
-                  {t("settings.language")}
-                </Typography>
-                <Typography type="body-xs" color="muted" numberOfLines={2}>
-                  {t("settings.languageDescription")}
-                </Typography>
+            <View className={`gap-4 py-4 ${isCompact ? "" : "flex-row items-center"}`}>
+              <View className={`flex-row items-center gap-4 ${isCompact ? "" : "flex-1"}`}>
+                <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
+                  <Ionicons
+                    name="language-outline"
+                    size={20}
+                    color={themeColorAccentSoftForeground}
+                  />
+                </View>
+                <View className="min-w-0 flex-1 gap-0.5">
+                  <Typography type="body-sm" weight="semibold">
+                    {t("settings.language")}
+                  </Typography>
+                  <Typography type="body-xs" color="muted" numberOfLines={2}>
+                    {t("settings.languageDescription")}
+                  </Typography>
+                </View>
               </View>
               <View className={isCompact ? "w-full" : "w-36"}>
                 <Select
@@ -207,11 +211,11 @@ export default function SettingsScreen(): JSX.Element {
                 </Select>
               </View>
             </View>
-            <Separator className="mx-4" />
+            <Separator />
 
             <Pressable
               onPress={() => router.push(appUpdatesItem.href as never)}
-              className="flex-row items-center gap-4 px-4 py-4 active:bg-surface-secondary"
+              className="flex-row items-center gap-4 py-4 active:bg-surface-secondary"
             >
               <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
                 <Ionicons
@@ -230,7 +234,7 @@ export default function SettingsScreen(): JSX.Element {
               </View>
               <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
             </Pressable>
-          </Card>
+          </View>
 
           <Button variant="danger-soft" onPress={() => setIsLogoutOpen(true)} className="w-full">
             <Ionicons name="log-out-outline" size={18} color={themeColorDangerSoftForeground} />
