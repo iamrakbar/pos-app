@@ -1,12 +1,11 @@
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useProducts } from "@/hooks/db/use-products";
-import LoadingState from "@/components/common/loading-state";
 import ErrorState from "@/components/common/error-state";
 import type { POSProduct } from "@/types/pos";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
-import { ScrollShadow, useThemeColor } from "heroui-native";
+import { Card, ScrollShadow, Skeleton, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import { useState } from "react";
 import { FlatList, Platform, RefreshControl, View } from "react-native";
@@ -19,6 +18,23 @@ type Props = {
   onSelectProduct: (product: POSProduct) => void;
   bottomInset?: number;
 };
+
+function ProductCardSkeleton({ width }: { width: number }): JSX.Element {
+  return (
+    <View style={{ width: width - 12 }} className="m-1.5" accessibilityLabel="Loading product">
+      <Card className="overflow-hidden p-0">
+        <Skeleton className="aspect-square w-full rounded-none" />
+        <Card.Body className="min-h-20 justify-between gap-3 px-3.5 py-3">
+          <Skeleton className="h-4 w-3/4 rounded-md" />
+          <View className="gap-1.5">
+            <Skeleton className="h-3 w-2/5 rounded-md" />
+            <Skeleton className="h-4 w-3/5 rounded-md" />
+          </View>
+        </Card.Body>
+      </Card>
+    </View>
+  );
+}
 
 export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props): JSX.Element {
   const [containerWidth, setContainerWidth] = useState(0);
@@ -58,8 +74,7 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
   const renderProduct = ({ item }: { item: POSProduct }) => (
     <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
   );
-
-  if (isLoading) return <LoadingState message="Loading products…" />;
+  const skeletonItems = Array.from({ length: numColumns * 3 }, (_, index) => index);
 
   return (
     <ScrollShadow
@@ -69,37 +84,51 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
     >
       <View className="flex-1">
         {containerWidth > GRID_HORIZONTAL_PADDING ? (
-          <FlatList
-            data={isError ? [] : filtered}
-            key={`product-grid-${numColumns}`}
-            numColumns={numColumns}
-            keyExtractor={(item) => item.id}
-            renderItem={renderProduct}
-            contentContainerClassName="flex-grow gap-2 px-3"
-            contentInset={{ bottom: listBottomInset }}
-            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-            showsVerticalScrollIndicator={false}
-            ListFooterComponent={
-              Platform.OS === "ios" ? null : <View style={{ height: listBottomInset }} />
-            }
-            ListEmptyComponent={
-              isError ? (
-                <ErrorState error={error} onRetry={refetch} />
-              ) : (
-                <EmptyState className="py-20">
-                  <EmptyState.Header>
-                    <EmptyState.Media variant="icon">
-                      <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
-                    </EmptyState.Media>
-                    <EmptyState.Title>No products found</EmptyState.Title>
-                    <EmptyState.Description>
-                      Try another search or choose a different category.
-                    </EmptyState.Description>
-                  </EmptyState.Header>
-                </EmptyState>
-              )
-            }
-          />
+          isLoading ? (
+            <FlatList
+              data={skeletonItems}
+              key={`product-grid-skeleton-${numColumns}`}
+              numColumns={numColumns}
+              keyExtractor={(item) => `product-skeleton-${item}`}
+              renderItem={() => <ProductCardSkeleton width={cardWidth} />}
+              contentContainerClassName="gap-2 px-3"
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+              accessibilityLabel="Loading products"
+            />
+          ) : (
+            <FlatList
+              data={isError ? [] : filtered}
+              key={`product-grid-${numColumns}`}
+              numColumns={numColumns}
+              keyExtractor={(item) => item.id}
+              renderItem={renderProduct}
+              contentContainerClassName="flex-grow gap-2 px-3"
+              contentInset={{ bottom: listBottomInset }}
+              refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+              showsVerticalScrollIndicator={false}
+              ListFooterComponent={
+                Platform.OS === "ios" ? null : <View style={{ height: listBottomInset }} />
+              }
+              ListEmptyComponent={
+                isError ? (
+                  <ErrorState error={error} onRetry={refetch} />
+                ) : (
+                  <EmptyState className="py-20">
+                    <EmptyState.Header>
+                      <EmptyState.Media variant="icon">
+                        <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
+                      </EmptyState.Media>
+                      <EmptyState.Title>No products found</EmptyState.Title>
+                      <EmptyState.Description>
+                        Try another search or choose a different category.
+                      </EmptyState.Description>
+                    </EmptyState.Header>
+                  </EmptyState>
+                )
+              }
+            />
+          )
         ) : null}
       </View>
     </ScrollShadow>
