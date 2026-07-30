@@ -5,7 +5,7 @@ import { Separator } from "heroui-native";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 
 export default function CartPanel(): JSX.Element {
-  const { height, isWide } = useResponsiveLayout();
+  const { isWide } = useResponsiveLayout();
   return (
     <View className="flex-1 flex-row">
       {isWide && <Separator orientation="vertical" />}

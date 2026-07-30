@@ -12,7 +12,7 @@ export default function OfflineBanner() {
   if (!isOffline) return null;
 
   return (
-    <View className="bg-warning-soft px-4 py-2 flex-row items-center gap-2">
+    <View className="bg-warning-soft px-4 py-2 flex-row items-center gap-2 pb-safe">
       <Ionicons name="cloud-offline-outline" size={16} color={themeColorWarningSoftForeground} />
       <View className="flex-1">
         <Typography type="body-xs" weight="semibold" className="text-warning-soft-foreground">

@@ -19,7 +19,8 @@ export default function TableSelectionButton({
   return (
     <Button
       variant="secondary"
-      className="min-w-28 flex-1 justify-between"
+      size="sm"
+      className="min-w-24 flex-1 items-center justify-between"
       onPress={() => router.push("/pos/table-selection")}
       accessibilityLabel={
         selectedTable
@@ -27,10 +28,10 @@ export default function TableSelectionButton({
           : t("pos.selectTable")
       }
     >
-      <Button.Label className="text-sm" numberOfLines={1}>
+      <Button.Label className="text-xs" numberOfLines={1}>
         {selectedTable?.name ?? t("pos.table")}
       </Button.Label>
-      <Ionicons name="grid-outline" size={16} color={colorAccent} />
+      <Ionicons name="grid-outline" size={12} color={colorAccent} />
     </Button>
   );
 }

@@ -4,7 +4,6 @@ import { useAccountProfile } from "@/hooks/db/use-account-profile";
 import type { Translate } from "@/locales";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
-import { useNetworkStore } from "@/stores/use-network-store";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -63,7 +62,6 @@ export default function AppDrawerContent({
     themeColorAccentForeground,
     themeColorMuted,
     themeColorAccentSoftForeground,
-    themeColorWarningSoftForeground,
     themeColorDanger,
   ] = useThemeColor([
     "accent",
@@ -78,7 +76,6 @@ export default function AppDrawerContent({
   const { data: user } = useAccountProfile();
   const logout = useAuth((s) => s.logout);
   const activeMerchant = useAuth((s) => s.activeMerchant);
-  const isOffline = useNetworkStore((s) => s.isOffline);
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
   const { t } = useTranslation();
@@ -174,24 +171,6 @@ export default function AppDrawerContent({
       </ScrollShadow>
 
       <View className="gap-4 p-3 mt-auto">
-        {isOffline && (
-          <View className="flex-row items-center gap-2 rounded-panel-inner bg-warning-soft px-y py-2.5">
-            <Ionicons
-              name="cloud-offline-outline"
-              size={16}
-              color={themeColorWarningSoftForeground}
-            />
-            <Typography
-              type="body-xs"
-              weight="semibold"
-              className="flex-1 text-warning-soft-foreground"
-              numberOfLines={1}
-            >
-              {t("offline.title")}
-            </Typography>
-          </View>
-        )}
-
         <Popover
           presentation={choicePresentation}
           isOpen={isProfileOpen}
@@ -250,7 +229,7 @@ export default function AppDrawerContent({
                 className="flex-1 items-center justify-between"
               >
                 <Button.Label>{t("profile.account")}</Button.Label>
-                <Ionicons name="chevron-forward" size={16} color={themeColorMuted} />
+                <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
               </Button>
 
               <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">

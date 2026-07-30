@@ -102,8 +102,8 @@ export default function CartContent(): JSX.Element {
             }}
           >
             <Select.Trigger asChild variant="unstyled">
-              <Button variant="secondary" className="min-w-28">
-                <Button.Label className="text-sm" numberOfLines={1}>
+              <Button variant="secondary" size="sm" className="min-w-24">
+                <Button.Label className="xs" numberOfLines={1}>
                   {checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway")}
                 </Button.Label>
               </Button>
@@ -143,11 +143,15 @@ export default function CartContent(): JSX.Element {
             >
               <TimePicker.Select presentation={pickerPresentation}>
                 <TimePicker.Trigger asChild>
-                  <Button variant="secondary" className="justify-between min-w-28 rounded-full">
-                    <Button.Label className="text-sm" numberOfLines={1}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="items-center justify-between min-w-24 rounded-full"
+                  >
+                    <Button.Label className="text-xs" numberOfLines={1}>
                       {checkoutForm.pickup_time ?? t("pos.pickupTime")}
                     </Button.Label>
-                    <Ionicons name="time-outline" size={16} color={colorAccent} />
+                    <Ionicons name="time-outline" size={12} color={colorAccent} />
                   </Button>
                 </TimePicker.Trigger>
                 <TimePicker.Portal>
