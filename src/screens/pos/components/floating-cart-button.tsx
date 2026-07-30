@@ -15,10 +15,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "@/stores/use-locale";
 
 export const FLOATING_CART_BUTTON_SPACE = 88;
 
 export default function FloatingCartButton(): JSX.Element | null {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const foreground = useThemeColor("accent-foreground");
@@ -56,6 +58,12 @@ export default function FloatingCartButton(): JSX.Element | null {
   if (itemCount === 0) return null;
 
   const countLabel = itemCount > 99 ? "99+" : String(itemCount);
+  const itemsLabel = t(itemCount === 1 ? "pos.cartItemsOne" : "pos.cartItemsOther", {
+    count: itemCount,
+  });
+  const displayItemsLabel = t(itemCount === 1 ? "pos.cartItemsOne" : "pos.cartItemsOther", {
+    count: countLabel,
+  });
 
   return (
     <View
@@ -67,7 +75,10 @@ export default function FloatingCartButton(): JSX.Element | null {
         <Button
           className="w-full justify-between"
           onPress={() => router.push("/pos/cart")}
-          accessibilityLabel={`Open cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}, ${formatRupiah(subtotal)}`}
+          accessibilityLabel={t("pos.openCartAccessibility", {
+            items: itemsLabel,
+            subtotal: formatRupiah(subtotal),
+          })}
         >
           <View className="flex-row items-center gap-2">
             <Ionicons
@@ -76,8 +87,7 @@ export default function FloatingCartButton(): JSX.Element | null {
               color={foreground}
             />
             <Button.Label>
-              {isShowingAddedFeedback ? "Added" : "Cart"} · {countLabel}{" "}
-              {itemCount === 1 ? "item" : "items"}
+              {isShowingAddedFeedback ? t("pos.added") : t("pos.cart")} · {displayItemsLabel}
             </Button.Label>
           </View>
           <Button.Label className="tabular-nums">{formatRupiah(subtotal)}</Button.Label>

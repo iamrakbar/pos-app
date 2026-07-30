@@ -10,6 +10,8 @@ import { EmptyState } from "heroui-native-pro";
 import { useState } from "react";
 import { FlatList, Platform, RefreshControl, View } from "react-native";
 import ProductCard from "./product-card";
+import { getLocaleTag } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
 const CARD_MIN_WIDTH = 180;
 const GRID_HORIZONTAL_PADDING = 24;
@@ -20,8 +22,13 @@ type Props = {
 };
 
 function ProductCardSkeleton({ width }: { width: number }): JSX.Element {
+  const { t } = useTranslation();
   return (
-    <View style={{ width: width - 12 }} className="m-1.5" accessibilityLabel="Loading product">
+    <View
+      style={{ width: width - 12 }}
+      className="m-1.5"
+      accessibilityLabel={t("pos.loadingProduct")}
+    >
       <Card className="overflow-hidden p-0">
         <Skeleton className="aspect-square w-full rounded-none" />
         <Card.Body className="min-h-20 justify-between gap-3 px-3.5 py-3">
@@ -37,6 +44,7 @@ function ProductCardSkeleton({ width }: { width: number }): JSX.Element {
 }
 
 export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props): JSX.Element {
+  const { locale, t } = useTranslation();
   const [containerWidth, setContainerWidth] = useState(0);
   const themeColorMuted = useThemeColor("muted");
 
@@ -65,8 +73,10 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
         (!product.stock_enabled || (product.stock_qty ?? 0) > 0)
     )
     .sort((left, right) => {
-      if (productSort === "name-asc") return left.name.localeCompare(right.name, "id");
-      if (productSort === "name-desc") return right.name.localeCompare(left.name, "id");
+      if (productSort === "name-asc")
+        return left.name.localeCompare(right.name, getLocaleTag(locale));
+      if (productSort === "name-desc")
+        return right.name.localeCompare(left.name, getLocaleTag(locale));
       if (productSort === "price-asc") return left.price - right.price;
       return right.price - left.price;
     });
@@ -94,7 +104,7 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
               contentContainerClassName="gap-2 px-3"
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
-              accessibilityLabel="Loading products"
+              accessibilityLabel={t("pos.loadingProducts")}
             />
           ) : (
             <FlatList
@@ -119,9 +129,9 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
                       <EmptyState.Media variant="icon">
                         <Ionicons name="fast-food-outline" size={20} color={themeColorMuted} />
                       </EmptyState.Media>
-                      <EmptyState.Title>No products found</EmptyState.Title>
+                      <EmptyState.Title>{t("pos.noProducts")}</EmptyState.Title>
                       <EmptyState.Description>
-                        Try another search or choose a different category.
+                        {t("pos.noProductsDescription")}
                       </EmptyState.Description>
                     </EmptyState.Header>
                   </EmptyState>

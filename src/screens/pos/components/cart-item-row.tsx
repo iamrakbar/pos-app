@@ -7,6 +7,7 @@ import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "@/stores/use-locale";
 
 type Props = {
   item: CartItem;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export default function CartItemRow({ item, product }: Props): JSX.Element {
+  const { t } = useTranslation();
   const [themeColorForeground, themeColorDangerSoftForeground] = useThemeColor([
     "foreground",
     "danger-soft-foreground",
@@ -89,7 +91,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             size="sm"
             isIconOnly
             onPress={() => removeItem(item.id)}
-            accessibilityLabel={`Remove ${item.name}`}
+            accessibilityLabel={t("pos.removeProductAccessibility", { product: item.name })}
           >
             <Ionicons name="trash-outline" size={17} color={themeColorDangerSoftForeground} />
           </Button>
@@ -100,7 +102,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             size="sm"
             isIconOnly
             onPress={handleDecrement}
-            accessibilityLabel={`Decrease ${item.name} quantity`}
+            accessibilityLabel={t("pos.decreaseProductAccessibility", { product: item.name })}
           >
             <Ionicons name="remove" size={17} color={themeColorForeground} />
           </Button>
@@ -114,7 +116,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             size="sm"
             isIconOnly
             onPress={() => updateQty(item.id, item.qty + 1)}
-            accessibilityLabel={`Increase ${item.name} quantity`}
+            accessibilityLabel={t("pos.increaseProductAccessibility", { product: item.name })}
           >
             <Ionicons name="add" size={17} color={themeColorForeground} />
           </Button>

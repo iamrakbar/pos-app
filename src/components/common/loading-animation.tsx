@@ -1,6 +1,7 @@
 import { Skia, Canvas, useClock, Group, Skottie } from "@shopify/react-native-skia";
 import { useDerivedValue } from "react-native-reanimated";
 import { Modal, View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 const legoAnimationJSON = require("../../../assets/soeat.json");
 const animation = Skia.Skottie.Make(JSON.stringify(legoAnimationJSON));
@@ -10,6 +11,7 @@ type LoadingAnimationProps = {
 };
 
 const LoadingAnimation = ({ fullScreen = false }: LoadingAnimationProps) => {
+  const { t } = useTranslation();
   const clock = useClock();
   const frame = useDerivedValue(() => {
     const fps = animation.fps();
@@ -39,7 +41,7 @@ const LoadingAnimation = ({ fullScreen = false }: LoadingAnimationProps) => {
       <View
         className="flex-1 items-center justify-center bg-background"
         accessibilityRole="progressbar"
-        accessibilityLabel="Loading application"
+        accessibilityLabel={t("common.loadingApplication")}
       >
         {canvas}
       </View>

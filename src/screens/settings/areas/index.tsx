@@ -10,10 +10,12 @@ import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
 import AreaFormDialog from "./area-form-dialog";
+import { useTranslation } from "@/stores/use-locale";
 
 type AreaData = App.Data.Merchant.Area.AreaData;
 
 export default function AreasScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
   const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
@@ -31,7 +33,7 @@ export default function AreasScreen(): React.JSX.Element {
     setIsFormOpen(true);
   };
 
-  if (areasQuery.isLoading) return <LoadingState message="Loading areas…" />;
+  if (areasQuery.isLoading) return <LoadingState message={t("areasManagement.loadingAreas")} />;
   if (areasQuery.isError) {
     return <ErrorState error={areasQuery.error} onRetry={areasQuery.refetch} />;
   }
@@ -59,7 +61,9 @@ export default function AreasScreen(): React.JSX.Element {
           <Card className="min-w-0 p-0 overflow-hidden" style={{ width: cardWidth }}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Open tables in ${area.name}`}
+              accessibilityLabel={t("areasManagement.openTablesAccessibility", {
+                area: area.name,
+              })}
               onPress={() => router.push(`/settings/areas/${area.id}/tables`)}
               className="min-h-32 flex-1 justify-between gap-6 p-5 active:bg-surface-secondary"
             >
@@ -69,7 +73,12 @@ export default function AreasScreen(): React.JSX.Element {
               <View className="gap-1 pr-12">
                 <Card.Title numberOfLines={1}>{area.name}</Card.Title>
                 <Card.Description>
-                  {area.tables_count} table{area.tables_count === 1 ? "" : "s"}
+                  {t(
+                    area.tables_count === 1
+                      ? "areasManagement.tableOne"
+                      : "areasManagement.tableOther",
+                    { count: area.tables_count }
+                  )}
                 </Card.Description>
               </View>
             </Pressable>
@@ -77,7 +86,9 @@ export default function AreasScreen(): React.JSX.Element {
               size="sm"
               variant="outline"
               isIconOnly
-              accessibilityLabel={`Edit area ${area.name}`}
+              accessibilityLabel={t("areasManagement.editAreaAccessibility", {
+                area: area.name,
+              })}
               className="absolute right-3 top-3"
               onPress={() => openEdit(area)}
             >
@@ -91,15 +102,18 @@ export default function AreasScreen(): React.JSX.Element {
               <EmptyState.Media variant="icon">
                 <Ionicons name="storefront-outline" size={20} color={mutedColor} />
               </EmptyState.Media>
-              <EmptyState.Title>No seating areas</EmptyState.Title>
+              <EmptyState.Title>{t("areasManagement.emptyAreas")}</EmptyState.Title>
               <EmptyState.Description>
-                Create an area such as Indoor, Terrace, or Rooftop.
+                {t("areasManagement.emptyAreasDescription")}
               </EmptyState.Description>
             </EmptyState.Header>
           </EmptyState>
         }
       />
-      <CreateFAB accessibilityLabel="Add seating area" onPress={openCreate} />
+      <CreateFAB
+        accessibilityLabel={t("areasManagement.addAreaAccessibility")}
+        onPress={openCreate}
+      />
       <AreaFormDialog area={editingArea} isOpen={isFormOpen} onOpenChange={setIsFormOpen} />
     </View>
   );

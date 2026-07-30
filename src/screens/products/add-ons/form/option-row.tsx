@@ -6,6 +6,7 @@ import { Button, Input, Label, Surface, TextField, Typography } from "heroui-nat
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type OptionRowProps = {
   control: Control<AddOnManagementValues>;
@@ -26,14 +27,16 @@ export default function OptionRow({
   onRemove,
   onRestore,
 }: OptionRowProps) {
+  const { t } = useTranslation();
+
   if (isDestroyed) {
     return (
       <View className="flex-row items-center gap-3 rounded-panel-inner bg-surface-secondary px-3 py-3">
         <Typography type="body-sm" color="muted" className="flex-1 line-through">
-          Removed option
+          {t("addOnManagement.removedOption")}
         </Typography>
         <Button size="sm" variant="ghost" onPress={onRestore} isDisabled={!canRestore}>
-          <Button.Label>Restore</Button.Label>
+          <Button.Label>{t("addOnManagement.restore")}</Button.Label>
         </Button>
       </View>
     );
@@ -51,8 +54,12 @@ export default function OptionRow({
               isRequired
               isInvalid={Boolean(errors.options?.[index]?.name)}
             >
-              <Label>Option</Label>
-              <Input value={value} onChangeText={onChange} placeholder="Extra cheese" />
+              <Label>{t("addOnManagement.option")}</Label>
+              <Input
+                value={value}
+                onChangeText={onChange}
+                placeholder={t("addOnManagement.optionPlaceholder")}
+              />
               {errors.options?.[index]?.name?.message ? (
                 <Typography type="body-xs" className="text-danger">
                   {errors.options[index]?.name?.message}
@@ -67,7 +74,7 @@ export default function OptionRow({
           render={({ field: { value, onChange } }) => (
             <StringNumberField
               className="flex-1 w-full"
-              label="Price (Rp)"
+              label={t("addOnManagement.price")}
               value={value}
               onChange={onChange}
               minValue={0}
@@ -87,7 +94,7 @@ export default function OptionRow({
       </View>
       <Button size="sm" variant="ghost" onPress={onRemove}>
         <Ionicons name="trash-outline" size={16} />
-        <Button.Label>Remove option</Button.Label>
+        <Button.Label>{t("addOnManagement.removeOption")}</Button.Label>
       </Button>
     </Surface>
   );

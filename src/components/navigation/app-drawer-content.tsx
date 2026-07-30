@@ -1,5 +1,6 @@
 import Logo from "@/components/common/logo";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
+import type { Translate } from "@/locales";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
 import { useNetworkStore } from "@/stores/use-network-store";
@@ -41,7 +42,7 @@ const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof Ionicons>["nam
   settings: "settings-outline",
 };
 
-function getRouteLabel(routeName: string, translate: typeof import("@/locales").t): string {
+function getRouteLabel(routeName: string, translate: Translate): string {
   if (routeName === "index") return translate("navigation.dashboard");
   if (routeName === "pos") return translate("navigation.pos");
   if (routeName === "products") return translate("navigation.products");

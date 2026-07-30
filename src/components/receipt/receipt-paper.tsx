@@ -5,6 +5,7 @@ import { formatReceiptRow, wrapReceiptText } from "@/services/printer/escpos";
 import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 export type ReceiptPreviewData = {
   code: string;
@@ -88,6 +89,7 @@ export function ReceiptPaper({
   paperWidth?: PaperWidth;
   charactersPerLine?: string;
 }): JSX.Element {
+  const { t } = useTranslation();
   const headerLines = settings.header
     .split("\n")
     .map((line) => line.trim())
@@ -118,7 +120,7 @@ export function ReceiptPaper({
           contentFit="contain"
         />
       ) : null}
-      <ReceiptLines lines={[settings.storeName || "Store name"]} align="center" bold />
+      <ReceiptLines lines={[settings.storeName || t("receipt.storeName")]} align="center" bold />
       {!isKitchen
         ? headerLines.map((value) => (
             <ReceiptLines key={value} lines={wrapped(value)} align="center" />
@@ -127,13 +129,15 @@ export function ReceiptPaper({
       <View className={gapClass} />
       <ReceiptLines lines={[separator]} />
       <View className={gapClass} />
-      <ReceiptLines lines={wrapped(`Order: ${data.code}`)} />
-      <ReceiptLines lines={wrapped(`Date: ${data.date}`)} />
-      <ReceiptLines lines={wrapped(`Type: ${data.orderType}`)} />
-      {data.table ? <ReceiptLines lines={wrapped(`Table: ${data.table}`)} /> : null}
-      {!isKitchen ? <ReceiptLines lines={wrapped(`Payment: ${data.payment}`)} /> : null}
+      <ReceiptLines lines={wrapped(`${t("receipt.order")}: ${data.code}`)} />
+      <ReceiptLines lines={wrapped(`${t("receipt.date")}: ${data.date}`)} />
+      <ReceiptLines lines={wrapped(`${t("receipt.type")}: ${data.orderType}`)} />
+      {data.table ? <ReceiptLines lines={wrapped(`${t("receipt.table")}: ${data.table}`)} /> : null}
       {!isKitchen ? (
-        <ReceiptLines lines={wrapped(`Payment status: ${data.paymentStatus}`)} />
+        <ReceiptLines lines={wrapped(`${t("receipt.payment")}: ${data.payment}`)} />
+      ) : null}
+      {!isKitchen ? (
+        <ReceiptLines lines={wrapped(`${t("receipt.paymentStatus")}: ${data.paymentStatus}`)} />
       ) : null}
       <View className={gapClass} />
       <ReceiptLines lines={[separator]} />
@@ -167,7 +171,9 @@ export function ReceiptPaper({
                 ]}
               />
             ))}
-            {item.notes ? <ReceiptLines lines={wrapped(`Note: ${item.notes}`)} /> : null}
+            {item.notes ? (
+              <ReceiptLines lines={wrapped(`${t("receipt.note")}: ${item.notes}`)} />
+            ) : null}
             {!isCompact && itemIndex < data.items.length - 1 ? <View className="h-[17px]" /> : null}
           </View>
         ))}
@@ -183,7 +189,7 @@ export function ReceiptPaper({
 
       {!isKitchen ? (
         <View>
-          <ReceiptLines lines={[row("Subtotal", formatRupiah(data.subtotal))]} />
+          <ReceiptLines lines={[row(t("receipt.subtotal"), formatRupiah(data.subtotal))]} />
           {data.discounts.map((discount) => (
             <ReceiptLines
               key={discount.id}
@@ -197,16 +203,23 @@ export function ReceiptPaper({
             <ReceiptLines lines={[row(data.tax.name, formatRupiah(data.tax.amount))]} />
           ) : null}
           <View className={gapClass} />
-          <ReceiptLines lines={wrapped(`${data.items.length} items - ${totalQty} qty`)} />
+          <ReceiptLines
+            lines={wrapped(
+              t("receipt.itemsSummary", {
+                items: data.items.length,
+                quantity: totalQty,
+              })
+            )}
+          />
           <View className={gapClass} />
-          <ReceiptLines lines={[row("TOTAL", formatRupiah(data.total))]} bold />
+          <ReceiptLines lines={[row(t("receipt.total"), formatRupiah(data.total))]} bold />
         </View>
       ) : null}
 
       {data.notes ? (
         <>
           <View className="h-[17px]" />
-          <ReceiptLines lines={wrapped(`Note: ${data.notes}`)} />
+          <ReceiptLines lines={wrapped(`${t("receipt.note")}: ${data.notes}`)} />
         </>
       ) : null}
 

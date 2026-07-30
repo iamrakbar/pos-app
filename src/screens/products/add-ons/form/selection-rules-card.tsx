@@ -4,6 +4,7 @@ import { Card, Input, Label, Switch, TextField, Typography } from "heroui-native
 import { Controller, useWatch } from "react-hook-form";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
 import { View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type SelectionRulesCardProps = {
   control: Control<AddOnManagementValues>;
@@ -12,6 +13,7 @@ type SelectionRulesCardProps = {
 };
 
 export default function SelectionRulesCard({ control, errors, setValue }: SelectionRulesCardProps) {
+  const { t } = useTranslation();
   const required = useWatch({ control, name: "required" });
   const multiple = useWatch({ control, name: "multiple" });
 
@@ -19,8 +21,8 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
     <Card className="gap-3">
       <Card.Header>
         <View className="gap-1">
-          <Card.Title>Selection Rules</Card.Title>
-          <Card.Description>Define how many options the cashier can select.</Card.Description>
+          <Card.Title>{t("addOnManagement.selectionRules")}</Card.Title>
+          <Card.Description>{t("addOnManagement.selectionRulesDescription")}</Card.Description>
         </View>
       </Card.Header>
       <Card.Body className="gap-4">
@@ -29,8 +31,12 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
           name="name"
           render={({ field: { value, onChange } }) => (
             <TextField isRequired isInvalid={Boolean(errors.name)}>
-              <Label>Group name</Label>
-              <Input value={value} onChangeText={onChange} placeholder="Toppings" />
+              <Label>{t("addOnManagement.groupName")}</Label>
+              <Input
+                value={value}
+                onChangeText={onChange}
+                placeholder={t("addOnManagement.groupNamePlaceholder")}
+              />
               {errors.name?.message ? (
                 <Typography type="body-xs" className="text-danger">
                   {errors.name.message}
@@ -46,10 +52,10 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
             <View className="flex-row items-center gap-4 py-1">
               <View className="flex-1 gap-0.5">
                 <Typography type="body-sm" weight="semibold">
-                  Required selection
+                  {t("addOnManagement.requiredSelection")}
                 </Typography>
                 <Typography type="body-xs" color="muted">
-                  The cashier must choose before adding the product.
+                  {t("addOnManagement.requiredSelectionDescription")}
                 </Typography>
               </View>
               <Switch
@@ -74,10 +80,10 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
             <View className="flex-row items-center gap-4 py-1">
               <View className="flex-1 gap-0.5">
                 <Typography type="body-sm" weight="semibold">
-                  Allow multiple selections
+                  {t("addOnManagement.allowMultiple")}
                 </Typography>
                 <Typography type="body-xs" color="muted">
-                  Let the cashier choose more than one option.
+                  {t("addOnManagement.allowMultipleDescription")}
                 </Typography>
               </View>
               <Switch
@@ -107,7 +113,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
                 render={({ field: { value, onChange } }) => (
                   <StringNumberField
                     className="flex-1"
-                    label="Minimum"
+                    label={t("addOnManagement.minimum")}
                     value={value}
                     onChange={onChange}
                     minValue={1}
@@ -129,7 +135,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
               render={({ field: { value, onChange } }) => (
                 <StringNumberField
                   className="flex-1"
-                  label="Maximum"
+                  label={t("addOnManagement.maximum")}
                   value={value}
                   onChange={onChange}
                   minValue={2}
@@ -147,9 +153,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
           </View>
         ) : (
           <Typography type="body-xs" color="muted">
-            {required
-              ? "Exactly one option must be selected."
-              : "The cashier may select one option or skip this group."}
+            {required ? t("addOnManagement.exactlyOne") : t("addOnManagement.optionalOne")}
           </Typography>
         )}
       </Card.Body>

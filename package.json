@@ -24,11 +24,12 @@
     "build:dev": "eas build --profile development",
     "build:preview": "eas build --profile preview",
     "build:production": "eas build --profile production",
-    "lint": "eslint .",
+    "lint": "npm run localization:check && eslint . --ignore-pattern .agents",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "localization:check": "node scripts/check-localization.mjs",
     "doctor": "npx react-doctor@latest"
   },
   "dependencies": {

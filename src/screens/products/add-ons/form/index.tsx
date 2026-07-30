@@ -4,7 +4,7 @@ import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useAddOn, useCreateAddOn, useDeleteAddOn, useUpdateAddOn } from "@/hooks/db/use-add-ons";
 import {
-  addOnManagementSchema,
+  createAddOnManagementSchema,
   toAddOnRequest,
   type AddOnManagementValues,
 } from "@/schemas/add-on-management";
@@ -17,10 +17,12 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 import OptionRow from "./option-row";
 import SelectionRulesCard from "./selection-rules-card";
+import { useTranslation } from "@/stores/use-locale";
 
 const EMPTY_OPTION = { id: null, name: "", price: "0", destroyed: false };
 
 export default function AddOnFormScreen(): React.JSX.Element {
+  const { locale, t } = useTranslation();
   const { productId, addOnId } = useLocalSearchParams<{
     productId: string;
     addOnId: string;
@@ -35,8 +37,10 @@ export default function AddOnFormScreen(): React.JSX.Element {
   const deleteMutation = useDeleteAddOn(productId);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
   const hydratedId = React.useRef<string | null>(null);
+  const addOnManagementSchema = createAddOnManagementSchema(t);
   const {
     control,
+    clearErrors,
     handleSubmit,
     reset,
     setValue,
@@ -57,6 +61,10 @@ export default function AddOnFormScreen(): React.JSX.Element {
   const options = useWatch({ control, name: "options" });
 
   React.useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
+
+  React.useEffect(() => {
     const addOn = addOnQuery.data;
     if (isNew || !addOn || hydratedId.current === addOn.id) return;
     reset({
@@ -75,7 +83,9 @@ export default function AddOnFormScreen(): React.JSX.Element {
     hydratedId.current = addOn.id;
   }, [addOnQuery.data, isNew, reset]);
 
-  if (!isNew && addOnQuery.isLoading) return <LoadingState message="Loading add-on…" />;
+  if (!isNew && addOnQuery.isLoading) {
+    return <LoadingState message={t("addOnManagement.loadingOne")} />;
+  }
   if (!isNew && addOnQuery.isError) {
     return <ErrorState error={addOnQuery.error} onRetry={addOnQuery.refetch} />;
   }
@@ -94,12 +104,19 @@ export default function AddOnFormScreen(): React.JSX.Element {
     try {
       const request = toAddOnRequest(values);
       await (isNew ? createMutation.mutateAsync(request) : updateMutation.mutateAsync(request));
-      toast.show({ variant: "success", label: isNew ? "Add-on created" : "Add-on updated" });
+      toast.show({
+        variant: "success",
+        label: isNew ? t("addOnManagement.created") : t("addOnManagement.updated"),
+      });
       router.back();
     } catch (error) {
       const message = getErrorMessage(error);
       setError("root.server", { type: "server", message });
-      toast.show({ variant: "danger", label: "Could not save add-on", description: message });
+      toast.show({
+        variant: "danger",
+        label: t("addOnManagement.saveFailed"),
+        description: message,
+      });
     }
   };
 
@@ -107,12 +124,12 @@ export default function AddOnFormScreen(): React.JSX.Element {
     try {
       await deleteMutation.mutateAsync(addOnId);
       setIsDeleteOpen(false);
-      toast.show({ variant: "success", label: "Add-on deleted" });
+      toast.show({ variant: "success", label: t("addOnManagement.deleted") });
       router.back();
     } catch (error) {
       toast.show({
         variant: "danger",
-        label: "Could not delete add-on",
+        label: t("addOnManagement.deleteFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -120,13 +137,17 @@ export default function AddOnFormScreen(): React.JSX.Element {
 
   return (
     <>
-      <Stack.Screen options={{ title: isNew ? "New Add-on" : "Edit Add-on" }} />
+      <Stack.Screen
+        options={{
+          title: isNew ? t("addOnManagement.newTitle") : t("addOnManagement.editTitle"),
+        }}
+      />
       {!isNew ? (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button
             {...getToolbarIcon("trash")}
             tintColor={dangerColor}
-            accessibilityLabel="Delete add-on group"
+            accessibilityLabel={t("addOnManagement.deleteAccessibility")}
             onPress={() => setIsDeleteOpen(true)}
           />
         </Stack.Toolbar>
@@ -142,10 +163,8 @@ export default function AddOnFormScreen(): React.JSX.Element {
           <Card className="gap-3">
             <Card.Header>
               <View className="gap-1">
-                <Card.Title>Options</Card.Title>
-                <Card.Description>
-                  This previews the names and price adjustments shown to the cashier.
-                </Card.Description>
+                <Card.Title>{t("addOnManagement.options")}</Card.Title>
+                <Card.Description>{t("addOnManagement.optionsDescription")}</Card.Description>
               </View>
             </Card.Header>
             <Card.Body className="gap-3">
@@ -172,7 +191,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
                 </Typography>
               ) : null}
               <Button variant="outline" onPress={() => append(EMPTY_OPTION)}>
-                <Button.Label>Add option</Button.Label>
+                <Button.Label>{t("addOnManagement.addOption")}</Button.Label>
               </Button>
             </Card.Body>
           </Card>
@@ -185,10 +204,12 @@ export default function AddOnFormScreen(): React.JSX.Element {
             ) : null}
             <View className="flex-col md:flex-row gap-3">
               <Button variant="secondary" onPress={() => router.back()}>
-                <Button.Label>Cancel</Button.Label>
+                <Button.Label>{t("common.cancel")}</Button.Label>
               </Button>
               <Button className="flex-1" onPress={handleSubmit(submitAddOn)} isDisabled={isSaving}>
-                <Button.Label>{isSaving ? "Saving…" : "Save add-on"}</Button.Label>
+                <Button.Label>
+                  {isSaving ? t("common.saving") : t("addOnManagement.save")}
+                </Button.Label>
               </Button>
             </View>
           </View>
@@ -198,9 +219,9 @@ export default function AddOnFormScreen(): React.JSX.Element {
       <ActionDialog
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
-        title="Delete add-on group?"
-        description="This removes the group and all of its options from the product."
-        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        title={t("addOnManagement.deleteTitle")}
+        description={t("addOnManagement.deleteDescription")}
+        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
         actionVariant="danger"
         isActionDisabled={deleteMutation.isPending}
         onAction={handleDelete}

@@ -21,29 +21,24 @@ import { ScrollView } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { useTables } from "@/hooks/db/use-tables";
 import { EmptyState } from "heroui-native-pro";
+import { getLocaleTag, type TranslationKey } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
 // type StatusFilter = "all" | "new" | "process" | "completed" | "cancelled" | "rejected";
 type StatusFilter = "all" | "new" | "process" | "completed";
 
-const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "new", label: "New" },
-  { value: "process", label: "Process" },
-  { value: "completed", label: "Completed" },
-  //   { value: "cancelled", label: "Cancelled" },
-  //   { value: "rejected", label: "Rejected" },
-];
+const STATUS_FILTERS: StatusFilter[] = ["all", "new", "process", "completed"];
 
-function formatTime(iso: string): string {
+function formatTime(iso: string, localeTag: string): string {
   const d = new Date(iso);
-  return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString(localeTag, { hour: "2-digit", minute: "2-digit" });
 }
 
-function formatPickupTime(value: string | null): string | null {
+function formatPickupTime(value: string | null, localeTag: string): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isFinite(date.getTime())) {
-    return date.toLocaleString("id-ID", {
+    return date.toLocaleString(localeTag, {
       day: "2-digit",
       month: "short",
       hour: "2-digit",
@@ -55,6 +50,8 @@ function formatPickupTime(value: string | null): string | null {
 }
 
 export default function OrdersScreen(): React.JSX.Element {
+  const { locale, t } = useTranslation();
+  const localeTag = getLocaleTag(locale);
   const router = useRouter();
   const themeColorMuted = useThemeColor("muted");
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all");
@@ -84,16 +81,13 @@ export default function OrdersScreen(): React.JSX.Element {
             contentContainerClassName="gap-2 px-4 md:px-6"
           >
             {STATUS_FILTERS.map((filter) => {
-              const status =
-                filter.value === "all" ? { label: filter.label } : getOrderStatus(filter.value);
-
               return (
                 <Chip
-                  key={filter.value}
-                  onPress={() => setStatusFilter(filter.value)}
-                  variant={statusFilter === filter.value ? "primary" : "secondary"}
+                  key={filter}
+                  onPress={() => setStatusFilter(filter)}
+                  variant={statusFilter === filter ? "primary" : "secondary"}
                 >
-                  <Chip.Label>{status.label}</Chip.Label>
+                  <Chip.Label>{t(`orders.filters.${filter}`)}</Chip.Label>
                 </Chip>
               );
             })}
@@ -102,7 +96,7 @@ export default function OrdersScreen(): React.JSX.Element {
       </View>
 
       {isLoading ? (
-        <LoadingState message="Loading orders…" />
+        <LoadingState message={t("orders.loading")} />
       ) : isError ? (
         <ErrorState error={error} onRetry={refetch} />
       ) : orders.length === 0 ? (
@@ -111,10 +105,8 @@ export default function OrdersScreen(): React.JSX.Element {
             <EmptyState.Media variant="icon">
               <Ionicons name="receipt-outline" size={20} color={themeColorMuted} />
             </EmptyState.Media>
-            <EmptyState.Title>No orders found</EmptyState.Title>
-            <EmptyState.Description>
-              Orders matching the selected status will appear here.
-            </EmptyState.Description>
+            <EmptyState.Title>{t("orders.empty")}</EmptyState.Title>
+            <EmptyState.Description>{t("orders.emptyDescription")}</EmptyState.Description>
           </EmptyState.Header>
         </EmptyState>
       ) : (
@@ -136,6 +128,7 @@ export default function OrdersScreen(): React.JSX.Element {
                 tables?.find((table) => table.id === extractTableId(item.orderable))?.area_name ??
                 null
               }
+              localeTag={localeTag}
               onPress={() => router.push(`/orders/${item.id}` as never)}
             />
           )}
@@ -149,25 +142,30 @@ export default function OrdersScreen(): React.JSX.Element {
 function OrderRow({
   order,
   areaName,
+  localeTag,
   onPress,
 }: {
   order: App.Data.Merchant.Order.OrderListData;
   areaName: string | null;
+  localeTag: string;
   onPress: () => void;
 }) {
+  const { t } = useTranslation();
   const themeColorMuted = useThemeColor("muted");
   const orderStatus = getOrderStatus(order.order_status);
   const paymentStatus = getPaymentStatus(order.payment_status);
   const customerName = extractCustomerName(order.customer);
   const paymentName = extractPaymentName(order.payment);
   const tableName = extractTableName(order.orderable);
-  const pickupTime = formatPickupTime(extractPickupTime(order.orderable));
+  const pickupTime = formatPickupTime(extractPickupTime(order.orderable), localeTag);
+  const orderStatusLabel = t(`orders.status.${orderStatus.value}` as TranslationKey);
+  const paymentStatusLabel = t(`orders.paymentStatus.${paymentStatus.value}` as TranslationKey);
   const orderContext =
     order.order_type === "dine-in"
-      ? ["Dine-in", areaName, tableName].filter(Boolean).join(" · ")
+      ? [t("orders.dineIn"), areaName, tableName].filter(Boolean).join(" · ")
       : pickupTime
-        ? `Takeaway · Pickup ${pickupTime}`
-        : "Takeaway";
+        ? t("orders.takeawayPickup", { time: pickupTime })
+        : t("orders.takeaway");
 
   return (
     <Pressable onPress={onPress} className="px-4 py-3 active:bg-surface-secondary md:px-6">
@@ -179,7 +177,7 @@ function OrderRow({
               {order.code}
             </Typography>
             <Chip color={orderStatus.color} size="sm" variant="soft">
-              <Chip.Label>{orderStatus.label}</Chip.Label>
+              <Chip.Label>{orderStatusLabel}</Chip.Label>
             </Chip>
           </View>
           <View className="flex-row items-center gap-1.5">
@@ -209,7 +207,7 @@ function OrderRow({
             {formatRupiah(order.total)}
           </Typography>
           <Typography type="body-xs" color="muted">
-            {formatTime(order.created_at)}
+            {formatTime(order.created_at, localeTag)}
           </Typography>
         </View>
       </View>
@@ -222,13 +220,15 @@ function OrderRow({
             {paymentName}
           </Typography>
           <Chip color={paymentStatus.color} size="sm" variant="soft">
-            <Chip.Label>{paymentStatus.label}</Chip.Label>
+            <Chip.Label>{paymentStatusLabel}</Chip.Label>
           </Chip>
           <Typography type="body-xs" color="muted">
             ·
           </Typography>
           <Typography type="body-xs" color="muted">
-            {order.products_count} item{order.products_count !== 1 ? "s" : ""}
+            {t(order.products_count === 1 ? "orders.itemOne" : "orders.itemOther", {
+              count: order.products_count,
+            })}
           </Typography>
         </View>
         <Ionicons name="chevron-forward" size={14} color={themeColorMuted} />

@@ -12,6 +12,7 @@ import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
 import TableFormDialog from "./table-form-dialog";
+import { useTranslation } from "@/stores/use-locale";
 
 type TableData = App.Data.Merchant.Area.TableData;
 
@@ -20,6 +21,7 @@ function getTableSeatCount(pax: number): TableSeatCount {
 }
 
 export default function AreaTablesScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const { areaId } = useLocalSearchParams<{ areaId: string }>();
   const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
   const [mutedColor, accentColor, accentSoft] = useThemeColor(["muted", "accent", "accent-soft"]);
@@ -38,7 +40,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
     setIsFormOpen(true);
   };
 
-  if (tablesQuery.isLoading) return <LoadingState message="Loading tables…" />;
+  if (tablesQuery.isLoading) return <LoadingState message={t("areasManagement.loadingTables")} />;
   if (tablesQuery.isError) {
     return <ErrorState error={tablesQuery.error} onRetry={tablesQuery.refetch} />;
   }
@@ -50,7 +52,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
 
   return (
     <>
-      <Stack.Screen options={{ title: areaQuery.data?.name ?? "Tables" }} />
+      <Stack.Screen options={{ title: areaQuery.data?.name ?? t("areasManagement.tablesTitle") }} />
       <View className="flex-1 bg-background">
         <FlatList
           key={`table-grid-${columnCount}`}
@@ -64,51 +66,64 @@ export default function AreaTablesScreen(): React.JSX.Element {
             flexGrow: tables.length === 0 ? 1 : undefined,
           }}
           columnWrapperClassName="items-stretch"
-          renderItem={({ item: table }) => (
-            <Card className="m-2 p-0 min-h-40 overflow-hidden" style={{ width: cardWidth }}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Edit table ${table.name}, ${table.pax} seats, ${
-                  table.active ? "active" : "inactive"
-                }`}
-                onPress={() => openEdit(table)}
-                className="flex-1 items-center justify-between gap-2 p-4 active:bg-surface-tertiary"
-              >
-                <Chip color="default">
-                  <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
-                </Chip>
-                <TableSymbol
-                  seats={getTableSeatCount(Number(table.pax))}
-                  scale={0.5}
-                  color={table.active ? accentColor : mutedColor}
-                  tableColor={table.active ? accentSoft : undefined}
-                />
-                <View className="w-full flex-row flex-wrap items-center justify-between gap-2">
-                  <Chip size="sm" color="default" variant="soft">
-                    <Chip.Label numberOfLines={1}>
-                      {Number(table.pax)} {Number(table.pax) === 1 ? "seat" : "seats"}
-                    </Chip.Label>
+          renderItem={({ item: table }) => {
+            const pax = Number(table.pax);
+            const seats = t(pax === 1 ? "areasManagement.seatOne" : "areasManagement.seatOther", {
+              count: pax,
+            });
+            const status = table.active ? t("common.active") : t("common.inactive");
+
+            return (
+              <Card className="m-2 p-0 min-h-40 overflow-hidden" style={{ width: cardWidth }}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t("areasManagement.editTableAccessibility", {
+                    table: table.name,
+                    seats,
+                    status,
+                  })}
+                  onPress={() => openEdit(table)}
+                  className="flex-1 items-center justify-between gap-2 p-4 active:bg-surface-tertiary"
+                >
+                  <Chip color="default">
+                    <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
                   </Chip>
-                  <Chip size="sm" color={table.active ? "success" : "default"} variant="soft">
-                    <Chip.Label>{table.active ? "Active" : "Inactive"}</Chip.Label>
-                  </Chip>
-                </View>
-              </Pressable>
-            </Card>
-          )}
+                  <TableSymbol
+                    seats={getTableSeatCount(Number(table.pax))}
+                    scale={0.5}
+                    color={table.active ? accentColor : mutedColor}
+                    tableColor={table.active ? accentSoft : undefined}
+                  />
+                  <View className="w-full flex-row flex-wrap items-center justify-between gap-2">
+                    <Chip size="sm" color="default" variant="soft">
+                      <Chip.Label numberOfLines={1}>{seats}</Chip.Label>
+                    </Chip>
+                    <Chip size="sm" color={table.active ? "success" : "default"} variant="soft">
+                      <Chip.Label>{status}</Chip.Label>
+                    </Chip>
+                  </View>
+                </Pressable>
+              </Card>
+            );
+          }}
           ListEmptyComponent={
             <EmptyState className="flex-1 justify-center">
               <EmptyState.Header>
                 <EmptyState.Media variant="icon">
                   <Ionicons name="restaurant-outline" size={20} color={mutedColor} />
                 </EmptyState.Media>
-                <EmptyState.Title>No tables in this area</EmptyState.Title>
-                <EmptyState.Description>Add the first dine-in table.</EmptyState.Description>
+                <EmptyState.Title>{t("areasManagement.emptyTables")}</EmptyState.Title>
+                <EmptyState.Description>
+                  {t("areasManagement.emptyTablesDescription")}
+                </EmptyState.Description>
               </EmptyState.Header>
             </EmptyState>
           }
         />
-        <CreateFAB accessibilityLabel="Add table" onPress={openCreate} />
+        <CreateFAB
+          accessibilityLabel={t("areasManagement.addTableAccessibility")}
+          onPress={openCreate}
+        />
       </View>
 
       <TableFormDialog

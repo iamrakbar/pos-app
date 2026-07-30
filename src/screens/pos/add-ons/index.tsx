@@ -24,6 +24,8 @@ import React from "react";
 import { Controller, type Control, useForm, useWatch } from "react-hook-form";
 import { FlatList, Keyboard, View } from "react-native";
 import { useKeyboardState } from "react-native-keyboard-controller";
+import type { Translate } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
 const EMPTY_FORM_VALUES: AddOnFormValues = {
   radioSelections: {},
@@ -31,12 +33,12 @@ const EMPTY_FORM_VALUES: AddOnFormValues = {
   notes: "",
 };
 
-function constraintLabel(group: AddOnGroup): string {
+function constraintLabel(group: AddOnGroup, t: Translate): string {
   if (!group.required) {
-    return group.max > 0 ? `Optional · Up to ${group.max}` : "Optional";
+    return group.max > 0 ? t("addOns.optionalUpTo", { count: group.max }) : t("addOns.optional");
   }
-  if (group.min === group.max) return `Choose ${group.min}`;
-  return `Choose ${group.min}–${group.max}`;
+  if (group.min === group.max) return t("addOns.chooseCount", { count: group.min });
+  return t("addOns.chooseRange", { min: group.min, max: group.max });
 }
 
 function selectedOptionIds(group: AddOnGroup, values: AddOnFormValues): Set<string> {
@@ -71,12 +73,19 @@ function OptionRow({
   type,
   onSelect,
 }: OptionRowProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const accessibilityLabel =
+    option.price > 0
+      ? t("addOns.optionAccessibilityWithPrice", {
+          option: option.name,
+          price: formatRupiah(option.price),
+        })
+      : t("addOns.optionAccessibilityNoCharge", { option: option.name });
+
   return (
     <ControlField
       accessibilityRole={type}
-      accessibilityLabel={`${option.name}, ${
-        option.price > 0 ? `add ${formatRupiah(option.price)}` : "no additional charge"
-      }`}
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: isSelected, disabled: isDisabled }}
       isSelected={isSelected}
       isDisabled={isDisabled}
@@ -90,7 +99,7 @@ function OptionRow({
           {option.name}
         </Typography>
         <Typography type="body-xs" color="muted" className="tabular-nums">
-          {option.price > 0 ? `+${formatRupiah(option.price)}` : "No additional charge"}
+          {option.price > 0 ? `+${formatRupiah(option.price)}` : t("addOns.noAdditionalCharge")}
         </Typography>
       </View>
       <ControlField.Indicator variant={type}>
@@ -172,6 +181,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
 }
 
 export default function POSAddOnSheet(): React.JSX.Element {
+  const { locale, t } = useTranslation();
   const { dismiss, resize } = useTrueSheet();
   const [backgroundColor, borderColor] = useThemeColor(["background", "border"]);
   const product = usePOSStore((state) => state.selectedProduct);
@@ -182,16 +192,17 @@ export default function POSAddOnSheet(): React.JSX.Element {
   );
   const addItem = useCartStore((state) => state.addItem);
   const removeItem = useCartStore((state) => state.removeItem);
-  const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const [hasSubmitError, setHasSubmitError] = React.useState(false);
   const [footerHeight, setFooterHeight] = React.useState(0);
   const [isNativeKeyboardVisible, setIsNativeKeyboardVisible] = React.useState(false);
   const isControllerKeyboardVisible = useKeyboardState((state) => state.isVisible);
   const isKeyboardVisible = isControllerKeyboardVisible || isNativeKeyboardVisible;
   const listRef = React.useRef<FlatList<AddOnGroup>>(null);
   const isNotesFocused = React.useRef(false);
-  const schema = createAddOnSchema(product?.add_ons ?? []);
+  const schema = createAddOnSchema(product?.add_ons ?? [], t);
   const {
     control,
+    clearErrors,
     handleSubmit,
     reset,
     formState: { errors },
@@ -200,6 +211,10 @@ export default function POSAddOnSheet(): React.JSX.Element {
     defaultValues: EMPTY_FORM_VALUES,
   });
   const values = useWatch({ control }) as AddOnFormValues;
+
+  React.useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   React.useEffect(() => {
     if (!product) return;
@@ -265,7 +280,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
   };
 
   const handleDidDismiss = () => {
-    setSubmitError(null);
+    setHasSubmitError(false);
     reset(EMPTY_FORM_VALUES);
     clearAddonSelection();
   };
@@ -273,7 +288,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const onSubmit = (formValues: AddOnFormValues) => {
     if (!product) return;
 
-    setSubmitError(null);
+    setHasSubmitError(false);
     if (editingCartItemId) removeItem(editingCartItemId);
     addItem({
       product_id: product.id,
@@ -287,7 +302,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
   };
 
   const onInvalid = () => {
-    setSubmitError("Complete the required add-on choices before continuing.");
+    setHasSubmitError(true);
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
@@ -299,10 +314,10 @@ export default function POSAddOnSheet(): React.JSX.Element {
     <View className="bg-surface">
       <View className="gap-1 px-5 pb-4 pt-safe">
         <Typography type="h4" weight="semibold" numberOfLines={1}>
-          {product?.name ?? "Customize product"}
+          {product?.name ?? t("addOns.customizeProduct")}
         </Typography>
         <Typography type="body-sm" color="muted" className="tabular-nums">
-          Base price {formatRupiah(product?.price ?? 0)}
+          {t("addOns.basePrice", { price: formatRupiah(product?.price ?? 0) })}
         </Typography>
       </View>
       <Separator />
@@ -323,7 +338,9 @@ export default function POSAddOnSheet(): React.JSX.Element {
       <View className="gap-3 px-5 pb-4 pt-3">
         <View className="flex-row items-center justify-between gap-4">
           <Typography type="body-xs" color="muted">
-            {selectedOptionCount} selected
+            {t(selectedOptionCount === 1 ? "addOns.selectedOne" : "addOns.selectedOther", {
+              count: selectedOptionCount,
+            })}
           </Typography>
           <Typography type="body-sm" weight="semibold" className="tabular-nums">
             {formatRupiah(configuredPrice)}
@@ -331,10 +348,12 @@ export default function POSAddOnSheet(): React.JSX.Element {
         </View>
         <View className="flex-row gap-3">
           <Button variant="outline" onPress={closeSheet}>
-            <Button.Label>Cancel</Button.Label>
+            <Button.Label>{t("common.cancel")}</Button.Label>
           </Button>
           <Button className="flex-1" onPress={handleSave}>
-            <Button.Label>{editingCartItemId ? "Save changes" : "Add to cart"}</Button.Label>
+            <Button.Label>
+              {editingCartItemId ? t("addOns.saveChanges") : t("addOns.addToCart")}
+            </Button.Label>
           </Button>
         </View>
       </View>
@@ -373,10 +392,10 @@ export default function POSAddOnSheet(): React.JSX.Element {
           paddingBottom: 24,
         }}
         ListHeaderComponent={
-          submitError ? (
+          hasSubmitError ? (
             <Surface variant="secondary" className="bg-danger-soft p-3">
               <Typography type="body-sm" className="text-danger-soft-foreground">
-                {submitError}
+                {t("addOns.completeRequired")}
               </Typography>
             </Surface>
           ) : null
@@ -393,10 +412,12 @@ export default function POSAddOnSheet(): React.JSX.Element {
                   <Typography type="body-sm" weight="semibold">
                     {group.name}
                   </Typography>
-                  <Description>{constraintLabel(group)}</Description>
+                  <Description>{constraintLabel(group, t)}</Description>
                 </View>
                 <Chip size="sm" color={group.required ? "accent" : "default"} variant="soft">
-                  <Chip.Label>{group.required ? "Required" : "Optional"}</Chip.Label>
+                  <Chip.Label>
+                    {group.required ? t("addOns.required") : t("addOns.optional")}
+                  </Chip.Label>
                 </Chip>
               </View>
               <AddOnSelection control={control} group={group} />
@@ -407,7 +428,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
         ListFooterComponent={
           <View className="gap-2 pb-2">
             <Typography type="body-sm" weight="semibold">
-              Notes
+              {t("addOns.notes")}
             </Typography>
             <Controller
               control={control}
@@ -423,7 +444,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
                   onBlur={() => {
                     isNotesFocused.current = false;
                   }}
-                  placeholder="Special instructions"
+                  placeholder={t("addOns.specialInstructions")}
                   numberOfLines={2}
                   className="h-16"
                 />

@@ -46,7 +46,7 @@ export default function CartContent(): JSX.Element {
   const router = useRouter();
   const { present } = useTrueSheet();
   const { isCompact, isPortrait } = useResponsiveLayout();
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
   const [colorMuted, colorAccent] = useThemeColor(["muted", "accent"]);
   const cartProducts = useCartStore((s) => s.products);
@@ -83,7 +83,7 @@ export default function CartContent(): JSX.Element {
             presentation={choicePresentation}
             value={{
               value: checkoutForm.order_type,
-              label: checkoutForm.order_type === "dine-in" ? "Dine-In" : "Takeaway",
+              label: checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway"),
             }}
             onValueChange={(option) => {
               if (!option) return;
@@ -104,7 +104,7 @@ export default function CartContent(): JSX.Element {
             <Select.Trigger asChild variant="unstyled">
               <Button variant="secondary" className="min-w-28">
                 <Button.Label className="text-sm" numberOfLines={1}>
-                  {checkoutForm.order_type === "dine-in" ? "Dine-In" : "Takeaway"}
+                  {checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway")}
                 </Button.Label>
               </Button>
             </Select.Trigger>
@@ -114,8 +114,8 @@ export default function CartContent(): JSX.Element {
                 presentation={choicePresentation}
                 width={choicePresentation === "popover" ? 220 : undefined}
               >
-                <Select.Item value="dine-in" label="Dine-In" />
-                <Select.Item value="takeaway" label="Takeaway" />
+                <Select.Item value="dine-in" label={t("pos.dineIn")} />
+                <Select.Item value="takeaway" label={t("pos.takeaway")} />
               </Select.Content>
             </Select.Portal>
           </Select>
@@ -145,7 +145,7 @@ export default function CartContent(): JSX.Element {
                 <TimePicker.Trigger asChild>
                   <Button variant="secondary" className="justify-between min-w-28 rounded-full">
                     <Button.Label className="text-sm" numberOfLines={1}>
-                      {checkoutForm.pickup_time ?? "Pickup time"}
+                      {checkoutForm.pickup_time ?? t("pos.pickupTime")}
                     </Button.Label>
                     <Ionicons name="time-outline" size={16} color={colorAccent} />
                   </Button>
@@ -165,7 +165,7 @@ export default function CartContent(): JSX.Element {
         </View>
         {cartProducts.length > 0 && (
           <Button variant="danger-soft" size="sm" onPress={clearCart}>
-            <Button.Label>Clear</Button.Label>
+            <Button.Label>{t("common.clear")}</Button.Label>
           </Button>
         )}
       </View>
@@ -182,8 +182,8 @@ export default function CartContent(): JSX.Element {
               <EmptyState.Media variant="icon">
                 <Ionicons name="cart-outline" size={20} color={colorMuted} />
               </EmptyState.Media>
-              <EmptyState.Title>Cart is empty</EmptyState.Title>
-              <EmptyState.Description>Add products to get started.</EmptyState.Description>
+              <EmptyState.Title>{t("pos.cartEmpty")}</EmptyState.Title>
+              <EmptyState.Description>{t("pos.cartEmptyDescription")}</EmptyState.Description>
             </EmptyState.Header>
           </EmptyState>
         ) : (
@@ -199,14 +199,16 @@ export default function CartContent(): JSX.Element {
       <View className="px-5 py-4 gap-3">
         <View className="flex-row items-center justify-between">
           <Typography type="body-sm" color="muted">
-            Subtotal · {itemCount} {itemCount === 1 ? "item" : "items"}
+            {t(itemCount === 1 ? "pos.subtotalItemsOne" : "pos.subtotalItemsOther", {
+              count: itemCount,
+            })}
           </Typography>
           <Typography weight="semibold" className="tabular-nums">
             {formatRupiah(subtotal)}
           </Typography>
         </View>
         <Button className="w-full" onPress={handleCheckout} isDisabled={cartProducts.length === 0}>
-          Checkout
+          {t("navigation.checkout")}
         </Button>
       </View>
       {usesCheckoutScreen ? null : <CheckoutSheet />}

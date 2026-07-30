@@ -20,16 +20,19 @@ import {
 import { Calendar, DatePicker, EmptyState, Widget, type DatePickerOption } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
+import { getLocaleTag, type Translate } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
-const DATE_RANGE_OPTIONS = [
-  { value: "last-7-days", label: "Last 7 Days" },
-  { value: "last-30-days", label: "Last 30 Days" },
-  { value: "this-week", label: "This Week" },
-  { value: "this-month", label: "This Month" },
-  { value: "custom", label: "Custom" },
+const DATE_RANGE_VALUES = [
+  "last-7-days",
+  "last-30-days",
+  "this-week",
+  "this-month",
+  "custom",
 ] as const;
 
-type DateRangeValue = (typeof DATE_RANGE_OPTIONS)[number]["value"];
+type DateRangeValue = (typeof DATE_RANGE_VALUES)[number];
+type DateRangeOption = { value: DateRangeValue; label: string };
 type AppliedDateRange = { dateFrom: string; dateTo: string };
 
 const SUMMARY_STYLES = {
@@ -67,10 +70,10 @@ function getPresetRange(value: Exclude<DateRangeValue, "custom">): AppliedDateRa
   return { dateFrom: toDateParam(from), dateTo: toDateParam(to) };
 }
 
-function toDateOption(value: string): NonNullable<DatePickerOption> {
+function toDateOption(value: string, localeTag: string): NonNullable<DatePickerOption> {
   return {
     value,
-    label: new Date(`${value}T00:00:00`).toLocaleDateString("en-US", {
+    label: new Date(`${value}T00:00:00`).toLocaleDateString(localeTag, {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -78,23 +81,23 @@ function toDateOption(value: string): NonNullable<DatePickerOption> {
   };
 }
 
-function formatPeriodLabel(dateFrom: string, dateTo: string): string {
+function formatPeriodLabel(dateFrom: string, dateTo: string, localeTag: string): string {
   const from = new Date(`${dateFrom}T00:00:00`);
   const to = new Date(`${dateTo}T00:00:00`);
   const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
   if (dateFrom === dateTo) {
-    return to.toLocaleDateString("id-ID", { ...options, year: "numeric" });
+    return to.toLocaleDateString(localeTag, { ...options, year: "numeric" });
   }
-  return `${from.toLocaleDateString("id-ID", options)} – ${to.toLocaleDateString("id-ID", {
+  return `${from.toLocaleDateString(localeTag, options)} – ${to.toLocaleDateString(localeTag, {
     ...options,
     year: "numeric",
   })}`;
 }
 
-function formatOrderType(value: string): string {
+function formatOrderType(value: string, t: Translate): string {
   const normalized = value.toLowerCase().replaceAll("_", "-");
-  if (normalized === "dine-in" || normalized === "dinein") return "Dine-in";
-  if (normalized === "takeaway" || normalized === "take-away") return "Takeaway";
+  if (normalized === "dine-in" || normalized === "dinein") return t("orders.dineIn");
+  if (normalized === "takeaway" || normalized === "take-away") return t("orders.takeaway");
   return value
     .replaceAll("_", " ")
     .replaceAll("-", " ")
@@ -147,12 +150,14 @@ function EarningsDatePicker({
   onValueChange,
   isInvalid,
   presentation,
+  localeTag,
 }: {
   label: string;
   value: NonNullable<DatePickerOption>;
   onValueChange: (value: DatePickerOption | undefined) => void;
   isInvalid?: boolean;
   presentation: "dialog" | "popover";
+  localeTag: string;
 }) {
   return (
     <DatePicker
@@ -161,7 +166,7 @@ function EarningsDatePicker({
       onValueChange={onValueChange}
       isRequired
       isInvalid={isInvalid}
-      locale="en-US"
+      locale={localeTag}
       dateDisplayFormat="medium"
     >
       <Label>{label}</Label>
@@ -219,6 +224,8 @@ function CustomDateRangeDialog({
   onCancel: () => void;
   isApplying: boolean;
 }) {
+  const { locale, t } = useTranslation();
+  const localeTag = getLocaleTag(locale);
   const { isPhonePortrait } = useOverlayPresentation();
   const pickerPresentation = isPhonePortrait ? "dialog" : "popover";
 
@@ -226,8 +233,8 @@ function CustomDateRangeDialog({
     <AdaptiveFormOverlay
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="Custom Date Range"
-      description="Select the earnings period to display."
+      title={t("earnings.customDateRange")}
+      description={t("earnings.customDateRangeDescription")}
       maxWidthClassName="max-w-lg"
       footer={
         <View
@@ -241,7 +248,7 @@ function CustomDateRangeDialog({
             className={isPhonePortrait ? "w-full" : undefined}
             onPress={onCancel}
           >
-            <Button.Label>Cancel</Button.Label>
+            <Button.Label>{t("common.cancel")}</Button.Label>
           </Button>
           <Button
             size="sm"
@@ -249,7 +256,7 @@ function CustomDateRangeDialog({
             onPress={onApply}
             isDisabled={isApplying}
           >
-            <Button.Label>{isApplying ? "Applying…" : "Apply"}</Button.Label>
+            <Button.Label>{isApplying ? t("earnings.applying") : t("common.apply")}</Button.Label>
           </Button>
         </View>
       }
@@ -257,18 +264,20 @@ function CustomDateRangeDialog({
       <View className="gap-4 px-5">
         <View className={isPhonePortrait ? "gap-4" : "flex-row flex-wrap items-start gap-4"}>
           <EarningsDatePicker
-            label="From"
+            label={t("earnings.from")}
             value={start}
             onValueChange={onStartChange}
             isInvalid={error !== null}
             presentation={pickerPresentation}
+            localeTag={localeTag}
           />
           <EarningsDatePicker
-            label="To"
+            label={t("earnings.to")}
             value={end}
             onValueChange={onEndChange}
             isInvalid={error !== null}
             presentation={pickerPresentation}
+            localeTag={localeTag}
           />
         </View>
         {error ? (
@@ -276,7 +285,7 @@ function CustomDateRangeDialog({
             {error}
           </Typography>
         ) : (
-          <Description>Maximum range: 366 days. Future dates are not included.</Description>
+          <Description>{t("earnings.rangeGuidance")}</Description>
         )}
       </View>
     </AdaptiveFormOverlay>
@@ -302,12 +311,13 @@ function OrderTypesWidget({
   isCompact: boolean;
   accentColor: string;
 }) {
+  const { t } = useTranslation();
   return (
     <Widget>
       <Widget.Header>
         <View>
-          <Widget.Title>Sales by order type</Widget.Title>
-          <Widget.Description>Revenue contribution and settled orders</Widget.Description>
+          <Widget.Title>{t("earnings.salesByOrderType")}</Widget.Title>
+          <Widget.Description>{t("earnings.salesByOrderTypeDescription")}</Widget.Description>
         </View>
       </Widget.Header>
       <Widget.Content className="overflow-hidden p-0">
@@ -331,8 +341,12 @@ function OrderTypesWidget({
                       {orderType.name}
                     </Typography>
                     <Typography type="body-xs" color="muted">
-                      {orderType.count} order{orderType.count === 1 ? "" : "s"} ·{" "}
-                      {Math.round(share * 100)}% of earnings
+                      {t(
+                        orderType.count === 1
+                          ? "earnings.orderShareOne"
+                          : "earnings.orderShareOther",
+                        { count: orderType.count, percent: Math.round(share * 100) }
+                      )}
                     </Typography>
                   </View>
                   <Typography type="body-sm" weight="bold" className="tabular-nums">
@@ -367,15 +381,17 @@ function RecentEarningsWidget({
   isCompact: boolean;
   successColor: string;
 }) {
+  const { locale, t } = useTranslation();
+  const localeTag = getLocaleTag(locale);
   return (
     <Widget>
       <Widget.Header>
         <View>
-          <Widget.Title>Recent earnings</Widget.Title>
-          <Widget.Description>Latest settled order entries</Widget.Description>
+          <Widget.Title>{t("earnings.recent")}</Widget.Title>
+          <Widget.Description>{t("earnings.recentDescription")}</Widget.Description>
         </View>
         <Widget.Legend>
-          <Widget.LegendItem colorClassName="bg-success">Settled</Widget.LegendItem>
+          <Widget.LegendItem colorClassName="bg-success">{t("earnings.settled")}</Widget.LegendItem>
         </Widget.Legend>
       </Widget.Header>
       <Widget.Content className="overflow-hidden p-0">
@@ -393,13 +409,16 @@ function RecentEarningsWidget({
                     {entry.code}
                   </Typography>
                   <Chip color="success" size="sm" variant="soft">
-                    <Chip.Label>Settled</Chip.Label>
+                    <Chip.Label>{t("earnings.settled")}</Chip.Label>
                   </Chip>
                 </View>
                 <Typography type="body-xs" color="muted">
-                  {formatOrderType(entry.order_type)} · {entry.items_count} item
-                  {entry.items_count === 1 ? "" : "s"} ·{" "}
-                  {new Date(entry.created_at).toLocaleString("id-ID", {
+                  {formatOrderType(entry.order_type, t)} ·{" "}
+                  {t(entry.items_count === 1 ? "orders.itemOne" : "orders.itemOther", {
+                    count: entry.items_count,
+                  })}{" "}
+                  ·{" "}
+                  {new Date(entry.created_at).toLocaleString(localeTag, {
                     day: "numeric",
                     month: "short",
                     hour: "2-digit",
@@ -420,20 +439,24 @@ function RecentEarningsWidget({
 }
 
 export default function EarningsScreen(): React.JSX.Element {
+  const { locale, t } = useTranslation();
+  const localeTag = getLocaleTag(locale);
+  const dateRangeOptions: DateRangeOption[] = DATE_RANGE_VALUES.map((value) => ({
+    value,
+    label: t(`earnings.ranges.${value}`),
+  }));
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const { choicePresentation } = useOverlayPresentation();
   const { toast } = useToast();
-  const [dateRange, setDateRange] = React.useState<(typeof DATE_RANGE_OPTIONS)[number]>(
-    DATE_RANGE_OPTIONS[0]
-  );
+  const [dateRangeValue, setDateRangeValue] = React.useState<DateRangeValue>("last-7-days");
   const [appliedRange, setAppliedRange] = React.useState<AppliedDateRange>(() =>
     getPresetRange("last-7-days")
   );
   const [customStart, setCustomStart] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").dateFrom)
+    toDateOption(getPresetRange("last-7-days").dateFrom, localeTag)
   );
   const [customEnd, setCustomEnd] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").dateTo)
+    toDateOption(getPresetRange("last-7-days").dateTo, localeTag)
   );
   const [customRangeError, setCustomRangeError] = React.useState<string | null>(null);
   const [isCustomRangeOpen, setIsCustomRangeOpen] = React.useState(false);
@@ -456,7 +479,7 @@ export default function EarningsScreen(): React.JSX.Element {
 
   const orderTypes = Array.from(
     data.reduce((groups, entry) => {
-      const name = formatOrderType(entry.order_type);
+      const name = formatOrderType(entry.order_type, t);
       const current = groups.get(name) ?? { name, amount: 0, count: 0 };
       current.amount += entry.total_price;
       current.count += 1;
@@ -468,15 +491,16 @@ export default function EarningsScreen(): React.JSX.Element {
     .sort((a, b) => b.amount - a.amount);
 
   const recentEntries = data.slice(0, 8);
-  const periodLabel = formatPeriodLabel(dateFrom, dateTo);
+  const periodLabel = formatPeriodLabel(dateFrom, dateTo, localeTag);
+  const dateRange = dateRangeOptions.find((option) => option.value === dateRangeValue)!;
   const dateRangeLabel =
-    dateRange.value === "custom"
-      ? `${toDateOption(dateFrom).label} – ${toDateOption(dateTo).label}`
+    dateRangeValue === "custom"
+      ? `${toDateOption(dateFrom, localeTag).label} – ${toDateOption(dateTo, localeTag).label}`
       : dateRange.label;
 
   const handleRangeChange = (option: { value: string; label: string } | undefined) => {
     if (!option) return;
-    const nextOption = DATE_RANGE_OPTIONS.find((item) => item.value === option.value);
+    const nextOption = dateRangeOptions.find((item) => item.value === option.value);
     if (!nextOption) return;
 
     setCustomRangeError(null);
@@ -485,7 +509,7 @@ export default function EarningsScreen(): React.JSX.Element {
       return;
     }
 
-    setDateRange(nextOption);
+    setDateRangeValue(nextOption.value);
     setAppliedRange(getPresetRange(nextOption.value));
   };
 
@@ -496,24 +520,27 @@ export default function EarningsScreen(): React.JSX.Element {
     let rangeError: string | null = null;
 
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      rangeError = "Select both a start and end date.";
+      rangeError = t("earnings.errors.selectDates");
     } else if (start > end) {
-      rangeError = "The start date must be on or before the end date.";
+      rangeError = t("earnings.errors.startAfterEnd");
     } else if (end > today) {
-      rangeError = "The end date cannot be in the future.";
+      rangeError = t("earnings.errors.future");
     } else {
       const inclusiveDays = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
-      if (inclusiveDays > 366) rangeError = "Choose a range of 366 days or less.";
+      if (inclusiveDays > 366) rangeError = t("earnings.errors.tooLong");
     }
 
     setCustomRangeError(rangeError);
     if (rangeError) {
-      toast.show({ variant: "warning", label: "Invalid date range", description: rangeError });
+      toast.show({
+        variant: "warning",
+        label: t("earnings.errors.invalid"),
+        description: rangeError,
+      });
       return;
     }
 
-    const customOption = DATE_RANGE_OPTIONS.find((option) => option.value === "custom");
-    if (customOption) setDateRange(customOption);
+    setDateRangeValue("custom");
     setAppliedRange({ dateFrom: customStart.value, dateTo: customEnd.value });
     setIsCustomRangeOpen(false);
   };
@@ -528,7 +555,9 @@ export default function EarningsScreen(): React.JSX.Element {
       >
         <View className="w-full gap-6">
           <View className="flex-col landscape:flex-row items-start landscape:items-center justify-between gap-3">
-            <Typography type="body-sm">Settled sales for {periodLabel}</Typography>
+            <Typography type="body-sm">
+              {t("earnings.settledSalesFor", { period: periodLabel })}
+            </Typography>
             <Select
               presentation={choicePresentation}
               value={dateRange}
@@ -546,8 +575,8 @@ export default function EarningsScreen(): React.JSX.Element {
                   presentation={choicePresentation}
                   width={choicePresentation === "popover" ? 200 : undefined}
                 >
-                  <Select.ListLabel>Date Range</Select.ListLabel>
-                  {DATE_RANGE_OPTIONS.map((option) => (
+                  <Select.ListLabel>{t("earnings.dateRange")}</Select.ListLabel>
+                  {dateRangeOptions.map((option) => (
                     <Select.Item key={option.value} value={option.value} label={option.label} />
                   ))}
                 </Select.Content>
@@ -556,32 +585,32 @@ export default function EarningsScreen(): React.JSX.Element {
           </View>
 
           {isLoading ? (
-            <LoadingState message="Loading earnings…" />
+            <LoadingState message={t("earnings.loading")} />
           ) : isError ? (
             <ErrorState error={error} onRetry={refetch} />
           ) : (
             <>
               <View className="flex-row flex-wrap gap-4">
                 <SummaryWidget
-                  label="Settled earnings"
+                  label={t("earnings.settledEarnings")}
                   value={formatRupiah(totalEarnings)}
                   icon="wallet-outline"
                   color="success"
                 />
                 <SummaryWidget
-                  label="Settled orders"
+                  label={t("earnings.settledOrders")}
                   value={String(data.length)}
                   icon="receipt-outline"
                   color="accent"
                 />
                 <SummaryWidget
-                  label="Average order"
+                  label={t("earnings.averageOrder")}
                   value={formatRupiah(averageOrder)}
                   icon="analytics-outline"
                   color="warning"
                 />
                 <SummaryWidget
-                  label="Items sold"
+                  label={t("earnings.itemsSold")}
                   value={String(itemCount)}
                   icon="bag-handle-outline"
                   color="default"
@@ -594,9 +623,9 @@ export default function EarningsScreen(): React.JSX.Element {
                     <EmptyState.Media variant="icon">
                       <Ionicons name="wallet-outline" size={20} color={mutedColor} />
                     </EmptyState.Media>
-                    <EmptyState.Title>No settled earnings</EmptyState.Title>
+                    <EmptyState.Title>{t("earnings.empty")}</EmptyState.Title>
                     <EmptyState.Description>
-                      There are no settled order earnings in this period.
+                      {t("earnings.emptyDescription")}
                     </EmptyState.Description>
                   </EmptyState.Header>
                 </EmptyState>

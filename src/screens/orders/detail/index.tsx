@@ -36,10 +36,12 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useState } from "react";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { getLocaleTag, type TranslationKey } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
-function formatDateTime(iso: string): string {
+function formatDateTime(iso: string, localeTag: string): string {
   const d = new Date(iso);
-  return d.toLocaleString("id-ID", {
+  return d.toLocaleString(localeTag, {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -48,11 +50,11 @@ function formatDateTime(iso: string): string {
   });
 }
 
-function formatPickupTime(value: string | null | undefined): string | null {
+function formatPickupTime(value: string | null | undefined, localeTag: string): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isFinite(date.getTime())) {
-    return date.toLocaleString("id-ID", {
+    return date.toLocaleString(localeTag, {
       day: "2-digit",
       month: "short",
       hour: "2-digit",
@@ -129,11 +131,12 @@ function OrderStatusActions({
   isSuccess: boolean;
   onUpdate: (input: { id: string; status: "process" | "completed" }) => void;
 }) {
+  const { t } = useTranslation();
   if (status !== "new" && status !== "process") return null;
 
   return (
     <View className="gap-2">
-      <SectionTitle>Update Status</SectionTitle>
+      <SectionTitle>{t("orders.detail.updateStatus")}</SectionTitle>
       <View className="flex-row gap-3">
         <Button
           className="flex-1"
@@ -144,7 +147,7 @@ function OrderStatusActions({
         >
           <Ionicons name="checkmark-circle-outline" size={16} color="white" />
           <Button.Label className="ml-1.5">
-            {status === "new" ? "Accept" : "Mark Completed"}
+            {status === "new" ? t("orders.detail.accept") : t("orders.detail.markCompleted")}
           </Button.Label>
         </Button>
       </View>
@@ -152,7 +155,7 @@ function OrderStatusActions({
         <Typography className="text-xs text-danger">{getErrorMessage(error)}</Typography>
       ) : null}
       {isSuccess ? (
-        <Typography className="text-xs text-success">Order status updated.</Typography>
+        <Typography className="text-xs text-success">{t("orders.detail.statusUpdated")}</Typography>
       ) : null}
     </View>
   );
@@ -173,11 +176,12 @@ function PaymentQrDialog({
   total: number;
   expiresAt: string | null | undefined;
 }) {
+  const { t } = useTranslation();
   return (
     <AdaptiveFormOverlay
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="QRIS Payment"
+      title={t("orders.detail.qrisPayment")}
       description={code}
     >
       <Separator />
@@ -190,7 +194,7 @@ function PaymentQrDialog({
         </Typography>
         <Countdown
           expiresAt={expiresAt}
-          prefix="QR berlaku"
+          prefix={t("orders.detail.qrValidFor")}
           className="text-xs font-semibold text-warning"
           onExpire={() => onOpenChange(false)}
         />
@@ -208,13 +212,14 @@ function PrinterPromptDialog({
   onClose: () => void;
   onAction: () => void | Promise<void>;
 }) {
+  const { t } = useTranslation();
   return (
     <ActionDialog
       isOpen={prompt !== null}
       onOpenChange={(open) => !open && onClose()}
       title={prompt?.title}
       description={prompt?.message}
-      cancelLabel={prompt?.actionLabel ? "Cancel" : "Close"}
+      cancelLabel={prompt?.actionLabel ? t("common.cancel") : t("common.close")}
       actionLabel={prompt?.actionLabel}
       onAction={onAction}
     />
@@ -222,6 +227,7 @@ function PrinterPromptDialog({
 }
 
 function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () => void }) {
+  const { t } = useTranslation();
   return (
     <View className="flex-1 justify-center bg-background">
       <EmptyState>
@@ -229,14 +235,12 @@ function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () =>
           <EmptyState.Media variant="icon">
             <Ionicons name="receipt-outline" size={20} color={iconColor} />
           </EmptyState.Media>
-          <EmptyState.Title>Order not found</EmptyState.Title>
-          <EmptyState.Description>
-            This order may have been removed or is no longer available.
-          </EmptyState.Description>
+          <EmptyState.Title>{t("orders.detail.notFound")}</EmptyState.Title>
+          <EmptyState.Description>{t("orders.detail.notFoundDescription")}</EmptyState.Description>
         </EmptyState.Header>
         <EmptyState.Content>
           <Button size="sm" variant="outline" onPress={onBack}>
-            <Button.Label>Go back</Button.Label>
+            <Button.Label>{t("common.goBack")}</Button.Label>
           </Button>
         </EmptyState.Content>
       </EmptyState>
@@ -253,12 +257,15 @@ function PrintReceiptToolbar({
   isPrinting: boolean;
   onPrint: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Stack.Toolbar placement="right">
       <Stack.Toolbar.Button
         {...getToolbarIcon("printer")}
         tintColor={color}
-        accessibilityLabel={isPrinting ? "Printing receipt" : "Print receipt"}
+        accessibilityLabel={
+          isPrinting ? t("orders.detail.printingReceipt") : t("orders.detail.printReceipt")
+        }
         disabled={isPrinting}
         onPress={onPrint}
       />
@@ -266,26 +273,119 @@ function PrintReceiptToolbar({
   );
 }
 
+function OrderOverview({
+  order,
+  localeTag,
+  isCompact,
+  foregroundColor,
+  areaName,
+  tableName,
+  pickupTime,
+  customerName,
+}: {
+  order: App.Data.Merchant.Order.OrderData;
+  localeTag: string;
+  isCompact: boolean;
+  foregroundColor: string;
+  areaName: string | null;
+  tableName: string | null;
+  pickupTime: string | null;
+  customerName: string | null;
+}) {
+  const { t } = useTranslation();
+  const orderStatus = getOrderStatus(order.order_status);
+
+  return (
+    <>
+      <Surface className="w-full p-5">
+        <View className={`gap-4 ${isCompact ? "" : "flex-row items-start justify-between"}`}>
+          <View className="flex-1 gap-2">
+            <View className="flex-row items-center gap-2 flex-wrap">
+              <Typography type="h4" weight="bold" className="font-mono tabular-nums">
+                {order.code}
+              </Typography>
+              <Chip color={orderStatus.color} size="sm" variant="soft">
+                <Chip.Label>{t(`orders.status.${orderStatus.value}` as TranslationKey)}</Chip.Label>
+              </Chip>
+            </View>
+            <Typography type="body-sm" color="muted">
+              {formatDateTime(order.created_at, localeTag)}
+            </Typography>
+          </View>
+          <View className={`${isCompact ? "items-start" : "items-end"} gap-1`}>
+            <Typography type="body-xs" color="muted">
+              {t("common.total")}
+            </Typography>
+            <Typography type="h4" weight="bold" className="tabular-nums">
+              {formatRupiah(order.total)}
+            </Typography>
+          </View>
+        </View>
+      </Surface>
+
+      <View className="gap-2">
+        <SectionTitle>{t("orders.detail.orderType")}</SectionTitle>
+        <Surface className="w-full p-4 gap-3">
+          <View className="flex-row items-center gap-3">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-secondary">
+              <Ionicons
+                name={order.order_type === "dine-in" ? "restaurant-outline" : "bag-handle-outline"}
+                size={20}
+                color={foregroundColor}
+              />
+            </View>
+            <View className="flex-1 gap-0.5">
+              <Typography type="body" weight="semibold">
+                {order.order_type === "dine-in" ? t("orders.dineIn") : t("orders.takeaway")}
+              </Typography>
+              <Typography type="body-xs" color="muted">
+                {order.order_type === "dine-in"
+                  ? [areaName, tableName].filter(Boolean).join(" · ") ||
+                    t("orders.detail.tableNotAssigned")
+                  : pickupTime
+                    ? t("orders.detail.pickupAt", { time: pickupTime })
+                    : t("orders.detail.pickupNotSpecified")}
+              </Typography>
+            </View>
+          </View>
+          <DetailRow
+            label={t("orders.detail.customer")}
+            value={customerName ?? t("orders.detail.walkIn")}
+          />
+        </Surface>
+      </View>
+    </>
+  );
+}
+
 export default function OrderDetailScreen() {
-  const { isCompact } = useResponsiveLayout();
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const navigationTheme = useNavigationTheme();
-  const [isQrOpen, setIsQrOpen] = useState(false);
-  const [themeColorForeground, themeColorMuted] = useThemeColor(["foreground", "muted"]);
-  const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
-
+  const themeColorMuted = useThemeColor("muted");
   const { data: order, isLoading, isError, error, refetch } = useOrder(id);
-  const { data: tables } = useTables();
-  const paymentStatus = usePaymentStatus(id);
-  const updateStatus = useUpdateOrderStatus();
 
-  if (isLoading) return <LoadingState message="Loading order…" />;
+  if (isLoading) return <LoadingState message={t("orders.detail.loading")} />;
   if (isError) return <ErrorState error={error} onRetry={refetch} />;
-
   if (!order) {
     return <OrderNotFound iconColor={themeColorMuted} onBack={() => router.back()} />;
   }
+
+  return <OrderDetailContent order={order} />;
+}
+
+function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderData }) {
+  const { locale, t } = useTranslation();
+  const localeTag = getLocaleTag(locale);
+  const { isCompact } = useResponsiveLayout();
+  const navigationTheme = useNavigationTheme();
+  const [isQrOpen, setIsQrOpen] = useState(false);
+  const themeColorForeground = useThemeColor("foreground");
+  const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
+
+  const { data: tables } = useTables();
+  const paymentStatus = usePaymentStatus(order.id);
+  const updateStatus = useUpdateOrderStatus();
 
   const orderStatus = getOrderStatus(order.order_status);
   const paymentStatusPresentation = getPaymentStatus(order.payment_status);
@@ -327,7 +427,7 @@ export default function OrderDetailScreen() {
       : null;
   const matchedTable = tables?.find((table) => table.id === order.orderable?.table_id);
   const areaName = orderAreaName ?? matchedTable?.area_name ?? null;
-  const pickupTime = formatPickupTime(order.orderable?.pickup_time);
+  const pickupTime = formatPickupTime(order.orderable?.pickup_time, localeTag);
   const items = extractOrderItems(order.products);
   const feeAmount = extractNumber(order.payment_fee);
   const canRefreshPayment = !isCashPayment && !!paymentExpiresAt && !paymentExpired;
@@ -343,69 +443,26 @@ export default function OrderDetailScreen() {
       <View className="flex-1 bg-background">
         <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-10 md:px-6">
           <View className="w-full max-w-3xl self-center gap-5">
-            <Surface className="w-full p-5">
-              <View className={`gap-4 ${isCompact ? "" : "flex-row items-start justify-between"}`}>
-                <View className="flex-1 gap-2">
-                  <View className="flex-row items-center gap-2 flex-wrap">
-                    <Typography type="h4" weight="bold" className="font-mono tabular-nums">
-                      {order.code}
-                    </Typography>
-                    <Chip color={orderStatus.color} size="sm" variant="soft">
-                      <Chip.Label>{orderStatus.label}</Chip.Label>
-                    </Chip>
-                  </View>
-                  <Typography type="body-sm" color="muted">
-                    {formatDateTime(order.created_at)}
-                  </Typography>
-                </View>
-                <View className={`${isCompact ? "items-start" : "items-end"} gap-1`}>
-                  <Typography type="body-xs" color="muted">
-                    Total
-                  </Typography>
-                  <Typography type="h4" weight="bold" className="tabular-nums">
-                    {formatRupiah(order.total)}
-                  </Typography>
-                </View>
-              </View>
-            </Surface>
-
-            <View className="gap-2">
-              <SectionTitle>Order Type</SectionTitle>
-              <Surface className="w-full p-4 gap-3">
-                <View className="flex-row items-center gap-3">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-secondary">
-                    <Ionicons
-                      name={
-                        order.order_type === "dine-in" ? "restaurant-outline" : "bag-handle-outline"
-                      }
-                      size={20}
-                      color={themeColorForeground}
-                    />
-                  </View>
-                  <View className="flex-1 gap-0.5">
-                    <Typography type="body" weight="semibold">
-                      {order.order_type === "dine-in" ? "Dine-in" : "Takeaway"}
-                    </Typography>
-                    <Typography type="body-xs" color="muted">
-                      {order.order_type === "dine-in"
-                        ? [areaName, tableName].filter(Boolean).join(" · ") || "Table not assigned"
-                        : pickupTime
-                          ? `Pickup at ${pickupTime}`
-                          : "Pickup time not specified"}
-                    </Typography>
-                  </View>
-                </View>
-                <DetailRow label="Customer" value={customerName ?? "Walk-in"} />
-              </Surface>
-            </View>
+            <OrderOverview
+              order={order}
+              localeTag={localeTag}
+              isCompact={isCompact}
+              foregroundColor={themeColorForeground}
+              areaName={areaName}
+              tableName={tableName}
+              pickupTime={pickupTime}
+              customerName={customerName}
+            />
 
             <View className="gap-5">
               <View className="flex-1 gap-4">
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between">
-                    <SectionTitle>Order Items</SectionTitle>
+                    <SectionTitle>{t("orders.detail.orderItems")}</SectionTitle>
                     <Typography type="body-xs" color="muted">
-                      {items.length} item{items.length === 1 ? "" : "s"}
+                      {t(items.length === 1 ? "orders.itemOne" : "orders.itemOther", {
+                        count: items.length,
+                      })}
                     </Typography>
                   </View>
                   <Surface className="w-full overflow-hidden">
@@ -459,7 +516,7 @@ export default function OrderDetailScreen() {
                         )}
                         {order.products[index]?.notes ? (
                           <Typography type="body-xs" color="muted" className="italic">
-                            Note: {order.products[index].notes}
+                            {t("orders.detail.note", { note: order.products[index].notes ?? "" })}
                           </Typography>
                         ) : null}
                       </View>
@@ -469,7 +526,7 @@ export default function OrderDetailScreen() {
 
                 {order.notes ? (
                   <View className="gap-2">
-                    <SectionTitle>Order Notes</SectionTitle>
+                    <SectionTitle>{t("orders.detail.orderNotes")}</SectionTitle>
                     <Surface className="w-full p-4">
                       <Typography type="body-sm">{order.notes}</Typography>
                     </Surface>
@@ -480,13 +537,17 @@ export default function OrderDetailScreen() {
               <View className="gap-4">
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between gap-3">
-                    <SectionTitle>Payment</SectionTitle>
+                    <SectionTitle>{t("orders.detail.payment")}</SectionTitle>
                     <Chip color={paymentStatusPresentation.color} size="sm" variant="soft">
-                      <Chip.Label>{paymentStatusPresentation.label}</Chip.Label>
+                      <Chip.Label>
+                        {t(
+                          `orders.paymentStatus.${paymentStatusPresentation.value}` as TranslationKey
+                        )}
+                      </Chip.Label>
                     </Chip>
                   </View>
                   <Surface className="w-full p-4 gap-3">
-                    <DetailRow label="Method" value={paymentName} />
+                    <DetailRow label={t("orders.detail.method")} value={paymentName} />
                     {visiblePaymentDetailsRows.map((row) => (
                       <DetailRow key={row.label} label={row.label} value={row.value} />
                     ))}
@@ -494,14 +555,14 @@ export default function OrderDetailScreen() {
                     {canRefreshPayment ? (
                       <Countdown
                         expiresAt={paymentExpiresAt}
-                        prefix="Expires in"
+                        prefix={t("orders.detail.expiresIn")}
                         className="text-sm text-warning font-semibold"
                       />
                     ) : null}
                     {canShowQr ? (
                       <Button variant="outline" onPress={() => setIsQrOpen(true)}>
                         <Ionicons name="qr-code-outline" size={16} color={themeColorForeground} />
-                        <Button.Label>Show QRIS</Button.Label>
+                        <Button.Label>{t("orders.detail.showQris")}</Button.Label>
                       </Button>
                     ) : null}
                     {canRefreshPayment ? (
@@ -515,7 +576,7 @@ export default function OrderDetailScreen() {
                         ) : (
                           <Ionicons name="refresh-outline" size={16} color={themeColorForeground} />
                         )}
-                        <Button.Label>Refresh Status</Button.Label>
+                        <Button.Label>{t("orders.detail.refreshStatus")}</Button.Label>
                       </Button>
                     ) : null}
                     {paymentStatus.isError ? (
@@ -527,12 +588,14 @@ export default function OrderDetailScreen() {
                 </View>
 
                 <View className="gap-2">
-                  <SectionTitle>Summary</SectionTitle>
+                  <SectionTitle>{t("orders.detail.summary")}</SectionTitle>
                   <Surface className="w-full p-4 gap-3">
-                    <MoneyRow label="Subtotal" value={order.subtotal} />
-                    {feeAmount > 0 ? <MoneyRow label="Payment fee" value={feeAmount} /> : null}
+                    <MoneyRow label={t("common.subtotal")} value={order.subtotal} />
+                    {feeAmount > 0 ? (
+                      <MoneyRow label={t("orders.detail.paymentFee")} value={feeAmount} />
+                    ) : null}
                     <Separator />
-                    <MoneyRow label="Total" value={order.total} emphasized />
+                    <MoneyRow label={t("common.total")} value={order.total} emphasized />
                   </Surface>
                 </View>
 

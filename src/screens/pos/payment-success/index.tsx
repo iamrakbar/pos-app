@@ -16,13 +16,15 @@ import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ActionDialog from "@/components/common/action-dialog";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { getLocaleTag, type Locale } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
 type PaymentSuccessContentProps = {
   onNewOrder?: () => void;
 };
 
-function formatDateTime(date: Date): string {
-  return date.toLocaleString("id-ID", {
+function formatDateTime(date: Date, locale: Locale): string {
+  return date.toLocaleString(getLocaleTag(locale), {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -32,6 +34,7 @@ function formatDateTime(date: Date): string {
 }
 
 export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps): JSX.Element {
+  const { locale, t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const themeColorForeground = useThemeColor("foreground");
   const paymentSession = usePOSStore((s) => s.paymentSession);
@@ -54,8 +57,8 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
   const handlePrintReceipt = async () => {
     if (!checkoutResult) {
       setPrompt({
-        title: "Order data unavailable",
-        message: "The completed order data is not available for receipt printing.",
+        title: t("paymentSuccess.orderUnavailable"),
+        message: t("paymentSuccess.orderUnavailableDescription"),
       });
       return;
     }
@@ -96,7 +99,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
               </View>
               <View className="items-center gap-1.5">
                 <Typography type="h4" weight="bold">
-                  Payment Complete
+                  {t("paymentSuccess.complete")}
                 </Typography>
                 <Typography type="h2" weight="bold" className="tabular-nums">
                   {formatRupiah(paymentSession.amount)}
@@ -110,7 +113,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
             <Surface className="w-full p-5 gap-3">
               <View className="flex-row justify-between gap-4">
                 <Typography type="body-sm" color="muted">
-                  Payment method
+                  {t("payment.method")}
                 </Typography>
                 <Typography type="body-sm" weight="semibold">
                   {paymentSession.payment_type}
@@ -120,7 +123,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                 <>
                   <View className="flex-row justify-between gap-4">
                     <Typography type="body-sm" color="muted">
-                      Cash received
+                      {t("paymentSuccess.cashReceived")}
                     </Typography>
                     <Typography type="body-sm" weight="semibold" className="tabular-nums">
                       {formatRupiah(paymentSession.cash_received)}
@@ -128,7 +131,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                   </View>
                   <View className="flex-row justify-between gap-4">
                     <Typography type="body-sm" color="muted">
-                      Change
+                      {t("paymentSuccess.change")}
                     </Typography>
                     <Typography type="body-sm" weight="semibold" className="tabular-nums">
                       {formatRupiah(paymentSession.change ?? 0)}
@@ -138,24 +141,26 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
               ) : null}
               <View className="flex-row justify-between gap-4">
                 <Typography type="body-sm" color="muted">
-                  Date & time
+                  {t("paymentSuccess.dateTime")}
                 </Typography>
                 <Typography type="body-sm" weight="semibold" className="text-right">
-                  {formatDateTime(paidAt)}
+                  {formatDateTime(paidAt, locale)}
                 </Typography>
               </View>
               <View className="flex-row justify-between gap-4">
                 <Typography type="body-sm" color="muted">
-                  Items
+                  {t("paymentSuccess.items")}
                 </Typography>
                 <Typography type="body-sm" weight="semibold">
-                  {totalQty} {totalQty === 1 ? "item" : "items"}
+                  {t(totalQty === 1 ? "paymentSuccess.itemOne" : "paymentSuccess.itemOther", {
+                    count: totalQty,
+                  })}
                 </Typography>
               </View>
               {checkoutResult?.code ? (
                 <View className="flex-row justify-between gap-4">
                   <Typography type="body-sm" color="muted">
-                    Order
+                    {t("paymentSuccess.order")}
                   </Typography>
                   <Typography type="body-sm" weight="semibold" className="font-mono">
                     {checkoutResult.code}
@@ -174,10 +179,10 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1 gap-0.5">
                 <Typography type="body-sm" weight="semibold">
-                  Auto-print on success
+                  {t("paymentSuccess.autoPrint")}
                 </Typography>
                 <Typography type="body-xs" color="muted">
-                  Print completed payments automatically.
+                  {t("paymentSuccess.autoPrintDescription")}
                 </Typography>
               </View>
               <Switch
@@ -203,13 +208,13 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                     <Ionicons name="print-outline" size={16} color={themeColorForeground} />
                   )}
                   <Button.Label className="ml-2">
-                    {isPrinting ? "Printing…" : "Print Receipt"}
+                    {isPrinting ? t("paymentSuccess.printing") : t("paymentSuccess.printReceipt")}
                   </Button.Label>
                 </Button>
               ) : null}
               <Button className={isCompact ? "w-full" : "flex-1"} onPress={handleNewOrder}>
                 <Ionicons name="add-circle-outline" size={16} color="white" />
-                <Button.Label className="ml-2">New Order</Button.Label>
+                <Button.Label className="ml-2">{t("paymentSuccess.newOrder")}</Button.Label>
               </Button>
             </View>
           </View>
@@ -221,7 +226,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         onOpenChange={(open) => !open && setPrompt(null)}
         title={prompt?.title}
         description={prompt?.message}
-        cancelLabel={prompt?.actionLabel ? "Cancel" : "Close"}
+        cancelLabel={prompt?.actionLabel ? t("common.cancel") : t("common.close")}
         actionLabel={prompt?.actionLabel}
         onAction={handlePromptAction}
       />

@@ -1,7 +1,14 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import * as Localization from "expo-localization";
-import { i18n, isLocale, translate, type Locale } from "@/locales";
+import {
+  i18n,
+  isLocale,
+  translate,
+  type Locale,
+  type Translate,
+  type TranslationParams,
+} from "@/locales";
 import { zustandStorage } from "@/lib/storage";
 
 // Default: detect from device; fallback to 'id'
@@ -48,10 +55,10 @@ export const useLocale = create<UseLocaleState>()(
   )
 );
 
-export function useTranslation() {
+export function useTranslation(): { locale: Locale; t: Translate } {
   const locale = useLocale((state) => state.locale);
   return {
     locale,
-    t: (key: string, params?: Record<string, string | number>) => translate(locale, key, params),
+    t: (key, params?: TranslationParams) => translate(locale, key, params),
   };
 }

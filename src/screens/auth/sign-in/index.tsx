@@ -1,30 +1,38 @@
 import Logo from "@/components/common/logo";
 import { Button, Card, InputGroup, Typography, useThemeColor } from "heroui-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState, type JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginFormValues } from "@/schemas/auth";
+import { createLoginSchema, type LoginFormValues } from "@/schemas/auth";
 import { useLogin } from "@/hooks/use-login";
 import { getErrorMessage } from "@/api/api-error";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function SignInScreen(): JSX.Element {
+  const { locale, t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const themeColorAccent = useThemeColor("accent");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const login = useLogin();
+  const loginSchema = createLoginSchema(t);
 
   const {
     control,
+    clearErrors,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   const onSubmit = (values: LoginFormValues) => {
     login.mutate(values);
@@ -54,7 +62,7 @@ export default function SignInScreen(): JSX.Element {
                     <InputGroup.Input
                       value={field.value}
                       onChangeText={field.onChange}
-                      placeholder="Enter your email"
+                      placeholder={t("auth.emailPlaceholder")}
                       autoCapitalize="none"
                       keyboardType="email-address"
                     />
@@ -78,13 +86,17 @@ export default function SignInScreen(): JSX.Element {
                     <InputGroup.Input
                       value={field.value}
                       onChangeText={field.onChange}
-                      placeholder="Enter your password"
+                      placeholder={t("auth.passwordPlaceholder")}
                       secureTextEntry={!isPasswordVisible}
                     />
                     <InputGroup.Suffix>
                       <Pressable
                         onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                         hitSlop={20}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                          isPasswordVisible ? t("auth.hidePassword") : t("auth.showPassword")
+                        }
                       >
                         <Ionicons
                           name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
@@ -112,7 +124,7 @@ export default function SignInScreen(): JSX.Element {
               onPress={handleSubmit(onSubmit)}
               isDisabled={login.isPending}
             >
-              {login.isPending ? <ActivityIndicator color="#fff" /> : "Login"}
+              {login.isPending ? <ActivityIndicator color="#fff" /> : t("auth.login")}
             </Button>
           </Card>
         </View>

@@ -3,12 +3,13 @@ import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import { areaSchema, type AreaFormValues } from "@/schemas/area";
+import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Label, TextField, Typography, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type AreaData = App.Data.Merchant.Area.AreaData;
 
@@ -23,14 +24,17 @@ export default function AreaFormDialog({
   isOpen,
   onOpenChange,
 }: AreaFormDialogProps): React.JSX.Element {
+  const { locale, t } = useTranslation();
   const { toast } = useToast();
   const { isPhonePortrait } = useOverlayPresentation();
   const createMutation = useCreateArea();
   const updateMutation = useUpdateArea(area?.id ?? "");
   const deleteMutation = useDeleteArea();
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const areaSchema = createAreaSchema(t);
   const {
     control,
+    clearErrors,
     handleSubmit,
     reset,
     setError,
@@ -39,6 +43,10 @@ export default function AreaFormDialog({
     resolver: zodResolver(areaSchema),
     defaultValues: { name: "" },
   });
+
+  React.useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -50,14 +58,21 @@ export default function AreaFormDialog({
   const submitArea = async (values: AreaFormValues) => {
     try {
       await (area ? updateMutation.mutateAsync(values) : createMutation.mutateAsync(values));
-      toast.show({ variant: "success", label: area ? "Area updated" : "Area created" });
+      toast.show({
+        variant: "success",
+        label: area ? t("areasManagement.areaUpdated") : t("areasManagement.areaCreated"),
+      });
       onOpenChange(false);
     } catch (error) {
       const fieldMessage = isApiError(error) ? error.errors?.name?.[0] : undefined;
       if (fieldMessage) setError("name", { type: "server", message: fieldMessage });
       const message = fieldMessage ?? getErrorMessage(error);
       setError("root.server", { type: "server", message });
-      toast.show({ variant: "danger", label: "Could not save area", description: message });
+      toast.show({
+        variant: "danger",
+        label: t("areasManagement.areaSaveFailed"),
+        description: message,
+      });
     }
   };
 
@@ -67,11 +82,11 @@ export default function AreaFormDialog({
       await deleteMutation.mutateAsync(area.id);
       setIsDeleteOpen(false);
       onOpenChange(false);
-      toast.show({ variant: "success", label: "Area deleted" });
+      toast.show({ variant: "success", label: t("areasManagement.areaDeleted") });
     } catch (error) {
       toast.show({
         variant: "danger",
-        label: "Could not delete area",
+        label: t("areasManagement.areaDeleteFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -82,8 +97,8 @@ export default function AreaFormDialog({
       <AdaptiveFormOverlay
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        title={area ? "Edit area" : "New area"}
-        description="Name the space where its tables are located."
+        title={area ? t("areasManagement.editAreaOverlay") : t("areasManagement.newAreaOverlay")}
+        description={t("areasManagement.areaDescription")}
         footer={
           <View
             className={`gap-3 px-5 pb-5 pt-4 ${
@@ -96,7 +111,7 @@ export default function AreaFormDialog({
                 className={isPhonePortrait ? "w-full" : undefined}
                 onPress={() => setIsDeleteOpen(true)}
               >
-                <Button.Label>Delete</Button.Label>
+                <Button.Label>{t("common.delete")}</Button.Label>
               </Button>
             ) : null}
             <View
@@ -109,14 +124,16 @@ export default function AreaFormDialog({
                 className={isPhonePortrait ? "w-full" : undefined}
                 onPress={() => onOpenChange(false)}
               >
-                <Button.Label>Cancel</Button.Label>
+                <Button.Label>{t("common.cancel")}</Button.Label>
               </Button>
               <Button
                 className={isPhonePortrait ? "w-full" : undefined}
                 onPress={handleSubmit(submitArea)}
                 isDisabled={isSaving}
               >
-                <Button.Label>{isSaving ? "Saving…" : "Save area"}</Button.Label>
+                <Button.Label>
+                  {isSaving ? t("common.saving") : t("areasManagement.saveArea")}
+                </Button.Label>
               </Button>
             </View>
           </View>
@@ -128,8 +145,13 @@ export default function AreaFormDialog({
             name="name"
             render={({ field: { value, onChange } }) => (
               <TextField isRequired isInvalid={Boolean(errors.name)}>
-                <Label>Name</Label>
-                <Input value={value} onChangeText={onChange} placeholder="Indoor" autoFocus />
+                <Label>{t("areasManagement.name")}</Label>
+                <Input
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder={t("areasManagement.areaNamePlaceholder")}
+                  autoFocus
+                />
                 {errors.name?.message ? (
                   <Typography type="body-xs" className="text-danger">
                     {errors.name.message}
@@ -149,9 +171,9 @@ export default function AreaFormDialog({
       <ActionDialog
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
-        title="Delete area?"
-        description="The server may reject deletion while tables or orders still reference this area."
-        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        title={t("areasManagement.deleteAreaTitle")}
+        description={t("areasManagement.deleteAreaDescription")}
+        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
         actionVariant="danger"
         isActionDisabled={deleteMutation.isPending}
         onAction={handleDelete}

@@ -9,7 +9,11 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from "@/hooks/db/use-categories";
-import { categorySchema, toCategoryRequest, type CategoryFormValues } from "@/schemas/category";
+import {
+  createCategorySchema,
+  toCategoryRequest,
+  type CategoryFormValues,
+} from "@/schemas/category";
 import { useCategoryFormNavigation } from "@/stores/use-category-form-navigation";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +33,7 @@ import {
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Pressable, ScrollView, View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 const CATEGORY_FIELDS = new Set<keyof CategoryFormValues>([
   "name",
@@ -53,6 +58,7 @@ function FieldMessage({ message, fallback }: { message?: string; fallback?: stri
 }
 
 export default function CategoryFormScreen(): React.JSX.Element {
+  const { locale, t } = useTranslation();
   const { id, selectForProduct } = useLocalSearchParams<{
     id: string;
     selectForProduct?: string;
@@ -69,8 +75,10 @@ export default function CategoryFormScreen(): React.JSX.Element {
   const setCreatedCategory = useCategoryFormNavigation((state) => state.setCreatedCategory);
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
   const hydratedCategoryId = React.useRef<string | null>(null);
+  const categorySchema = createCategorySchema(t);
   const {
     control,
+    clearErrors,
     handleSubmit,
     reset,
     setError,
@@ -79,6 +87,10 @@ export default function CategoryFormScreen(): React.JSX.Element {
     resolver: zodResolver(categorySchema),
     defaultValues: { name: "", description: "", position: "0", active: true },
   });
+
+  React.useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   React.useEffect(() => {
     if (isNew || !category || hydratedCategoryId.current === category.id) return;
@@ -93,7 +105,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
   }, [category, isNew, reset]);
 
   if (!isNew && categoryQuery.isLoading) {
-    return <LoadingState message="Loading category…" />;
+    return <LoadingState message={t("categories.loadingOne")} />;
   }
 
   if (!isNew && categoryQuery.isError) {
@@ -127,14 +139,18 @@ export default function CategoryFormScreen(): React.JSX.Element {
 
       toast.show({
         variant: "success",
-        label: isNew ? "Category created" : "Category updated",
+        label: isNew ? t("categories.created") : t("categories.updated"),
       });
       router.back();
     } catch (error) {
       const hasFieldErrors = applyServerErrors(error);
-      const message = hasFieldErrors ? "Check the highlighted fields." : getErrorMessage(error);
+      const message = hasFieldErrors ? t("categories.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
-      toast.show({ variant: "danger", label: "Could not save category", description: message });
+      toast.show({
+        variant: "danger",
+        label: t("categories.saveFailed"),
+        description: message,
+      });
     }
   };
 
@@ -142,12 +158,12 @@ export default function CategoryFormScreen(): React.JSX.Element {
     try {
       await deleteMutation.mutateAsync(id);
       setIsConfirmingDelete(false);
-      toast.show({ variant: "success", label: "Category deleted" });
+      toast.show({ variant: "success", label: t("categories.deleted") });
       router.back();
     } catch (error) {
       toast.show({
         variant: "danger",
-        label: "Could not delete category",
+        label: t("categories.deleteFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -157,13 +173,15 @@ export default function CategoryFormScreen(): React.JSX.Element {
 
   return (
     <>
-      <Stack.Screen options={{ title: isNew ? "New Category" : "Edit Category" }} />
+      <Stack.Screen
+        options={{ title: isNew ? t("categories.newTitle") : t("categories.editTitle") }}
+      />
       {!isNew ? (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button
             {...getToolbarIcon("trash")}
             tintColor={dangerColor}
-            accessibilityLabel="Delete category"
+            accessibilityLabel={t("categories.deleteAccessibility")}
             onPress={() => setIsConfirmingDelete(true)}
           />
         </Stack.Toolbar>
@@ -177,10 +195,10 @@ export default function CategoryFormScreen(): React.JSX.Element {
         <Card className="gap-3 w-full max-w-3xl overflow-hidden">
           <Card.Header>
             <View className="gap-1">
-              <Card.Title>{isNew ? "Create Category" : "Category Details"}</Card.Title>
-              <Card.Description>
-                Organize products and control whether this category is available.
-              </Card.Description>
+              <Card.Title>
+                {isNew ? t("categories.createTitle") : t("categories.detailsTitle")}
+              </Card.Title>
+              <Card.Description>{t("categories.formDescription")}</Card.Description>
             </View>
           </Card.Header>
 
@@ -190,8 +208,12 @@ export default function CategoryFormScreen(): React.JSX.Element {
               name="name"
               render={({ field: { value, onChange } }) => (
                 <TextField isRequired isInvalid={Boolean(errors.name)}>
-                  <Label>Name</Label>
-                  <Input value={value} onChangeText={onChange} placeholder="Main dishes" />
+                  <Label>{t("categories.name")}</Label>
+                  <Input
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder={t("categories.namePlaceholder")}
+                  />
                   <FieldMessage message={errors.name?.message} />
                 </TextField>
               )}
@@ -202,11 +224,11 @@ export default function CategoryFormScreen(): React.JSX.Element {
               name="description"
               render={({ field: { value, onChange } }) => (
                 <TextField isInvalid={Boolean(errors.description)}>
-                  <Label>Description</Label>
+                  <Label>{t("categories.description")}</Label>
                   <TextArea
                     value={value}
                     onChangeText={onChange}
-                    placeholder="Optional category description"
+                    placeholder={t("categories.descriptionPlaceholder")}
                   />
                   <FieldMessage message={errors.description?.message} />
                 </TextField>
@@ -218,7 +240,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
               name="position"
               render={({ field: { value, onChange } }) => (
                 <StringNumberField
-                  label="Position"
+                  label={t("categories.position")}
                   value={value}
                   onChange={onChange}
                   minValue={0}
@@ -227,7 +249,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
                 >
                   <FieldMessage
                     message={errors.position?.message}
-                    fallback="Lower positions appear first."
+                    fallback={t("categories.positionDescription")}
                   />
                 </StringNumberField>
               )}
@@ -245,10 +267,10 @@ export default function CategoryFormScreen(): React.JSX.Element {
                 >
                   <View className="flex-1">
                     <Typography type="body-sm" weight="semibold">
-                      Active
+                      {t("common.active")}
                     </Typography>
                     <Typography type="body-xs" color="muted">
-                      Show in product and POS category filters.
+                      {t("categories.activeDescription")}
                     </Typography>
                   </View>
                   <Switch isSelected={value} onSelectedChange={onChange} />
@@ -271,14 +293,14 @@ export default function CategoryFormScreen(): React.JSX.Element {
             onPress={() => router.back()}
             isDisabled={isSaving}
           >
-            <Button.Label>Cancel</Button.Label>
+            <Button.Label>{t("common.cancel")}</Button.Label>
           </Button>
           <Button
             className="flex-1 w-full"
             onPress={handleSubmit(submitCategory)}
             isDisabled={isSaving}
           >
-            <Button.Label>{isSaving ? "Saving…" : "Save category"}</Button.Label>
+            <Button.Label>{isSaving ? t("common.saving") : t("categories.save")}</Button.Label>
           </Button>
         </View>
       </ScrollView>
@@ -286,9 +308,9 @@ export default function CategoryFormScreen(): React.JSX.Element {
       <ActionDialog
         isOpen={isConfirmingDelete}
         onOpenChange={setIsConfirmingDelete}
-        title="Delete category?"
-        description="The server may reject deletion while products still use this category."
-        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        title={t("categories.deleteTitle")}
+        description={t("categories.deleteDescription")}
+        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
         actionVariant="danger"
         isActionDisabled={deleteMutation.isPending}
         onAction={handleDelete}

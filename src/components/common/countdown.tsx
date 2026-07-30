@@ -1,6 +1,7 @@
 import { Typography } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type CountdownProps = {
   expiresAt: string | number | Date | null | undefined;
@@ -30,11 +31,13 @@ function formatRemaining(ms: number): string {
 
 export default function Countdown({
   expiresAt,
-  prefix = "Expires in",
+  prefix,
   className,
   prominent = false,
   onExpire,
 }: CountdownProps) {
+  const { t } = useTranslation();
+  const resolvedPrefix = prefix ?? t("common.expiresIn");
   const expiryTimestamp = toTimestamp(expiresAt);
   const [now, setNow] = useState(() => Date.now());
   const onExpireRef = useRef(onExpire);
@@ -63,11 +66,11 @@ export default function Countdown({
     return (
       <View
         accessibilityRole="timer"
-        accessibilityLabel={`${prefix} ${formatRemaining(remainingMs)}`}
+        accessibilityLabel={`${resolvedPrefix} ${formatRemaining(remainingMs)}`}
         className="flex-row items-center justify-between rounded-lg bg-warning/10 px-4 py-3"
       >
         <Typography type="body-sm" weight="semibold" className="text-warning">
-          {prefix}
+          {resolvedPrefix}
         </Typography>
         <Typography.Heading type="h4" className="text-warning tabular-nums">
           {formatRemaining(remainingMs)}
@@ -78,7 +81,7 @@ export default function Countdown({
 
   return (
     <Typography className={className ?? "text-xs text-warning"}>
-      {prefix} {formatRemaining(remainingMs)}
+      {resolvedPrefix} {formatRemaining(remainingMs)}
     </Typography>
   );
 }

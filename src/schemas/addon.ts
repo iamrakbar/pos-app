@@ -1,7 +1,8 @@
-import { z } from 'zod';
-import type { AddOnGroup } from '@/types/pos';
+import type { Translate } from "@/locales";
+import type { AddOnGroup } from "@/types/pos";
+import { z } from "zod";
 
-export function createAddOnSchema(groups: AddOnGroup[]) {
+export function createAddOnSchema(groups: AddOnGroup[], t: Translate) {
   return z
     .object({
       radioSelections: z.record(z.string(), z.string()),
@@ -15,8 +16,8 @@ export function createAddOnSchema(groups: AddOnGroup[]) {
           if (!data.radioSelections[group.id]) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `${group.name} wajib diisi`,
-              path: ['radioSelections', group.id],
+              message: t("validation.addOnRequired", { group: group.name }),
+              path: ["radioSelections", group.id],
             });
           }
         } else {
@@ -24,8 +25,11 @@ export function createAddOnSchema(groups: AddOnGroup[]) {
           if (selected.length < group.min) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `${group.name} wajib diisi (min. ${group.min})`,
-              path: ['checkboxSelections', group.id],
+              message: t("validation.addOnMinimum", {
+                group: group.name,
+                min: group.min,
+              }),
+              path: ["checkboxSelections", group.id],
             });
           }
         }

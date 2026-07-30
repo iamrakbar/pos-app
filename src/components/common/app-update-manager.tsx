@@ -10,6 +10,7 @@ import {
 } from "heroui-native";
 import { useState, type JSX } from "react";
 import { Alert as NativeAlert, View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type AppUpdateManagerProps = {
   mode: "banner" | "settings";
@@ -17,27 +18,18 @@ type AppUpdateManagerProps = {
 
 type UpdateActionStatus = "idle" | "checking" | "downloading" | "restarting";
 
-const updateDateFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const UPDATE_DATE_FORMATTERS = {
+  en: new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }),
+  id: new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }),
+} as const;
 
-function formatDate(value?: Date | null): string {
-  if (!value) return "Not available";
-  return updateDateFormatter.format(value);
-}
-
-function shortId(value?: string | null): string {
-  if (!value) return "Not available";
+function shortId(value: string | null | undefined, fallback: string): string {
+  if (!value) return fallback;
   return value.slice(0, 8);
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return "Unable to complete update request.";
-}
-
 export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.Element | null {
+  const { locale, t } = useTranslation();
   const updates = Updates.useUpdates();
   const [themeColorAccent, themeColorBackground] = useThemeColor(["accent", "background"]);
   const [actionStatus, setActionStatus] = useState<UpdateActionStatus>("idle");
@@ -53,22 +45,26 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
     actionStatus === "restarting";
   const isSupported = Updates.isEnabled && !__DEV__;
   const downloadedUpdateId = updates.downloadedUpdate?.updateId ?? "rollback";
+  const notAvailable = t("updates.notAvailable");
+  const dateFormatter = UPDATE_DATE_FORMATTERS[locale];
+  const formatDate = (value?: Date | null): string =>
+    value ? dateFormatter.format(value) : notAvailable;
 
   const statusText = (() => {
-    if (!Updates.isEnabled) return "Updates are not enabled for this build.";
-    if (__DEV__) return "Updates can be checked in release builds only.";
-    if (updates.isRestarting || actionStatus === "restarting") return "Restarting app...";
-    if (updates.isDownloading || actionStatus === "downloading") return "Downloading update...";
-    if (updates.isChecking || actionStatus === "checking") return "Checking for updates...";
-    if (updates.isUpdatePending) return "Update downloaded and ready to install.";
-    if (updates.isUpdateAvailable) return "Update available for download.";
+    if (!Updates.isEnabled) return t("updates.disabled");
+    if (__DEV__) return t("updates.releaseOnly");
+    if (updates.isRestarting || actionStatus === "restarting") return t("updates.restarting");
+    if (updates.isDownloading || actionStatus === "downloading") return t("updates.downloading");
+    if (updates.isChecking || actionStatus === "checking") return t("updates.checking");
+    if (updates.isUpdatePending) return t("updates.pending");
+    if (updates.isUpdateAvailable) return t("updates.available");
     if (message) return message;
-    return "App is up to date.";
+    return t("updates.current");
   })();
 
   const restartApp = async () => {
     if (!isSupported) {
-      NativeAlert.alert("Updates unavailable", statusText);
+      NativeAlert.alert(t("updates.unavailableTitle"), statusText);
       return;
     }
 
@@ -101,15 +97,15 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
         setActionStatus("downloading");
         const fetchResult = await Updates.fetchUpdateAsync();
         if (fetchResult.isNew || fetchResult.isRollBackToEmbedded) {
-          setMessage("Update downloaded. Restart when the register is ready.");
+          setMessage(t("updates.downloaded"));
         } else {
-          setMessage("No newer update was downloaded.");
+          setMessage(t("updates.noNewDownload"));
         }
       } else {
-        setMessage("No update available.");
+        setMessage(t("updates.noneAvailable"));
       }
     } catch (error) {
-      setMessage(getErrorMessage(error));
+      setMessage(error instanceof Error ? error.message : t("updates.requestFailed"));
     }
     setActionStatus("idle");
   };
@@ -124,10 +120,8 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
         <HeroAlert status="accent" className="items-center shadow-lg">
           <HeroAlert.Indicator />
           <HeroAlert.Content>
-            <HeroAlert.Title>Update ready</HeroAlert.Title>
-            <HeroAlert.Description>
-              Restart to apply the downloaded app update.
-            </HeroAlert.Description>
+            <HeroAlert.Title>{t("updates.ready")}</HeroAlert.Title>
+            <HeroAlert.Description>{t("updates.readyDescription")}</HeroAlert.Description>
           </HeroAlert.Content>
           <View className="flex-row gap-2">
             <Button
@@ -135,10 +129,10 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
               variant="ghost"
               onPress={() => setDismissedUpdateId(downloadedUpdateId)}
             >
-              <Button.Label>Later</Button.Label>
+              <Button.Label>{t("updates.later")}</Button.Label>
             </Button>
             <Button size="sm" variant="primary" onPress={restartApp}>
-              <Button.Label>Restart</Button.Label>
+              <Button.Label>{t("updates.restart")}</Button.Label>
             </Button>
           </View>
         </HeroAlert>
@@ -159,7 +153,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
           </View>
           <View className="flex-1 gap-0.5">
             <Typography type="body-sm" weight="semibold">
-              App Updates
+              {t("updates.title")}
             </Typography>
             <Typography type="body-xs" color="muted" numberOfLines={2}>
               {statusText}
@@ -178,18 +172,21 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
 
         <View className="gap-2 rounded-panel-inner bg-surface-secondary px-3 py-3">
           <UpdateMetaRow
-            label="Channel"
-            value={updates.currentlyRunning.channel ?? "Not available"}
+            label={t("updates.channel")}
+            value={updates.currentlyRunning.channel ?? notAvailable}
           />
           <UpdateMetaRow
-            label="Runtime"
-            value={updates.currentlyRunning.runtimeVersion ?? "Not available"}
+            label={t("updates.runtime")}
+            value={updates.currentlyRunning.runtimeVersion ?? notAvailable}
           />
           <UpdateMetaRow
-            label="Current update"
-            value={shortId(updates.currentlyRunning.updateId)}
+            label={t("updates.currentUpdate")}
+            value={shortId(updates.currentlyRunning.updateId, notAvailable)}
           />
-          <UpdateMetaRow label="Created" value={formatDate(updates.currentlyRunning.createdAt)} />
+          <UpdateMetaRow
+            label={t("updates.created")}
+            value={formatDate(updates.currentlyRunning.createdAt)}
+          />
         </View>
 
         <View className="flex-row gap-3">
@@ -200,7 +197,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
             className="flex-1"
           >
             <Ionicons name="refresh-outline" size={18} color={themeColorAccent} />
-            <Button.Label>Check</Button.Label>
+            <Button.Label>{t("updates.check")}</Button.Label>
           </Button>
           <Button
             variant="primary"
@@ -209,7 +206,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
             className="flex-1"
           >
             <Ionicons name="reload-outline" size={18} color="white" />
-            <Button.Label>Restart</Button.Label>
+            <Button.Label>{t("updates.restart")}</Button.Label>
           </Button>
         </View>
       </View>

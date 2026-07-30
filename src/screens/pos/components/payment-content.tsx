@@ -14,16 +14,35 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { useTranslation } from "@/stores/use-locale";
+import type { Translate } from "@/locales";
+import type { StatusPresentation } from "@/api/mappers/order";
 
 type PaymentContentProps = {
   onClose?: () => void;
   onPaymentSuccess?: () => void;
 };
 
+function getLocalizedPaymentStatus(status: StatusPresentation, t: Translate): string {
+  if (["pending", "unpaid"].includes(status.value)) return t("payment.statusPending");
+  if (["settlement", "capture", "paid", "success"].includes(status.value))
+    return t("payment.statusPaid");
+  if (["authorize", "authorized"].includes(status.value)) return t("payment.statusAuthorized");
+  if (["refund", "refunded"].includes(status.value)) return t("payment.statusRefunded");
+  if (status.value === "partial_refund") return t("payment.statusPartiallyRefunded");
+  if (["deny", "denied"].includes(status.value)) return t("payment.statusDenied");
+  if (["cancel", "cancelled", "canceled"].includes(status.value))
+    return t("payment.statusCancelled");
+  if (["expire", "expired"].includes(status.value)) return t("payment.statusExpired");
+  if (["failure", "failed"].includes(status.value)) return t("payment.statusFailed");
+  return status.label;
+}
+
 export function PaymentContent({
   onClose,
   onPaymentSuccess,
 }: PaymentContentProps): JSX.Element | null {
+  const { t } = useTranslation();
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const themeColorMuted = useThemeColor("muted");
   const { width } = useResponsiveLayout();
@@ -56,14 +75,24 @@ export function PaymentContent({
     ? getPaymentStatus(paymentStatus.data.payment_status)
     : null;
   const status = paymentStatus.isPending
-    ? { label: "Checking payment", color: "warning" as const }
+    ? { label: t("payment.checking"), color: "warning" as const }
     : paymentStatus.isError
-      ? { label: "Status check failed", color: "danger" as const }
+      ? { label: t("payment.checkFailed"), color: "danger" as const }
       : paymentStatus.isSuccess && paymentStatus.data.is_successful
-        ? (apiPaymentStatus ?? { label: "Payment confirmed", color: "success" as const })
+        ? {
+            label: apiPaymentStatus
+              ? getLocalizedPaymentStatus(apiPaymentStatus, t)
+              : t("payment.confirmed"),
+            color: apiPaymentStatus?.color ?? ("success" as const),
+          }
         : sessionExpired
-          ? { label: "Payment expired", color: "danger" as const }
-          : (apiPaymentStatus ?? { label: "Waiting for payment", color: "warning" as const });
+          ? { label: t("payment.expired"), color: "danger" as const }
+          : {
+              label: apiPaymentStatus
+                ? getLocalizedPaymentStatus(apiPaymentStatus, t)
+                : t("payment.waiting"),
+              color: apiPaymentStatus?.color ?? ("warning" as const),
+            };
 
   return (
     <View className="flex-1 bg-background">
@@ -94,9 +123,7 @@ export function PaymentContent({
               <View className="w-64 h-64 bg-surface-secondary rounded-lg items-center justify-center px-6">
                 <Ionicons name="qr-code-outline" size={64} color={themeColorMuted} />
                 <Typography className="text-sm text-muted-foreground text-center mt-3">
-                  {sessionExpired
-                    ? "QR pembayaran sudah kedaluwarsa"
-                    : "QR pembayaran tidak tersedia"}
+                  {sessionExpired ? t("payment.qrExpired") : t("payment.qrUnavailable")}
                 </Typography>
               </View>
             )}
@@ -105,7 +132,7 @@ export function PaymentContent({
           <View className={isWideLayout ? "w-90 gap-4" : "w-full gap-4"}>
             <View className="flex-row items-center justify-between gap-3">
               <Typography type="body-sm" weight="semibold">
-                Payment status
+                {t("payment.status")}
               </Typography>
               <Chip color={status.color} size="sm" variant="soft">
                 <Chip.Label>{status.label}</Chip.Label>
@@ -114,7 +141,7 @@ export function PaymentContent({
 
             <View className="gap-1.5">
               <Typography type="body-xs" color="muted">
-                Payment method
+                {t("payment.method")}
               </Typography>
               <Typography type="h4" weight="bold">
                 {paymentSession.payment_type}
@@ -130,7 +157,7 @@ export function PaymentContent({
             {canShowQr && (
               <Countdown
                 expiresAt={paymentSession.expires_at}
-                prefix="Time remaining"
+                prefix={t("payment.timeRemaining")}
                 prominent
                 onExpire={handleQrExpire}
               />
@@ -161,12 +188,12 @@ export function PaymentContent({
             ) : (
               <>
                 <Ionicons name="refresh-outline" size={16} color="white" />
-                <Button.Label className="ml-2">Check Payment Status</Button.Label>
+                <Button.Label className="ml-2">{t("payment.checkStatus")}</Button.Label>
               </>
             )}
           </Button>
           <Button variant="outline" onPress={onClose}>
-            Close
+            {t("common.close")}
           </Button>
         </View>
       </View>

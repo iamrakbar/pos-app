@@ -11,6 +11,7 @@ import { Button, Chip, Separator, Typography, useThemeColor, useToast } from "he
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type ActiveFilter = "all" | "active" | "inactive";
 type Category = App.Data.Merchant.Category.CategoryData;
@@ -24,6 +25,7 @@ function moveCategory(categories: Category[], index: number, direction: -1 | 1):
 }
 
 export default function CategoriesScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
   const theme = useNavigationTheme();
@@ -61,11 +63,11 @@ export default function CategoriesScreen(): React.JSX.Element {
         })),
       });
       setDraftOrder(null);
-      toast.show({ variant: "success", label: "Category order saved" });
+      toast.show({ variant: "success", label: t("categories.orderSaved") });
     } catch (error) {
       toast.show({
         variant: "danger",
-        label: "Could not reorder categories",
+        label: t("categories.reorderFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -76,7 +78,7 @@ export default function CategoriesScreen(): React.JSX.Element {
       <Stack.Toolbar placement="right">
         <Stack.SearchBar
           placement="integratedCentered"
-          placeholder="Search categories"
+          placeholder={t("categories.search")}
           barTintColor={theme.surface}
           tintColor={theme.foreground}
           textColor={theme.foreground}
@@ -94,7 +96,7 @@ export default function CategoriesScreen(): React.JSX.Element {
         <Stack.Toolbar.Menu
           {...getToolbarIcon("filter")}
           tintColor={theme.foreground}
-          accessibilityLabel="Filter categories"
+          accessibilityLabel={t("categories.filterAccessibility")}
         >
           {(["all", "active", "inactive"] as const).map((filter) => (
             <Stack.Toolbar.MenuAction
@@ -105,7 +107,11 @@ export default function CategoriesScreen(): React.JSX.Element {
                 setActiveFilter(filter);
               }}
             >
-              {filter[0].toUpperCase() + filter.slice(1)}
+              {filter === "all"
+                ? t("common.all")
+                : filter === "active"
+                  ? t("common.active")
+                  : t("common.inactive")}
             </Stack.Toolbar.MenuAction>
           ))}
         </Stack.Toolbar.Menu>
@@ -115,16 +121,18 @@ export default function CategoriesScreen(): React.JSX.Element {
         {isOrderDirty ? (
           <View className="flex-row items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 md:px-6">
             <Typography type="body-sm" color="muted" className="flex-1">
-              Category order has unsaved changes.
+              {t("categories.unsavedOrder")}
             </Typography>
             <Button size="sm" onPress={handleSaveOrder} isDisabled={reorderMutation.isPending}>
-              <Button.Label>{reorderMutation.isPending ? "Saving…" : "Save order"}</Button.Label>
+              <Button.Label>
+                {reorderMutation.isPending ? t("common.saving") : t("categories.saveOrder")}
+              </Button.Label>
             </Button>
           </View>
         ) : null}
 
         {categoryQuery.isLoading ? (
-          <LoadingState message="Loading categories…" />
+          <LoadingState message={t("categories.loading")} />
         ) : categoryQuery.isError ? (
           <ErrorState error={categoryQuery.error} onRetry={categoryQuery.refetch} />
         ) : (
@@ -135,11 +143,11 @@ export default function CategoriesScreen(): React.JSX.Element {
                   <EmptyState.Media variant="icon">
                     <Ionicons name="grid-outline" size={20} color={mutedColor} />
                   </EmptyState.Media>
-                  <EmptyState.Title>No categories found</EmptyState.Title>
+                  <EmptyState.Title>{t("categories.empty")}</EmptyState.Title>
                   <EmptyState.Description>
                     {deferredSearch
-                      ? "Try another search term."
-                      : "Create a category to organize products."}
+                      ? t("categories.emptySearchDescription")
+                      : t("categories.emptyDescription")}
                   </EmptyState.Description>
                 </EmptyState.Header>
               </EmptyState>
@@ -149,7 +157,9 @@ export default function CategoriesScreen(): React.JSX.Element {
                   <View className="min-h-20 flex-row items-center gap-3 px-4 py-3 md:px-6">
                     <Pressable
                       accessibilityRole="button"
-                      accessibilityLabel={`Edit ${category.name}`}
+                      accessibilityLabel={t("categories.editAccessibility", {
+                        category: category.name,
+                      })}
                       onPress={() => router.push(`/categories/${category.id}`)}
                       className="flex-1 flex-row items-center gap-3 active:opacity-70"
                     >
@@ -166,12 +176,21 @@ export default function CategoriesScreen(): React.JSX.Element {
                             size="sm"
                             variant="soft"
                           >
-                            <Chip.Label>{category.active ? "Active" : "Inactive"}</Chip.Label>
+                            <Chip.Label>
+                              {category.active ? t("common.active") : t("common.inactive")}
+                            </Chip.Label>
                           </Chip>
                         </View>
                         <Typography type="body-xs" color="muted">
-                          {category.products_count} product
-                          {category.products_count === 1 ? "" : "s"} · Position {index + 1}
+                          {t(
+                            category.products_count === 1
+                              ? "categories.productPositionOne"
+                              : "categories.productPositionOther",
+                            {
+                              count: category.products_count,
+                              position: index + 1,
+                            }
+                          )}
                         </Typography>
                       </View>
                     </Pressable>
@@ -182,7 +201,9 @@ export default function CategoriesScreen(): React.JSX.Element {
                           size="sm"
                           variant="ghost"
                           isIconOnly
-                          accessibilityLabel={`Move ${category.name} up`}
+                          accessibilityLabel={t("categories.moveUpAccessibility", {
+                            category: category.name,
+                          })}
                           isDisabled={index === 0 || reorderMutation.isPending}
                           onPress={() => handleMove(index, -1)}
                         >
@@ -192,7 +213,9 @@ export default function CategoriesScreen(): React.JSX.Element {
                           size="sm"
                           variant="ghost"
                           isIconOnly
-                          accessibilityLabel={`Move ${category.name} down`}
+                          accessibilityLabel={t("categories.moveDownAccessibility", {
+                            category: category.name,
+                          })}
                           isDisabled={
                             index === orderedCategories.length - 1 || reorderMutation.isPending
                           }
@@ -212,7 +235,7 @@ export default function CategoriesScreen(): React.JSX.Element {
           </ScrollView>
         )}
         <CreateFAB
-          accessibilityLabel="Add category"
+          accessibilityLabel={t("categories.addAccessibility")}
           onPress={() => router.push("/categories/new")}
         />
       </View>

@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { useToast } from "heroui-native";
 import { useState } from "react";
 import { Linking, Platform } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 export type PrinterPrompt = {
   title: string;
@@ -17,6 +18,7 @@ export type PrinterPrompt = {
 };
 
 export function useReceiptPrinter() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
   const [isPrinting, setIsPrinting] = useState(false);
@@ -46,36 +48,36 @@ export function useReceiptPrinter() {
 
     try {
       await runPrintReceipt(order, { trigger });
-      toast.show({ variant: "success", label: "Receipt sent to printer" });
+      toast.show({ variant: "success", label: t("printer.receiptSent") });
       didPrint = true;
     } catch (error) {
       const printError =
         error instanceof PrintError
           ? error
-          : new PrintError("TRANSMIT_FAILED", "Could not print the receipt.", error);
+          : new PrintError("TRANSMIT_FAILED", t("printer.genericPrintFailure"), error);
 
       switch (printError.code) {
         case "PERMISSION_DENIED":
           setPrompt({
-            title: "Bluetooth permission required",
-            message: "Allow Bluetooth printer access in system settings, then try again.",
-            actionLabel: "Open Settings",
+            title: t("printer.permissionRequired"),
+            message: t("printer.permissionDescription"),
+            actionLabel: t("printer.openSettings"),
             onAction: Linking.openSettings,
           });
           break;
         case "BLUETOOTH_OFF":
           setPrompt({
-            title: "Bluetooth is off",
-            message: "Turn on Bluetooth before connecting to the receipt printer.",
-            actionLabel: "Bluetooth Settings",
+            title: t("printer.bluetoothOff"),
+            message: t("printer.bluetoothOffDescription"),
+            actionLabel: t("printer.bluetoothSettings"),
             onAction: openBluetoothSettings,
           });
           break;
         case "NOT_CONFIGURED":
           setPrompt({
-            title: "Printer not configured",
-            message: printError.message,
-            actionLabel: "Pair Printer",
+            title: t("printer.notConfigured"),
+            message: t("printer.notConfiguredDescription"),
+            actionLabel: t("printer.pairPrinter"),
             onAction: () => router.push("/settings/printers" as never),
           });
           break;
@@ -89,8 +91,8 @@ export function useReceiptPrinter() {
           }
           toast.show({
             variant: "warning",
-            label: "Printer pairing lost",
-            description: "Pair the printer again to continue.",
+            label: t("printer.pairingLost"),
+            description: t("printer.pairingLostDescription"),
           });
           router.push("/settings/printers" as never);
           break;
@@ -99,15 +101,15 @@ export function useReceiptPrinter() {
         case "CONNECTION_FAILED":
           toast.show({
             variant: "danger",
-            label: "Cannot connect",
-            description: "Ensure printer is on and in range.",
+            label: t("printer.cannotConnect"),
+            description: t("printer.cannotConnectDescription"),
           });
           break;
         default:
           toast.show({
             variant: "danger",
-            label: "Print failed",
-            description: printError.message,
+            label: t("printer.printFailed"),
+            description: t("printer.genericPrintFailure"),
           });
       }
     }

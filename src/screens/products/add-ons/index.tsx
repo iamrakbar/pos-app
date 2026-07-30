@@ -9,19 +9,16 @@ import { Separator, Typography, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
-
-function selectionRule(addOn: App.Data.Merchant.AddOn.AddOnData): string {
-  if (addOn.min === addOn.max) return `Choose ${addOn.min}`;
-  return `Choose ${addOn.min}–${addOn.max}`;
-}
+import { useTranslation } from "@/stores/use-locale";
 
 export default function ProductAddOnsScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const { productId } = useLocalSearchParams<{ productId: string }>();
   const router = useRouter();
   const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
   const addOnsQuery = useAddOns(productId);
 
-  if (addOnsQuery.isLoading) return <LoadingState message="Loading add-ons…" />;
+  if (addOnsQuery.isLoading) return <LoadingState message={t("addOnManagement.loading")} />;
   if (addOnsQuery.isError) {
     return <ErrorState error={addOnsQuery.error} onRetry={addOnsQuery.refetch} />;
   }
@@ -30,7 +27,7 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Product Add-ons" }} />
+      <Stack.Screen options={{ title: t("addOnManagement.title") }} />
       <View className="flex-1 bg-background">
         <ScrollView className="flex-1" contentContainerClassName="py-2 pb-24">
           {addOns.length === 0 ? (
@@ -39,9 +36,9 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
                 <EmptyState.Media variant="icon">
                   <Ionicons name="options-outline" size={20} color={mutedColor} />
                 </EmptyState.Media>
-                <EmptyState.Title>No add-on groups</EmptyState.Title>
+                <EmptyState.Title>{t("addOnManagement.empty")}</EmptyState.Title>
                 <EmptyState.Description>
-                  Add choices such as size, toppings, or spice level.
+                  {t("addOnManagement.emptyDescription")}
                 </EmptyState.Description>
               </EmptyState.Header>
             </EmptyState>
@@ -50,7 +47,9 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
               <View key={addOn.id}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Edit ${addOn.name}`}
+                  accessibilityLabel={t("addOnManagement.editAccessibility", {
+                    addOn: addOn.name,
+                  })}
                   onPress={() => router.push(`/products/${productId}/add-ons/${addOn.id}`)}
                   className="min-h-20 flex-row items-center gap-4 px-4 py-3 active:bg-surface-secondary md:px-6"
                 >
@@ -62,8 +61,21 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
                       {addOn.name}
                     </Typography>
                     <Typography type="body-xs" color="muted">
-                      {selectionRule(addOn)} · {addOn.options_count} option
-                      {addOn.options_count === 1 ? "" : "s"}
+                      {t(
+                        addOn.min === addOn.max
+                          ? "addOnManagement.chooseCount"
+                          : "addOnManagement.chooseRange",
+                        addOn.min === addOn.max
+                          ? { count: addOn.min }
+                          : { min: addOn.min, max: addOn.max }
+                      )}{" "}
+                      ·{" "}
+                      {t(
+                        addOn.options_count === 1
+                          ? "addOnManagement.optionOne"
+                          : "addOnManagement.optionOther",
+                        { count: addOn.options_count }
+                      )}
                     </Typography>
                     <Typography type="body-xs" color="muted" numberOfLines={1}>
                       {addOn.options
@@ -83,7 +95,7 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
           )}
         </ScrollView>
         <CreateFAB
-          accessibilityLabel="Add add-on group"
+          accessibilityLabel={t("addOnManagement.addAccessibility")}
           onPress={() => router.push(`/products/${productId}/add-ons/new`)}
         />
       </View>

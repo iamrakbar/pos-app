@@ -3,6 +3,7 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { Button, Dialog } from "heroui-native";
 import type { ReactNode } from "react";
 import { View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type ActionVariant = "primary" | "danger";
 
@@ -23,13 +24,14 @@ export default function ActionDialog({
   onOpenChange,
   title,
   description,
-  cancelLabel = "Cancel",
+  cancelLabel,
   actionLabel,
   actionVariant = "primary",
   isActionDisabled = false,
   onAction,
 }: ActionDialogProps): React.JSX.Element {
   const { isCompact } = useResponsiveLayout();
+  const { t } = useTranslation();
 
   const handleAction = async () => {
     await onAction?.();
@@ -52,7 +54,7 @@ export default function ActionDialog({
               className={isCompact ? "w-full" : undefined}
               onPress={() => onOpenChange(false)}
             >
-              <Button.Label>{cancelLabel}</Button.Label>
+              <Button.Label>{cancelLabel ?? t("common.cancel")}</Button.Label>
             </Button>
             {actionLabel ? (
               <Button

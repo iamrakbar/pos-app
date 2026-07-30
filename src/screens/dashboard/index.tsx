@@ -8,6 +8,8 @@ import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
+import { getLocaleTag } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 
 const SUMMARY_ICON_BACKGROUNDS = {
   accent: "bg-accent-soft",
@@ -17,10 +19,10 @@ const SUMMARY_ICON_BACKGROUNDS = {
 
 type Period = "today" | "7-days" | "30-days";
 
-const PERIODS: { value: Period; label: string; days: number }[] = [
-  { value: "today", label: "Today", days: 1 },
-  { value: "7-days", label: "7 Days", days: 7 },
-  { value: "30-days", label: "30 Days", days: 30 },
+const PERIODS: { value: Period; days: number }[] = [
+  { value: "today", days: 1 },
+  { value: "7-days", days: 7 },
+  { value: "30-days", days: 30 },
 ];
 
 type AppliedDateRange = { startDate: string; endDate: string };
@@ -64,10 +66,10 @@ function SummaryWidget({
   );
 }
 
-function formatChartDate(value: string): string {
+function formatChartDate(value: string, localeTag: string): string {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("id-ID", {
+  return date.toLocaleDateString(localeTag, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -123,7 +125,15 @@ function normalizeChartRange(
   return normalized;
 }
 
-function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boolean }) {
+function OrdersChart({
+  data,
+  isCompact,
+  localeTag,
+}: {
+  data: ChartPoint[];
+  isCompact: boolean;
+  localeTag: string;
+}) {
   const [width, setWidth] = React.useState(0);
   const height = isCompact ? 192 : 224;
   const max = Math.max(1, ...data.map((point) => point.count));
@@ -143,7 +153,7 @@ function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boole
             xAxis={{
               tickCount: Math.min(data.length, 8),
               labelOffset: 8,
-              formatXLabel: (value: unknown) => formatChartDate(String(value)),
+              formatXLabel: (value: unknown) => formatChartDate(String(value), localeTag),
             }}
             yAxis={[
               {
@@ -166,6 +176,8 @@ function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boole
 }
 
 export default function DashboardScreen(): React.JSX.Element {
+  const { locale, t } = useTranslation();
+  const localeTag = getLocaleTag(locale);
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const [period, setPeriod] = React.useState<Period>("today");
   const appliedRange = getPeriodRange(period);
@@ -181,7 +193,7 @@ export default function DashboardScreen(): React.JSX.Element {
     appliedRange.endDate
   );
   const bestSellers = dashboard.data?.best_sellers ?? [];
-  const dateRangeLabel = PERIODS.find((item) => item.value === period)?.label ?? "Today";
+  const dateRangeLabel = t(`dashboard.periods.${period}`);
 
   if (dashboard.isLoading) {
     return <LoadingAnimation fullScreen />;
@@ -201,7 +213,9 @@ export default function DashboardScreen(): React.JSX.Element {
     >
       <View className="w-full max-w-7xl gap-6">
         <View className="flex-col landscape:flex-row items-start landscape:items-center justify-between gap-3">
-          <Typography type="body-sm">Order and sales performance for {dateRangeLabel}</Typography>
+          <Typography type="body-sm">
+            {t("dashboard.performance", { period: dateRangeLabel })}
+          </Typography>
           <View className="flex-row flex-wrap justify-center gap-2">
             {PERIODS.map((item) => (
               <Chip
@@ -209,7 +223,7 @@ export default function DashboardScreen(): React.JSX.Element {
                 variant={period === item.value ? "primary" : "secondary"}
                 onPress={() => setPeriod(item.value)}
               >
-                <Chip.Label>{item.label}</Chip.Label>
+                <Chip.Label>{t(`dashboard.periods.${item.value}`)}</Chip.Label>
               </Chip>
             ))}
           </View>
@@ -221,24 +235,24 @@ export default function DashboardScreen(): React.JSX.Element {
           <>
             <View className="w-full flex-row flex-wrap gap-4">
               <SummaryWidget
-                label="Revenue"
+                label={t("dashboard.revenue")}
                 value={formatRupiah(dashboard.data?.revenue_today ?? 0)}
                 icon="wallet-outline"
                 color="success"
               />
               <SummaryWidget
-                label="Orders"
+                label={t("dashboard.orders")}
                 value={String(dashboard.data?.orders_today ?? 0)}
                 icon="receipt-outline"
               />
               <SummaryWidget
-                label="Pending"
+                label={t("dashboard.pending")}
                 value={String(dashboard.data?.pending_orders ?? 0)}
                 icon="time-outline"
                 color="warning"
               />
               <SummaryWidget
-                label="Completed"
+                label={t("dashboard.completed")}
                 value={String(dashboard.data?.completed_orders ?? 0)}
                 icon="checkmark-circle-outline"
                 color="success"
@@ -248,11 +262,13 @@ export default function DashboardScreen(): React.JSX.Element {
             <Widget>
               <Widget.Header>
                 <View className="gap-0.5">
-                  <Widget.Title>Order Activity</Widget.Title>
-                  <Widget.Description>Orders created during the selected period</Widget.Description>
+                  <Widget.Title>{t("dashboard.orderActivity")}</Widget.Title>
+                  <Widget.Description>{t("dashboard.orderActivityDescription")}</Widget.Description>
                 </View>
                 <Widget.Legend>
-                  <Widget.LegendItem colorClassName="bg-chart-3">Orders</Widget.LegendItem>
+                  <Widget.LegendItem colorClassName="bg-chart-3">
+                    {t("dashboard.orders")}
+                  </Widget.LegendItem>
                 </Widget.Legend>
               </Widget.Header>
               <Widget.Content className="p-4">
@@ -262,14 +278,14 @@ export default function DashboardScreen(): React.JSX.Element {
                       <EmptyState.Media variant="icon">
                         <Ionicons name="stats-chart-outline" size={20} color={themeColorMuted} />
                       </EmptyState.Media>
-                      <EmptyState.Title>No order activity</EmptyState.Title>
+                      <EmptyState.Title>{t("dashboard.noOrderActivity")}</EmptyState.Title>
                       <EmptyState.Description>
-                        Order activity for the dashboard period will appear here.
+                        {t("dashboard.noOrderActivityDescription")}
                       </EmptyState.Description>
                     </EmptyState.Header>
                   </EmptyState>
                 ) : (
-                  <OrdersChart data={chart} isCompact={isCompact} />
+                  <OrdersChart data={chart} isCompact={isCompact} localeTag={localeTag} />
                 )}
               </Widget.Content>
               <Widget.Footer>
@@ -280,8 +296,8 @@ export default function DashboardScreen(): React.JSX.Element {
             <Widget>
               <Widget.Header>
                 <View className="gap-0.5">
-                  <Widget.Title>Best Sellers</Widget.Title>
-                  <Widget.Description>Top products by quantity sold</Widget.Description>
+                  <Widget.Title>{t("dashboard.bestSellers")}</Widget.Title>
+                  <Widget.Description>{t("dashboard.bestSellersDescription")}</Widget.Description>
                 </View>
               </Widget.Header>
               <Widget.Content className="overflow-hidden p-0">
@@ -291,9 +307,9 @@ export default function DashboardScreen(): React.JSX.Element {
                       <EmptyState.Media variant="icon">
                         <Ionicons name="cube-outline" size={20} color={themeColorMuted} />
                       </EmptyState.Media>
-                      <EmptyState.Title>No products sold</EmptyState.Title>
+                      <EmptyState.Title>{t("dashboard.noProductsSold")}</EmptyState.Title>
                       <EmptyState.Description>
-                        Best-selling products will appear after completed sales.
+                        {t("dashboard.noProductsSoldDescription")}
                       </EmptyState.Description>
                     </EmptyState.Header>
                   </EmptyState>
@@ -313,7 +329,7 @@ export default function DashboardScreen(): React.JSX.Element {
                             {product.name}
                           </Typography>
                           <Typography type="body-xs" color="muted" className="tabular-nums">
-                            {product.qty_sold} sold
+                            {t("dashboard.sold", { count: product.qty_sold })}
                           </Typography>
                         </View>
                         <Typography type="body-sm" weight="bold" className="tabular-nums">

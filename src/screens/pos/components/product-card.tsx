@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "@/stores/use-locale";
 
 type Props = {
   product: POSProduct;
@@ -13,6 +14,7 @@ type Props = {
 };
 
 function ProductCard({ product, onPress, width }: Props): JSX.Element {
+  const { t } = useTranslation();
   const themeColorMuted = useThemeColor("muted");
   const isDiscounted = product.original_price !== null;
   const isOutOfStock = product.stock_enabled && (product.stock_qty ?? 0) <= 0;
@@ -30,7 +32,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
       }}
       className={`m-1.5 active:opacity-85 ${isOutOfStock ? "opacity-50" : ""}`}
       accessibilityRole="button"
-      accessibilityLabel={`Add ${product.name}`}
+      accessibilityLabel={t("pos.addProduct", { product: product.name })}
     >
       <Card className="flex-1 overflow-hidden p-0">
         <View className="aspect-square bg-surface-secondary items-center justify-center">
@@ -55,7 +57,9 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
                 color={isOutOfStock ? undefined : "muted"}
                 className={isOutOfStock ? "text-danger" : undefined}
               >
-                {isOutOfStock ? "Out of stock" : `${product.stock_qty} left`}
+                {isOutOfStock
+                  ? t("pos.outOfStock")
+                  : t("pos.stockRemaining", { count: product.stock_qty ?? 0 })}
               </Typography>
             )}
             {isDiscounted && (

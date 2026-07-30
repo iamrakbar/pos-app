@@ -13,8 +13,10 @@ import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { EmptyState } from "heroui-native-pro";
+import { useTranslation } from "@/stores/use-locale";
 
 export default function ProductsScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const themeColorMuted = useThemeColor("muted");
   const theme = useNavigationTheme();
@@ -51,7 +53,7 @@ export default function ProductsScreen(): React.JSX.Element {
       <Stack.Toolbar placement="right">
         <Stack.SearchBar
           placement="integratedCentered"
-          placeholder="Search..."
+          placeholder={t("products.search")}
           barTintColor={theme.surface}
           tintColor={theme.foreground}
           textColor={theme.foreground}
@@ -63,36 +65,36 @@ export default function ProductsScreen(): React.JSX.Element {
         <Stack.Toolbar.Menu
           {...getToolbarIcon("filter")}
           tintColor={theme.foreground}
-          accessibilityLabel="Filter products"
+          accessibilityLabel={t("products.filterAccessibility")}
         >
-          <Stack.Toolbar.Label>Filter</Stack.Toolbar.Label>
+          <Stack.Toolbar.Label>{t("common.filter")}</Stack.Toolbar.Label>
           <Stack.Toolbar.MenuAction
             onPress={() => setActiveFilter("all")}
             isOn={activeFilter === "all"}
           >
-            All
+            {t("common.all")}
           </Stack.Toolbar.MenuAction>
           <Stack.Toolbar.MenuAction
             onPress={() => setActiveFilter("active")}
             isOn={activeFilter === "active"}
           >
-            Active
+            {t("common.active")}
           </Stack.Toolbar.MenuAction>
           <Stack.Toolbar.MenuAction
             onPress={() => setActiveFilter("inactive")}
             isOn={activeFilter === "inactive"}
           >
-            Inactive
+            {t("common.inactive")}
           </Stack.Toolbar.MenuAction>
         </Stack.Toolbar.Menu>
         <Stack.Toolbar.Menu
           {...getToolbarIcon("category")}
           tintColor={theme.foreground}
-          accessibilityLabel="Filter by category"
+          accessibilityLabel={t("products.filterByCategory")}
         >
-          <Stack.Toolbar.Label>Category</Stack.Toolbar.Label>
+          <Stack.Toolbar.Label>{t("navigation.category")}</Stack.Toolbar.Label>
           <Stack.Toolbar.MenuAction onPress={() => setCategoryId(null)} isOn={categoryId === null}>
-            All
+            {t("common.all")}
           </Stack.Toolbar.MenuAction>
           {categoriesList.map((cat) => (
             <Stack.Toolbar.MenuAction
@@ -108,7 +110,7 @@ export default function ProductsScreen(): React.JSX.Element {
       <View className="flex-1 bg-background">
         {/* Product list */}
         {isLoading ? (
-          <LoadingState message="Loading products…" />
+          <LoadingState message={t("products.loading")} />
         ) : isError ? (
           <ErrorState error={error} onRetry={refetch} />
         ) : (
@@ -119,10 +121,8 @@ export default function ProductsScreen(): React.JSX.Element {
                   <EmptyState.Media variant="icon">
                     <Ionicons name="search-outline" size={20} color={themeColorMuted} />
                   </EmptyState.Media>
-                  <EmptyState.Title>No products found</EmptyState.Title>
-                  <EmptyState.Description>
-                    Try changing the search, category, or status filter.
-                  </EmptyState.Description>
+                  <EmptyState.Title>{t("products.empty")}</EmptyState.Title>
+                  <EmptyState.Description>{t("products.emptyDescription")}</EmptyState.Description>
                 </EmptyState.Header>
               </EmptyState>
             ) : (
@@ -165,7 +165,9 @@ export default function ProductsScreen(): React.JSX.Element {
                             size="sm"
                             variant="soft"
                           >
-                            <Chip.Label>{product.is_active ? "Active" : "Inactive"}</Chip.Label>
+                            <Chip.Label>
+                              {product.is_active ? t("common.active") : t("common.inactive")}
+                            </Chip.Label>
                           </Chip>
                         </View>
 
@@ -182,8 +184,12 @@ export default function ProductsScreen(): React.JSX.Element {
                           )}
                           {product.add_ons.length > 0 && (
                             <Typography type="body-xs" color="muted">
-                              {product.add_ons.length} add-on group
-                              {product.add_ons.length !== 1 ? "s" : ""}
+                              {t(
+                                product.add_ons.length === 1
+                                  ? "products.addOnGroupOne"
+                                  : "products.addOnGroupOther",
+                                { count: product.add_ons.length }
+                              )}
                             </Typography>
                           )}
                         </View>
@@ -199,7 +205,7 @@ export default function ProductsScreen(): React.JSX.Element {
                             weight="semibold"
                             className={`tabular-nums ${isDiscounted ? "text-accent" : ""}`}
                           >
-                            {product.price === 0 ? "Free" : formatRupiah(product.price)}
+                            {product.price === 0 ? t("common.free") : formatRupiah(product.price)}
                           </Typography>
                         </View>
                       </View>
@@ -213,7 +219,10 @@ export default function ProductsScreen(): React.JSX.Element {
             )}
           </ScrollView>
         )}
-        <CreateFAB accessibilityLabel="Add product" onPress={() => router.push("/products/new")} />
+        <CreateFAB
+          accessibilityLabel={t("products.addAccessibility")}
+          onPress={() => router.push("/products/new")}
+        />
       </View>
     </>
   );

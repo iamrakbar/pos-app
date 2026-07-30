@@ -8,15 +8,10 @@ import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-
-const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
-  { value: "name-asc", label: "Name · A–Z" },
-  { value: "name-desc", label: "Name · Z–A" },
-  { value: "price-asc", label: "Price · Low to high" },
-  { value: "price-desc", label: "Price · High to low" },
-];
+import { useTranslation } from "@/stores/use-locale";
 
 export default function SearchBar(): JSX.Element {
+  const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
   const [themeColorForeground, themeColorAccent] = useThemeColor(["foreground", "accent"]);
   const searchQuery = usePOSStore((s) => s.searchQuery);
@@ -29,7 +24,13 @@ export default function SearchBar(): JSX.Element {
   const toggleCategories = usePOSStore((s) => s.toggleCategories);
 
   const { data: categoriesList = [] } = useCategories();
-  const selectedSort = SORT_OPTIONS.find((option) => option.value === productSort)!;
+  const sortOptions: { value: ProductSort; label: string }[] = [
+    { value: "name-asc", label: t("pos.sortNameAscending") },
+    { value: "name-desc", label: t("pos.sortNameDescending") },
+    { value: "price-asc", label: t("pos.sortPriceAscending") },
+    { value: "price-desc", label: t("pos.sortPriceDescending") },
+  ];
+  const selectedSort = sortOptions.find((option) => option.value === productSort)!;
 
   return (
     <View className="">
@@ -39,7 +40,7 @@ export default function SearchBar(): JSX.Element {
           <SearchField value={searchQuery} onChange={setSearchQuery}>
             <SearchField.Group>
               <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Search products" />
+              <SearchField.Input placeholder={t("pos.searchProducts")} />
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
@@ -49,7 +50,9 @@ export default function SearchBar(): JSX.Element {
             variant="ghost"
             isIconOnly
             onPress={toggleCategories}
-            accessibilityLabel={areCategoriesVisible ? "Hide categories" : "Show categories"}
+            accessibilityLabel={
+              areCategoriesVisible ? t("pos.hideCategories") : t("pos.showCategories")
+            }
           >
             <Ionicons
               name={"albums-outline"}
@@ -66,7 +69,9 @@ export default function SearchBar(): JSX.Element {
               <Button
                 variant="ghost"
                 isIconOnly
-                accessibilityLabel={`Sort products: ${selectedSort.label}`}
+                accessibilityLabel={t("pos.sortProductsAccessibility", {
+                  sort: selectedSort.label,
+                })}
               >
                 <Ionicons name="swap-vertical-outline" size={18} color={themeColorForeground} />
               </Button>
@@ -77,8 +82,8 @@ export default function SearchBar(): JSX.Element {
                 presentation={choicePresentation}
                 width={choicePresentation === "popover" ? 220 : undefined}
               >
-                <Select.ListLabel>Sort products</Select.ListLabel>
-                {SORT_OPTIONS.map((option) => (
+                <Select.ListLabel>{t("pos.sortProducts")}</Select.ListLabel>
+                {sortOptions.map((option) => (
                   <Select.Item key={option.value} value={option.value} label={option.label} />
                 ))}
               </Select.Content>
@@ -98,7 +103,7 @@ export default function SearchBar(): JSX.Element {
               variant={categoryId === null ? "primary" : "secondary"}
               onPress={() => setCategoryId(null)}
             >
-              <Chip.Label>All</Chip.Label>
+              <Chip.Label>{t("common.all")}</Chip.Label>
             </Chip>
             {categoriesList.map((category) => (
               <Chip

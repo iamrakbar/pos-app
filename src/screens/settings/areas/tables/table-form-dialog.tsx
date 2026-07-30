@@ -4,12 +4,13 @@ import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import StringNumberField from "@/components/common/string-number-field";
 import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-tables";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import { tableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
+import { createTableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Label, Switch, TextField, Typography, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Pressable, View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 type TableData = App.Data.Merchant.Area.TableData;
 
@@ -26,14 +27,17 @@ export default function TableFormDialog({
   isOpen,
   onOpenChange,
 }: TableFormDialogProps): React.JSX.Element {
+  const { locale, t } = useTranslation();
   const { toast } = useToast();
   const { isPhonePortrait } = useOverlayPresentation();
   const createMutation = useCreateTable(areaId);
   const updateMutation = useUpdateTable(areaId, table?.id ?? "");
   const deleteMutation = useDeleteTable(areaId);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const tableSchema = createTableSchema(t);
   const {
     control,
+    clearErrors,
     handleSubmit,
     reset,
     setError,
@@ -42,6 +46,10 @@ export default function TableFormDialog({
     resolver: zodResolver(tableSchema),
     defaultValues: { name: "", pax: "1", active: true },
   });
+
+  React.useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -58,7 +66,10 @@ export default function TableFormDialog({
     try {
       const request = toTableRequest(values);
       await (table ? updateMutation.mutateAsync(request) : createMutation.mutateAsync(request));
-      toast.show({ variant: "success", label: table ? "Table updated" : "Table created" });
+      toast.show({
+        variant: "success",
+        label: table ? t("areasManagement.tableUpdated") : t("areasManagement.tableCreated"),
+      });
       onOpenChange(false);
     } catch (error) {
       if (isApiError(error) && error.errors) {
@@ -69,7 +80,7 @@ export default function TableFormDialog({
       }
       toast.show({
         variant: "danger",
-        label: "Could not save table",
+        label: t("areasManagement.tableSaveFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -81,11 +92,11 @@ export default function TableFormDialog({
       await deleteMutation.mutateAsync(table.id);
       setIsDeleteOpen(false);
       onOpenChange(false);
-      toast.show({ variant: "success", label: "Table deleted" });
+      toast.show({ variant: "success", label: t("areasManagement.tableDeleted") });
     } catch (error) {
       toast.show({
         variant: "danger",
-        label: "Could not delete table",
+        label: t("areasManagement.tableDeleteFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -96,8 +107,8 @@ export default function TableFormDialog({
       <AdaptiveFormOverlay
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        title={table ? "Edit table" : "New table"}
-        description="Set the table name and seating capacity."
+        title={table ? t("areasManagement.editTable") : t("areasManagement.newTable")}
+        description={t("areasManagement.tableDescription")}
         footer={
           <View
             className={`gap-3 px-5 pb-5 pt-4 ${
@@ -110,7 +121,7 @@ export default function TableFormDialog({
                 className={isPhonePortrait ? "w-full" : undefined}
                 onPress={() => setIsDeleteOpen(true)}
               >
-                <Button.Label>Delete</Button.Label>
+                <Button.Label>{t("common.delete")}</Button.Label>
               </Button>
             ) : null}
             <View
@@ -123,14 +134,16 @@ export default function TableFormDialog({
                 className={isPhonePortrait ? "w-full" : undefined}
                 onPress={() => onOpenChange(false)}
               >
-                <Button.Label>Cancel</Button.Label>
+                <Button.Label>{t("common.cancel")}</Button.Label>
               </Button>
               <Button
                 className={isPhonePortrait ? "w-full" : undefined}
                 onPress={handleSubmit(submitTable)}
                 isDisabled={isSaving}
               >
-                <Button.Label>{isSaving ? "Saving…" : "Save table"}</Button.Label>
+                <Button.Label>
+                  {isSaving ? t("common.saving") : t("areasManagement.saveTable")}
+                </Button.Label>
               </Button>
             </View>
           </View>
@@ -142,8 +155,12 @@ export default function TableFormDialog({
             name="name"
             render={({ field: { value, onChange } }) => (
               <TextField isRequired isInvalid={Boolean(errors.name)}>
-                <Label>Name</Label>
-                <Input value={value} onChangeText={onChange} placeholder="A1" />
+                <Label>{t("areasManagement.name")}</Label>
+                <Input
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder={t("areasManagement.tableNamePlaceholder")}
+                />
                 {errors.name?.message ? (
                   <Typography type="body-xs" className="text-danger">
                     {errors.name.message}
@@ -157,7 +174,7 @@ export default function TableFormDialog({
             name="pax"
             render={({ field: { value, onChange } }) => (
               <StringNumberField
-                label="Capacity"
+                label={t("areasManagement.capacity")}
                 value={value}
                 onChange={onChange}
                 minValue={1}
@@ -184,10 +201,10 @@ export default function TableFormDialog({
               >
                 <View className="flex-1">
                   <Typography type="body-sm" weight="semibold">
-                    Active
+                    {t("common.active")}
                   </Typography>
                   <Typography type="body-xs" color="muted">
-                    Available for dine-in checkout.
+                    {t("areasManagement.tableActiveDescription")}
                   </Typography>
                 </View>
                 <Switch isSelected={value} onSelectedChange={onChange} />
@@ -199,9 +216,9 @@ export default function TableFormDialog({
       <ActionDialog
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
-        title="Delete table?"
-        description="The server may reject deletion when an order references this table."
-        actionLabel={deleteMutation.isPending ? "Deleting…" : "Delete"}
+        title={t("areasManagement.deleteTableTitle")}
+        description={t("areasManagement.deleteTableDescription")}
+        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
         actionVariant="danger"
         isActionDisabled={deleteMutation.isPending}
         onAction={handleDelete}

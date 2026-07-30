@@ -5,7 +5,7 @@ import { useGuests } from "@/hooks/db/use-guests";
 import { useCustomerSearch } from "@/hooks/db/use-customers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/use-cart";
 import { useCheckout } from "@/hooks/db/use-checkout";
-import { checkoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
+import { createCheckoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
 import { formatRupiah, IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import {
@@ -42,6 +42,13 @@ import {
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import StringNumberField from "@/components/common/string-number-field";
+import { useTranslation } from "@/stores/use-locale";
+
+type CheckoutError =
+  | {
+      key: "checkout.cashInsufficient" | "checkout.priceChanged" | "checkout.completeRequired";
+    }
+  | { message: string };
 
 type CheckoutContentProps = {
   presentation: "screen" | "sheet";
@@ -68,8 +75,14 @@ function getCashPresets(total: number): number[] {
 }
 
 function PaymentButtonSkeleton({ widths }: { widths: number[] }) {
+  const { t } = useTranslation();
+
   return (
-    <View className="min-h-8 flex-row flex-wrap gap-2" accessibilityRole="progressbar">
+    <View
+      className="min-h-8 flex-row flex-wrap gap-2"
+      accessibilityRole="progressbar"
+      accessibilityLabel={t("checkout.loadingPaymentMethods")}
+    >
       {widths.map((width) => (
         <View key={width} className="h-8 rounded-lg bg-surface-secondary" style={{ width }} />
       ))}
@@ -90,11 +103,13 @@ function CheckoutCostSummary({
   feeValue?: number;
   total: number;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Surface variant="secondary" className="gap-2 p-3">
       <View className="flex-row justify-between">
         <Typography type="body-xs" color="muted">
-          Subtotal
+          {t("checkout.subtotal")}
         </Typography>
         <Typography type="body-xs" className="tabular-nums">
           {formatRupiah(subtotal)}
@@ -103,7 +118,9 @@ function CheckoutCostSummary({
       {paymentFee > 0 ? (
         <View className="flex-row justify-between">
           <Typography type="body-xs" color="muted">
-            Biaya pembayaran{feeUnit === "percentage" ? ` (${feeValue}%)` : ""}
+            {feeUnit === "percentage"
+              ? t("checkout.paymentFeePercentage", { value: feeValue ?? 0 })
+              : t("checkout.paymentFee")}
           </Typography>
           <Typography type="body-xs" className="tabular-nums">
             {formatRupiah(paymentFee)}
@@ -112,7 +129,7 @@ function CheckoutCostSummary({
       ) : null}
       <View className="mt-1 flex-row items-center justify-between border-t border-border pt-2">
         <Typography type="body-sm" weight="semibold">
-          Total
+          {t("checkout.total")}
         </Typography>
         <Typography.Heading type="h5" className="tabular-nums">
           {formatRupiah(total)}
@@ -145,6 +162,7 @@ function CheckoutActions({
   shouldGrow: boolean;
   onHeightChange?: (height: number) => void;
 }) {
+  const { t } = useTranslation();
   const handleLayout = (event: LayoutChangeEvent) => {
     onHeightChange?.(event.nativeEvent.layout.height);
   };
@@ -170,10 +188,12 @@ function CheckoutActions({
             onComplete={onComplete}
           >
             <SlideButton.UnderlayContent>
-              <SlideButton.Label>{isPending ? "Memproses" : "Geser untuk bayar"}</SlideButton.Label>
+              <SlideButton.Label>
+                {isPending ? t("checkout.processing") : t("checkout.slideToPay")}
+              </SlideButton.Label>
             </SlideButton.UnderlayContent>
             <SlideButton.OverlayContent>
-              <SlideButton.Label>Bayar</SlideButton.Label>
+              <SlideButton.Label>{t("checkout.pay")}</SlideButton.Label>
             </SlideButton.OverlayContent>
             <SlideButton.Thumb>
               {isPending ? <ActivityIndicator size="small" /> : null}
@@ -214,11 +234,13 @@ function PaymentFields({
   setValue: UseFormSetValue<CheckoutFormValues>;
   setCashReceived: (value: string) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <>
       <View className="gap-2">
         <Typography type="body-sm" weight="semibold">
-          Metode pembayaran
+          {t("checkout.paymentMethod")}
         </Typography>
         {isPending ? (
           <PaymentButtonSkeleton widths={[104, 88, 112]} />
@@ -258,7 +280,7 @@ function PaymentFields({
       {!isCashPayment ? (
         <View className="gap-2">
           <Typography type="body-sm" weight="semibold">
-            Pembayaran
+            {t("checkout.payment")}
           </Typography>
           {isPending ? (
             <PaymentButtonSkeleton widths={[96, 120, 88]} />
@@ -288,7 +310,7 @@ function PaymentFields({
         <View className="gap-3">
           <View className="gap-2">
             <Typography type="body-sm" weight="semibold">
-              Nominal tunai
+              {t("checkout.cashAmount")}
             </Typography>
             <View className="flex-row flex-wrap gap-2">
               {cashPresets.map((amount, index) => (
@@ -299,7 +321,9 @@ function PaymentFields({
                   onPress={() => setCashReceived(String(amount))}
                 >
                   <Button.Label>
-                    {index === 0 ? `Uang pas · ${formatRupiah(amount)}` : formatRupiah(amount)}
+                    {index === 0
+                      ? t("checkout.exactCash", { amount: formatRupiah(amount) })
+                      : formatRupiah(amount)}
                   </Button.Label>
                 </Button>
               ))}
@@ -308,7 +332,7 @@ function PaymentFields({
           <View className="flex-row items-end gap-4">
             <StringNumberField
               className="flex-1"
-              label="Nominal lain"
+              label={t("checkout.otherAmount")}
               value={cashReceived}
               onChange={setCashReceived}
               placeholder="Rp0"
@@ -318,7 +342,7 @@ function PaymentFields({
             />
             <View className="min-w-32 gap-1">
               <Typography type="body-xs" color="muted">
-                Kembalian
+                {t("checkout.change")}
               </Typography>
               <Typography weight="semibold" className="tabular-nums">
                 {formatRupiah(change)}
@@ -350,21 +374,21 @@ function CustomerFields({
   errors: FieldErrors<CheckoutFormValues>;
   setValue: UseFormSetValue<CheckoutFormValues>;
 }) {
+  const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
+  const customerTypeOptions = [
+    ["guest", t("checkout.merchant")],
+    ["customer", t("checkout.registeredCustomer")],
+    ["anonymous", t("checkout.walkIn")],
+  ] as const;
 
   return (
     <View className="gap-2">
       <Typography type="body-sm" weight="semibold">
-        Pelanggan
+        {t("checkout.customer")}
       </Typography>
       <View className="flex-row gap-2">
-        {(
-          [
-            ["guest", "Merchant"],
-            ["customer", "Pelanggan terdaftar"],
-            ["anonymous", "Walk-in"],
-          ] as const
-        ).map(([type, label]) => (
+        {customerTypeOptions.map(([type, label]) => (
           <Button
             key={type}
             size="sm"
@@ -389,14 +413,15 @@ function CustomerFields({
               guestId
                 ? {
                     value: guestId,
-                    label: guests.find((guest) => guest.id === guestId)?.name ?? "Merchant",
+                    label:
+                      guests.find((guest) => guest.id === guestId)?.name ?? t("checkout.merchant"),
                   }
                 : undefined
             }
             onValueChange={(option) => setValue("guest_id", option?.value || null)}
           >
             <Select.Trigger>
-              <Select.Value placeholder="Pilih merchant customer" />
+              <Select.Value placeholder={t("checkout.selectMerchantCustomer")} />
               <Select.TriggerIndicator />
             </Select.Trigger>
             <Select.Portal>
@@ -428,7 +453,7 @@ function CustomerFields({
               <SearchField value={field.value} onChange={field.onChange}>
                 <SearchField.Group>
                   <SearchField.SearchIcon />
-                  <SearchField.Input placeholder="Cari email pelanggan" />
+                  <SearchField.Input placeholder={t("checkout.searchCustomerEmail")} />
                   <SearchField.ClearButton />
                 </SearchField.Group>
               </SearchField>
@@ -462,15 +487,17 @@ function CustomerFields({
 }
 
 function CheckoutProcessingState({ accentColor }: { accentColor: string }) {
+  const { t } = useTranslation();
+
   return (
     <View className="flex-1 items-center justify-center gap-4 px-6 py-10">
       <ActivityIndicator size="large" color={accentColor} />
       <View className="items-center gap-1.5">
         <Typography type="h4" weight="semibold" className="text-center">
-          Memproses pembayaran
+          {t("checkout.processingPayment")}
         </Typography>
         <Typography type="body-sm" color="muted" className="max-w-sm text-center">
-          Jangan tutup aplikasi sampai proses selesai.
+          {t("checkout.processingDescription")}
         </Typography>
       </View>
     </View>
@@ -496,6 +523,8 @@ function CheckoutFormScrollContent({
   isKeyboardVisible,
   sheetFooterHeight,
 }: CheckoutFormScrollContentProps) {
+  const { t } = useTranslation();
+
   return (
     <KeyboardAwareScrollView
       bottomOffset={32}
@@ -518,7 +547,7 @@ function CheckoutFormScrollContent({
 
         <View className="gap-1.5">
           <Typography type="body-sm" weight="semibold">
-            Catatan
+            {t("checkout.notes")}
           </Typography>
           <Controller
             control={control}
@@ -527,7 +556,7 @@ function CheckoutFormScrollContent({
               <TextArea
                 value={field.value}
                 onChangeText={field.onChange}
-                placeholder="Opsional"
+                placeholder={t("checkout.optional")}
                 numberOfLines={2}
                 className="h-16"
               />
@@ -553,6 +582,7 @@ export function CheckoutContent({
   header,
   onPaymentReady,
 }: CheckoutContentProps): JSX.Element {
+  const { locale, t } = useTranslation();
   const [backgroundColor, borderColor, accentColor] = useThemeColor([
     "background",
     "border",
@@ -569,11 +599,12 @@ export function CheckoutContent({
   const isControllerKeyboardVisible = useKeyboardState((state) => state.isVisible);
 
   const [cashReceived, setCashReceived] = useState("");
-  const [cartError, setCartError] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [sheetFooterHeight, setSheetFooterHeight] = useState(0);
   const [isNativeKeyboardVisible, setIsNativeKeyboardVisible] = useState(false);
   const isKeyboardVisible = isControllerKeyboardVisible || isNativeKeyboardVisible;
+  const checkoutSchema = createCheckoutSchema(t);
 
   const defaultPaymentGroup =
     paymentGroups.find((group) => isEMoneyGroup(group.group_type)) ?? paymentGroups[0];
@@ -595,6 +626,7 @@ export function CheckoutContent({
 
   const {
     control,
+    clearErrors,
     handleSubmit,
     setValue,
     formState: { errors },
@@ -611,6 +643,14 @@ export function CheckoutContent({
   const customerSearch = useWatch({ control, name: "customer_search" });
 
   const { data: customerResults = [] } = useCustomerSearch(customerSearch);
+  const cartError =
+    checkoutError && "key" in checkoutError
+      ? t(checkoutError.key)
+      : (checkoutError?.message ?? null);
+
+  useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   useEffect(() => {
     if (paymentGroups.length === 0) return;
@@ -674,10 +714,10 @@ export function CheckoutContent({
   const cashPresets = getCashPresets(total);
 
   const onSubmit = async (values: CheckoutFormValues) => {
-    setCartError(null);
+    setCheckoutError(null);
 
     if (isCashPayment && cashReceivedAmount < total) {
-      setCartError("Nominal tunai kurang dari total pembayaran.");
+      setCheckoutError({ key: "checkout.cashInsufficient" });
       return;
     }
 
@@ -685,9 +725,9 @@ export function CheckoutContent({
       await validateCart.mutateAsync();
     } catch (error) {
       if (isApiError(error) && error.code === "PRICE_CHANGES_DETECTED") {
-        setCartError("Harga produk berubah, silakan periksa kembali keranjang Anda.");
+        setCheckoutError({ key: "checkout.priceChanged" });
       } else {
-        setCartError(getErrorMessage(error));
+        setCheckoutError({ message: getErrorMessage(error) });
       }
       return;
     }
@@ -698,7 +738,7 @@ export function CheckoutContent({
       const session: PaymentSession = {
         order_id: result.id,
         transaction_id: result.code,
-        payment_type: payment?.name ?? "Unknown",
+        payment_type: payment?.name ?? t("checkout.unknownPayment"),
         qr_url: extractPaymentQrUrl(result),
         expires_at: extractPaymentExpiry(result.payment_details),
         amount: extractCheckoutTotal(result, total),
@@ -708,12 +748,12 @@ export function CheckoutContent({
       setIsCompleting(true);
       onPaymentReady(session, result, { isCash: isCashPayment });
     } catch (error) {
-      setCartError(getErrorMessage(error));
+      setCheckoutError({ message: getErrorMessage(error) });
     }
   };
 
   const onInvalid = () => {
-    setCartError("Lengkapi data checkout yang wajib diisi.");
+    setCheckoutError({ key: "checkout.completeRequired" });
   };
 
   const isCheckoutPending = validateCart.isPending || checkout.isPending || isCompleting;

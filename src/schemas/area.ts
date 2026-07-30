@@ -1,21 +1,34 @@
+import type { Translate } from "@/locales";
 import { z } from "zod";
 
-export const areaSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(255, "Name is too long"),
-});
+export function createAreaSchema(t: Translate) {
+  return z.object({
+    name: z
+      .string()
+      .trim()
+      .min(1, t("validation.nameRequired"))
+      .max(255, t("validation.nameTooLong")),
+  });
+}
 
-export type AreaFormValues = z.infer<typeof areaSchema>;
+export type AreaFormValues = z.infer<ReturnType<typeof createAreaSchema>>;
 
-export const tableSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(255, "Name is too long"),
-  pax: z
-    .string()
-    .regex(/^\d+$/, "Capacity must be a whole number")
-    .refine((value) => Number(value) >= 1, "Capacity must be at least 1"),
-  active: z.boolean(),
-});
+export function createTableSchema(t: Translate) {
+  return z.object({
+    name: z
+      .string()
+      .trim()
+      .min(1, t("validation.nameRequired"))
+      .max(255, t("validation.nameTooLong")),
+    pax: z
+      .string()
+      .regex(/^\d+$/, t("validation.capacityWholeNumber"))
+      .refine((value) => Number(value) >= 1, t("validation.capacityMinimum")),
+    active: z.boolean(),
+  });
+}
 
-export type TableFormValues = z.infer<typeof tableSchema>;
+export type TableFormValues = z.infer<ReturnType<typeof createTableSchema>>;
 
 export function toTableRequest(
   values: TableFormValues

@@ -31,7 +31,7 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 import { Linking, PermissionsAndroid, Platform, Pressable, ScrollView, View } from "react-native";
-import { printerSchema, type PrinterFormValues } from "@/schemas/printer";
+import { createPrinterSchema, type PrinterFormValues } from "@/schemas/printer";
 import {
   DEFAULT_PRINTER_SETTINGS,
   usePrinterStore,
@@ -44,6 +44,8 @@ import { printCalibrationReceipt } from "@/services/printer/print-service";
 import ActionDialog from "@/components/common/action-dialog";
 import StringNumberField from "@/components/common/string-number-field";
 import { EmptyState } from "heroui-native-pro";
+import { useTranslation } from "@/stores/use-locale";
+import type { Translate } from "@/locales";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [
   { value: "bluetooth", label: "Bluetooth" },
@@ -115,17 +117,18 @@ function PrinterDetailsCard({
 }: PrinterFieldsProps & {
   onConnectionChange: (connection: ConnectionType) => void;
 }) {
+  const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
 
   return (
     <Card>
       <SectionHeading
-        title="Printer Details"
-        description="Name the printer and choose how it connects."
+        title={t("printerForm.details")}
+        description={t("printerForm.detailsDescription")}
       />
       <Card.Body className="gap-4">
         <View>
-          <FieldLabel label="Name" required />
+          <FieldLabel label={t("printerForm.name")} required />
           <Controller
             control={control}
             name="name"
@@ -133,7 +136,7 @@ function PrinterDetailsCard({
               <Input
                 value={value}
                 onChangeText={onChange}
-                placeholder="Printer name"
+                placeholder={t("printerForm.namePlaceholder")}
                 variant="secondary"
               />
             )}
@@ -142,7 +145,7 @@ function PrinterDetailsCard({
         </View>
 
         <View>
-          <FieldLabel label="Connection" required />
+          <FieldLabel label={t("printerForm.connection")} required />
           <Controller
             control={control}
             name="connection"
@@ -160,7 +163,7 @@ function PrinterDetailsCard({
                 }}
               >
                 <Select.Trigger>
-                  <Select.Value placeholder="Select connection" numberOfLines={1} />
+                  <Select.Value placeholder={t("printerForm.selectConnection")} numberOfLines={1} />
                   <Select.TriggerIndicator />
                 </Select.Trigger>
                 <Select.Portal>
@@ -169,7 +172,9 @@ function PrinterDetailsCard({
                     presentation={choicePresentation}
                     width={choicePresentation === "popover" ? "trigger" : undefined}
                   >
-                    <Select.ListLabel className="mb-2">Connection type</Select.ListLabel>
+                    <Select.ListLabel className="mb-2">
+                      {t("printerForm.connectionType")}
+                    </Select.ListLabel>
                     {CONNECTION_TYPES.map((item, index, arr) => (
                       <React.Fragment key={item.value}>
                         <Select.Item value={item.value} label={item.label} />
@@ -206,14 +211,16 @@ function PrinterConnectionCard({
   onScan: () => void;
   onSelectDevice: (device: DiscoveredDevice) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <SectionHeading
-        title="Connection"
+        title={t("printerForm.connection")}
         description={
           connection === "bluetooth"
-            ? "Find a nearby thermal printer or enter its address."
-            : "Enter the network address used by the printer."
+            ? t("printerForm.connectionBluetoothDescription")
+            : t("printerForm.connectionNetworkDescription")
         }
       />
       <Card.Body className="gap-4">
@@ -221,8 +228,15 @@ function PrinterConnectionCard({
           <View className="gap-3">
             <View>
               <View className="flex-row items-center justify-between mb-2">
-                <FieldLabel label="Device" />
-                <Button variant="ghost" size="sm" isIconOnly onPress={onScan} isDisabled={scanning}>
+                <FieldLabel label={t("printerForm.device")} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  isIconOnly
+                  onPress={onScan}
+                  isDisabled={scanning}
+                  accessibilityLabel={t("printerForm.scanAccessibility")}
+                >
                   <Ionicons name="refresh" size={18} color={colors.foreground} />
                 </Button>
               </View>
@@ -231,7 +245,7 @@ function PrinterConnectionCard({
                 {scanning ? (
                   <View className="py-6 items-center">
                     <Typography type="body-sm" color="muted">
-                      Scanning...
+                      {t("printerForm.scanning")}
                     </Typography>
                   </View>
                 ) : devices.length === 0 ? (
@@ -240,9 +254,9 @@ function PrinterConnectionCard({
                       <EmptyState.Media variant="icon">
                         <Ionicons name="bluetooth-outline" size={20} color={colors.foreground} />
                       </EmptyState.Media>
-                      <EmptyState.Title>No Bluetooth printers found</EmptyState.Title>
+                      <EmptyState.Title>{t("printerForm.noBluetoothPrinters")}</EmptyState.Title>
                       <EmptyState.Description>
-                        Turn on the printer, then tap refresh.
+                        {t("printerForm.noBluetoothPrintersDescription")}
                       </EmptyState.Description>
                     </EmptyState.Header>
                   </EmptyState>
@@ -252,6 +266,11 @@ function PrinterConnectionCard({
                       <Pressable
                         className="flex-row items-center gap-3 px-4 py-3.5 active:bg-surface-tertiary"
                         onPress={() => onSelectDevice(device)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selectedDeviceId === device.id }}
+                        accessibilityLabel={t("printerForm.selectDeviceAccessibility", {
+                          device: device.name,
+                        })}
                       >
                         <Ionicons
                           name={
@@ -277,7 +296,7 @@ function PrinterConnectionCard({
             </View>
 
             <View>
-              <FieldLabel label="MAC Address" />
+              <FieldLabel label={t("printerForm.macAddress")} />
               <Controller
                 control={control}
                 name="macAddress"
@@ -297,7 +316,7 @@ function PrinterConnectionCard({
         ) : (
           <View className="gap-5">
             <View>
-              <FieldLabel label="IP Address" required />
+              <FieldLabel label={t("printerForm.ipAddress")} required />
               <Controller
                 control={control}
                 name="ipAddress"
@@ -320,7 +339,7 @@ function PrinterConnectionCard({
                 name="port"
                 render={({ field: { value, onChange } }) => (
                   <StringNumberField
-                    label="Port"
+                    label={t("printerForm.port")}
                     value={value}
                     onChange={onChange}
                     placeholder={PORT}
@@ -347,17 +366,18 @@ function ReceiptSetupCard({
   setValue,
   paperWidth,
 }: PrinterFieldsProps & { paperWidth: PaperWidth }) {
+  const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
 
   return (
     <Card>
       <SectionHeading
-        title="Receipt Setup"
-        description="Configure paper width and printable content size."
+        title={t("printerForm.receiptSetup")}
+        description={t("printerForm.receiptSetupDescription")}
       />
       <Card.Body className="gap-4">
         <View>
-          <FieldLabel label="Receipt Size" required />
+          <FieldLabel label={t("printerForm.receiptSize")} required />
           <Controller
             control={control}
             name="paperWidth"
@@ -379,7 +399,7 @@ function ReceiptSetupCard({
                 }}
               >
                 <Select.Trigger>
-                  <Select.Value placeholder="Select size" numberOfLines={1} />
+                  <Select.Value placeholder={t("printerForm.selectSize")} numberOfLines={1} />
                   <Select.TriggerIndicator />
                 </Select.Trigger>
                 <Select.Portal>
@@ -388,7 +408,9 @@ function ReceiptSetupCard({
                     presentation={choicePresentation}
                     width={choicePresentation === "popover" ? "trigger" : undefined}
                   >
-                    <Select.ListLabel className="mb-2">Receipt size</Select.ListLabel>
+                    <Select.ListLabel className="mb-2">
+                      {t("printerForm.receiptSize")}
+                    </Select.ListLabel>
                     {PAPER_WIDTHS.map((item, index, arr) => (
                       <React.Fragment key={item.value}>
                         <Select.Item value={item.value} label={item.label} />
@@ -408,7 +430,7 @@ function ReceiptSetupCard({
             name="charactersPerLine"
             render={({ field: { value, onChange } }) => (
               <StringNumberField
-                label="Characters per line"
+                label={t("printerForm.charactersPerLine")}
                 value={value}
                 onChange={onChange}
                 placeholder={paperWidth === "80mm" ? "46" : "32"}
@@ -421,7 +443,7 @@ function ReceiptSetupCard({
             )}
           />
           <Typography type="body-xs" color="muted" className="mt-1">
-            Recommended: 32 for 58mm, 46 for 80mm. Use calibration to verify.
+            {t("printerForm.charactersRecommendation")}
           </Typography>
           <FieldError message={errors.charactersPerLine?.message} />
         </View>
@@ -432,7 +454,7 @@ function ReceiptSetupCard({
             name="logoWidthDots"
             render={({ field: { value, onChange } }) => (
               <StringNumberField
-                label="Logo width (dots)"
+                label={t("printerForm.logoWidth")}
                 value={value}
                 onChange={onChange}
                 placeholder={paperWidth === "80mm" ? "380" : "300"}
@@ -446,7 +468,7 @@ function ReceiptSetupCard({
             )}
           />
           <Typography type="body-xs" color="muted" className="mt-1">
-            Recommended: 300 for 58mm, 380 for 80mm.
+            {t("printerForm.logoRecommendation")}
           </Typography>
           <FieldError message={errors.logoWidthDots?.message} />
         </View>
@@ -456,11 +478,13 @@ function ReceiptSetupCard({
 }
 
 function HardwareOptionsCard({ control }: Pick<PrinterFieldsProps, "control">) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <SectionHeading
-        title="Hardware Options"
-        description="Enable only the features supported by this printer."
+        title={t("printerForm.hardwareOptions")}
+        description={t("printerForm.hardwareDescription")}
       />
       <Card.Body className="gap-4">
         {(["cutReceipt", "openDrawer"] as const).map((name, index) => (
@@ -477,11 +501,11 @@ function HardwareOptionsCard({ control }: Pick<PrinterFieldsProps, "control">) {
                   <View className="flex-1 mr-4">
                     <Typography type="body-sm" weight="semibold">
                       {name === "cutReceipt"
-                        ? "Cut receipt after printing"
-                        : "Open drawer after printing"}
+                        ? t("printerForm.cutReceipt")
+                        : t("printerForm.openDrawer")}
                     </Typography>
                     <Typography type="body-xs" color="muted" className="mt-0.5">
-                      Only enable this option if your printer supports it.
+                      {t("printerForm.hardwareOptionDescription")}
                     </Typography>
                   </View>
                   <Switch isSelected={value} onSelectedChange={onChange} />
@@ -508,16 +532,20 @@ function PrinterDiagnosticsCard({
   onTestConnection: () => void;
   onPrintCalibration: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <SectionHeading
-        title="Diagnostics"
-        description="Verify the connection and receipt alignment before saving."
+        title={t("printerForm.diagnostics")}
+        description={t("printerForm.diagnosticsDescription")}
       />
       <Card.Body className="gap-3">
         <Button variant="outline" onPress={onTestConnection} isDisabled={connecting}>
           <Ionicons name="link-outline" size={16} color={foregroundColor} />
-          <Button.Label>{connecting ? "Connecting..." : "Test Connection"}</Button.Label>
+          <Button.Label>
+            {connecting ? t("printerForm.connecting") : t("printerForm.testConnection")}
+          </Button.Label>
         </Button>
         <Button
           variant="outline"
@@ -530,7 +558,9 @@ function PrinterDiagnosticsCard({
             <Ionicons name="receipt-outline" size={16} color={foregroundColor} />
           )}
           <Button.Label>
-            {printingCalibration ? "Printing calibration..." : "Print Calibration"}
+            {printingCalibration
+              ? t("printerForm.printingCalibration")
+              : t("printerForm.printCalibration")}
           </Button.Label>
         </Button>
       </Card.Body>
@@ -572,7 +602,8 @@ function getBluetoothPermissions() {
 }
 
 async function requestBluetoothPermissions(
-  setPrompt: React.Dispatch<React.SetStateAction<PromptState | null>>
+  setPrompt: React.Dispatch<React.SetStateAction<PromptState | null>>,
+  t: Translate
 ) {
   const permissions = getBluetoothPermissions();
   if (permissions.length === 0) return true;
@@ -587,11 +618,9 @@ async function requestBluetoothPermissions(
 
   if (!granted) {
     setPrompt({
-      title: "Bluetooth permission required",
-      message: blocked
-        ? "Bluetooth printer access is blocked. Enable Bluetooth permissions in system settings."
-        : "Bluetooth printer access is required to scan and connect to Bluetooth printers.",
-      actionLabel: "Open Settings",
+      title: t("printer.permissionRequired"),
+      message: blocked ? t("printerForm.permissionBlocked") : t("printerForm.permissionRequired"),
+      actionLabel: t("printer.openSettings"),
       onAction: openAppSettings,
     });
   }
@@ -612,6 +641,7 @@ function PrinterDialogs({
   setDeletePromptOpen: (open: boolean) => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   const handlePromptAction = async () => {
     const action = prompt?.onAction;
     setPrompt(null);
@@ -625,7 +655,7 @@ function PrinterDialogs({
         onOpenChange={(open) => !open && setPrompt(null)}
         title={prompt?.title}
         description={prompt?.message}
-        cancelLabel={prompt?.actionLabel ? "Cancel" : "Close"}
+        cancelLabel={prompt?.actionLabel ? t("common.cancel") : t("common.close")}
         actionLabel={prompt?.actionLabel}
         onAction={handlePromptAction}
       />
@@ -633,9 +663,9 @@ function PrinterDialogs({
       <ActionDialog
         isOpen={deletePromptOpen}
         onOpenChange={setDeletePromptOpen}
-        title="Delete printer?"
-        description="This printer will be removed from saved printers."
-        actionLabel="Delete"
+        title={t("printerForm.deleteTitle")}
+        description={t("printerForm.deleteDescription")}
+        actionLabel={t("common.delete")}
         actionVariant="danger"
         onAction={onDelete}
       />
@@ -688,25 +718,159 @@ function initializeConnection(
 async function printCalibration(
   values: PrinterFormValues,
   setPrompt: React.Dispatch<React.SetStateAction<PromptState | null>>,
-  setPrinting: (printing: boolean) => void
+  setPrinting: (printing: boolean) => void,
+  t: Translate
 ) {
   setPrinting(true);
   try {
     await printCalibrationReceipt(toPrinterSettings(values));
     setPrompt({
-      title: "Calibration sent",
-      message: "Check that the numbered ruler prints on one line without clipping or wrapping.",
+      title: t("printerForm.calibrationSent"),
+      message: t("printerForm.calibrationSentDescription"),
     });
   } catch (error) {
     setPrompt({
-      title: "Calibration failed",
-      message: error instanceof Error ? error.message : "Could not print the calibration receipt.",
+      title: t("printerForm.calibrationFailed"),
+      message:
+        error instanceof Error ? error.message : t("printerForm.calibrationFailedDescription"),
     });
   }
   setPrinting(false);
 }
 
+type PrinterFormViewProps = PrinterFieldsProps & {
+  isCreate: boolean;
+  isCompact: boolean;
+  connection: ConnectionType;
+  devices: DiscoveredDevice[];
+  scanning: boolean;
+  selectedDeviceId: string;
+  paperWidth: PaperWidth;
+  connecting: boolean;
+  printingCalibration: boolean;
+  isSubmitting: boolean;
+  colors: { muted: string; foreground: string; accent: string; danger: string };
+  prompt: PromptState | null;
+  deletePromptOpen: boolean;
+  setPrompt: React.Dispatch<React.SetStateAction<PromptState | null>>;
+  setDeletePromptOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onConnectionChange: (connection: ConnectionType) => void;
+  onScan: () => void;
+  onSelectDevice: (device: DiscoveredDevice) => void;
+  onTestConnection: () => void;
+  onPrintCalibration: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  onDelete: () => void | Promise<void>;
+};
+
+function PrinterFormView(props: PrinterFormViewProps) {
+  const { t } = useTranslation();
+  const {
+    control,
+    errors,
+    setValue,
+    isCreate,
+    isCompact,
+    connection,
+    devices,
+    scanning,
+    selectedDeviceId,
+    paperWidth,
+    connecting,
+    printingCalibration,
+    isSubmitting,
+    colors,
+    prompt,
+    deletePromptOpen,
+    setPrompt,
+    setDeletePromptOpen,
+  } = props;
+
+  return (
+    <>
+      <Stack.Screen
+        options={{ title: isCreate ? t("printerForm.addTitle") : t("printerForm.editTitle") }}
+      />
+      {!isCreate ? (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button
+            {...getToolbarIcon("trash")}
+            tintColor={colors.danger}
+            accessibilityLabel={t("printerForm.deleteAccessibility")}
+            onPress={() => setDeletePromptOpen(true)}
+          />
+        </Stack.Toolbar>
+      ) : null}
+      <View className="flex-1 bg-background">
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="w-full max-w-3xl gap-4">
+            <PrinterDetailsCard
+              control={control}
+              errors={errors}
+              setValue={setValue}
+              onConnectionChange={props.onConnectionChange}
+            />
+            <PrinterConnectionCard
+              control={control}
+              errors={errors}
+              connection={connection}
+              devices={devices}
+              scanning={scanning}
+              selectedDeviceId={selectedDeviceId}
+              colors={colors}
+              onScan={props.onScan}
+              onSelectDevice={props.onSelectDevice}
+            />
+            <ReceiptSetupCard
+              control={control}
+              errors={errors}
+              setValue={setValue}
+              paperWidth={paperWidth}
+            />
+            <HardwareOptionsCard control={control} />
+            <PrinterDiagnosticsCard
+              connecting={connecting}
+              printingCalibration={printingCalibration}
+              foregroundColor={colors.foreground}
+              onTestConnection={props.onTestConnection}
+              onPrintCalibration={props.onPrintCalibration}
+            />
+            <View className="gap-3 pt-2">
+              {errors.root?.server?.message ? (
+                <FieldError message={errors.root.server.message} />
+              ) : null}
+              <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
+                <Button variant="outline" onPress={props.onCancel}>
+                  <Button.Label>{t("common.cancel")}</Button.Label>
+                </Button>
+                <Button className="flex-1" onPress={props.onSave} isDisabled={isSubmitting}>
+                  <Button.Label>
+                    {isCreate ? t("printerForm.save") : t("printerForm.update")}
+                  </Button.Label>
+                </Button>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+        <PrinterDialogs
+          prompt={prompt}
+          deletePromptOpen={deletePromptOpen}
+          setPrompt={setPrompt}
+          setDeletePromptOpen={setDeletePromptOpen}
+          onDelete={props.onDelete}
+        />
+      </View>
+    </>
+  );
+}
+
 export default function PrinterFormScreen(): React.JSX.Element {
+  const { locale, t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -728,9 +892,11 @@ export default function PrinterFormScreen(): React.JSX.Element {
   const [printingCalibration, setPrintingCalibration] = React.useState(false);
   const [prompt, setPrompt] = React.useState<PromptState | null>(null);
   const [deletePromptOpen, setDeletePromptOpen] = React.useState(false);
+  const printerSchema = createPrinterSchema(t);
 
   const {
     control,
+    clearErrors,
     handleSubmit,
     reset,
     setError,
@@ -744,6 +910,10 @@ export default function PrinterFormScreen(): React.JSX.Element {
       port: printer?.port || PORT,
     },
   });
+
+  React.useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   const connection = useWatch({ control, name: "connection" });
   const paperWidth = useWatch({ control, name: "paperWidth" });
@@ -762,7 +932,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
     setDevices([]);
 
     try {
-      const granted = await requestBluetoothPermissions(setPrompt);
+      const granted = await requestBluetoothPermissions(setPrompt, t);
       if (granted) {
         await BLEPrinter.init();
         const results = await BLEPrinter.getDeviceList();
@@ -778,9 +948,12 @@ export default function PrinterFormScreen(): React.JSX.Element {
       }
     } catch (err: unknown) {
       setPrompt({
-        title: "Scan failed",
-        message: err instanceof Error ? err.message : "Could not scan for Bluetooth printers.",
-        actionLabel: Platform.OS === "android" ? "Open Bluetooth Settings" : "Open Settings",
+        title: t("printerForm.scanFailed"),
+        message: err instanceof Error ? err.message : t("printerForm.scanFailedDescription"),
+        actionLabel:
+          Platform.OS === "android"
+            ? t("printerForm.openBluetoothSettings")
+            : t("printer.openSettings"),
         onAction: openBluetoothSettings,
       });
     }
@@ -801,16 +974,17 @@ export default function PrinterFormScreen(): React.JSX.Element {
       } else if (printer) {
         updatePrinter(printer.id, toPrinterSettings(values));
       } else {
-        const message = "The printer could not be found.";
+        const message = t("printerForm.printerNotFound");
         setError("root.server", { type: "server", message });
-        setPrompt({ title: "Could not save printer", message });
+        setPrompt({ title: t("printerForm.saveFailed"), message });
         return;
       }
       router.replace("/settings/printers" as never);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Could not save the printer.";
+      const message =
+        error instanceof Error ? error.message : t("printerForm.saveFailedDescription");
       setError("root.server", { type: "server", message });
-      setPrompt({ title: "Could not save printer", message });
+      setPrompt({ title: t("printerForm.saveFailed"), message });
     }
   };
 
@@ -835,7 +1009,7 @@ export default function PrinterFormScreen(): React.JSX.Element {
 
     try {
       if (values.connection === "bluetooth") {
-        const granted = await requestBluetoothPermissions(setPrompt);
+        const granted = await requestBluetoothPermissions(setPrompt, t);
         if (!granted) {
           setConnecting(false);
           return;
@@ -877,19 +1051,22 @@ export default function PrinterFormScreen(): React.JSX.Element {
       }
 
       setPrompt({
-        title: "Printer connected",
-        message: `${currentName || values.name || "Printer"} is ready.`,
+        title: t("printerForm.connected"),
+        message: t("printerForm.ready", {
+          printer: currentName || values.name || t("printerForm.defaultName"),
+        }),
       });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Could not connect to the printer.";
+      const message =
+        err instanceof Error ? err.message : t("printerForm.connectionFailedDescription");
       setPrompt({
-        title: "Connection failed",
+        title: t("printerForm.connectionFailed"),
         message,
         actionLabel:
           values.connection === "bluetooth" && /bluetooth/i.test(message)
             ? Platform.OS === "android"
-              ? "Open Bluetooth Settings"
-              : "Open Settings"
+              ? t("printerForm.openBluetoothSettings")
+              : t("printer.openSettings")
             : undefined,
         onAction:
           values.connection === "bluetooth" && /bluetooth/i.test(message)
@@ -901,103 +1078,44 @@ export default function PrinterFormScreen(): React.JSX.Element {
   });
 
   const handlePrintCalibration = handleSubmit((values) =>
-    printCalibration(values, setPrompt, setPrintingCalibration)
+    printCalibration(values, setPrompt, setPrintingCalibration, t)
   );
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: isCreate ? "Add Printer" : "Edit Printer",
-        }}
-      />
-
-      {!isCreate ? (
-        <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button
-            {...getToolbarIcon("trash")}
-            tintColor={themeColorDanger}
-            accessibilityLabel="Delete printer"
-            onPress={() => setDeletePromptOpen(true)}
-          />
-        </Stack.Toolbar>
-      ) : null}
-
-      <View className="flex-1 bg-background">
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="w-full max-w-3xl gap-4">
-            <PrinterDetailsCard
-              control={control}
-              errors={errors}
-              setValue={setValue}
-              onConnectionChange={(nextConnection) =>
-                initializeConnection(nextConnection, () => setDevices([]), handleScan)
-              }
-            />
-
-            <PrinterConnectionCard
-              control={control}
-              errors={errors}
-              connection={connection}
-              devices={devices}
-              scanning={scanning}
-              selectedDeviceId={selectedDeviceId}
-              colors={{
-                muted: themeColorMuted,
-                foreground: themeColorForeground,
-                accent: themeColorAccent,
-              }}
-              onScan={handleScan}
-              onSelectDevice={handleSelectDevice}
-            />
-
-            <ReceiptSetupCard
-              control={control}
-              errors={errors}
-              setValue={setValue}
-              paperWidth={paperWidth}
-            />
-            <HardwareOptionsCard control={control} />
-            <PrinterDiagnosticsCard
-              connecting={connecting}
-              printingCalibration={printingCalibration}
-              foregroundColor={themeColorForeground}
-              onTestConnection={handleTestConnection}
-              onPrintCalibration={handlePrintCalibration}
-            />
-
-            <View className="gap-3 pt-2">
-              {errors.root?.server?.message ? (
-                <FieldError message={errors.root.server.message} />
-              ) : null}
-              <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
-                <Button variant="outline" onPress={() => router.back()}>
-                  <Button.Label>Cancel</Button.Label>
-                </Button>
-                <Button
-                  className="flex-1"
-                  onPress={handleSubmit(handleSave)}
-                  isDisabled={isSubmitting}
-                >
-                  <Button.Label>{isCreate ? "Save Printer" : "Update Printer"}</Button.Label>
-                </Button>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-
-        <PrinterDialogs
-          prompt={prompt}
-          deletePromptOpen={deletePromptOpen}
-          setPrompt={setPrompt}
-          setDeletePromptOpen={setDeletePromptOpen}
-          onDelete={handleDelete}
-        />
-      </View>
-    </>
+    <PrinterFormView
+      control={control}
+      errors={errors}
+      setValue={setValue}
+      isCreate={isCreate}
+      isCompact={isCompact}
+      connection={connection}
+      devices={devices}
+      scanning={scanning}
+      selectedDeviceId={selectedDeviceId}
+      paperWidth={paperWidth}
+      connecting={connecting}
+      printingCalibration={printingCalibration}
+      isSubmitting={isSubmitting}
+      colors={{
+        muted: themeColorMuted,
+        foreground: themeColorForeground,
+        accent: themeColorAccent,
+        danger: themeColorDanger,
+      }}
+      prompt={prompt}
+      deletePromptOpen={deletePromptOpen}
+      setPrompt={setPrompt}
+      setDeletePromptOpen={setDeletePromptOpen}
+      onConnectionChange={(nextConnection) =>
+        initializeConnection(nextConnection, () => setDevices([]), handleScan)
+      }
+      onScan={handleScan}
+      onSelectDevice={handleSelectDevice}
+      onTestConnection={handleTestConnection}
+      onPrintCalibration={handlePrintCalibration}
+      onSave={handleSubmit(handleSave)}
+      onCancel={() => router.back()}
+      onDelete={handleDelete}
+    />
   );
 }

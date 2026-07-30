@@ -5,11 +5,12 @@ import type { POSTable } from "@/types/pos";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
-import { Button, Card, Chip, ScrollShadow, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, Chip, ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useState } from "react";
 import { FlatList, Pressable, View } from "react-native";
+import { useTranslation } from "@/stores/use-locale";
 
 function groupTablesByArea(tables: POSTable[]) {
   const groups = new Map<string, { id: string; name: string; tables: POSTable[] }>();
@@ -35,6 +36,7 @@ function getTableSeatCount(pax: number): TableSeatCount {
 }
 
 export default function TableSelectionScreen(): JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const [activeAreaId, setActiveAreaId] = useState("");
   const [gridWidth, setGridWidth] = useState(0);
@@ -73,11 +75,16 @@ export default function TableSelectionScreen(): JSX.Element {
   const renderTable = ({ item: table }: { item: POSTable }) => {
     const isSelected = table.id === selectedTableId;
     const seatCount = getTableSeatCount(Number(table.pax));
+    const pax = Number(table.pax);
+    const seats = t(pax === 1 ? "tables.seatOne" : "tables.seatOther", { count: pax });
 
     return (
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Select ${table.name}, ${table.pax} seats`}
+        accessibilityLabel={t("tables.selectAccessibility", {
+          table: table.name,
+          seats,
+        })}
         accessibilityState={{ selected: isSelected }}
         onPress={() => handleSelect(table.id)}
         style={{ width: cardWidth, margin: 6 }}
@@ -94,9 +101,7 @@ export default function TableSelectionScreen(): JSX.Element {
               tableColor={isSelected ? accentSoft : undefined}
             />
             <Chip color="default" className="self-end">
-              <Chip.Label numberOfLines={1}>
-                {Number(table.pax)} {Number(table.pax) === 1 ? "seat" : "seats"}
-              </Chip.Label>
+              <Chip.Label numberOfLines={1}>{seats}</Chip.Label>
             </Chip>
           </Card.Body>
         </Card>
@@ -113,9 +118,9 @@ export default function TableSelectionScreen(): JSX.Element {
               variant="outline"
               size="sm"
               onPress={() => handleSelect(null)}
-              accessibilityLabel="Continue without selecting a table"
+              accessibilityLabel={t("tables.continueWithoutTable")}
             >
-              <Button.Label>No Table</Button.Label>
+              <Button.Label>{t("tables.noTable")}</Button.Label>
             </Button>
           ),
         }}
@@ -152,8 +157,8 @@ export default function TableSelectionScreen(): JSX.Element {
                 <EmptyState.Media variant="icon">
                   <Ionicons name="grid-outline" size={20} color={muted} />
                 </EmptyState.Media>
-                <EmptyState.Title>No tables</EmptyState.Title>
-                <EmptyState.Description>There are no tables in this area.</EmptyState.Description>
+                <EmptyState.Title>{t("tables.empty")}</EmptyState.Title>
+                <EmptyState.Description>{t("tables.emptyDescription")}</EmptyState.Description>
               </EmptyState.Header>
             </EmptyState>
           )}

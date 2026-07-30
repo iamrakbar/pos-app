@@ -6,14 +6,15 @@ import {
   getPaymentStatus,
 } from "@/api/mappers/order";
 import type { ReceiptPreviewData } from "@/components/receipt/receipt-paper";
+import { getLocaleTag, i18n, t as globalTranslate, type Locale, type Translate } from "@/locales";
 import type { ReceiptOrder } from "./escpos";
 
 function record(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
 }
 
-function dateLabel(value: string): string {
-  return new Date(value).toLocaleString("id-ID", {
+function dateLabel(value: string, locale: Locale): string {
+  return new Date(value).toLocaleString(getLocaleTag(locale), {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -22,7 +23,24 @@ function dateLabel(value: string): string {
   });
 }
 
-export function toReceiptData(order: ReceiptOrder): ReceiptPreviewData {
+function paymentStatusLabel(value: string, fallback: string, t: Translate): string {
+  if (["pending", "unpaid"].includes(value)) return t("payment.statusPending");
+  if (["settlement", "capture", "paid", "success"].includes(value)) return t("payment.statusPaid");
+  if (["authorize", "authorized"].includes(value)) return t("payment.statusAuthorized");
+  if (["refund", "refunded"].includes(value)) return t("payment.statusRefunded");
+  if (value === "partial_refund") return t("payment.statusPartiallyRefunded");
+  if (["deny", "denied"].includes(value)) return t("payment.statusDenied");
+  if (["cancel", "cancelled", "canceled"].includes(value)) return t("payment.statusCancelled");
+  if (["expire", "expired"].includes(value)) return t("payment.statusExpired");
+  if (["failure", "failed"].includes(value)) return t("payment.statusFailed");
+  return fallback;
+}
+
+export function toReceiptData(
+  order: ReceiptOrder,
+  locale: Locale = i18n.locale,
+  t: Translate = globalTranslate
+): ReceiptPreviewData {
   const root = record(order) ?? {};
   const pricing = record(root.pricing);
   const rawPricingFees = Array.isArray(pricing?.fees) ? pricing.fees : [];
@@ -64,15 +82,20 @@ export function toReceiptData(order: ReceiptOrder): ReceiptPreviewData {
 
   return {
     code: order.code,
-    date: dateLabel(order.created_at),
-    orderType: order.order_type === "dine-in" ? "Dine-in" : "Takeaway",
+    date: dateLabel(order.created_at, locale),
+    orderType: order.order_type === "dine-in" ? t("receipt.dineIn") : t("receipt.takeaway"),
     table:
       typeof checkoutTable?.name === "string"
         ? checkoutTable.name
         : extractTableName(root.orderable),
     payment: extractPaymentName(order.payment),
     paymentStatus:
-      "payment_status" in order ? getPaymentStatus(order.payment_status).label : "Paid",
+      "payment_status" in order
+        ? (() => {
+            const status = getPaymentStatus(order.payment_status);
+            return paymentStatusLabel(status.value, status.label, t);
+          })()
+        : t("receipt.paid"),
     items: items.map((item, itemIndex) => ({
       id: `${order.code}-item-${itemIndex}`,
       ...item,
@@ -90,7 +113,10 @@ export function toReceiptData(order: ReceiptOrder): ReceiptPreviewData {
       const value = record(coupon);
       const discount = {
         id: `discount-${index}`,
-        name: typeof value?.code === "string" ? `Discount (${value.code})` : "Discount",
+        name:
+          typeof value?.code === "string"
+            ? t("receipt.discountWithCode", { code: value.code })
+            : t("receipt.discount"),
         amount: extractNumber(value?.discount_amount),
       };
       return discount.amount > 0 ? [discount] : [];
@@ -99,7 +125,7 @@ export function toReceiptData(order: ReceiptOrder): ReceiptPreviewData {
       const value = record(fee);
       const receiptFee = {
         id: `${String(value?.type ?? "fee")}-${index}`,
-        name: typeof value?.name === "string" ? value.name : "Fee",
+        name: typeof value?.name === "string" ? value.name : t("receipt.fee"),
         amount: extractNumber(value?.amount),
       };
       return receiptFee.amount > 0 ? [receiptFee] : [];
@@ -107,7 +133,9 @@ export function toReceiptData(order: ReceiptOrder): ReceiptPreviewData {
     tax: taxIsEnabled
       ? {
           name:
-            typeof taxRecord?.name === "string" && taxRecord.name.trim() ? taxRecord.name : "Tax",
+            typeof taxRecord?.name === "string" && taxRecord.name.trim()
+              ? taxRecord.name
+              : t("receipt.tax"),
           amount: taxAmount,
         }
       : null,

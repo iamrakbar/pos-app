@@ -2,6 +2,7 @@ import type { PaperWidth } from "@/stores/use-printer-store";
 import type { ReceiptSettings } from "@/stores/use-receipt-store";
 import { formatRupiah } from "@/utils/format";
 import { toReceiptData } from "./receipt-data";
+import { t } from "@/locales";
 
 export type ReceiptOrder =
   App.Data.Merchant.Order.OrderData | App.Data.Merchant.Checkout.CheckoutData;
@@ -102,12 +103,12 @@ export function formatReceiptPayload(
   line(state, separator);
   sectionGap();
   align(state, "left");
-  contentLine(`Order: ${data.code}`);
-  contentLine(`Date: ${data.date}`);
-  contentLine(`Type: ${data.orderType}`);
-  if (data.table) contentLine(`Table: ${data.table}`);
-  if (!isKitchen) contentLine(`Payment: ${data.payment}`);
-  if (!isKitchen) contentLine(`Payment status: ${data.paymentStatus}`);
+  contentLine(`${t("receipt.order")}: ${data.code}`);
+  contentLine(`${t("receipt.date")}: ${data.date}`);
+  contentLine(`${t("receipt.type")}: ${data.orderType}`);
+  if (data.table) contentLine(`${t("receipt.table")}: ${data.table}`);
+  if (!isKitchen) contentLine(`${t("receipt.payment")}: ${data.payment}`);
+  if (!isKitchen) contentLine(`${t("receipt.paymentStatus")}: ${data.paymentStatus}`);
   sectionGap();
   line(state, separator);
   sectionGap();
@@ -125,7 +126,7 @@ export function formatReceiptPayload(
         option.price ? formatRupiah(option.price * item.qty) : ""
       );
     }
-    if (item.notes) contentLine(`Note: ${item.notes}`);
+    if (item.notes) contentLine(`${t("receipt.note")}: ${item.notes}`);
     if (!isCompact && index < data.items.length - 1) line(state);
   });
 
@@ -134,7 +135,7 @@ export function formatReceiptPayload(
   if (!isKitchen) {
     line(state, separator);
     sectionGap();
-    priceRow("Subtotal", formatRupiah(data.subtotal));
+    priceRow(t("receipt.subtotal"), formatRupiah(data.subtotal));
     for (const discount of data.discounts) {
       priceRow(discount.name, `-${formatRupiah(discount.amount)}`);
     }
@@ -144,16 +145,21 @@ export function formatReceiptPayload(
     if (data.tax) priceRow(data.tax.name, formatRupiah(data.tax.amount));
     sectionGap();
   }
-  contentLine(`${data.items.length} items - ${totalQty} qty`);
+  contentLine(
+    t("receipt.itemsSummary", {
+      items: data.items.length,
+      quantity: totalQty,
+    })
+  );
   if (!isKitchen) {
     sectionGap();
     bold(state, true);
-    priceRow("TOTAL", formatRupiah(data.total));
+    priceRow(t("receipt.total"), formatRupiah(data.total));
     bold(state, false);
   }
   if (data.notes) {
     line(state);
-    contentLine(`Note: ${data.notes}`);
+    contentLine(`${t("receipt.note")}: ${data.notes}`);
   }
   if (!isKitchen && receipt.footer) {
     sectionGap();

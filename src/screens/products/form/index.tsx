@@ -40,10 +40,12 @@ import {
   useUpdateProduct,
   type ProductFormPayload,
 } from "@/hooks/db/use-products";
-import { productSchema, type ProductFormValues } from "@/schemas/product";
+import { createProductSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
 import { useCategoryFormNavigation } from "@/stores/use-category-form-navigation";
 import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
+import { useTranslation } from "@/stores/use-locale";
+import type { Translate } from "@/locales";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -62,7 +64,8 @@ const PRODUCT_FORM_FIELDS = new Set<keyof ProductFormValues>([
 ]);
 
 async function optimizeProductImage(
-  asset: ImagePicker.ImagePickerAsset
+  asset: ImagePicker.ImagePickerAsset,
+  t: Translate
 ): Promise<ProductImageAsset> {
   const context = ImageManipulator.manipulate(asset.uri);
   const scale = Math.min(1, PRODUCT_IMAGE_MAX_EDGE / Math.max(asset.width, asset.height));
@@ -83,7 +86,7 @@ async function optimizeProductImage(
   if (Platform.OS === "web") {
     const response = await fetch(optimizedImage.uri);
     if (!response.ok) {
-      throw new Error(`The optimized image could not be read (status ${response.status}).`);
+      throw new Error(t("productForm.imageReadFailed", { status: response.status }));
     }
     size = (await response.blob()).size;
   } else {
@@ -91,7 +94,7 @@ async function optimizeProductImage(
   }
 
   if (size > PRODUCT_IMAGE_MAX_BYTES) {
-    throw new Error("The optimized image is still larger than 4 MB. Choose a smaller image.");
+    throw new Error(t("productForm.imageTooLarge"));
   }
 
   return {
@@ -210,13 +213,15 @@ function DeleteProductDialog({
   onOpenChange: (isOpen: boolean) => void;
   onDelete: () => void | Promise<void>;
 }) {
+  const { t } = useTranslation();
+
   return (
     <ActionDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="Delete product?"
-      description="This product will be permanently removed from the catalog."
-      actionLabel={isDeleting ? "Deleting…" : "Delete"}
+      title={t("productForm.deleteTitle")}
+      description={t("productForm.deleteDescription")}
+      actionLabel={isDeleting ? t("common.deleting") : t("common.delete")}
       actionVariant="danger"
       isActionDisabled={isDeleting}
       onAction={onDelete}
@@ -233,16 +238,18 @@ function ProductImageCard({
   accentColor: string;
   onSelect: () => void | Promise<void>;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="gap-3 overflow-hidden">
       <SectionHeading
-        title="Product Image"
-        description="Use a clear image with a square or landscape crop."
+        title={t("productForm.imageTitle")}
+        description={t("productForm.imageDescription")}
       />
       <Card.Body className="items-center pt-2">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Choose product image"
+          accessibilityLabel={t("productForm.chooseImageAccessibility")}
           onPress={onSelect}
           className="aspect-video w-full items-center justify-center gap-3 overflow-hidden rounded-panel-inner bg-surface-secondary active:opacity-80"
         >
@@ -259,10 +266,10 @@ function ProductImageCard({
               </View>
               <View className="items-center gap-1 px-6">
                 <Typography type="body-sm" weight="semibold">
-                  Add product image
+                  {t("productForm.addImage")}
                 </Typography>
                 <Typography type="body-xs" color="muted" className="text-center">
-                  Optimized JPG, up to 4 MB
+                  {t("productForm.imageRequirements")}
                 </Typography>
               </View>
             </>
@@ -271,7 +278,7 @@ function ProductImageCard({
       </Card.Body>
       <Card.Footer className="pt-0">
         <Typography type="body-xs" color="muted">
-          The image is shown only when one is available.
+          {t("productForm.imageAvailability")}
         </Typography>
       </Card.Footer>
     </Card>
@@ -295,13 +302,14 @@ function ProductDetailsCard({
   onRetryCategories: () => void;
   onAddCategory: () => void;
 }) {
+  const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
 
   return (
     <Card className="gap-3 overflow-hidden">
       <SectionHeading
-        title="Product Details"
-        description="Information customers see across your sales channels."
+        title={t("productForm.detailsTitle")}
+        description={t("productForm.detailsDescription")}
       />
       <Card.Body className="gap-4">
         <Controller
@@ -310,7 +318,7 @@ function ProductDetailsCard({
           render={({ field: { value, onChange } }) => (
             <View className="gap-1.5">
               <Label isRequired isInvalid={Boolean(errors.category_id)}>
-                Category
+                {t("productForm.category")}
               </Label>
               <View className="flex-row items-center gap-2">
                 <Select
@@ -321,10 +329,10 @@ function ProductDetailsCard({
                   className="flex-1"
                 >
                   <Select.Trigger
-                    accessibilityLabel="Category"
+                    accessibilityLabel={t("productForm.category")}
                     className={`${errors.category_id ? "border-danger" : ""}`}
                   >
-                    <Select.Value placeholder="Select a category" numberOfLines={1} />
+                    <Select.Value placeholder={t("productForm.selectCategory")} numberOfLines={1} />
                     <Select.TriggerIndicator />
                   </Select.Trigger>
                   <Select.Portal>
@@ -342,7 +350,7 @@ function ProductDetailsCard({
                 <Button
                   variant="ghost"
                   isIconOnly
-                  accessibilityLabel="Add category"
+                  accessibilityLabel={t("productForm.addCategoryAccessibility")}
                   onPress={onAddCategory}
                 >
                   <Ionicons name="add" size={18} />
@@ -351,10 +359,10 @@ function ProductDetailsCard({
               {didCategoriesFail ? (
                 <View className="flex-row items-center justify-between gap-3">
                   <Description isInvalid className="flex-1 text-danger">
-                    Categories could not be loaded.
+                    {t("productForm.categoriesFailed")}
                   </Description>
                   <Button size="sm" variant="ghost" onPress={onRetryCategories}>
-                    Retry
+                    {t("common.retry")}
                   </Button>
                 </View>
               ) : errors.category_id?.message ? (
@@ -362,11 +370,9 @@ function ProductDetailsCard({
                   {errors.category_id.message}
                 </Description>
               ) : areCategoriesLoading ? (
-                <Description>Loading categories…</Description>
+                <Description>{t("categories.loading")}</Description>
               ) : categoryOptions.length === 0 ? (
-                <Description className="text-warning">
-                  No active categories are available.
-                </Description>
+                <Description className="text-warning">{t("productForm.noCategories")}</Description>
               ) : null}
             </View>
           )}
@@ -376,10 +382,10 @@ function ProductDetailsCard({
           name="name"
           render={({ field: { value, onChange, onBlur } }) => (
             <TextField isRequired isInvalid={!!errors.name}>
-              <Label>Product name</Label>
+              <Label>{t("productForm.name")}</Label>
               <Input
                 variant="secondary"
-                placeholder="e.g. Mushroom & Swiss Burger"
+                placeholder={t("productForm.namePlaceholder")}
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -395,17 +401,17 @@ function ProductDetailsCard({
           name="description"
           render={({ field: { value, onChange, onBlur } }) => (
             <TextField isInvalid={!!errors.description}>
-              <Label>Description</Label>
+              <Label>{t("productForm.description")}</Label>
               <TextArea
                 variant="secondary"
-                placeholder="Describe the product, ingredients, or serving notes"
+                placeholder={t("productForm.descriptionPlaceholder")}
                 className="min-h-24"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
               />
               <Description className={errors.description ? "text-danger" : undefined}>
-                {errors.description?.message ?? "Keep it concise and helpful for customers."}
+                {errors.description?.message ?? t("productForm.descriptionHelp")}
               </Description>
             </TextField>
           )}
@@ -424,25 +430,30 @@ function InventoryCard({
   errors: FieldErrors<ProductFormValues>;
   stockEnabled: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="gap-3 overflow-hidden">
-      <SectionHeading title="Inventory" description="Track this product by SKU and stock." />
+      <SectionHeading
+        title={t("productForm.inventoryTitle")}
+        description={t("productForm.inventoryDescription")}
+      />
       <Card.Body className="gap-4">
         <Controller
           control={control}
           name="code"
           render={({ field: { value, onChange } }) => (
             <TextField isInvalid={!!errors.code}>
-              <Label>Code / SKU</Label>
+              <Label>{t("productForm.code")}</Label>
               <Input
                 variant="secondary"
-                placeholder="e.g. 88551340"
+                placeholder={t("productForm.codePlaceholder")}
                 autoCapitalize="characters"
                 value={value}
                 onChangeText={onChange}
               />
               <Description className={errors.code ? "text-danger" : undefined}>
-                {errors.code?.message ?? "Optional stock keeping unit"}
+                {errors.code?.message ?? t("productForm.codeHelp")}
               </Description>
             </TextField>
           )}
@@ -453,8 +464,8 @@ function InventoryCard({
           name="stock_enabled"
           render={({ field: { value, onChange } }) => (
             <ToggleRow
-              title="Track stock"
-              description="Keep an inventory count for this product."
+              title={t("productForm.trackStock")}
+              description={t("productForm.trackStockDescription")}
               isSelected={value}
               onSelectedChange={onChange}
             />
@@ -467,7 +478,7 @@ function InventoryCard({
               name="stock"
               render={({ field: { value, onChange } }) => (
                 <ProductNumberField
-                  label="Available stock"
+                  label={t("productForm.availableStock")}
                   placeholder="0"
                   required
                   value={value}
@@ -481,9 +492,9 @@ function InventoryCard({
               name="stock_alert"
               render={({ field: { value, onChange } }) => (
                 <ProductNumberField
-                  label="Low-stock alert"
-                  placeholder="Optional"
-                  description="Notify when stock reaches this amount."
+                  label={t("productForm.lowStockAlert")}
+                  placeholder={t("checkout.optional")}
+                  description={t("productForm.lowStockDescription")}
                   value={value}
                   onChangeText={onChange}
                   error={errors.stock_alert?.message}
@@ -498,16 +509,21 @@ function InventoryCard({
 }
 
 function PricingCard({ control, error }: { control: Control<ProductFormValues>; error?: string }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="gap-3 overflow-hidden">
-      <SectionHeading title="Pricing" description="Set the product selling price." />
+      <SectionHeading
+        title={t("productForm.pricingTitle")}
+        description={t("productForm.pricingDescription")}
+      />
       <Card.Body className="gap-4">
         <Controller
           control={control}
           name="price"
           render={({ field: { value, onChange } }) => (
             <ProductNumberField
-              label="Price (Rp)"
+              label={t("productForm.price")}
               placeholder="0"
               required
               value={value}
@@ -524,17 +540,19 @@ function PricingCard({ control, error }: { control: Control<ProductFormValues>; 
 }
 
 function AvailabilityCard({ control }: { control: Control<ProductFormValues> }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="gap-3 overflow-hidden">
-      <SectionHeading title="Availability" />
+      <SectionHeading title={t("productForm.availabilityTitle")} />
       <Card.Body className="gap-4">
         <Controller
           control={control}
           name="active"
           render={({ field: { value, onChange } }) => (
             <ToggleRow
-              title="Active"
-              description="Show this product on all sales channels."
+              title={t("common.active")}
+              description={t("productForm.activeDescription")}
               isSelected={value}
               onSelectedChange={onChange}
             />
@@ -560,6 +578,8 @@ function SaveProductCard({
   onCancel: () => void;
   onSubmit: React.ComponentProps<typeof Button>["onPress"];
 }) {
+  const { t } = useTranslation();
+
   return (
     <View className="flex-1 gap-3">
       {serverError ? (
@@ -569,11 +589,15 @@ function SaveProductCard({
       ) : null}
       <View className="flex-col md:flex-row gap-3">
         <Button variant="secondary" onPress={onCancel} isDisabled={isSaving}>
-          <Button.Label>Cancel</Button.Label>
+          <Button.Label>{t("common.cancel")}</Button.Label>
         </Button>
         <Button className="flex-1" onPress={onSubmit} isDisabled={isSaving}>
           <Button.Label>
-            {isSaving ? "Saving…" : isNew ? "Create product" : "Save changes"}
+            {isSaving
+              ? t("common.saving")
+              : isNew
+                ? t("productForm.create")
+                : t("productForm.saveChanges")}
           </Button.Label>
         </Button>
       </View>
@@ -582,6 +606,7 @@ function SaveProductCard({
 }
 
 export default function ProductFormScreen(): React.JSX.Element {
+  const { locale, t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -606,8 +631,10 @@ export default function ProductFormScreen(): React.JSX.Element {
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
   const hydratedProductId = React.useRef<string | null>(null);
   const handledCreatedCategoryId = React.useRef<string | null>(null);
+  const productSchema = createProductSchema(t);
   const {
     control,
+    clearErrors,
     handleSubmit,
     reset,
     setError,
@@ -630,6 +657,10 @@ export default function ProductFormScreen(): React.JSX.Element {
   });
   const stockEnabled = useWatch({ control, name: "stock_enabled" });
   const imageAsset = useWatch({ control, name: "image" });
+
+  React.useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
 
   React.useEffect(() => {
     const product = productQuery.data;
@@ -671,7 +702,7 @@ export default function ProductFormScreen(): React.JSX.Element {
   }, [categoriesQuery.data, clearCreatedCategory, createdCategory]);
 
   if (!isNew && productQuery.isLoading) {
-    return <LoadingState message="Loading product…" />;
+    return <LoadingState message={t("productForm.loading")} />;
   }
 
   if (!isNew && productQuery.isError) {
@@ -698,8 +729,8 @@ export default function ProductFormScreen(): React.JSX.Element {
     if (!permission.granted) {
       toast.show({
         variant: "warning",
-        label: "Photo access required",
-        description: "Allow photo access to select a product image.",
+        label: t("productForm.photoPermission"),
+        description: t("productForm.photoPermissionDescription"),
       });
       return;
     }
@@ -713,14 +744,14 @@ export default function ProductFormScreen(): React.JSX.Element {
     if (result.canceled) return;
 
     try {
-      setValue("image", await optimizeProductImage(result.assets[0]), {
+      setValue("image", await optimizeProductImage(result.assets[0], t), {
         shouldDirty: true,
         shouldValidate: true,
       });
     } catch (error: unknown) {
       toast.show({
         variant: "danger",
-        label: "Could not prepare image",
+        label: t("productForm.imagePreparationFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -731,18 +762,21 @@ export default function ProductFormScreen(): React.JSX.Element {
       await (isNew
         ? createProductMutation.mutateAsync(toProductPayload(values))
         : updateProductMutation.mutateAsync(toProductPayload(values)));
-      toast.show({ variant: "success", label: isNew ? "Product created" : "Product updated" });
+      toast.show({
+        variant: "success",
+        label: isNew ? t("productForm.created") : t("productForm.updated"),
+      });
       router.back();
     } catch (error: unknown) {
       const hasFieldErrors = applyServerErrors(error);
       setError("root.server", {
         type: "server",
-        message: hasFieldErrors ? "Check the highlighted fields." : getErrorMessage(error),
+        message: hasFieldErrors ? t("productForm.checkFields") : getErrorMessage(error),
       });
       toast.show({
         variant: "danger",
-        label: isNew ? "Could not create product" : "Could not update product",
-        description: hasFieldErrors ? "Check the highlighted fields." : getErrorMessage(error),
+        label: isNew ? t("productForm.createFailed") : t("productForm.updateFailed"),
+        description: hasFieldErrors ? t("productForm.checkFields") : getErrorMessage(error),
       });
     }
   };
@@ -751,12 +785,12 @@ export default function ProductFormScreen(): React.JSX.Element {
     try {
       await deleteProductMutation.mutateAsync();
       setIsDeleteOpen(false);
-      toast.show({ variant: "success", label: "Product deleted" });
+      toast.show({ variant: "success", label: t("productForm.deleted") });
       router.back();
     } catch (error: unknown) {
       toast.show({
         variant: "danger",
-        label: "Could not delete product",
+        label: t("productForm.deleteFailed"),
         description: getErrorMessage(error),
       });
     }
@@ -764,13 +798,15 @@ export default function ProductFormScreen(): React.JSX.Element {
 
   return (
     <>
-      <Stack.Screen options={{ title: isNew ? "New Product" : "Edit Product" }} />
+      <Stack.Screen
+        options={{ title: isNew ? t("productForm.newTitle") : t("productForm.editTitle") }}
+      />
       {!isNew ? (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button
             {...getToolbarIcon("trash")}
             tintColor={themeColorDanger}
-            accessibilityLabel="Delete product"
+            accessibilityLabel={t("productForm.deleteAccessibility")}
             onPress={() => setIsDeleteOpen(true)}
           />
         </Stack.Toolbar>
