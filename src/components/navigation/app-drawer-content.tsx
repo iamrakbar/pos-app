@@ -149,20 +149,19 @@ export default function AppDrawerContent({
                   variant={focused ? "default" : "transparent"}
                   className="min-h-13 flex-row items-center gap-3 px-3 py-2"
                 >
-                  <View
-                    className={`h-10 w-10 items-center justify-center rounded-xl ${focused ? "bg-accent-soft" : "bg-transparent"}`}
+                  <Surface
+                    variant="transparent"
+                    className={`h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0 ${focused ? "bg-accent-soft" : "bg-transparent"}`}
                   >
                     <Ionicons
                       name={iconName}
                       size={20}
                       color={focused ? themeColorAccentSoftForeground : themeColorMuted}
                     />
-                  </View>
-                  <View className="flex-1 gap-0.5">
-                    <Typography type="body-sm" weight={focused ? "semibold" : "medium"}>
-                      {label}
-                    </Typography>
-                    <Typography type="body-xs" color="muted" numberOfLines={1}>
+                  </Surface>
+                  <View className="flex-1">
+                    <Typography weight={focused ? "semibold" : "medium"}>{label}</Typography>
+                    <Typography type="body-sm" color="muted" numberOfLines={1}>
                       {drawerDescriptions[routeName] ?? ""}
                     </Typography>
                   </View>
@@ -207,16 +206,16 @@ export default function AppDrawerContent({
                 variant={isProfileOpen ? "default" : "transparent"}
                 className="min-h-12 flex-row items-center gap-3 px-3 py-2"
               >
-                <Avatar variant="soft" size="sm">
+                <Avatar variant="soft">
                   <Avatar.Fallback>
                     {(user?.name || activeMerchant?.name || "SO").slice(0, 2).toUpperCase()}
                   </Avatar.Fallback>
                 </Avatar>
-                <View className="flex-1 gap-0.5">
-                  <Typography type="body-sm" weight="semibold" numberOfLines={1}>
+                <View className="flex-1">
+                  <Typography weight="semibold" numberOfLines={1}>
                     {user?.name ?? t("profile.account")}
                   </Typography>
-                  <Typography type="body-xs" color="muted" numberOfLines={1}>
+                  <Typography type="body-sm" color="muted" numberOfLines={1}>
                     {activeMerchant?.name ?? t("profile.merchantWorkspace")}
                   </Typography>
                 </View>
