@@ -70,9 +70,7 @@ export default function RootLayout(): JSX.Element {
         <QueryClientProvider client={queryClient}>
           <TrueSheetProvider>
             <HeroUINativeProvider config={{ toast: { contentWrapper: wrapToastContent } }}>
-              {Platform.OS === "android" && (
-                <NavigationBar style={isDarkMode ? "dark" : "light"} hidden={false} />
-              )}
+              {Platform.OS === "android" && <NavigationBar style="auto" hidden={false} />}
               <ExpoStatusBar style={isDarkMode ? "light" : "dark"} />
               <ErrorBoundary>
                 {isAppReady && (

@@ -145,6 +145,13 @@ module.exports = {
           },
         },
       ],
+      [
+        "expo-navigation-bar",
+        {
+          enforceContrast: false,
+          hidden: false,
+        },
+      ],
       "expo-status-bar",
       "expo-font",
       "expo-image",
