@@ -28,7 +28,7 @@ export default function TableSelectionButton({
           : t("pos.selectTable")
       }
     >
-      <Button.Label className="text-xs" numberOfLines={1}>
+      <Button.Label className="text-sm" numberOfLines={1}>
         {selectedTable?.name ?? t("pos.table")}
       </Button.Label>
       <AppIcon name="restaurant-outline" size={16} color={colorAccent} />
