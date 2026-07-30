@@ -1,25 +1,13 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
-import {
-  useAccountProfile,
-  useUpdateAccountProfile,
-} from "@/hooks/db/use-account-profile";
+import { useAccountProfile, useUpdateAccountProfile } from "@/hooks/db/use-account-profile";
 import { createAccountSchema, type AccountFormValues } from "@/schemas/account";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  Select,
-  TextField,
-  Typography,
-  useToast,
-} from "heroui-native";
+import { Button, Card, Input, Label, Select, TextField, Typography, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { View } from "react-native";
@@ -74,10 +62,7 @@ export default function AccountScreen(): React.JSX.Element {
     });
   }, [isDirty, merchants, profileQuery.data, reset]);
 
-  if (
-    profileQuery.isLoading ||
-    (profileQuery.isFetching && !profileQuery.isFetchedAfterMount)
-  ) {
+  if (profileQuery.isLoading || (profileQuery.isFetching && !profileQuery.isFetchedAfterMount)) {
     return <LoadingState message={t("profile.loading")} />;
   }
 
@@ -125,7 +110,7 @@ export default function AccountScreen(): React.JSX.Element {
       bottomOffset={24}
     >
       <View className="w-full max-w-3xl gap-6">
-        <Card>
+        <Card className="gap-3">
           <Card.Header>
             <View className="gap-1">
               <Card.Title>{t("profile.accountDetails")}</Card.Title>
@@ -180,10 +165,7 @@ export default function AccountScreen(): React.JSX.Element {
                 <Select.Portal>
                   <Select.Content presentation="popover">
                     {roleOption ? (
-                      <Select.Item
-                        value={roleOption.value}
-                        label={roleOption.label}
-                      />
+                      <Select.Item value={roleOption.value} label={roleOption.label} />
                     ) : null}
                   </Select.Content>
                 </Select.Portal>
