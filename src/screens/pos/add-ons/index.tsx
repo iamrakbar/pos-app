@@ -22,7 +22,7 @@ import {
 } from "heroui-native";
 import React from "react";
 import { Controller, type Control, useForm, useWatch } from "react-hook-form";
-import { FlatList, Keyboard, View } from "react-native";
+import { FlatList, View, useWindowDimensions } from "react-native";
 import { useKeyboardState } from "react-native-keyboard-controller";
 import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
@@ -183,6 +183,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
 export default function POSAddOnSheet(): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { dismiss, resize } = useTrueSheet();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const [backgroundColor, borderColor] = useThemeColor(["background", "border"]);
   const product = usePOSStore((state) => state.selectedProduct);
   const editingCartItemId = usePOSStore((state) => state.editingCartItemId);
@@ -194,11 +195,9 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const removeItem = useCartStore((state) => state.removeItem);
   const [hasSubmitError, setHasSubmitError] = React.useState(false);
   const [footerHeight, setFooterHeight] = React.useState(0);
-  const [isNativeKeyboardVisible, setIsNativeKeyboardVisible] = React.useState(false);
-  const isControllerKeyboardVisible = useKeyboardState((state) => state.isVisible);
-  const isKeyboardVisible = isControllerKeyboardVisible || isNativeKeyboardVisible;
+  const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
+  const shouldHideFooter = isKeyboardVisible && windowWidth > windowHeight;
   const listRef = React.useRef<FlatList<AddOnGroup>>(null);
-  const isNotesFocused = React.useRef(false);
   const schema = createAddOnSchema(product?.add_ons ?? [], t);
   const {
     control,
@@ -253,23 +252,6 @@ export default function POSAddOnSheet(): React.JSX.Element {
     .flatMap((group) => group.options)
     .reduce((total, option) => total + option.price, 0);
   const configuredPrice = (product?.price ?? 0) + addOnTotal;
-
-  React.useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setIsNativeKeyboardVisible(true);
-      if (isNotesFocused.current) {
-        listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
-      }
-    });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      setIsNativeKeyboardVisible(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
 
   const scrollToNotes = () => {
     listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
@@ -374,7 +356,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
       scrollableOptions={{ scrollingExpandsSheet: true, keyboardScrollOffset: 24 }}
       header={header}
       headerStyle={{ backgroundColor, borderColor }}
-      footer={isKeyboardVisible ? undefined : footer}
+      footer={shouldHideFooter ? undefined : footer}
       footerStyle={{ backgroundColor, borderColor }}
       onDidDismiss={handleDidDismiss}
     >
@@ -438,11 +420,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
                   value={field.value}
                   onChangeText={field.onChange}
                   onFocus={() => {
-                    isNotesFocused.current = true;
                     void resize(POS_ADD_ON_SHEET_NAME, 1).then(scrollToNotes);
-                  }}
-                  onBlur={() => {
-                    isNotesFocused.current = false;
                   }}
                   placeholder={t("addOns.specialInstructions")}
                   numberOfLines={2}
@@ -450,7 +428,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
                 />
               )}
             />
-            {!isKeyboardVisible && footerHeight > 0 ? (
+            {!shouldHideFooter && footerHeight > 0 ? (
               <View
                 style={{ height: footerHeight + 16 }}
                 accessibilityElementsHidden

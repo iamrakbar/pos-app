@@ -1,5 +1,7 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
+import AdaptiveFormOverlay, {
+  AdaptiveFormKeyboardHandlers,
+} from "@/components/common/adaptive-form-overlay";
 import { useCreateCategory } from "@/hooks/db/use-categories";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
@@ -95,7 +97,6 @@ export default function QuickCategoryFormOverlay({
       onOpenChange={handleOpenChange}
       title={t("productForm.addCategoryTitle")}
       description={t("productForm.addCategoryDescription")}
-      moveAboveKeyboardOnPhone
       footer={
         <View
           className={`gap-3 px-5 pb-5 pt-4 ${
@@ -131,12 +132,16 @@ export default function QuickCategoryFormOverlay({
           render={({ field: { value, onChange } }) => (
             <TextField isRequired isInvalid={Boolean(errors.name)}>
               <Label>{t("categories.name")}</Label>
-              <Input
-                value={value}
-                onChangeText={onChange}
-                placeholder={t("categories.namePlaceholder")}
-                autoFocus
-              />
+              <AdaptiveFormKeyboardHandlers>
+                {(keyboardHandlers) => (
+                  <Input
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder={t("categories.namePlaceholder")}
+                    {...keyboardHandlers}
+                  />
+                )}
+              </AdaptiveFormKeyboardHandlers>
               {errors.name?.message ? (
                 <Typography type="body-xs" className="text-danger">
                   {errors.name.message}
@@ -152,11 +157,16 @@ export default function QuickCategoryFormOverlay({
           render={({ field: { value, onChange } }) => (
             <TextField isInvalid={Boolean(errors.description)}>
               <Label>{t("categories.description")}</Label>
-              <TextArea
-                value={value}
-                onChangeText={onChange}
-                placeholder={t("categories.descriptionPlaceholder")}
-              />
+              <AdaptiveFormKeyboardHandlers>
+                {(keyboardHandlers) => (
+                  <TextArea
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder={t("categories.descriptionPlaceholder")}
+                    {...keyboardHandlers}
+                  />
+                )}
+              </AdaptiveFormKeyboardHandlers>
               {errors.description?.message ? (
                 <Typography type="body-xs" className="text-danger">
                   {errors.description.message}

@@ -1,6 +1,8 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
-import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
+import AdaptiveFormOverlay, {
+  AdaptiveFormKeyboardHandlers,
+} from "@/components/common/adaptive-form-overlay";
 import { useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
@@ -146,12 +148,16 @@ export default function AreaFormDialog({
             render={({ field: { value, onChange } }) => (
               <TextField isRequired isInvalid={Boolean(errors.name)}>
                 <Label>{t("areasManagement.name")}</Label>
-                <Input
-                  value={value}
-                  onChangeText={onChange}
-                  placeholder={t("areasManagement.areaNamePlaceholder")}
-                  autoFocus
-                />
+                <AdaptiveFormKeyboardHandlers>
+                  {(keyboardHandlers) => (
+                    <Input
+                      value={value}
+                      onChangeText={onChange}
+                      placeholder={t("areasManagement.areaNamePlaceholder")}
+                      {...keyboardHandlers}
+                    />
+                  )}
+                </AdaptiveFormKeyboardHandlers>
                 {errors.name?.message ? (
                   <Typography type="body-xs" className="text-danger">
                     {errors.name.message}

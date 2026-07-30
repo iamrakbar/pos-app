@@ -19,7 +19,8 @@ import {
 } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTranslation } from "@/stores/use-locale";
 
 export default function AreaFormScreen(): React.JSX.Element {
@@ -122,10 +123,12 @@ export default function AreaFormScreen(): React.JSX.Element {
         </Stack.Toolbar>
       ) : null}
 
-      <ScrollView
+      <KeyboardAwareScrollView
         className="flex-1 bg-background"
         contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
+        bottomOffset={24}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
         <Card className="w-full max-w-3xl">
           <Card.Header>
@@ -176,7 +179,7 @@ export default function AreaFormScreen(): React.JSX.Element {
             </View>
           </Card.Body>
         </Card>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <ActionDialog
         isOpen={isDeleteOpen}

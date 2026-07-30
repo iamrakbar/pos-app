@@ -1,6 +1,8 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
-import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
+import AdaptiveFormOverlay, {
+  AdaptiveFormKeyboardHandlers,
+} from "@/components/common/adaptive-form-overlay";
 import StringNumberField from "@/components/common/string-number-field";
 import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-tables";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
@@ -156,11 +158,16 @@ export default function TableFormDialog({
             render={({ field: { value, onChange } }) => (
               <TextField isRequired isInvalid={Boolean(errors.name)}>
                 <Label>{t("areasManagement.name")}</Label>
-                <Input
-                  value={value}
-                  onChangeText={onChange}
-                  placeholder={t("areasManagement.tableNamePlaceholder")}
-                />
+                <AdaptiveFormKeyboardHandlers>
+                  {(keyboardHandlers) => (
+                    <Input
+                      value={value}
+                      onChangeText={onChange}
+                      placeholder={t("areasManagement.tableNamePlaceholder")}
+                      {...keyboardHandlers}
+                    />
+                  )}
+                </AdaptiveFormKeyboardHandlers>
                 {errors.name?.message ? (
                   <Typography type="body-xs" className="text-danger">
                     {errors.name.message}
@@ -173,20 +180,25 @@ export default function TableFormDialog({
             control={control}
             name="pax"
             render={({ field: { value, onChange } }) => (
-              <StringNumberField
-                label={t("areasManagement.capacity")}
-                value={value}
-                onChange={onChange}
-                minValue={1}
-                isRequired
-                isInvalid={Boolean(errors.pax)}
-              >
-                {errors.pax?.message ? (
-                  <Typography type="body-xs" className="text-danger">
-                    {errors.pax.message}
-                  </Typography>
-                ) : null}
-              </StringNumberField>
+              <AdaptiveFormKeyboardHandlers>
+                {(keyboardHandlers) => (
+                  <StringNumberField
+                    label={t("areasManagement.capacity")}
+                    value={value}
+                    onChange={onChange}
+                    minValue={1}
+                    isRequired
+                    isInvalid={Boolean(errors.pax)}
+                    inputProps={keyboardHandlers}
+                  >
+                    {errors.pax?.message ? (
+                      <Typography type="body-xs" className="text-danger">
+                        {errors.pax.message}
+                      </Typography>
+                    ) : null}
+                  </StringNumberField>
+                )}
+              </AdaptiveFormKeyboardHandlers>
             )}
           />
           <Controller

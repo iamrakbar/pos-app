@@ -14,7 +14,7 @@ import {
   extractPaymentQrUrl,
 } from "@/api/mappers/checkout";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { TrueSheet, useTrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
   SearchField,
@@ -27,7 +27,13 @@ import {
 import { SlideButton } from "heroui-native-pro";
 import type { ComponentProps, JSX, ReactElement } from "react";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Keyboard, Pressable, View, type LayoutChangeEvent } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  View,
+  useWindowDimensions,
+  type LayoutChangeEvent,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView, useKeyboardState } from "react-native-keyboard-controller";
 import type { PaymentSession, POSPaymentGroup } from "@/types/pos";
@@ -510,7 +516,7 @@ type CheckoutFormScrollContentProps = {
   customerFields: ComponentProps<typeof CustomerFields>;
   control: Control<CheckoutFormValues>;
   presentation: CheckoutContentProps["presentation"];
-  isKeyboardVisible: boolean;
+  isSheetFooterHidden: boolean;
   sheetFooterHeight: number;
 };
 
@@ -520,14 +526,15 @@ function CheckoutFormScrollContent({
   customerFields,
   control,
   presentation,
-  isKeyboardVisible,
+  isSheetFooterHidden,
   sheetFooterHeight,
 }: CheckoutFormScrollContentProps) {
   const { t } = useTranslation();
 
   return (
     <KeyboardAwareScrollView
-      bottomOffset={32}
+      enabled={presentation === "screen"}
+      bottomOffset={presentation === "screen" ? 32 : 0}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       className="flex-1"
@@ -564,7 +571,7 @@ function CheckoutFormScrollContent({
           />
         </View>
 
-        {presentation === "sheet" && !isKeyboardVisible && sheetFooterHeight > 0 ? (
+        {presentation === "sheet" && !isSheetFooterHidden && sheetFooterHeight > 0 ? (
           <View
             style={{ height: sheetFooterHeight + 16 }}
             accessibilityElementsHidden
@@ -583,6 +590,8 @@ export function CheckoutContent({
   onPaymentReady,
 }: CheckoutContentProps): JSX.Element {
   const { locale, t } = useTranslation();
+  const { resize } = useTrueSheet();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const [backgroundColor, borderColor, accentColor] = useThemeColor([
     "background",
     "border",
@@ -596,14 +605,14 @@ export function CheckoutContent({
   const { data: guests = [] } = useGuests();
   const validateCart = useValidateCart();
   const checkout = useCheckout();
-  const isControllerKeyboardVisible = useKeyboardState((state) => state.isVisible);
+  const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
+  const shouldHideSheetFooter =
+    presentation === "sheet" && isKeyboardVisible && windowWidth > windowHeight;
 
   const [cashReceived, setCashReceived] = useState("");
   const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [sheetFooterHeight, setSheetFooterHeight] = useState(0);
-  const [isNativeKeyboardVisible, setIsNativeKeyboardVisible] = useState(false);
-  const isKeyboardVisible = isControllerKeyboardVisible || isNativeKeyboardVisible;
   const checkoutSchema = createCheckoutSchema(t);
 
   const defaultPaymentGroup =
@@ -653,6 +662,12 @@ export function CheckoutContent({
   }, [clearErrors, locale]);
 
   useEffect(() => {
+    if (presentation === "sheet" && sheetName && isKeyboardVisible) {
+      void resize(sheetName, 1);
+    }
+  }, [isKeyboardVisible, presentation, resize, sheetName]);
+
+  useEffect(() => {
     if (paymentGroups.length === 0) return;
 
     const selectedGroup = paymentGroups.find((g) => g.group_type === paymentGroup);
@@ -672,20 +687,6 @@ export function CheckoutContent({
       setValue("payment_id", firstPayment?.id ?? "", { shouldValidate: true });
     }
   }, [paymentGroups, paymentGroup, paymentId, setValue]);
-
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setIsNativeKeyboardVisible(true);
-    });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      setIsNativeKeyboardVisible(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
 
   useEffect(() => {
     setValue("products", buildCartProducts(cartProducts), {
@@ -765,7 +766,7 @@ export function CheckoutContent({
     (isCashPayment && cashReceivedAmount < total);
 
   const footer =
-    isCheckoutPending || isKeyboardVisible ? undefined : (
+    isCheckoutPending || shouldHideSheetFooter ? undefined : (
       <CheckoutActions
         subtotal={subtotal}
         paymentFee={paymentFee}
@@ -814,7 +815,7 @@ export function CheckoutContent({
           }}
           control={control}
           presentation={presentation}
-          isKeyboardVisible={isKeyboardVisible}
+          isSheetFooterHidden={shouldHideSheetFooter}
           sheetFooterHeight={sheetFooterHeight}
         />
       )}

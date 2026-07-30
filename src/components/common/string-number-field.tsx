@@ -8,6 +8,7 @@ type StringNumberFieldProps = Omit<NumberFieldProps, "children" | "onChange" | "
   label?: ReactNode;
   placeholder?: string;
   inputVariant?: NumberFieldInputProps["variant"];
+  inputProps?: Omit<NumberFieldInputProps, "placeholder" | "variant">;
   children?: ReactNode;
 };
 
@@ -17,6 +18,7 @@ export default function StringNumberField({
   label,
   placeholder,
   inputVariant,
+  inputProps,
   formatOptions,
   locale,
   children,
@@ -36,7 +38,7 @@ export default function StringNumberField({
       {label ? <Label>{label}</Label> : null}
       <NumberField.Group>
         <NumberField.DecrementButton />
-        <NumberField.Input placeholder={placeholder} variant={inputVariant} />
+        <NumberField.Input placeholder={placeholder} variant={inputVariant} {...inputProps} />
         <NumberField.IncrementButton />
       </NumberField.Group>
       {children}
