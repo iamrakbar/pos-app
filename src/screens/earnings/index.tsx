@@ -3,7 +3,10 @@ import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useEarnings } from "@/hooks/db/use-earnings";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import {
+  COMPACT_LAYOUT_MAX_WIDTH,
+  useResponsiveLayout,
+} from "@/hooks/use-responsive-layout";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -109,17 +112,19 @@ function SummaryWidget({
   value,
   icon,
   color,
+  isSingleColumn,
 }: {
   label: string;
   value: string;
   icon: React.ComponentProps<typeof Ionicons>["name"];
   color: keyof typeof SUMMARY_STYLES;
+  isSingleColumn: boolean;
 }) {
   const style = SUMMARY_STYLES[color];
   const iconColor = useThemeColor(style.token);
 
   return (
-    <Widget className="grow shrink basis-2/5 landscape:basis-1/5">
+    <Widget className={isSingleColumn ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
       <Widget.Header>
         <Widget.Title>{label}</Widget.Title>
         <View
@@ -445,7 +450,8 @@ export default function EarningsScreen(): React.JSX.Element {
     value,
     label: t(`earnings.ranges.${value}`),
   }));
-  const { isCompact, horizontalPagePadding } = useResponsiveLayout();
+  const { width, height, isCompact, horizontalPagePadding } = useResponsiveLayout();
+  const isPhone = Math.min(width, height) <= COMPACT_LAYOUT_MAX_WIDTH;
   const { choicePresentation } = useOverlayPresentation();
   const { toast } = useToast();
   const [dateRangeValue, setDateRangeValue] = React.useState<DateRangeValue>("last-7-days");
@@ -594,30 +600,34 @@ export default function EarningsScreen(): React.JSX.Element {
             <ErrorState error={error} onRetry={refetch} />
           ) : (
             <>
-              <View className="flex-row flex-wrap gap-4">
+              <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
                 <SummaryWidget
                   label={t("earnings.settledEarnings")}
                   value={formatRupiah(totalEarnings)}
                   icon="wallet-outline"
                   color="success"
+                  isSingleColumn={isPhone}
                 />
                 <SummaryWidget
                   label={t("earnings.settledOrders")}
                   value={String(data.length)}
                   icon="receipt-outline"
                   color="accent"
+                  isSingleColumn={isPhone}
                 />
                 <SummaryWidget
                   label={t("earnings.averageOrder")}
                   value={formatRupiah(averageOrder)}
                   icon="analytics-outline"
                   color="warning"
+                  isSingleColumn={isPhone}
                 />
                 <SummaryWidget
                   label={t("earnings.itemsSold")}
                   value={String(itemCount)}
                   icon="bag-handle-outline"
                   color="default"
+                  isSingleColumn={isPhone}
                 />
               </View>
 

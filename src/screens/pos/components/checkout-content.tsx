@@ -17,6 +17,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TrueSheet, useTrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
+  Chip,
+  RadioGroup,
+  ScrollShadow,
   SearchField,
   Select,
   Surface,
@@ -25,16 +28,18 @@ import {
   useThemeColor,
 } from "heroui-native";
 import { SlideButton } from "heroui-native-pro";
+import { LinearGradient } from "expo-linear-gradient";
 import type { ComponentProps, JSX, ReactElement } from "react";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
 } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView, useKeyboardState } from "react-native-keyboard-controller";
 import type { PaymentSession, POSPaymentGroup } from "@/types/pos";
 import {
@@ -91,6 +96,26 @@ function PaymentButtonSkeleton({ widths }: { widths: number[] }) {
     >
       {widths.map((width) => (
         <View key={width} className="h-8 rounded-lg bg-surface-secondary" style={{ width }} />
+      ))}
+    </View>
+  );
+}
+
+function PaymentTypeSkeleton() {
+  const { t } = useTranslation();
+
+  return (
+    <View
+      className="flex-row gap-2"
+      accessibilityRole="progressbar"
+      accessibilityLabel={t("checkout.loadingPaymentMethods")}
+    >
+      {[0, 1, 2].map((item) => (
+        <View
+          key={item}
+          className="w-28 rounded-xl bg-surface-secondary"
+          style={{ aspectRatio: 4 / 3 }}
+        />
       ))}
     </View>
   );
@@ -249,37 +274,58 @@ function PaymentFields({
           {t("checkout.paymentMethod")}
         </Typography>
         {isPending ? (
-          <PaymentButtonSkeleton widths={[104, 88, 112]} />
+          <PaymentTypeSkeleton />
         ) : (
-          <View className="min-h-8 flex-row flex-wrap gap-2">
-            {paymentGroups.map((group) => {
-              const isActive = paymentGroup === group.group_type;
-              return (
-                <Button
-                  key={group.group_type}
-                  size="sm"
-                  variant={isActive ? "primary" : "secondary"}
-                  onPress={() => {
-                    const firstPayment = group.payments[0];
-                    const paymentFee = firstPayment
-                      ? firstPayment.fee_unit === "percentage"
-                        ? Math.round(subtotal * (firstPayment.fee_value / 100))
-                        : firstPayment.fee_value
-                      : 0;
-                    setValue("payment_group", group.group_type);
-                    setValue("payment_id", firstPayment?.id ?? "");
-                    setCashReceived(
-                      isCashPaymentSelection(group.group_type, firstPayment?.code)
-                        ? String(subtotal + paymentFee)
-                        : ""
-                    );
-                  }}
-                >
-                  <Button.Label>{group.group_label}</Button.Label>
-                </Button>
+          <RadioGroup
+            value={paymentGroup}
+            onValueChange={(groupType) => {
+              const group = paymentGroups.find((item) => item.group_type === groupType);
+              if (!group) return;
+
+              const firstPayment = group.payments[0];
+              const paymentFee = firstPayment
+                ? firstPayment.fee_unit === "percentage"
+                  ? Math.round(subtotal * (firstPayment.fee_value / 100))
+                  : firstPayment.fee_value
+                : 0;
+              setValue("payment_group", group.group_type);
+              setValue("payment_id", firstPayment?.id ?? "");
+              setCashReceived(
+                isCashPaymentSelection(group.group_type, firstPayment?.code)
+                  ? String(subtotal + paymentFee)
+                  : ""
               );
-            })}
-          </View>
+            }}
+          >
+            <FlatList
+              horizontal
+              data={paymentGroups}
+              keyExtractor={(group) => group.group_type}
+              showsHorizontalScrollIndicator={false}
+              contentContainerClassName="gap-2"
+              renderItem={({ item: group }) => (
+                <RadioGroup.Item
+                  value={group.group_type}
+                  className="w-28"
+                  style={{ aspectRatio: 4 / 3 }}
+                >
+                  {({ isSelected }) => (
+                    <View
+                      className={`h-full w-full items-center justify-center rounded-xl border p-3 ${
+                        isSelected
+                          ? "border-accent bg-accent/10"
+                          : "border-border bg-surface-secondary"
+                      }`}
+                    >
+                      <Typography type="body-sm" weight="semibold" className="text-center">
+                        {group.group_label}
+                      </Typography>
+                    </View>
+                  )}
+                </RadioGroup.Item>
+              )}
+            />
+          </RadioGroup>
         )}
       </View>
 
@@ -382,34 +428,44 @@ function CustomerFields({
 }) {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
-  const customerTypeOptions = [
-    ["guest", t("checkout.merchant")],
-    ["customer", t("checkout.registeredCustomer")],
-    ["anonymous", t("checkout.walkIn")],
-  ] as const;
+  const selectCustomerType = (type: CheckoutFormValues["customer_type"]) => {
+    setValue("customer_type", type);
+    setValue("guest_id", null);
+    setValue("customer_id", null);
+    setValue("customer_search", "");
+  };
 
   return (
-    <View className="gap-2">
+    <View className="gap-4">
       <Typography type="body-sm" weight="semibold">
         {t("checkout.customer")}
       </Typography>
-      <View className="flex-row gap-2">
-        {customerTypeOptions.map(([type, label]) => (
-          <Button
-            key={type}
-            size="sm"
-            variant={customerType === type ? "primary" : "secondary"}
-            onPress={() => {
-              setValue("customer_type", type);
-              setValue("guest_id", null);
-              setValue("customer_id", null);
-              setValue("customer_search", "");
-            }}
+      <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-2 pb-1"
+        >
+          <Chip
+            variant={customerType === "guest" ? "primary" : "secondary"}
+            onPress={() => selectCustomerType("guest")}
           >
-            <Button.Label>{label}</Button.Label>
-          </Button>
-        ))}
-      </View>
+            <Chip.Label>{t("checkout.merchant")}</Chip.Label>
+          </Chip>
+          <Chip
+            variant={customerType === "customer" ? "primary" : "secondary"}
+            onPress={() => selectCustomerType("customer")}
+          >
+            <Chip.Label>{t("checkout.registeredCustomer")}</Chip.Label>
+          </Chip>
+          <Chip
+            variant={customerType === "anonymous" ? "primary" : "secondary"}
+            onPress={() => selectCustomerType("anonymous")}
+          >
+            <Chip.Label>{t("checkout.walkIn")}</Chip.Label>
+          </Chip>
+        </ScrollView>
+      </ScrollShadow>
 
       {customerType === "guest" ? (
         <View className="gap-2">

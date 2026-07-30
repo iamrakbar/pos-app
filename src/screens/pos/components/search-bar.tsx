@@ -1,7 +1,15 @@
 import { usePOSStore, type ProductSort } from "@/stores/use-pos-store";
 import { useCategories } from "@/hooks/db/use-categories";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
-import { Button, Chip, ScrollShadow, SearchField, Select, useThemeColor } from "heroui-native";
+import {
+  Button,
+  Chip,
+  ScrollShadow,
+  SearchField,
+  Select,
+  Skeleton,
+  useThemeColor,
+} from "heroui-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { View } from "react-native";
@@ -10,7 +18,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useTranslation } from "@/stores/use-locale";
 
-export default function SearchBar(): JSX.Element {
+type SearchBarProps = {
+  isLoading?: boolean;
+};
+
+const CATEGORY_SKELETON_WIDTHS = [64, 88, 72, 104, 80];
+
+export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.Element {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
   const [themeColorForeground, themeColorAccent] = useThemeColor(["foreground", "accent"]);
@@ -31,6 +45,35 @@ export default function SearchBar(): JSX.Element {
     { value: "price-desc", label: t("pos.sortPriceDescending") },
   ];
   const selectedSort = sortOptions.find((option) => option.value === productSort)!;
+
+  if (isLoading) {
+    return (
+      <View accessibilityLabel={t("pos.loadingProducts")}>
+        <View className="flex-row items-center gap-3 px-2 py-4">
+          <DrawerMenuButton />
+          <Skeleton className="h-12 flex-1 rounded-3xl" />
+          <Skeleton className="size-12 rounded-3xl" />
+          <Skeleton className="size-12 rounded-3xl" />
+        </View>
+        {areCategoriesVisible ? (
+          <ScrollView
+            horizontal
+            scrollEnabled={false}
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-2 px-5 pb-4"
+          >
+            {CATEGORY_SKELETON_WIDTHS.map((width) => (
+              <Skeleton
+                key={`category-skeleton-${width}`}
+                className="h-8 rounded-full"
+                style={{ width }}
+              />
+            ))}
+          </ScrollView>
+        ) : null}
+      </View>
+    );
+  }
 
   return (
     <View className="">
