@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { resetCurrentOrder } from '@/stores/reset-current-order';
 
 type AuthState = {
   token: string | null;
@@ -69,6 +70,7 @@ export const useAuth = create<AuthState>()(
       logout: () => {
         // Clear React Query cache to prevent stale data after logout
         queryClientRef?.clear();
+        resetCurrentOrder();
         set({
           token: null,
           refreshToken: null,

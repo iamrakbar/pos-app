@@ -97,6 +97,8 @@ export const usePOSStore = create<POSState & POSAction>()(
 
       resetCheckoutForm: () =>
         set({
+          selectedProduct: null,
+          editingCartItemId: null,
           checkoutForm: { ...DEFAULT_CHECKOUT_FORM },
           paymentSession: null,
           checkoutResult: null,
