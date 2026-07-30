@@ -23,14 +23,12 @@ import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
 import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/use-receipt-printer";
-import { getToolbarIcon } from "@/utils/toolbar-icons";
-import { useNavigationTheme } from "@/utils/navigation-theme";
 import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/api-error";
 import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "heroui-native-pro";
 import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useState } from "react";
@@ -248,31 +246,6 @@ function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () =>
   );
 }
 
-function PrintReceiptToolbar({
-  color,
-  isPrinting,
-  onPrint,
-}: {
-  color: string;
-  isPrinting: boolean;
-  onPrint: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <Stack.Toolbar placement="right">
-      <Stack.Toolbar.Button
-        {...getToolbarIcon("printer")}
-        tintColor={color}
-        accessibilityLabel={
-          isPrinting ? t("orders.detail.printingReceipt") : t("orders.detail.printReceipt")
-        }
-        disabled={isPrinting}
-        onPress={onPrint}
-      />
-    </Stack.Toolbar>
-  );
-}
-
 function OrderOverview({
   order,
   localeTag,
@@ -378,7 +351,6 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
   const { locale, t } = useTranslation();
   const localeTag = getLocaleTag(locale);
   const { isCompact } = useResponsiveLayout();
-  const navigationTheme = useNavigationTheme();
   const [isQrOpen, setIsQrOpen] = useState(false);
   const themeColorForeground = useThemeColor("foreground");
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
@@ -434,12 +406,6 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
 
   return (
     <>
-      <PrintReceiptToolbar
-        color={navigationTheme.foreground}
-        isPrinting={isPrinting}
-        onPrint={() => void printReceipt(order, "reprint")}
-      />
-
       <View className="flex-1 bg-background">
         <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-10 md:px-6">
           <View className="w-full max-w-3xl self-center gap-5">
@@ -607,6 +573,23 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                   isSuccess={updateStatus.isSuccess}
                   onUpdate={updateStatus.mutate}
                 />
+
+                <Button
+                  variant="outline"
+                  isDisabled={isPrinting}
+                  onPress={() => void printReceipt(order, "reprint")}
+                >
+                  {isPrinting ? (
+                    <ActivityIndicator />
+                  ) : (
+                    <Ionicons name="print-outline" size={18} color={themeColorForeground} />
+                  )}
+                  <Button.Label>
+                    {isPrinting
+                      ? t("orders.detail.printingReceipt")
+                      : t("orders.detail.printReceipt")}
+                  </Button.Label>
+                </Button>
               </View>
             </View>
           </View>
