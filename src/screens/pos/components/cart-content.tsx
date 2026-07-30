@@ -5,7 +5,7 @@ import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { Button, Select, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
 import { EmptyState, TimePicker } from "heroui-native-pro";
 import { useTrueSheet } from "@lodev09/react-native-true-sheet";
@@ -17,6 +17,7 @@ import { useTranslation } from "@/stores/use-locale";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useRouter } from "expo-router";
+import { resetCurrentOrder } from "@/stores/reset-current-order";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -48,13 +49,12 @@ export default function CartContent(): JSX.Element {
   const { isCompact, isPortrait } = useResponsiveLayout();
   const { locale, t } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
-  const [colorMuted, colorAccent] = useThemeColor(["muted", "accent"]);
+  const [colorAccent, colorMuted] = useThemeColor(["accent", "muted"]);
   const cartProducts = useCartStore((s) => s.products);
   const itemCount = useCartStore((s) =>
     s.products.reduce((total, product) => total + product.qty, 0)
   );
   const totalPrice = useCartStore((s) => s.totalPrice);
-  const clearCart = useCartStore((s) => s.clearCart);
   const checkoutForm = usePOSStore((s) => s.checkoutForm);
   const updateCheckoutForm = usePOSStore((s) => s.updateCheckoutForm);
   const { data: catalogProducts } = useProducts();
@@ -103,7 +103,7 @@ export default function CartContent(): JSX.Element {
           >
             <Select.Trigger asChild variant="unstyled">
               <Button variant="secondary" size="sm" className="min-w-24">
-                <Button.Label className="xs" numberOfLines={1}>
+                <Button.Label className="text-sm" numberOfLines={1}>
                   {checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway")}
                 </Button.Label>
               </Button>
@@ -124,7 +124,6 @@ export default function CartContent(): JSX.Element {
             <TableSelectionButton selectedTable={selectedTable} />
           ) : (
             <TimePicker
-              className="h-12"
               hourFormat={24}
               minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
               locale={getLocaleTag(locale)}
@@ -142,17 +141,11 @@ export default function CartContent(): JSX.Element {
               }}
             >
               <TimePicker.Select presentation={pickerPresentation}>
-                <TimePicker.Trigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="items-center justify-between min-w-24 rounded-full shadow-none"
-                  >
-                    <Button.Label className="text-xs" numberOfLines={1}>
-                      {checkoutForm.pickup_time ?? t("pos.pickupTime")}
-                    </Button.Label>
-                    <AppIcon name="time-outline" size={14} color={colorAccent} />
-                  </Button>
+                <TimePicker.Trigger className="h-10 py-0 items-center bg-background-secondary rounded-full shadow-none">
+                  <Text className="text-accent size-sm">
+                    {checkoutForm.pickup_time ?? t("pos.pickupTime")}
+                  </Text>
+                  <AppIcon name="time-outline" size={12} color={colorAccent} />
                 </TimePicker.Trigger>
                 <TimePicker.Portal>
                   <TimePicker.Overlay />
@@ -168,7 +161,7 @@ export default function CartContent(): JSX.Element {
           )}
         </View>
         {cartProducts.length > 0 && (
-          <Button variant="danger-soft" size="sm" onPress={clearCart}>
+          <Button variant="danger-soft" size="sm" onPress={resetCurrentOrder}>
             <Button.Label>{t("common.clear")}</Button.Label>
           </Button>
         )}
