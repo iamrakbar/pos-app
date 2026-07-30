@@ -304,6 +304,7 @@ function ProductDetailsCard({
 }) {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
+  const [themeColorForeground] = useThemeColor(["foreground"]);
 
   return (
     <Card className="gap-3 overflow-hidden">
@@ -353,7 +354,7 @@ function ProductDetailsCard({
                   accessibilityLabel={t("productForm.addCategoryAccessibility")}
                   onPress={onAddCategory}
                 >
-                  <Ionicons name="add" size={18} />
+                  <Ionicons name="add" size={18} color={themeColorForeground} />
                 </Button>
               </View>
               {didCategoriesFail ? (
@@ -588,7 +589,7 @@ function SaveProductCard({
         </Typography>
       ) : null}
       <View className="flex-col md:flex-row gap-3">
-        <Button variant="secondary" onPress={onCancel} isDisabled={isSaving}>
+        <Button variant="ghost" onPress={onCancel} isDisabled={isSaving}>
           <Button.Label>{t("common.cancel")}</Button.Label>
         </Button>
         <Button className="flex-1" onPress={onSubmit} isDisabled={isSaving}>

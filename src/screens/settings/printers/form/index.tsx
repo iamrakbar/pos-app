@@ -845,7 +845,7 @@ function PrinterFormView(props: PrinterFormViewProps) {
                 <FieldError message={errors.root.server.message} />
               ) : null}
               <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
-                <Button variant="outline" onPress={props.onCancel}>
+                <Button variant="ghost" onPress={props.onCancel}>
                   <Button.Label>{t("common.cancel")}</Button.Label>
                 </Button>
                 <Button className="flex-1" onPress={props.onSave} isDisabled={isSubmitting}>

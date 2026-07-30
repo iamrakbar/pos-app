@@ -165,7 +165,7 @@ export default function AreaFormScreen(): React.JSX.Element {
               </Button>
             ) : null}
             <View className="flex-row justify-end gap-3">
-              <Button variant="secondary" onPress={() => router.back()}>
+              <Button variant="ghost" onPress={() => router.back()}>
                 <Button.Label>{t("common.cancel")}</Button.Label>
               </Button>
               <Button onPress={handleSubmit(submitArea)} isDisabled={isSaving}>

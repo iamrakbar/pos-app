@@ -347,7 +347,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
           </Typography>
         </View>
         <View className="flex-row gap-3">
-          <Button variant="outline" onPress={closeSheet}>
+          <Button variant="ghost" onPress={closeSheet}>
             <Button.Label>{t("common.cancel")}</Button.Label>
           </Button>
           <Button className="flex-1" onPress={handleSave}>

@@ -203,7 +203,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
               </Typography>
             ) : null}
             <View className="flex-col md:flex-row gap-3">
-              <Button variant="secondary" onPress={() => router.back()}>
+              <Button variant="ghost" onPress={() => router.back()}>
                 <Button.Label>{t("common.cancel")}</Button.Label>
               </Button>
               <Button className="flex-1" onPress={handleSubmit(submitAddOn)} isDisabled={isSaving}>

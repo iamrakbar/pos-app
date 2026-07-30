@@ -281,7 +281,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
 
         <View className="flex-1 flex-col md:flex-row items-center gap-3 w-full">
           <Button
-            variant="secondary"
+            variant="ghost"
             className="w-full"
             onPress={() => router.back()}
             isDisabled={isSaving}
