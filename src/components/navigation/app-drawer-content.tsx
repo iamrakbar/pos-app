@@ -63,14 +63,7 @@ export default function AppDrawerContent({
     themeColorMuted,
     themeColorAccentSoftForeground,
     themeColorDanger,
-  ] = useThemeColor([
-    "accent",
-    "accent-foreground",
-    "muted",
-    "accent-soft-foreground",
-    "warning-soft-foreground",
-    "danger",
-  ]);
+  ] = useThemeColor(["accent", "accent-foreground", "muted", "accent-soft-foreground", "danger"]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const { data: user } = useAccountProfile();
