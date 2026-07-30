@@ -88,7 +88,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
             </SearchField.Group>
           </SearchField>
         </View>
-        <View className="flex-row items-center gap-1">
+        <View className="flex-row items-center gap-0.5">
           <Button
             variant="ghost"
             isIconOnly
@@ -99,7 +99,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
           >
             <AppIcon
               name={"albums-outline"}
-              size={18}
+              size={22}
               color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
             />
           </Button>
@@ -116,7 +116,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
                   sort: selectedSort.label,
                 })}
               >
-                <AppIcon name="swap-vertical-outline" size={18} color={themeColorForeground} />
+                <AppIcon name="swap-vertical-outline" size={22} color={themeColorForeground} />
               </Button>
             </Select.Trigger>
             <Select.Portal>
