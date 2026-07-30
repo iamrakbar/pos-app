@@ -1,16 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Button, Card, Select, Separator, Typography, useThemeColor } from "heroui-native";
+import { Button, ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useAuth } from "@/stores/use-auth";
-import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
-import { useLocale, useTranslation } from "@/stores/use-locale";
-import type { Locale } from "@/locales";
+import { useTranslation } from "@/stores/use-locale";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
-import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useState } from "react";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type SettingsItem = {
   id: string;
@@ -20,19 +16,53 @@ type SettingsItem = {
   description: string;
 };
 
+function SettingsLinkRow({
+  item,
+  iconColor,
+  onPress,
+}: {
+  item: SettingsItem;
+  iconColor: string;
+  onPress: () => void;
+}) {
+  return (
+    <ListGroup.Item
+      accessibilityRole="button"
+      onPress={onPress}
+    >
+      <ListGroup.ItemPrefix>
+        <Ionicons name={item.icon} size={21} color={iconColor} />
+      </ListGroup.ItemPrefix>
+      <ListGroup.ItemContent>
+        <ListGroup.ItemTitle>{item.label}</ListGroup.ItemTitle>
+        <ListGroup.ItemDescription numberOfLines={2}>
+          {item.description}
+        </ListGroup.ItemDescription>
+      </ListGroup.ItemContent>
+      <ListGroup.ItemSuffix />
+    </ListGroup.Item>
+  );
+}
+
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
-  const { isCompact } = useResponsiveLayout();
-  const { choicePresentation } = useOverlayPresentation();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  const [themeColorMuted, themeColorAccentSoftForeground, themeColorDangerSoftForeground] =
-    useThemeColor(["muted", "accent-soft-foreground", "danger-soft-foreground"]);
+  const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
+    "muted",
+    "danger-soft-foreground",
+  ]);
   const logout = useAuth((s) => s.logout);
-  const themeMode = useThemeStore((s) => s.mode);
-  const setThemeMode = useThemeStore((s) => s.setMode);
-  const setLocale = useLocale((s) => s.setLocale);
-  const { locale, t } = useTranslation();
-  const settingsItems: SettingsItem[] = [
+  const { t } = useTranslation();
+  const accountItems: SettingsItem[] = [
+    {
+      id: "account",
+      href: "/settings/account",
+      icon: "person-circle-outline",
+      label: t("settings.account"),
+      description: t("settings.accountDescription"),
+    },
+  ];
+  const storeItems: SettingsItem[] = [
     {
       id: "categories",
       href: "/categories",
@@ -47,6 +77,8 @@ export default function SettingsScreen(): JSX.Element {
       label: t("settings.areas"),
       description: t("settings.areasDescription"),
     },
+  ];
+  const printingItems: SettingsItem[] = [
     {
       id: "printer",
       href: "/settings/printers",
@@ -62,178 +94,48 @@ export default function SettingsScreen(): JSX.Element {
       description: t("settings.receiptDescription"),
     },
   ];
-  const appUpdatesItem: SettingsItem = {
-    id: "updates",
-    href: "/settings/updates",
-    icon: "cloud-download-outline",
-    label: t("settings.updates"),
-    description: t("settings.updatesDescription"),
-  };
-  const themeOptions: { value: ThemeMode; label: string }[] = [
-    { value: "system", label: t("settings.themeSystem") },
-    { value: "light", label: t("settings.themeLight") },
-    { value: "dark", label: t("settings.themeDark") },
+  const applicationItems: SettingsItem[] = [
+    {
+      id: "preferences",
+      href: "/settings/preferences",
+      icon: "options-outline",
+      label: t("settings.appPreferences"),
+      description: t("settings.appPreferencesDescription"),
+    },
   ];
-  const languageOptions: { value: Locale; label: string }[] = [
-    { value: "en", label: t("settings.english") },
-    { value: "id", label: t("settings.indonesian") },
-  ];
-  const localeOption =
-    languageOptions.find((option) => option.value === locale) ?? languageOptions[0];
-  const themeOption = themeOptions.find((option) => option.value === themeMode) ?? themeOptions[0];
 
   return (
     <>
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName="flex-grow px-4 py-3 md:px-6"
+        contentContainerClassName="flex-grow px-4 py-6 md:px-6"
       >
-        <View className="flex-1 justify-between gap-4 pb-safe">
-          <View>
-            {settingsItems.map((item) => (
-              <View key={item.id}>
-                <Pressable
-                  onPress={() => router.push(item.href as never)}
-                  className="flex-row items-center gap-4 py-4 active:bg-surface-secondary"
-                >
-                  <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
-                    <Ionicons name={item.icon} size={20} color={themeColorAccentSoftForeground} />
-                  </View>
-                  <View className="flex-1 gap-0.5">
-                    <Typography type="body-sm" weight="semibold">
-                      {item.label}
-                    </Typography>
-                    <Typography type="body-xs" color="muted" numberOfLines={2}>
-                      {item.description}
-                    </Typography>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
-                </Pressable>
-                <Separator />
+        <View className="mx-auto w-full max-w-3xl flex-1 justify-between gap-8 pb-safe">
+          <View className="gap-6">
+            {[
+              { title: t("settings.accountAndAccess"), items: accountItems },
+              { title: t("settings.storeSetup"), items: storeItems },
+              { title: t("settings.printing"), items: printingItems },
+              { title: t("settings.application"), items: applicationItems },
+            ].map((group) => (
+              <View key={group.title} className="gap-2">
+                <Typography type="body-sm" weight="semibold">
+                  {group.title}
+                </Typography>
+                <ListGroup>
+                  {group.items.map((item, index) => (
+                    <View key={item.id}>
+                      <SettingsLinkRow
+                        item={item}
+                        iconColor={themeColorMuted}
+                        onPress={() => router.push(item.href as never)}
+                      />
+                      {index < group.items.length - 1 ? <Separator className="mx-4" /> : null}
+                    </View>
+                  ))}
+                </ListGroup>
               </View>
             ))}
-
-            <View className={`gap-4 py-4 ${isCompact ? "" : "flex-row items-center"}`}>
-              <View className={`flex-row items-center gap-4 ${isCompact ? "" : "flex-1"}`}>
-                <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
-                  <Ionicons
-                    name={
-                      themeMode === "dark"
-                        ? "moon-outline"
-                        : themeMode === "light"
-                          ? "sunny-outline"
-                          : "desktop-outline"
-                    }
-                    size={20}
-                    color={themeColorAccentSoftForeground}
-                  />
-                </View>
-                <View className="min-w-0 flex-1 gap-0.5">
-                  <Typography type="body-sm" weight="semibold">
-                    {t("settings.appearance")}
-                  </Typography>
-                  <Typography type="body-xs" color="muted" numberOfLines={2}>
-                    {t("settings.appearanceDescription")}
-                  </Typography>
-                </View>
-              </View>
-              <View className={isCompact ? "w-full" : "w-36"}>
-                <Select
-                  key={`theme-${locale}`}
-                  presentation={choicePresentation}
-                  value={themeOption}
-                  onValueChange={(option) => {
-                    if (option?.value) setThemeMode(option.value as ThemeMode);
-                  }}
-                >
-                  <Select.Trigger>
-                    <Select.Value placeholder={t("settings.appearance")} />
-                    <Select.TriggerIndicator />
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Overlay />
-                    <Select.Content
-                      presentation={choicePresentation}
-                      width={choicePresentation === "popover" ? "trigger" : undefined}
-                    >
-                      {themeOptions.map((option) => (
-                        <Select.Item key={option.value} value={option.value} label={option.label} />
-                      ))}
-                    </Select.Content>
-                  </Select.Portal>
-                </Select>
-              </View>
-            </View>
-            <Separator />
-
-            <View className={`gap-4 py-4 ${isCompact ? "" : "flex-row items-center"}`}>
-              <View className={`flex-row items-center gap-4 ${isCompact ? "" : "flex-1"}`}>
-                <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
-                  <Ionicons
-                    name="language-outline"
-                    size={20}
-                    color={themeColorAccentSoftForeground}
-                  />
-                </View>
-                <View className="min-w-0 flex-1 gap-0.5">
-                  <Typography type="body-sm" weight="semibold">
-                    {t("settings.language")}
-                  </Typography>
-                  <Typography type="body-xs" color="muted" numberOfLines={2}>
-                    {t("settings.languageDescription")}
-                  </Typography>
-                </View>
-              </View>
-              <View className={isCompact ? "w-full" : "w-36"}>
-                <Select
-                  key={`language-${locale}`}
-                  presentation={choicePresentation}
-                  value={localeOption}
-                  onValueChange={(option) => {
-                    if (option?.value) setLocale(option.value as Locale);
-                  }}
-                >
-                  <Select.Trigger>
-                    <Select.Value placeholder={t("settings.language")} />
-                    <Select.TriggerIndicator />
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Overlay />
-                    <Select.Content
-                      presentation={choicePresentation}
-                      width={choicePresentation === "popover" ? "trigger" : undefined}
-                    >
-                      {languageOptions.map((option) => (
-                        <Select.Item key={option.value} {...option} />
-                      ))}
-                    </Select.Content>
-                  </Select.Portal>
-                </Select>
-              </View>
-            </View>
-            <Separator />
-
-            <Pressable
-              onPress={() => router.push(appUpdatesItem.href as never)}
-              className="flex-row items-center gap-4 py-4 active:bg-surface-secondary"
-            >
-              <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
-                <Ionicons
-                  name={appUpdatesItem.icon}
-                  size={20}
-                  color={themeColorAccentSoftForeground}
-                />
-              </View>
-              <View className="flex-1 gap-0.5">
-                <Typography type="body-sm" weight="semibold">
-                  {appUpdatesItem.label}
-                </Typography>
-                <Typography type="body-xs" color="muted" numberOfLines={2}>
-                  {appUpdatesItem.description}
-                </Typography>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
-            </Pressable>
           </View>
 
           <Button variant="danger-soft" onPress={() => setIsLogoutOpen(true)} className="w-full">
