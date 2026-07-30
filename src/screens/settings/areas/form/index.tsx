@@ -148,6 +148,7 @@ export default function AreaFormScreen(): React.JSX.Element {
                     value={value}
                     onChangeText={onChange}
                     placeholder={t("areasManagement.areaNamePlaceholder")}
+                    variant="secondary"
                   />
                   {errors.name?.message ? (
                     <Typography type="body-xs" className="text-danger">

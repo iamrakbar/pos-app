@@ -117,9 +117,7 @@ export default function QuickCategoryFormOverlay({
             isDisabled={createMutation.isPending}
           >
             <Button.Label>
-              {createMutation.isPending
-                ? t("common.saving")
-                : t("productForm.createCategory")}
+              {createMutation.isPending ? t("common.saving") : t("productForm.createCategory")}
             </Button.Label>
           </Button>
         </View>
@@ -138,6 +136,7 @@ export default function QuickCategoryFormOverlay({
                     value={value}
                     onChangeText={onChange}
                     placeholder={t("categories.namePlaceholder")}
+                    variant="secondary"
                     {...keyboardHandlers}
                   />
                 )}
@@ -163,6 +162,7 @@ export default function QuickCategoryFormOverlay({
                     value={value}
                     onChangeText={onChange}
                     placeholder={t("categories.descriptionPlaceholder")}
+                    variant="secondary"
                     {...keyboardHandlers}
                   />
                 )}

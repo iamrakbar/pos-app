@@ -154,6 +154,7 @@ export default function AreaFormDialog({
                       value={value}
                       onChangeText={onChange}
                       placeholder={t("areasManagement.areaNamePlaceholder")}
+                      variant="secondary"
                       {...keyboardHandlers}
                     />
                   )}

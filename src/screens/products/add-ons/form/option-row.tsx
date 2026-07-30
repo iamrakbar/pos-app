@@ -60,6 +60,7 @@ export default function OptionRow({
                 value={value}
                 onChangeText={onChange}
                 placeholder={t("addOnManagement.optionPlaceholder")}
+                variant="secondary"
               />
               {errors.options?.[index]?.name?.message ? (
                 <Typography type="body-xs" className="text-danger">
@@ -83,6 +84,7 @@ export default function OptionRow({
               formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
               isRequired
               isInvalid={Boolean(errors.options?.[index]?.price)}
+              inputVariant="secondary"
             >
               {errors.options?.[index]?.price?.message ? (
                 <Typography type="body-xs" className="text-danger">

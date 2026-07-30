@@ -164,6 +164,7 @@ export default function TableFormDialog({
                       value={value}
                       onChangeText={onChange}
                       placeholder={t("areasManagement.tableNamePlaceholder")}
+                      variant="secondary"
                       {...keyboardHandlers}
                     />
                   )}
@@ -190,6 +191,7 @@ export default function TableFormDialog({
                     isRequired
                     isInvalid={Boolean(errors.pax)}
                     inputProps={keyboardHandlers}
+                    inputVariant="secondary"
                   >
                     {errors.pax?.message ? (
                       <Typography type="body-xs" className="text-danger">
