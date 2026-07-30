@@ -99,13 +99,13 @@ export default function AppDrawerContent({
   ];
 
   return (
-    <View className="flex-1 pt-safe bg-background">
-      <View className="px-6 py-4">
+    <View className="flex-1 justify-between pt-safe bg-background">
+      <View className="px-6 py-4 landscape:pb-3">
         <Logo tintColor={themeColorAccent} />
       </View>
 
-      <ScrollShadow size={32} LinearGradientComponent={LinearGradient}>
-        <ScrollView contentContainerClassName="gap-1 px-3">
+      <ScrollShadow size={16} LinearGradientComponent={LinearGradient} className="flex-1">
+        <ScrollView contentContainerClassName="gap-0.5 px-3" showsVerticalScrollIndicator={false}>
           {DRAWER_ROUTE_ORDER.map((routeName) => {
             const routeIndex = state.routes.findIndex((route) => route.name === routeName);
             if (routeIndex < 0) return null;
@@ -170,7 +170,7 @@ export default function AppDrawerContent({
         </ScrollView>
       </ScrollShadow>
 
-      <View className="gap-4 p-3 mt-auto">
+      <View className="gap-4 p-3 pt-0">
         <Popover
           presentation={choicePresentation}
           isOpen={isProfileOpen}
