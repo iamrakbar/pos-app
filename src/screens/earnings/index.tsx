@@ -5,7 +5,7 @@ import { useEarnings } from "@/hooks/db/use-earnings";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatRupiah } from "@/utils/format";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import {
   Button,
   Chip,
@@ -113,7 +113,7 @@ function SummaryWidget({
 }: {
   label: string;
   value: string;
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["name"];
   color: keyof typeof SUMMARY_STYLES;
   isSingleColumn: boolean;
 }) {
@@ -127,7 +127,7 @@ function SummaryWidget({
         <View
           className={`size-9 items-center justify-center rounded-panel-inner ${style.background}`}
         >
-          <Ionicons name={icon} size={18} color={iconColor} />
+          <AppIcon name={icon} size={18} color={iconColor} />
         </View>
       </Widget.Header>
       <Widget.Content className="p-4">
@@ -330,7 +330,7 @@ function OrderTypesWidget({
               <View className="gap-3 p-4">
                 <View className={`gap-3 ${isCompact ? "items-start" : "flex-row items-center"}`}>
                   <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
-                    <Ionicons
+                    <AppIcon
                       name={
                         orderType.name === "Dine-in" ? "restaurant-outline" : "bag-handle-outline"
                       }
@@ -401,7 +401,7 @@ function RecentEarningsWidget({
           <View key={entry.id}>
             <View className="flex-row gap-3 px-4 py-3.5">
               <View className="size-10 mt-1 items-center justify-center rounded-panel-inner bg-success-soft">
-                <Ionicons name="checkmark" size={18} color={successColor} />
+                <AppIcon name="checkmark" size={18} color={successColor} />
               </View>
               <View className={`flex-1 gap-3 ${isCompact ? "flex-col" : "flex-row"}`}>
                 <View className="flex-1 gap-0.5">
@@ -634,7 +634,7 @@ export default function EarningsScreen(): React.JSX.Element {
                 <EmptyState className="py-16">
                   <EmptyState.Header>
                     <EmptyState.Media variant="icon">
-                      <Ionicons name="wallet-outline" size={20} color={mutedColor} />
+                      <AppIcon name="wallet-outline" size={20} color={mutedColor} />
                     </EmptyState.Media>
                     <EmptyState.Title>{t("earnings.empty")}</EmptyState.Title>
                     <EmptyState.Description>

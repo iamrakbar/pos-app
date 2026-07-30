@@ -25,7 +25,7 @@ import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/use-receipt-printer";
 import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/api-error";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { EmptyState } from "heroui-native-pro";
 import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -143,7 +143,7 @@ function OrderStatusActions({
           }
           isDisabled={isPending}
         >
-          <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+          <AppIcon name="checkmark-circle-outline" size={16} color="white" />
           <Button.Label className="ml-1.5">
             {status === "new" ? t("orders.detail.accept") : t("orders.detail.markCompleted")}
           </Button.Label>
@@ -231,7 +231,7 @@ function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () =>
       <EmptyState>
         <EmptyState.Header>
           <EmptyState.Media variant="icon">
-            <Ionicons name="receipt-outline" size={20} color={iconColor} />
+            <AppIcon name="receipt-outline" size={20} color={iconColor} />
           </EmptyState.Media>
           <EmptyState.Title>{t("orders.detail.notFound")}</EmptyState.Title>
           <EmptyState.Description>{t("orders.detail.notFoundDescription")}</EmptyState.Description>
@@ -301,7 +301,7 @@ function OrderOverview({
         <Surface className="w-full p-4 gap-3">
           <View className="flex-row items-center gap-3">
             <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-secondary">
-              <Ionicons
+              <AppIcon
                 name={order.order_type === "dine-in" ? "restaurant-outline" : "bag-handle-outline"}
                 size={20}
                 color={foregroundColor}
@@ -527,7 +527,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                     ) : null}
                     {canShowQr ? (
                       <Button variant="outline" onPress={() => setIsQrOpen(true)}>
-                        <Ionicons name="qr-code-outline" size={16} color={themeColorForeground} />
+                        <AppIcon name="qr-code-outline" size={16} color={themeColorForeground} />
                         <Button.Label>{t("orders.detail.showQris")}</Button.Label>
                       </Button>
                     ) : null}
@@ -540,7 +540,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                         {paymentStatus.isPending ? (
                           <ActivityIndicator />
                         ) : (
-                          <Ionicons name="refresh-outline" size={16} color={themeColorForeground} />
+                          <AppIcon name="refresh-outline" size={16} color={themeColorForeground} />
                         )}
                         <Button.Label>{t("orders.detail.refreshStatus")}</Button.Label>
                       </Button>
@@ -582,7 +582,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                   {isPrinting ? (
                     <ActivityIndicator />
                   ) : (
-                    <Ionicons name="print-outline" size={18} color={themeColorForeground} />
+                    <AppIcon name="print-outline" size={18} color={themeColorForeground} />
                   )}
                   <Button.Label>
                     {isPrinting

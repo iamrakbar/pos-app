@@ -2,7 +2,7 @@ import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
 import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
 import type { POSTable } from "@/types/pos";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
 import { Button, Card, Chip, ScrollShadow, useThemeColor } from "heroui-native";
@@ -155,7 +155,7 @@ export default function TableSelectionScreen(): JSX.Element {
             <EmptyState className="flex-1 justify-center">
               <EmptyState.Header>
                 <EmptyState.Media variant="icon">
-                  <Ionicons name="grid-outline" size={20} color={muted} />
+                  <AppIcon name="grid-outline" size={20} color={muted} />
                 </EmptyState.Media>
                 <EmptyState.Title>{t("tables.empty")}</EmptyState.Title>
                 <EmptyState.Description>{t("tables.emptyDescription")}</EmptyState.Description>

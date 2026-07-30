@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import {
   BLEPrinter,
   NetPrinter,
@@ -238,7 +238,7 @@ function PrinterConnectionCard({
                   isDisabled={scanning}
                   accessibilityLabel={t("printerForm.scanAccessibility")}
                 >
-                  <Ionicons name="refresh" size={18} color={colors.foreground} />
+                  <AppIcon name="refresh" size={18} color={colors.foreground} />
                 </Button>
               </View>
 
@@ -253,7 +253,7 @@ function PrinterConnectionCard({
                   <EmptyState className="px-4 py-6">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <Ionicons name="bluetooth-outline" size={20} color={colors.foreground} />
+                        <AppIcon name="bluetooth-outline" size={20} color={colors.foreground} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("printerForm.noBluetoothPrinters")}</EmptyState.Title>
                       <EmptyState.Description>
@@ -273,7 +273,7 @@ function PrinterConnectionCard({
                           device: device.name,
                         })}
                       >
-                        <Ionicons
+                        <AppIcon
                           name={
                             selectedDeviceId === device.id ? "radio-button-on" : "radio-button-off"
                           }
@@ -543,7 +543,7 @@ function PrinterDiagnosticsCard({
       />
       <Card.Body className="gap-3">
         <Button variant="outline" onPress={onTestConnection} isDisabled={connecting}>
-          <Ionicons name="link-outline" size={16} color={foregroundColor} />
+          <AppIcon name="link-outline" size={16} color={foregroundColor} />
           <Button.Label>
             {connecting ? t("printerForm.connecting") : t("printerForm.testConnection")}
           </Button.Label>
@@ -556,7 +556,7 @@ function PrinterDiagnosticsCard({
           {printingCalibration ? (
             <Spinner size="sm" />
           ) : (
-            <Ionicons name="receipt-outline" size={16} color={foregroundColor} />
+            <AppIcon name="receipt-outline" size={16} color={foregroundColor} />
           )}
           <Button.Label>
             {printingCalibration

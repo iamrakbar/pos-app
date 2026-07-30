@@ -5,7 +5,7 @@ import { useManagementCategories, useReorderCategories } from "@/hooks/db/use-ca
 import { getErrorMessage } from "@/api/api-error";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Button, Chip, Separator, Typography, useThemeColor, useToast } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
@@ -141,7 +141,7 @@ export default function CategoriesScreen(): React.JSX.Element {
               <EmptyState className="py-20">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <Ionicons name="grid-outline" size={20} color={mutedColor} />
+                    <AppIcon name="grid-outline" size={20} color={mutedColor} />
                   </EmptyState.Media>
                   <EmptyState.Title>{t("categories.empty")}</EmptyState.Title>
                   <EmptyState.Description>
@@ -164,7 +164,7 @@ export default function CategoriesScreen(): React.JSX.Element {
                       className="flex-1 flex-row items-center gap-3 active:opacity-70"
                     >
                       <View className="size-11 items-center justify-center rounded-panel-inner bg-accent-soft">
-                        <Ionicons name="grid-outline" size={20} color={accentColor} />
+                        <AppIcon name="grid-outline" size={20} color={accentColor} />
                       </View>
                       <View className="flex-1 gap-1">
                         <View className="flex-row items-center gap-2">
@@ -207,7 +207,7 @@ export default function CategoriesScreen(): React.JSX.Element {
                           isDisabled={index === 0 || reorderMutation.isPending}
                           onPress={() => handleMove(index, -1)}
                         >
-                          <Ionicons name="chevron-up" size={18} color={mutedColor} />
+                          <AppIcon name="chevron-up" size={18} color={mutedColor} />
                         </Button>
                         <Button
                           size="sm"
@@ -221,11 +221,11 @@ export default function CategoriesScreen(): React.JSX.Element {
                           }
                           onPress={() => handleMove(index, 1)}
                         >
-                          <Ionicons name="chevron-down" size={18} color={mutedColor} />
+                          <AppIcon name="chevron-down" size={18} color={mutedColor} />
                         </Button>
                       </View>
                     ) : (
-                      <Ionicons name="chevron-forward" size={17} color={mutedColor} />
+                      <AppIcon name="chevron-forward" size={17} color={mutedColor} />
                     )}
                   </View>
                   {index < orderedCategories.length - 1 ? <Separator className="mx-5" /> : null}

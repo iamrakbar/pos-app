@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import * as Updates from "expo-updates";
 import {
   Alert as HeroAlert,
@@ -148,7 +148,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
             {isBusy ? (
               <Spinner size="sm" color={themeColorAccent} />
             ) : (
-              <Ionicons name="cloud-download-outline" size={20} color={themeColorAccent} />
+              <AppIcon name="cloud-download-outline" size={20} color={themeColorAccent} />
             )}
           </View>
           <View className="flex-1 gap-0.5">
@@ -196,7 +196,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
             isDisabled={isBusy || updates.isUpdatePending}
             className="flex-1"
           >
-            <Ionicons name="refresh-outline" size={18} color={themeColorAccent} />
+            <AppIcon name="refresh-outline" size={18} color={themeColorAccent} />
             <Button.Label>{t("updates.check")}</Button.Label>
           </Button>
           <Button
@@ -205,7 +205,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
             isDisabled={!updates.isUpdatePending || isBusy}
             className="flex-1"
           >
-            <Ionicons name="reload-outline" size={18} color="white" />
+            <AppIcon name="reload-outline" size={18} color="white" />
             <Button.Label>{t("updates.restart")}</Button.Label>
           </Button>
         </View>

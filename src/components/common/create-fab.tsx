@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useThemeColor } from "heroui-native";
 import { FAB } from "heroui-native-pro";
 import React from "react";
@@ -28,7 +28,7 @@ export default function CreateFAB({
         classNames={{ container: "bg-accent" }}
         onPress={onPress}
       >
-        <Ionicons name="add" size={22} color={accentForeground} />
+        <AppIcon name="add" size={22} color={accentForeground} />
       </FAB.Trigger>
     </FAB>
   );

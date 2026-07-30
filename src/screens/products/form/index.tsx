@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -263,7 +263,7 @@ function ProductImageCard({
           ) : (
             <>
               <View className="size-14 items-center justify-center rounded-full bg-accent-soft">
-                <Ionicons name="image-outline" size={26} color={accentColor} />
+                <AppIcon name="image-outline" size={26} color={accentColor} />
               </View>
               <View className="items-center gap-1 px-6">
                 <Typography type="body-sm" weight="semibold">
@@ -355,7 +355,7 @@ function ProductDetailsCard({
                   accessibilityLabel={t("productForm.addCategoryAccessibility")}
                   onPress={onAddCategory}
                 >
-                  <Ionicons name="add" size={18} color={themeColorForeground} />
+                  <AppIcon name="add" size={18} color={themeColorForeground} />
                 </Button>
               </View>
               {didCategoriesFail ? (

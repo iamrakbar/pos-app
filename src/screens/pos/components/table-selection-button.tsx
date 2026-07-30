@@ -1,5 +1,5 @@
 import type { POSTable } from "@/types/pos";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -31,7 +31,7 @@ export default function TableSelectionButton({
       <Button.Label className="text-xs" numberOfLines={1}>
         {selectedTable?.name ?? t("pos.table")}
       </Button.Label>
-      <Ionicons name="grid-outline" size={12} color={colorAccent} />
+      <AppIcon name="restaurant-outline" size={16} color={colorAccent} />
     </Button>
   );
 }

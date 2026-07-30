@@ -1,7 +1,7 @@
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import StringNumberField from "@/components/common/string-number-field";
 import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { Button, Input, Label, Surface, TextField, Typography, useThemeColor } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
@@ -96,7 +96,7 @@ export default function OptionRow({
         />
       </View>
       <Button size="sm" variant="ghost" onPress={onRemove}>
-        <Ionicons name="trash-outline" size={16} color={foregroundColor} />
+        <AppIcon name="trash-outline" size={16} color={foregroundColor} />
         <Button.Label>{t("addOnManagement.removeOption")}</Button.Label>
       </Button>
     </Surface>

@@ -6,7 +6,7 @@ import { usePOSStore } from "@/stores/use-pos-store";
 import { Button, Select, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { EmptyState, TimePicker } from "heroui-native-pro";
 import { useTrueSheet } from "@lodev09/react-native-true-sheet";
 import CartItemRow from "./cart-item-row";
@@ -146,12 +146,12 @@ export default function CartContent(): JSX.Element {
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="items-center justify-between min-w-24 rounded-full"
+                    className="items-center justify-between min-w-24 rounded-full shadow-none"
                   >
                     <Button.Label className="text-xs" numberOfLines={1}>
                       {checkoutForm.pickup_time ?? t("pos.pickupTime")}
                     </Button.Label>
-                    <Ionicons name="time-outline" size={12} color={colorAccent} />
+                    <AppIcon name="time-outline" size={14} color={colorAccent} />
                   </Button>
                 </TimePicker.Trigger>
                 <TimePicker.Portal>
@@ -184,7 +184,7 @@ export default function CartContent(): JSX.Element {
           <EmptyState className="py-16">
             <EmptyState.Header>
               <EmptyState.Media variant="icon">
-                <Ionicons name="cart-outline" size={20} color={colorMuted} />
+                <AppIcon name="cart-outline" size={20} color={colorMuted} />
               </EmptyState.Media>
               <EmptyState.Title>{t("pos.cartEmpty")}</EmptyState.Title>
               <EmptyState.Description>{t("pos.cartEmptyDescription")}</EmptyState.Description>

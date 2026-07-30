@@ -153,7 +153,12 @@ module.exports = {
         },
       ],
       "expo-status-bar",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          fonts: ["./assets/fonts/ainicon.ttf"],
+        },
+      ],
       "expo-image",
     ],
     experiments: {

@@ -1,6 +1,6 @@
 import { Pressable, View } from "react-native";
 import { Typography, useThemeColor } from "heroui-native";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import type { JSX } from "react";
 import { getErrorMessage } from "@/api/api-error";
 import { useTranslation } from "@/stores/use-locale";
@@ -17,7 +17,7 @@ export default function ErrorState({
 
   return (
     <View className="flex-1 items-center justify-center gap-2 py-20 px-6">
-      <Ionicons name="alert-circle-outline" size={40} color={themeColorDanger} />
+      <AppIcon name="alert-circle-outline" size={40} color={themeColorDanger} />
       <Typography className="text-sm text-danger text-center">{getErrorMessage(error)}</Typography>
       {onRetry && (
         <Pressable

@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { Button, Card, Separator, Typography, useThemeColor } from "heroui-native";
 import { Pressable, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -41,7 +41,7 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
       <Card.Body className="gap-0">
         {addOns.length === 0 ? (
           <View className="items-center gap-2 py-5">
-            <Ionicons name="options-outline" size={24} color={mutedColor} />
+            <AppIcon name="options-outline" size={24} color={mutedColor} />
             <Typography type="body-sm" weight="semibold">
               {t("productForm.noAddOns")}
             </Typography>
@@ -68,7 +68,7 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
                     {selectionRule(addOn, t)}
                   </Typography>
                 </View>
-                <Ionicons name="chevron-forward" size={17} color={mutedColor} />
+                <AppIcon name="chevron-forward" size={17} color={mutedColor} />
               </Pressable>
               {index < Math.min(addOns.length, 3) - 1 ? <Separator /> : null}
             </View>

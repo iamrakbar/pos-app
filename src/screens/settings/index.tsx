@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useRouter } from "expo-router";
 import { Button, ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -11,7 +11,7 @@ import { useState } from "react";
 type SettingsItem = {
   id: string;
   href: string;
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["name"];
   label: string;
   description: string;
 };
@@ -26,18 +26,13 @@ function SettingsLinkRow({
   onPress: () => void;
 }) {
   return (
-    <ListGroup.Item
-      accessibilityRole="button"
-      onPress={onPress}
-    >
+    <ListGroup.Item accessibilityRole="button" onPress={onPress}>
       <ListGroup.ItemPrefix>
-        <Ionicons name={item.icon} size={21} color={iconColor} />
+        <AppIcon name={item.icon} size={21} color={iconColor} />
       </ListGroup.ItemPrefix>
       <ListGroup.ItemContent>
         <ListGroup.ItemTitle>{item.label}</ListGroup.ItemTitle>
-        <ListGroup.ItemDescription numberOfLines={2}>
-          {item.description}
-        </ListGroup.ItemDescription>
+        <ListGroup.ItemDescription numberOfLines={2}>{item.description}</ListGroup.ItemDescription>
       </ListGroup.ItemContent>
       <ListGroup.ItemSuffix />
     </ListGroup.Item>
@@ -66,14 +61,14 @@ export default function SettingsScreen(): JSX.Element {
     {
       id: "categories",
       href: "/categories",
-      icon: "grid-outline",
+      icon: "albums-outline",
       label: t("settings.categories"),
       description: t("settings.categoriesDescription"),
     },
     {
       id: "areas",
       href: "/settings/areas",
-      icon: "storefront-outline",
+      icon: "restaurant-outline",
       label: t("settings.areas"),
       description: t("settings.areasDescription"),
     },
@@ -139,7 +134,7 @@ export default function SettingsScreen(): JSX.Element {
           </View>
 
           <Button variant="danger-soft" onPress={() => setIsLogoutOpen(true)} className="w-full">
-            <Ionicons name="log-out-outline" size={18} color={themeColorDangerSoftForeground} />
+            <AppIcon name="log-out-outline" size={18} color={themeColorDangerSoftForeground} />
             <Button.Label>{t("settings.logout")}</Button.Label>
           </Button>
         </View>

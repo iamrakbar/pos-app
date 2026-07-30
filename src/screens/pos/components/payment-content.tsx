@@ -11,7 +11,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useTranslation } from "@/stores/use-locale";
@@ -121,7 +121,7 @@ export function PaymentContent({
               </View>
             ) : (
               <View className="w-64 h-64 bg-surface-secondary rounded-lg items-center justify-center px-6">
-                <Ionicons name="qr-code-outline" size={64} color={themeColorMuted} />
+                <AppIcon name="qr-code-outline" size={64} color={themeColorMuted} />
                 <Typography className="text-sm text-muted-foreground text-center mt-3">
                   {sessionExpired ? t("payment.qrExpired") : t("payment.qrUnavailable")}
                 </Typography>
@@ -187,7 +187,7 @@ export function PaymentContent({
               <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <Ionicons name="refresh-outline" size={16} color="white" />
+                <AppIcon name="refresh-outline" size={16} color="white" />
                 <Button.Label className="ml-2">{t("payment.checkStatus")}</Button.Label>
               </>
             )}

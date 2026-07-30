@@ -3,7 +3,7 @@ import LoadingAnimation from "@/components/common/loading-animation";
 import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatRupiah } from "@/utils/format";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
@@ -35,7 +35,7 @@ function SummaryWidget({
 }: {
   label: string;
   value: string;
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["name"];
   color?: "accent" | "warning" | "success";
 }) {
   const iconColor = useThemeColor(`${color}-soft-foreground`);
@@ -47,7 +47,7 @@ function SummaryWidget({
         <View
           className={`size-9 items-center justify-center rounded-panel-inner ${SUMMARY_ICON_BACKGROUNDS[color]}`}
         >
-          <Ionicons name={icon} size={18} color={iconColor} />
+          <AppIcon name={icon} size={18} color={iconColor} />
         </View>
       </Widget.Header>
       <Widget.Content className="p-4">
@@ -276,7 +276,7 @@ export default function DashboardScreen(): React.JSX.Element {
                   <EmptyState className="py-12">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <Ionicons name="stats-chart-outline" size={20} color={themeColorMuted} />
+                        <AppIcon name="stats-chart-outline" size={20} color={themeColorMuted} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("dashboard.noOrderActivity")}</EmptyState.Title>
                       <EmptyState.Description>
@@ -305,7 +305,7 @@ export default function DashboardScreen(): React.JSX.Element {
                   <EmptyState className="py-12">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <Ionicons name="cube-outline" size={20} color={themeColorMuted} />
+                        <AppIcon name="cube-outline" size={20} color={themeColorMuted} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("dashboard.noProductsSold")}</EmptyState.Title>
                       <EmptyState.Description>

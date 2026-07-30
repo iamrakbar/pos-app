@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useRouter } from "expo-router";
 import { Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
@@ -37,7 +37,7 @@ export default function PrintersScreen(): React.JSX.Element {
         <EmptyState className="py-20">
           <EmptyState.Header>
             <EmptyState.Media variant="icon">
-              <Ionicons name="print-outline" size={20} color={themeColorMuted} />
+              <AppIcon name="print-outline" size={20} color={themeColorMuted} />
             </EmptyState.Media>
             <EmptyState.Title>{t("printerManagement.empty")}</EmptyState.Title>
             <EmptyState.Description>
@@ -76,7 +76,7 @@ export default function PrintersScreen(): React.JSX.Element {
                       printer: printer.name || t("printerManagement.unnamed"),
                     })}
                   >
-                    <Ionicons
+                    <AppIcon
                       name={isSelected ? "radio-button-on" : "radio-button-off"}
                       size={20}
                       color={isSelected ? themeColorAccent : themeColorMuted}
@@ -87,7 +87,7 @@ export default function PrintersScreen(): React.JSX.Element {
                       <Typography type="body-sm" weight="semibold" numberOfLines={1}>
                         {printer.name || t("printerManagement.unnamed")}
                       </Typography>
-                      <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
+                      <AppIcon name="chevron-forward" size={18} color={themeColorMuted} />
                     </View>
                     <Typography type="body-xs" color="muted" numberOfLines={1}>
                       {printer.connection === "bluetooth"

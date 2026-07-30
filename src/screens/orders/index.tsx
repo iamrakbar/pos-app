@@ -12,7 +12,7 @@ import {
 import LoadingState from "@/components/common/loading-state";
 import ErrorState from "@/components/common/error-state";
 import { formatRupiah } from "@/utils/format";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import { Chip, ScrollShadow, Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
@@ -103,7 +103,7 @@ export default function OrdersScreen(): React.JSX.Element {
         <EmptyState className="py-20">
           <EmptyState.Header>
             <EmptyState.Media variant="icon">
-              <Ionicons name="receipt-outline" size={20} color={themeColorMuted} />
+              <AppIcon name="receipt-outline" size={20} color={themeColorMuted} />
             </EmptyState.Media>
             <EmptyState.Title>{t("orders.empty")}</EmptyState.Title>
             <EmptyState.Description>{t("orders.emptyDescription")}</EmptyState.Description>
@@ -181,7 +181,7 @@ function OrderRow({
             </Chip>
           </View>
           <View className="flex-row items-center gap-1.5">
-            <Ionicons
+            <AppIcon
               name={order.order_type === "dine-in" ? "restaurant-outline" : "bag-outline"}
               size={12}
               color={themeColorMuted}
@@ -215,7 +215,7 @@ function OrderRow({
       {/* Bottom row */}
       <View className="flex-row items-center justify-between mt-1.5">
         <View className="flex-row items-center gap-1.5">
-          <Ionicons name="card-outline" size={12} color={themeColorMuted} />
+          <AppIcon name="card-outline" size={12} color={themeColorMuted} />
           <Typography type="body-xs" color="muted">
             {paymentName}
           </Typography>
@@ -231,7 +231,7 @@ function OrderRow({
             })}
           </Typography>
         </View>
-        <Ionicons name="chevron-forward" size={14} color={themeColorMuted} />
+        <AppIcon name="chevron-forward" size={14} color={themeColorMuted} />
       </View>
     </Pressable>
   );

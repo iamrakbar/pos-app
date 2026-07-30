@@ -1,6 +1,6 @@
 import { useCartStore } from "@/stores/use-cart-store";
 import { formatRupiah } from "@/utils/format";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -76,7 +76,7 @@ export default function FloatingCartButton(): JSX.Element | null {
           })}
         >
           <View className="flex-row items-center gap-2">
-            <Ionicons name={"cart-outline"} size={18} color={foreground} />
+            <AppIcon name={"cart-outline"} size={18} color={foreground} />
             <Button.Label>{displayItemsLabel}</Button.Label>
           </View>
           <Button.Label className="tabular-nums">{formatRupiah(subtotal)}</Button.Label>

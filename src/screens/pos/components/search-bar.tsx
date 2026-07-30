@@ -14,7 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -97,7 +97,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
               areCategoriesVisible ? t("pos.hideCategories") : t("pos.showCategories")
             }
           >
-            <Ionicons
+            <AppIcon
               name={"albums-outline"}
               size={18}
               color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
@@ -116,7 +116,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
                   sort: selectedSort.label,
                 })}
               >
-                <Ionicons name="swap-vertical-outline" size={18} color={themeColorForeground} />
+                <AppIcon name="swap-vertical-outline" size={18} color={themeColorForeground} />
               </Button>
             </Select.Trigger>
             <Select.Portal>

@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useRouter } from "expo-router";
 import { ListGroup, Select, Separator, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -32,10 +32,7 @@ export default function PreferencesScreen(): JSX.Element {
     languageOptions.find((option) => option.value === locale) ?? languageOptions[0];
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="px-4 py-6 md:px-6"
-    >
+    <ScrollView className="flex-1 bg-background" contentContainerClassName="px-4 py-6 md:px-6">
       <View className="mx-auto w-full max-w-3xl">
         <ListGroup>
           <ListGroup.Item
@@ -44,7 +41,7 @@ export default function PreferencesScreen(): JSX.Element {
           >
             <View className="flex-1 flex-row items-center gap-4">
               <ListGroup.ItemPrefix>
-                <Ionicons
+                <AppIcon
                   name={
                     themeMode === "dark"
                       ? "moon-outline"
@@ -99,7 +96,7 @@ export default function PreferencesScreen(): JSX.Element {
           >
             <View className="flex-1 flex-row items-center gap-4">
               <ListGroup.ItemPrefix>
-                <Ionicons name="language-outline" size={21} color={mutedColor} />
+                <AppIcon name="language-outline" size={21} color={mutedColor} />
               </ListGroup.ItemPrefix>
               <ListGroup.ItemContent>
                 <ListGroup.ItemTitle>{t("settings.language")}</ListGroup.ItemTitle>
@@ -143,7 +140,7 @@ export default function PreferencesScreen(): JSX.Element {
             onPress={() => router.push("/settings/updates")}
           >
             <ListGroup.ItemPrefix>
-              <Ionicons name="cloud-download-outline" size={21} color={mutedColor} />
+              <AppIcon name="cloud-download-outline" size={21} color={mutedColor} />
             </ListGroup.ItemPrefix>
             <ListGroup.ItemContent>
               <ListGroup.ItemTitle>{t("settings.updates")}</ListGroup.ItemTitle>

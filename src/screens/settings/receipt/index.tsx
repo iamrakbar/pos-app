@@ -5,7 +5,7 @@ import { useReceiptStore, type ReceiptSettings } from "@/stores/use-receipt-stor
 import { usePrinterStore, type PaperWidth } from "@/stores/use-printer-store";
 import { optimizeReceiptLogo } from "@/utils/receipt-logo";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -116,7 +116,7 @@ function PrinterSetupButton({ color, onPress }: { color: string; onPress: () => 
   const { t } = useTranslation();
   return (
     <Button className="w-full" variant="outline" onPress={onPress}>
-      <Ionicons name="print-outline" size={18} color={color} />
+      <AppIcon name="print-outline" size={18} color={color} />
       <Button.Label>{t("receiptSettings.setupPrinter")}</Button.Label>
     </Button>
   );
@@ -425,12 +425,12 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                             contentFit="contain"
                           />
                           <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
-                            <Ionicons name="camera" size={15} color="white" />
+                            <AppIcon name="camera" size={15} color="white" />
                           </View>
                         </>
                       ) : (
                         <View className="items-center gap-1.5">
-                          <Ionicons name="image-outline" size={26} color={themeColorMuted} />
+                          <AppIcon name="image-outline" size={26} color={themeColorMuted} />
                           <Typography type="body-xs" color="muted">
                             {t("receiptSettings.chooseImage")}
                           </Typography>

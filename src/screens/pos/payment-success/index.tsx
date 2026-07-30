@@ -13,7 +13,7 @@ import {
 } from "heroui-native";
 import { useEffect, useRef, useState, type JSX } from "react";
 import { ScrollView, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import ActionDialog from "@/components/common/action-dialog";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { getLocaleTag, type Locale } from "@/locales";
@@ -95,7 +95,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
           <View className="w-full max-w-xl self-center gap-6 px-5 pt-8">
             <View className="items-center gap-3 py-2">
               <View className="w-14 h-14 rounded-full bg-success items-center justify-center">
-                <Ionicons name="checkmark" size={28} color="white" />
+                <AppIcon name="checkmark" size={28} color="white" />
               </View>
               <View className="items-center gap-1.5">
                 <Typography type="h4" weight="bold">
@@ -205,7 +205,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                   {isPrinting ? (
                     <Spinner size="sm" />
                   ) : (
-                    <Ionicons name="print-outline" size={16} color={themeColorForeground} />
+                    <AppIcon name="print-outline" size={16} color={themeColorForeground} />
                   )}
                   <Button.Label className="ml-2">
                     {isPrinting ? t("paymentSuccess.printing") : t("paymentSuccess.printReceipt")}
@@ -213,7 +213,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                 </Button>
               ) : null}
               <Button className={isCompact ? "w-full" : "flex-1"} onPress={handleNewOrder}>
-                <Ionicons name="add-circle-outline" size={16} color="white" />
+                <AppIcon name="add-circle-outline" size={16} color="white" />
                 <Button.Label className="ml-2">{t("paymentSuccess.newOrder")}</Button.Label>
               </Button>
             </View>

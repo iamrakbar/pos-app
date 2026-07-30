@@ -3,7 +3,7 @@ import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useAreas } from "@/hooks/db/use-areas";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useRouter } from "expo-router";
 import { Button, Card, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
@@ -68,7 +68,7 @@ export default function AreasScreen(): React.JSX.Element {
               className="min-h-32 flex-1 justify-between gap-6 p-5 active:bg-surface-secondary"
             >
               <View className="size-12 items-center justify-center rounded-panel-inner bg-accent-soft">
-                <Ionicons name="storefront-outline" size={20} color={accentColor} />
+                <AppIcon name="restaurant-outline" size={20} color={accentColor} />
               </View>
               <View className="gap-1 pr-12">
                 <Card.Title numberOfLines={1}>{area.name}</Card.Title>
@@ -92,7 +92,7 @@ export default function AreasScreen(): React.JSX.Element {
               className="absolute right-3 top-3"
               onPress={() => openEdit(area)}
             >
-              <Ionicons name="pencil-outline" size={18} color={mutedColor} />
+              <AppIcon name="pencil-outline" size={18} color={mutedColor} />
             </Button>
           </Card>
         )}
@@ -100,7 +100,7 @@ export default function AreasScreen(): React.JSX.Element {
           <EmptyState className="flex-1 justify-center">
             <EmptyState.Header>
               <EmptyState.Media variant="icon">
-                <Ionicons name="storefront-outline" size={20} color={mutedColor} />
+                <AppIcon name="storefront-outline" size={20} color={mutedColor} />
               </EmptyState.Media>
               <EmptyState.Title>{t("areasManagement.emptyAreas")}</EmptyState.Title>
               <EmptyState.Description>

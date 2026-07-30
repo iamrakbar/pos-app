@@ -4,7 +4,7 @@ import { Card, Typography, useThemeColor } from "heroui-native";
 import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useTranslation } from "@/stores/use-locale";
 
 type Props = {
@@ -43,7 +43,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
               contentFit="cover"
             />
           ) : (
-            <Ionicons name="fast-food-outline" size={30} color={themeColorMuted} />
+            <AppIcon name="fast-food-outline" size={30} color={themeColorMuted} />
           )}
         </View>
         <Card.Body className="min-h-20 justify-between px-3.5 py-3">

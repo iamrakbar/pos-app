@@ -6,7 +6,7 @@ import { formatRupiah } from "@/utils/format";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { useTranslation } from "@/stores/use-locale";
 
 type Props = {
@@ -93,7 +93,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             onPress={() => removeItem(item.id)}
             accessibilityLabel={t("pos.removeProductAccessibility", { product: item.name })}
           >
-            <Ionicons name="trash-outline" size={17} color={themeColorDangerSoftForeground} />
+            <AppIcon name="trash-outline" size={17} color={themeColorDangerSoftForeground} />
           </Button>
         </View>
         <View className="flex-row items-center gap-2 rounded-full bg-surface-secondary p-1">
@@ -104,7 +104,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             onPress={handleDecrement}
             accessibilityLabel={t("pos.decreaseProductAccessibility", { product: item.name })}
           >
-            <Ionicons name="remove" size={17} color={themeColorForeground} />
+            <AppIcon name="remove" size={17} color={themeColorForeground} />
           </Button>
           <View className="w-8">
             <Typography type="body-sm" weight="semibold" align="center" className="tabular-nums">
@@ -118,7 +118,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             onPress={() => updateQty(item.id, item.qty + 1)}
             accessibilityLabel={t("pos.increaseProductAccessibility", { product: item.name })}
           >
-            <Ionicons name="add" size={17} color={themeColorForeground} />
+            <AppIcon name="add" size={17} color={themeColorForeground} />
           </Button>
         </View>
       </View>

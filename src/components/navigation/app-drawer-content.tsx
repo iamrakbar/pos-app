@@ -5,7 +5,7 @@ import type { Translate } from "@/locales";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
 import {
@@ -33,7 +33,7 @@ const DRAWER_ROUTE_ORDER: DrawerRouteName[] = [
   "settings",
 ];
 
-const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof Ionicons>["name"]> = {
+const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof AppIcon>["name"]> = {
   index: "grid-outline",
   pos: "calculator-outline",
   products: "fast-food-outline",
@@ -83,7 +83,7 @@ export default function AppDrawerContent({
   };
   const themeActions: {
     value: ThemeMode;
-    icon: ComponentProps<typeof Ionicons>["name"];
+    icon: ComponentProps<typeof AppIcon>["name"];
     label: string;
   }[] = [
     { value: "light", icon: "sunny-outline", label: t("theme.useLight") },
@@ -144,7 +144,7 @@ export default function AppDrawerContent({
                     variant="transparent"
                     className={`h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0 ${focused ? "bg-accent-soft" : "bg-transparent"}`}
                   >
-                    <Ionicons
+                    <AppIcon
                       name={iconName}
                       size={20}
                       color={focused ? themeColorAccentSoftForeground : themeColorMuted}
@@ -192,7 +192,7 @@ export default function AppDrawerContent({
                     {activeMerchant?.name ?? t("profile.merchantWorkspace")}
                   </Typography>
                 </View>
-                <Ionicons
+                <AppIcon
                   name={isProfileOpen ? "chevron-down" : "chevron-up"}
                   size={16}
                   color={themeColorMuted}
@@ -222,7 +222,7 @@ export default function AppDrawerContent({
                 className="flex-1 items-center justify-between"
               >
                 <Button.Label>{t("profile.account")}</Button.Label>
-                <Ionicons name="chevron-forward" size={18} color={themeColorMuted} />
+                <AppIcon name="chevron-forward" size={18} color={themeColorMuted} />
               </Button>
 
               <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">
@@ -237,7 +237,7 @@ export default function AppDrawerContent({
                       onPress={() => setThemeMode(action.value)}
                       className={`h-9 flex-1 items-center justify-center rounded-full ${isSelected ? "bg-accent" : "active:bg-surface-tertiary"}`}
                     >
-                      <Ionicons
+                      <AppIcon
                         name={action.icon}
                         size={19}
                         color={isSelected ? themeColorAccentForeground : themeColorMuted}
@@ -253,7 +253,7 @@ export default function AppDrawerContent({
                   setIsLogoutOpen(true);
                 }}
               >
-                <Ionicons name="log-out-outline" size={18} color={themeColorDanger} />
+                <AppIcon name="log-out-outline" size={18} color={themeColorDanger} />
                 <Button.Label>{t("settings.logout")}</Button.Label>
               </Button>
             </Popover.Content>

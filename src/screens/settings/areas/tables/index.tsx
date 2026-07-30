@@ -5,7 +5,7 @@ import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
 import { useArea } from "@/hooks/db/use-areas";
 import { useAreaTables } from "@/hooks/db/use-tables";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { Card, Chip, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
@@ -110,7 +110,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
             <EmptyState className="flex-1 justify-center">
               <EmptyState.Header>
                 <EmptyState.Media variant="icon">
-                  <Ionicons name="restaurant-outline" size={20} color={mutedColor} />
+                  <AppIcon name="restaurant-outline" size={20} color={mutedColor} />
                 </EmptyState.Media>
                 <EmptyState.Title>{t("areasManagement.emptyTables")}</EmptyState.Title>
                 <EmptyState.Description>

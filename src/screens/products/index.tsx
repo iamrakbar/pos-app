@@ -6,7 +6,7 @@ import CreateFAB from "@/components/common/create-fab";
 import { formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
-import { Ionicons } from "@expo/vector-icons";
+import AppIcon from "@/components/common/app-icon";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import { Image } from "expo-image";
 import React from "react";
@@ -119,7 +119,7 @@ export default function ProductsScreen(): React.JSX.Element {
               <EmptyState className="py-20">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <Ionicons name="search-outline" size={20} color={themeColorMuted} />
+                    <AppIcon name="search-outline" size={20} color={themeColorMuted} />
                   </EmptyState.Media>
                   <EmptyState.Title>{t("products.empty")}</EmptyState.Title>
                   <EmptyState.Description>{t("products.emptyDescription")}</EmptyState.Description>
@@ -145,7 +145,7 @@ export default function ProductsScreen(): React.JSX.Element {
                             contentFit="cover"
                           />
                         ) : (
-                          <Ionicons name="fast-food-outline" size={24} color={themeColorMuted} />
+                          <AppIcon name="fast-food-outline" size={24} color={themeColorMuted} />
                         )}
                       </View>
 
@@ -210,7 +210,7 @@ export default function ProductsScreen(): React.JSX.Element {
                         </View>
                       </View>
 
-                      <Ionicons name="chevron-forward" size={16} color={themeColorMuted} />
+                      <AppIcon name="chevron-forward" size={16} color={themeColorMuted} />
                     </Pressable>
                     {index < filtered.length - 1 && <Separator className="mx-5" />}
                   </View>
