@@ -48,9 +48,6 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
             <Typography type="body-xs" color="muted" className="text-center">
               {t("productForm.noAddOnsDescription")}
             </Typography>
-            <Button variant="outline" className="self-center" onPress={onAdd}>
-              <Button.Label>{t("productForm.add")}</Button.Label>
-            </Button>
           </View>
         ) : (
           addOns.slice(0, 3).map((addOn, index) => (
@@ -85,6 +82,11 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
             )}
           </Typography>
         ) : null}
+        <Card.Footer>
+          <Button variant="outline" className="self-center" onPress={onAdd}>
+            <Button.Label>{t("productForm.add")}</Button.Label>
+          </Button>
+        </Card.Footer>
       </Card.Body>
     </Card>
   );
