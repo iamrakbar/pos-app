@@ -14,7 +14,6 @@ import {
   toCategoryRequest,
   type CategoryFormValues,
 } from "@/schemas/category";
-import { useCategoryFormNavigation } from "@/stores/use-category-form-navigation";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -59,10 +58,7 @@ function FieldMessage({ message, fallback }: { message?: string; fallback?: stri
 
 export default function CategoryFormScreen(): React.JSX.Element {
   const { locale, t } = useTranslation();
-  const { id, selectForProduct } = useLocalSearchParams<{
-    id: string;
-    selectForProduct?: string;
-  }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
   const dangerColor = useThemeColor("danger");
@@ -72,7 +68,6 @@ export default function CategoryFormScreen(): React.JSX.Element {
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory(id);
   const deleteMutation = useDeleteCategory();
-  const setCreatedCategory = useCategoryFormNavigation((state) => state.setCreatedCategory);
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
   const hydratedCategoryId = React.useRef<string | null>(null);
   const categorySchema = createCategorySchema(t);
@@ -129,12 +124,10 @@ export default function CategoryFormScreen(): React.JSX.Element {
   const submitCategory = async (values: CategoryFormValues) => {
     try {
       const request = toCategoryRequest(values);
-      const savedCategory = isNew
-        ? await createMutation.mutateAsync(request)
-        : await updateMutation.mutateAsync(request);
-
-      if (isNew && selectForProduct === "true") {
-        setCreatedCategory({ id: savedCategory.id, name: savedCategory.name });
+      if (isNew) {
+        await createMutation.mutateAsync(request);
+      } else {
+        await updateMutation.mutateAsync(request);
       }
 
       toast.show({

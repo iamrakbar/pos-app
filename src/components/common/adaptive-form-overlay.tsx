@@ -2,6 +2,7 @@ import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { BottomSheet, Dialog } from "heroui-native";
 import type { ReactNode } from "react";
+import { useKeyboardState } from "react-native-keyboard-controller";
 import { View } from "react-native";
 
 export type AdaptiveFormOverlayProps = {
@@ -12,6 +13,7 @@ export type AdaptiveFormOverlayProps = {
   children: ReactNode;
   footer?: ReactNode;
   maxWidthClassName?: string;
+  moveAboveKeyboardOnPhone?: boolean;
 };
 
 export default function AdaptiveFormOverlay({
@@ -22,8 +24,10 @@ export default function AdaptiveFormOverlay({
   children,
   footer,
   maxWidthClassName = "max-w-md",
+  moveAboveKeyboardOnPhone = false,
 }: AdaptiveFormOverlayProps): React.JSX.Element {
   const { isPhonePortrait } = useOverlayPresentation();
+  const keyboardHeight = useKeyboardState((state) => state.height);
 
   if (isPhonePortrait) {
     return (
@@ -33,6 +37,7 @@ export default function AdaptiveFormOverlay({
           <BottomSheet.Content
             enablePanDownToClose={false}
             keyboardBehavior="interactive"
+            bottomInset={moveAboveKeyboardOnPhone ? keyboardHeight : 0}
             contentContainerClassName="p-0 pb-safe"
           >
             <BottomSheet.Close className="absolute right-3 top-3 z-50" />
