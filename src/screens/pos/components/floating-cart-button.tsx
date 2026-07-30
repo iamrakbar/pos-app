@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { View } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -28,7 +28,6 @@ export default function FloatingCartButton(): JSX.Element | null {
   const itemCount = products.reduce((total, product) => total + product.qty, 0);
   const subtotal = products.reduce((total, product) => total + product.subtotal, 0);
   const previousItemCount = useRef(0);
-  const [isShowingAddedFeedback, setIsShowingAddedFeedback] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({
@@ -41,7 +40,6 @@ export default function FloatingCartButton(): JSX.Element | null {
 
     if (!didAddItem) return;
 
-    setIsShowingAddedFeedback(true);
     if (!prefersReducedMotion) {
       scale.set(
         withSequence(
@@ -50,9 +48,6 @@ export default function FloatingCartButton(): JSX.Element | null {
         )
       );
     }
-
-    const feedbackTimer = setTimeout(() => setIsShowingAddedFeedback(false), 800);
-    return () => clearTimeout(feedbackTimer);
   }, [itemCount, prefersReducedMotion, scale]);
 
   if (itemCount === 0) return null;
@@ -68,7 +63,7 @@ export default function FloatingCartButton(): JSX.Element | null {
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-x-0 items-center p-4 pb-safe bg-background border-t border-border"
+      className="absolute inset-x-0 items-center p-4 bg-background border-t border-border"
       style={{ bottom: Math.max(insets.bottom, 16) }}
     >
       <Animated.View className="w-full items-center" style={animatedStyle}>
