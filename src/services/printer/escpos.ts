@@ -16,7 +16,11 @@ function append(state: EncoderState, ...bytes: number[]) {
 }
 
 function text(state: EncoderState, value: string) {
-  state.bytes.push(...new TextEncoder().encode(value));
+  // id-ID currency formatting inserts a non-breaking space after "Rp". Many
+  // ESC/POS printers interpret its two UTF-8 bytes as two printable characters,
+  // which makes price rows wrap despite matching the configured column count.
+  const printerSafeValue = value.replaceAll("\u00a0", " ").replaceAll("\u202f", " ");
+  state.bytes.push(...new TextEncoder().encode(printerSafeValue));
 }
 
 function line(state: EncoderState, value = "") {
@@ -130,7 +134,6 @@ export function formatReceiptPayload(
     if (!isCompact && index < data.items.length - 1) line(state);
   });
 
-  const totalQty = data.items.reduce((sum, item) => sum + item.qty, 0);
   sectionGap();
   if (!isKitchen) {
     line(state, separator);
@@ -145,14 +148,7 @@ export function formatReceiptPayload(
     if (data.tax) priceRow(data.tax.name, formatRupiah(data.tax.amount));
     sectionGap();
   }
-  contentLine(
-    t("receipt.itemsSummary", {
-      items: data.items.length,
-      quantity: totalQty,
-    })
-  );
   if (!isKitchen) {
-    sectionGap();
     bold(state, true);
     priceRow(t("receipt.total"), formatRupiah(data.total));
     bold(state, false);

@@ -431,7 +431,7 @@ export const id: TranslationSchema = {
     charactersRecommendation:
       "Disarankan: 32 untuk 58mm, 46 untuk 80mm. Gunakan kalibrasi untuk memverifikasi.",
     logoWidth: "Lebar logo (titik)",
-    logoRecommendation: "Disarankan: 300 untuk 58mm, 380 untuk 80mm.",
+    logoRecommendation: "Maksimum: 200 untuk 58mm, 280 untuk 80mm.",
     hardwareOptions: "Opsi Perangkat Keras",
     hardwareDescription: "Aktifkan hanya fitur yang didukung printer ini.",
     cutReceipt: "Potong struk setelah mencetak",
@@ -580,7 +580,7 @@ export const id: TranslationSchema = {
     printerCharactersNumeric: "Karakter per baris harus berupa angka",
     printerCharactersRange: "Gunakan 24 hingga 64 karakter",
     printerLogoWidthNumeric: "Lebar logo harus berupa angka",
-    printerLogoWidthRange: "Gunakan 100 hingga 576 titik",
+    printerLogoWidthRange: "Gunakan mulai 100 titik hingga batas ukuran kertas yang dipilih",
     printerBluetoothRequired: "Pilih perangkat Bluetooth atau masukkan alamat MAC",
     printerIpRequired: "Alamat IP wajib diisi",
     printerPortRange: "Port harus antara 1 dan 65535",

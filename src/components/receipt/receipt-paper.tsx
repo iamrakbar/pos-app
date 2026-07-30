@@ -6,6 +6,7 @@ import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import { getReceiptLogoPreviewWidth } from "@/utils/receipt-logo-layout";
 
 export type ReceiptPreviewData = {
   code: string;
@@ -83,18 +84,19 @@ export function ReceiptPaper({
   data,
   paperWidth = "58mm",
   charactersPerLine,
+  logoWidthDots,
 }: {
   settings: ReceiptSettings;
   data: ReceiptPreviewData;
   paperWidth?: PaperWidth;
   charactersPerLine?: string;
+  logoWidthDots?: string;
 }): JSX.Element {
   const { t } = useTranslation();
   const headerLines = settings.header
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
-  const totalQty = data.items.reduce((sum, item) => sum + item.qty, 0);
   const isKitchen = settings.layout === "kitchen";
   const isCompact = settings.layout === "compact";
   const fallbackColumns = paperWidth === "80mm" ? 46 : 32;
@@ -116,7 +118,12 @@ export function ReceiptPaper({
       {!isKitchen && settings.storeLogo ? (
         <Image
           source={{ uri: settings.storeLogo }}
-          style={{ width: 160, height: 80, alignSelf: "center", marginBottom: 20 }}
+          style={{
+            width: getReceiptLogoPreviewWidth(paperWidth, logoWidthDots),
+            height: 80,
+            alignSelf: "center",
+            marginBottom: 20,
+          }}
           contentFit="contain"
         />
       ) : null}
@@ -202,15 +209,6 @@ export function ReceiptPaper({
           {data.tax ? (
             <ReceiptLines lines={[row(data.tax.name, formatRupiah(data.tax.amount))]} />
           ) : null}
-          <View className={gapClass} />
-          <ReceiptLines
-            lines={wrapped(
-              t("receipt.itemsSummary", {
-                items: data.items.length,
-                quantity: totalQty,
-              })
-            )}
-          />
           <View className={gapClass} />
           <ReceiptLines lines={[row(t("receipt.total"), formatRupiah(data.total))]} bold />
         </View>

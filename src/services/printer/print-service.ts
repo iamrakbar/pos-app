@@ -11,6 +11,7 @@ import {
 import { PrintError } from "./errors";
 import { ensureBluetoothPermissions } from "./permissions";
 import { appendPrintDiagnostic } from "./print-diagnostics";
+import { getReceiptLogoWidthDots } from "@/utils/receipt-logo-layout";
 
 const CONNECTION_TIMEOUT_MS = 5_000;
 
@@ -158,8 +159,10 @@ async function performPrintReceipt(order: ReceiptOrder): Promise<number> {
       await printLogo(
         driver,
         receiptSettings.storeLogo,
-        Number(settings.logoWidthDots) || (settings.paperWidth === "80mm" ? 380 : 300)
+        getReceiptLogoWidthDots(settings.paperWidth, settings.logoWidthDots)
       );
+      // Leave one blank line between the raster logo and the store name.
+      driver.printRaw(bytesToBase64(Uint8Array.from([0x0a, 0x0a])));
     }
     driver.printRaw(bytesToBase64(payload));
     return payload.byteLength;

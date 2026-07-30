@@ -1,6 +1,10 @@
 import { zustandStorage } from "@/lib/storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import {
+  getReceiptLogoWidthDots,
+  RECEIPT_LOGO_MAX_WIDTH_DOTS,
+} from "@/utils/receipt-logo-layout";
 
 export type ConnectionType = "bluetooth" | "wifi";
 export type PaperWidth = "58mm" | "80mm";
@@ -47,7 +51,7 @@ export const DEFAULT_PRINTER_SETTINGS: PrinterSettings = {
   port: "9100",
   paperWidth: "58mm",
   charactersPerLine: "32",
-  logoWidthDots: "300",
+  logoWidthDots: String(RECEIPT_LOGO_MAX_WIDTH_DOTS["58mm"]),
   cutReceipt: false,
   openDrawer: false,
   selectedDeviceId: "",
@@ -63,7 +67,13 @@ const normalizePrinter = (printer: Partial<PrinterSettings>): PrinterSettings =>
   port: printer.port || DEFAULT_PRINTER_SETTINGS.port,
   paperWidth: printer.paperWidth ?? DEFAULT_PRINTER_SETTINGS.paperWidth,
   charactersPerLine: printer.charactersPerLine || (printer.paperWidth === "80mm" ? "46" : "32"),
-  logoWidthDots: printer.logoWidthDots || (printer.paperWidth === "80mm" ? "380" : "300"),
+  logoWidthDots:
+    String(
+      getReceiptLogoWidthDots(
+        printer.paperWidth ?? DEFAULT_PRINTER_SETTINGS.paperWidth,
+        printer.logoWidthDots
+      )
+    ),
   connection: printer.connection ?? DEFAULT_PRINTER_SETTINGS.connection,
 });
 
@@ -183,7 +193,7 @@ export const usePrinterStore = create<PrinterStore>()(
     {
       name: "soeat-printer-settings",
       storage: printerStorage,
-      version: 2,
+      version: 3,
       migrate: (persistedState, version) => {
         const state = persistedState as Partial<PrinterStore> | undefined;
 
@@ -211,7 +221,10 @@ export const usePrinterStore = create<PrinterStore>()(
           };
         }
 
-        const printers = state.printers ?? [];
+        const printers = (state.printers ?? []).map((printer) => ({
+          ...printer,
+          ...normalizePrinter(printer),
+        }));
         const selectedPrinterId = state.selectedPrinterId ?? printers[0]?.id ?? "";
 
         return {

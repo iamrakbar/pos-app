@@ -26,7 +26,7 @@ export function createPrinterSchema(t: Translate) {
         .trim()
         .regex(/^\d+$/, t("validation.printerLogoWidthNumeric"))
         .refine(
-          (value) => Number(value) >= 100 && Number(value) <= 576,
+          (value) => Number(value) >= 100 && Number(value) <= 280,
           t("validation.printerLogoWidthRange")
         ),
       cutReceipt: z.boolean(),
@@ -34,6 +34,15 @@ export function createPrinterSchema(t: Translate) {
       selectedDeviceId: z.string().trim(),
     })
     .superRefine((value, ctx) => {
+      const maxLogoWidth = value.paperWidth === "80mm" ? 280 : 200;
+      if (Number(value.logoWidthDots) > maxLogoWidth) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["logoWidthDots"],
+          message: t("validation.printerLogoWidthRange"),
+        });
+      }
+
       if (value.connection === "bluetooth") {
         if (!value.macAddress && !value.selectedDeviceId) {
           ctx.addIssue({

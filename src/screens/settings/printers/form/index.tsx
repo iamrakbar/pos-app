@@ -392,7 +392,7 @@ function ReceiptSetupCard({
                     shouldDirty: true,
                     shouldValidate: true,
                   });
-                  setValue("logoWidthDots", option.value === "80mm" ? "380" : "300", {
+                  setValue("logoWidthDots", option.value === "80mm" ? "280" : "200", {
                     shouldDirty: true,
                     shouldValidate: true,
                   });
@@ -457,10 +457,10 @@ function ReceiptSetupCard({
                 label={t("printerForm.logoWidth")}
                 value={value}
                 onChange={onChange}
-                placeholder={paperWidth === "80mm" ? "380" : "300"}
+                placeholder={paperWidth === "80mm" ? "280" : "200"}
                 inputVariant="secondary"
                 minValue={100}
-                maxValue={576}
+                maxValue={paperWidth === "80mm" ? 280 : 200}
                 step={10}
                 isRequired
                 isInvalid={Boolean(errors.logoWidthDots)}
@@ -535,7 +535,7 @@ function PrinterDiagnosticsCard({
   const { t } = useTranslation();
 
   return (
-    <Card>
+    <Card className="gap-3">
       <SectionHeading
         title={t("printerForm.diagnostics")}
         description={t("printerForm.diagnosticsDescription")}

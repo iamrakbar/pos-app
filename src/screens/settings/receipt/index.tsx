@@ -128,6 +128,7 @@ function ReceiptPreviewSection({
   onPaperWidthChange,
   configuredPaperWidth,
   configuredCharactersPerLine,
+  configuredLogoWidthDots,
   surfaceColor,
 }: {
   settings: ReceiptSettings;
@@ -135,6 +136,7 @@ function ReceiptPreviewSection({
   onPaperWidthChange: (paperWidth: PaperWidth) => void;
   configuredPaperWidth: PaperWidth;
   configuredCharactersPerLine: string;
+  configuredLogoWidthDots: string;
   surfaceColor: string;
 }) {
   const { t } = useTranslation();
@@ -194,6 +196,9 @@ function ReceiptPreviewSection({
                   ? "46"
                   : "32"
             }
+            logoWidthDots={
+              previewPaperWidth === configuredPaperWidth ? configuredLogoWidthDots : undefined
+            }
           />
         </ScrollView>
       </ScrollShadow>
@@ -243,6 +248,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const updateSettings = useReceiptStore((state) => state.updateSettings);
   const configuredPaperWidth = usePrinterStore((state) => state.settings.paperWidth);
   const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
+  const configuredLogoWidthDots = usePrinterStore((state) => state.settings.logoWidthDots);
   const { isPortrait } = useResponsiveLayout();
   const { choicePresentation } = useOverlayPresentation();
   const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useThemeColor([
@@ -344,6 +350,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
               onPaperWidthChange={setPreviewPaperWidth}
               configuredPaperWidth={configuredPaperWidth}
               configuredCharactersPerLine={configuredCharactersPerLine}
+              configuredLogoWidthDots={configuredLogoWidthDots}
               surfaceColor={themeColorSurfaceSecondary}
             />
 
