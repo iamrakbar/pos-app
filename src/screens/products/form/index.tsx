@@ -582,7 +582,7 @@ function SaveProductCard({
   const { t } = useTranslation();
 
   return (
-    <View className="flex-1 gap-3">
+    <View className="flex-1 gap-3 pt-2">
       {serverError ? (
         <Typography type="body-xs" className="text-danger">
           {serverError}

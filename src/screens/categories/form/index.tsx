@@ -185,7 +185,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
         contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6 gap-3"
         keyboardShouldPersistTaps="handled"
       >
-        <Card className="gap-3 w-full max-w-3xl overflow-hidden">
+        <Card className="gap-4 w-full max-w-3xl overflow-hidden">
           <Card.Header>
             <View className="gap-1">
               <Card.Title>
@@ -279,20 +279,11 @@ export default function CategoryFormScreen(): React.JSX.Element {
           </Card.Body>
         </Card>
 
-        <View className="flex-1 flex-col md:flex-row items-center gap-3 w-full">
-          <Button
-            variant="ghost"
-            className="w-full"
-            onPress={() => router.back()}
-            isDisabled={isSaving}
-          >
+        <View className="flex-1 flex-col md:flex-row items-center gap-3 pt-2 w-full max-w-3xl">
+          <Button variant="ghost" onPress={() => router.back()} isDisabled={isSaving}>
             <Button.Label>{t("common.cancel")}</Button.Label>
           </Button>
-          <Button
-            className="flex-1 w-full"
-            onPress={handleSubmit(submitCategory)}
-            isDisabled={isSaving}
-          >
+          <Button className="flex-1" onPress={handleSubmit(submitCategory)} isDisabled={isSaving}>
             <Button.Label>{isSaving ? t("common.saving") : t("categories.save")}</Button.Label>
           </Button>
         </View>

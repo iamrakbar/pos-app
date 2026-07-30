@@ -202,7 +202,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
                 {errors.root.server.message}
               </Typography>
             ) : null}
-            <View className="flex-col md:flex-row gap-3">
+            <View className="flex-col md:flex-row gap-3 pt-2">
               <Button variant="ghost" onPress={() => router.back()}>
                 <Button.Label>{t("common.cancel")}</Button.Label>
               </Button>

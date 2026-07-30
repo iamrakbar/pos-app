@@ -564,9 +564,13 @@ export default function EarningsScreen(): React.JSX.Element {
               onValueChange={handleRangeChange}
             >
               <Select.Trigger asChild variant="unstyled">
-                <Button size="sm" variant="outline" className={isCompact ? "min-w-40" : undefined}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={isCompact ? "min-w-40 bg-surface" : undefined}
+                >
                   <Button.Label numberOfLines={1}>{dateRangeLabel}</Button.Label>
-                  <Ionicons name="chevron-down" size={14} color={mutedColor} />
+                  <Select.TriggerIndicator />
                 </Button>
               </Select.Trigger>
               <Select.Portal>

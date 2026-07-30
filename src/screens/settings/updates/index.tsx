@@ -8,7 +8,7 @@ export default function UpdateSettingsScreen(): JSX.Element {
       className="flex-1 bg-background"
       contentContainerClassName="px-4 py-6 pb-10 md:px-6"
     >
-      <View className="gap-4">
+      <View className="w-full max-w-3xl mx-auto">
         <AppUpdateManager mode="settings" />
       </View>
     </ScrollView>
