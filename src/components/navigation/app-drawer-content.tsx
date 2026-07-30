@@ -138,7 +138,7 @@ export default function AppDrawerContent({
                   if (event.defaultPrevented) return;
 
                   navigation.closeDrawer();
-                  if (routeName === "pos") {
+                  if (routeName === "pos" || routeName === "settings") {
                     navigation.navigate(route.name, { screen: "index" });
                   } else if (!focused) {
                     navigation.navigate(route.name, route.params);
@@ -214,10 +214,10 @@ export default function AppDrawerContent({
                 </Avatar>
                 <View className="flex-1 gap-0.5">
                   <Typography type="body-sm" weight="semibold" numberOfLines={1}>
-                    {activeMerchant?.name ?? "Soeat"}
+                    {user?.name ?? t("profile.account")}
                   </Typography>
                   <Typography type="body-xs" color="muted" numberOfLines={1}>
-                    {user?.name ?? t("profile.merchantWorkspace")}
+                    {activeMerchant?.name ?? t("profile.merchantWorkspace")}
                   </Typography>
                 </View>
                 <Ionicons
@@ -245,11 +245,11 @@ export default function AppDrawerContent({
                 onPress={() => {
                   setIsProfileOpen(false);
                   navigation.closeDrawer();
-                  navigation.navigate("settings");
+                  navigation.navigate("settings", { screen: "account" });
                 }}
                 className="flex-1 items-center justify-between"
               >
-                <Button.Label>{t("profile.profile")}</Button.Label>
+                <Button.Label>{t("profile.account")}</Button.Label>
                 <Ionicons name="chevron-forward" size={16} color={themeColorMuted} />
               </Button>
 

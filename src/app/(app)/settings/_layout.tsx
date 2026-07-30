@@ -31,6 +31,7 @@ export default function SettingsLayout() {
           headerLeft: () => <DrawerMenuButton />,
         }}
       />
+      <Stack.Screen name="account" options={{ title: t("navigation.account") }} />
       <Stack.Screen name="printer" options={{ title: t("settings.printer") }} />
       <Stack.Screen name="printers/index" options={{ title: t("navigation.printers") }} />
       <Stack.Screen name="printers/[id]" options={{ title: t("settings.printer") }} />

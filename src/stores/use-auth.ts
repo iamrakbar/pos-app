@@ -10,6 +10,7 @@ type AuthState = {
   refreshToken: string | null;
   user: User | null;
   merchantId: string | null;
+  merchants: App.Data.Merchant.Auth.MerchantSummaryData[];
   activeMerchant: App.Data.Merchant.Auth.MerchantSummaryData | null;
   hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
@@ -50,6 +51,7 @@ export const useAuth = create<AuthState>()(
       refreshToken: null,
       user: null,
       merchantId: null,
+      merchants: [],
       activeMerchant: null,
       hasHydrated: false,
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
@@ -65,6 +67,7 @@ export const useAuth = create<AuthState>()(
           token: payload.access_token,
           refreshToken,
           user: payload.user,
+          merchants: payload.merchants,
           activeMerchant,
           merchantId: activeMerchant?.id ?? null,
         });
@@ -72,7 +75,14 @@ export const useAuth = create<AuthState>()(
       logout: () => {
         // Clear React Query cache to prevent stale data after logout
         queryClientRef?.clear();
-        set({ token: null, refreshToken: null, user: null, merchantId: null, activeMerchant: null });
+        set({
+          token: null,
+          refreshToken: null,
+          user: null,
+          merchantId: null,
+          merchants: [],
+          activeMerchant: null,
+        });
       },
     }),
     {
@@ -83,6 +93,7 @@ export const useAuth = create<AuthState>()(
         refreshToken: state.refreshToken,
         user: state.user,
         merchantId: state.merchantId,
+        merchants: state.merchants,
         activeMerchant: state.activeMerchant,
       }),
       onRehydrateStorage: () => (state) => {
