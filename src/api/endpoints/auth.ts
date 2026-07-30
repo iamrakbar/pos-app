@@ -4,8 +4,8 @@ type LoginResponse = {
   data: App.Data.Merchant.Auth.AuthTokenData;
 };
 
-type ProfileResponse = {
-  data: App.Data.Merchant.Auth.MerchantUserProfileData;
+type AuthProfileResponse = {
+  data: App.Data.Merchant.Auth.AuthTokenData;
 };
 
 export function login(body: App.Requests.Merchant.Auth.LoginRequest): Promise<LoginResponse> {
@@ -16,14 +16,14 @@ export function login(body: App.Requests.Merchant.Auth.LoginRequest): Promise<Lo
   });
 }
 
-export function getCurrentUser(): Promise<ProfileResponse> {
-  return apiRequest<ProfileResponse>("/me");
+export function getCurrentUser(): Promise<AuthProfileResponse> {
+  return apiRequest<AuthProfileResponse>("/me");
 }
 
 export function updateCurrentUser(
   body: App.Requests.Merchant.Auth.UpdateProfileRequest
-): Promise<ProfileResponse> {
-  return apiRequest<ProfileResponse>("/me", {
+): Promise<AuthProfileResponse> {
+  return apiRequest<AuthProfileResponse>("/me", {
     method: "PUT",
     body,
   });

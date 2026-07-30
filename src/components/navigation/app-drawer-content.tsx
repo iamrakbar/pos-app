@@ -1,5 +1,6 @@
 import Logo from "@/components/common/logo";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
+import { useAccountProfile } from "@/hooks/db/use-account-profile";
 import type { Translate } from "@/locales";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
@@ -74,7 +75,7 @@ export default function AppDrawerContent({
   ]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  const user = useAuth((s) => s.user);
+  const { data: user } = useAccountProfile();
   const logout = useAuth((s) => s.logout);
   const activeMerchant = useAuth((s) => s.activeMerchant);
   const isOffline = useNetworkStore((s) => s.isOffline);

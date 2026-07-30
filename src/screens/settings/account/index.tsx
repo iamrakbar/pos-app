@@ -17,16 +17,23 @@ export default function AccountScreen(): React.JSX.Element {
   const router = useRouter();
   const { locale, t } = useTranslation();
   const { toast } = useToast();
-  const storedUser = useAuth((state) => state.user);
   const storedMerchants = useAuth((state) => state.merchants);
   const activeMerchant = useAuth((state) => state.activeMerchant);
-  const merchants = React.useMemo(
-    () => (storedMerchants.length > 0 ? storedMerchants : activeMerchant ? [activeMerchant] : []),
-    [activeMerchant, storedMerchants]
-  );
+  const merchants =
+    storedMerchants.length > 0 ? storedMerchants : activeMerchant ? [activeMerchant] : [];
   const profileQuery = useAccountProfile();
   const updateProfile = useUpdateAccountProfile();
   const accountSchema = createAccountSchema(t);
+  const user = profileQuery.data;
+  const profileFormValues: AccountFormValues | undefined = user
+    ? {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        roleLabel: user.role_label,
+        merchantIds: merchants.map((merchant) => merchant.id),
+      }
+    : undefined;
   const {
     control,
     clearErrors,
@@ -37,11 +44,16 @@ export default function AccountScreen(): React.JSX.Element {
   } = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
-      name: storedUser?.name ?? "",
-      email: storedUser?.email ?? "",
-      role: storedUser?.role ?? "",
-      roleLabel: storedUser?.role_label ?? "",
+      name: "",
+      email: "",
+      role: "",
+      roleLabel: "",
       merchantIds: merchants.map((merchant) => merchant.id),
+    },
+    values: profileFormValues,
+    resetOptions: {
+      keepDirtyValues: true,
+      keepErrors: true,
     },
   });
   const formValues = useWatch({ control });
@@ -49,18 +61,6 @@ export default function AccountScreen(): React.JSX.Element {
   React.useEffect(() => {
     clearErrors();
   }, [clearErrors, locale]);
-
-  React.useLayoutEffect(() => {
-    const user = profileQuery.data;
-    if (!user || isDirty) return;
-    reset({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      roleLabel: user.role_label,
-      merchantIds: merchants.map((merchant) => merchant.id),
-    });
-  }, [isDirty, merchants, profileQuery.data, reset]);
 
   if (profileQuery.isLoading || (profileQuery.isFetching && !profileQuery.isFetchedAfterMount)) {
     return <LoadingState message={t("profile.loading")} />;

@@ -1,5 +1,4 @@
 // src/stores/useAuth.ts
-import { User } from '@/types/user';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
@@ -8,14 +7,12 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 type AuthState = {
   token: string | null;
   refreshToken: string | null;
-  user: User | null;
   merchantId: string | null;
   merchants: App.Data.Merchant.Auth.MerchantSummaryData[];
   activeMerchant: App.Data.Merchant.Auth.MerchantSummaryData | null;
   hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
   setToken: (token: string | null) => void;
-  setUser: (user: User | null) => void;
   login: (payload: App.Data.Merchant.Auth.AuthTokenData) => void;
   logout: () => void;
 };
@@ -49,14 +46,12 @@ export const useAuth = create<AuthState>()(
     (set) => ({
       token: null,
       refreshToken: null,
-      user: null,
       merchantId: null,
       merchants: [],
       activeMerchant: null,
       hasHydrated: false,
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
       setToken: (token) => set({ token }),
-      setUser: (user) => set({ user }),
       login: (payload) => {
         const activeMerchant = payload.merchants[0] ?? null;
         // refresh_token isn't in the generated AuthTokenData type yet, but the
@@ -66,7 +61,6 @@ export const useAuth = create<AuthState>()(
         set({
           token: payload.access_token,
           refreshToken,
-          user: payload.user,
           merchants: payload.merchants,
           activeMerchant,
           merchantId: activeMerchant?.id ?? null,
@@ -78,7 +72,6 @@ export const useAuth = create<AuthState>()(
         set({
           token: null,
           refreshToken: null,
-          user: null,
           merchantId: null,
           merchants: [],
           activeMerchant: null,
@@ -91,7 +84,6 @@ export const useAuth = create<AuthState>()(
       partialize: (state) => ({
         token: state.token,
         refreshToken: state.refreshToken,
-        user: state.user,
         merchantId: state.merchantId,
         merchants: state.merchants,
         activeMerchant: state.activeMerchant,
