@@ -68,7 +68,7 @@ export default function FloatingCartButton(): JSX.Element | null {
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-x-0 items-center p-4 pb-safe bg-surface border-t border-border"
+      className="absolute inset-x-0 items-center p-4 pb-safe bg-background border-t border-border"
       style={{ bottom: Math.max(insets.bottom, 16) }}
     >
       <Animated.View className="w-full items-center" style={animatedStyle}>
@@ -81,14 +81,8 @@ export default function FloatingCartButton(): JSX.Element | null {
           })}
         >
           <View className="flex-row items-center gap-2">
-            <Ionicons
-              name={isShowingAddedFeedback ? "checkmark-circle" : "cart-outline"}
-              size={18}
-              color={foreground}
-            />
-            <Button.Label>
-              {isShowingAddedFeedback ? t("pos.added") : t("pos.cart")} · {displayItemsLabel}
-            </Button.Label>
+            <Ionicons name={"cart-outline"} size={18} color={foreground} />
+            <Button.Label>{displayItemsLabel}</Button.Label>
           </View>
           <Button.Label className="tabular-nums">{formatRupiah(subtotal)}</Button.Label>
         </Button>
