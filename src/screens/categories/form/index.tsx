@@ -31,8 +31,9 @@ import {
 } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const CATEGORY_FIELDS = new Set<keyof CategoryFormValues>([
   "name",
@@ -180,7 +181,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
         </Stack.Toolbar>
       ) : null}
 
-      <ScrollView
+      <KeyboardAwareScrollView
         className="flex-1 bg-background"
         contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6 gap-3"
         keyboardShouldPersistTaps="handled"
@@ -287,7 +288,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
             <Button.Label>{isSaving ? t("common.saving") : t("categories.save")}</Button.Label>
           </Button>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <ActionDialog
         isOpen={isConfirmingDelete}

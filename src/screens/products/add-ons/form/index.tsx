@@ -14,10 +14,11 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Card, Typography, useThemeColor, useToast } from "heroui-native";
 import React from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import OptionRow from "./option-row";
 import SelectionRulesCard from "./selection-rules-card";
 import { useTranslation } from "@/stores/use-locale";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const EMPTY_OPTION = { id: null, name: "", price: "0", destroyed: false };
 
@@ -152,7 +153,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
           />
         </Stack.Toolbar>
       ) : null}
-      <ScrollView
+      <KeyboardAwareScrollView
         className="flex-1 bg-background"
         contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
         keyboardShouldPersistTaps="handled"
@@ -214,7 +215,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <ActionDialog
         isOpen={isDeleteOpen}

@@ -24,7 +24,7 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
 import { Image } from "expo-image";
-import { Platform, Pressable, ScrollView, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
@@ -46,6 +46,7 @@ import QuickCategoryFormOverlay from "./quick-category-form-overlay";
 import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -796,7 +797,7 @@ export default function ProductFormScreen(): React.JSX.Element {
       ) : null}
 
       <View className="flex-1 bg-background">
-        <ScrollView
+        <KeyboardAwareScrollView
           className="flex-1"
           contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
           keyboardShouldPersistTaps="handled"
@@ -841,7 +842,7 @@ export default function ProductFormScreen(): React.JSX.Element {
               onSubmit={handleSubmit(submitProduct)}
             />
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </View>
 
       <QuickCategoryFormOverlay

@@ -30,7 +30,7 @@ import {
   type UseFormReset,
   type UseFormSetValue,
 } from "react-hook-form";
-import { Linking, PermissionsAndroid, Platform, Pressable, ScrollView, View } from "react-native";
+import { Linking, PermissionsAndroid, Platform, Pressable, View } from "react-native";
 import { createPrinterSchema, type PrinterFormValues } from "@/schemas/printer";
 import {
   DEFAULT_PRINTER_SETTINGS,
@@ -46,6 +46,7 @@ import StringNumberField from "@/components/common/string-number-field";
 import { EmptyState } from "heroui-native-pro";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const CONNECTION_TYPES: { value: ConnectionType; label: string }[] = [
   { value: "bluetooth", label: "Bluetooth" },
@@ -803,7 +804,7 @@ function PrinterFormView(props: PrinterFormViewProps) {
         </Stack.Toolbar>
       ) : null}
       <View className="flex-1 bg-background">
-        <ScrollView
+        <KeyboardAwareScrollView
           className="flex-1"
           contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
           keyboardShouldPersistTaps="handled"
@@ -856,7 +857,7 @@ function PrinterFormView(props: PrinterFormViewProps) {
               </View>
             </View>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <PrinterDialogs
           prompt={prompt}
           deletePromptOpen={deletePromptOpen}
