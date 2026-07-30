@@ -3,10 +3,7 @@ import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useEarnings } from "@/hooks/db/use-earnings";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import {
-  COMPACT_LAYOUT_MAX_WIDTH,
-  useResponsiveLayout,
-} from "@/hooks/use-responsive-layout";
+import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatRupiah } from "@/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -402,40 +399,42 @@ function RecentEarningsWidget({
       <Widget.Content className="overflow-hidden p-0">
         {entries.map((entry, index) => (
           <View key={entry.id}>
-            <View
-              className={`gap-3 px-4 py-3.5 ${isCompact ? "items-start" : "flex-row items-center"}`}
-            >
-              <View className="size-10 items-center justify-center rounded-panel-inner bg-success-soft">
+            <View className="flex-row gap-3 px-4 py-3.5">
+              <View className="size-10 mt-1 items-center justify-center rounded-panel-inner bg-success-soft">
                 <Ionicons name="checkmark" size={18} color={successColor} />
               </View>
-              <View className="min-w-0 flex-1 gap-0.5">
-                <View className="flex-row flex-wrap items-center gap-2">
-                  <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
-                    {entry.code}
+              <View className={`flex-1 gap-3 ${isCompact ? "flex-col" : "flex-row"}`}>
+                <View className="flex-1 gap-0.5">
+                  <View className="flex-row flex-wrap items-center gap-2">
+                    <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
+                      {entry.code}
+                    </Typography>
+                    <Chip color="success" size="sm" variant="soft">
+                      <Chip.Label>{t("earnings.settled")}</Chip.Label>
+                    </Chip>
+                  </View>
+                  <Typography type="body-xs" color="muted">
+                    {formatOrderType(entry.order_type, t)} ·{" "}
+                    {t(entry.items_count === 1 ? "orders.itemOne" : "orders.itemOther", {
+                      count: entry.items_count,
+                    })}{" "}
+                    ·{" "}
+                    {new Date(entry.created_at).toLocaleString(localeTag, {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </Typography>
-                  <Chip color="success" size="sm" variant="soft">
-                    <Chip.Label>{t("earnings.settled")}</Chip.Label>
-                  </Chip>
                 </View>
-                <Typography type="body-xs" color="muted">
-                  {formatOrderType(entry.order_type, t)} ·{" "}
-                  {t(entry.items_count === 1 ? "orders.itemOne" : "orders.itemOther", {
-                    count: entry.items_count,
-                  })}{" "}
-                  ·{" "}
-                  {new Date(entry.created_at).toLocaleString(localeTag, {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Typography>
+                <View className="justify-center">
+                  <Typography type="body-sm" weight="bold" className="tabular-nums">
+                    {formatRupiah(entry.total_price)}
+                  </Typography>
+                </View>
               </View>
-              <Typography type="body-sm" weight="bold" className="tabular-nums">
-                {formatRupiah(entry.total_price)}
-              </Typography>
+              {index < entries.length - 1 ? <Separator /> : null}
             </View>
-            {index < entries.length - 1 ? <Separator /> : null}
           </View>
         ))}
       </Widget.Content>

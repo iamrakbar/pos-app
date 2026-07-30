@@ -151,7 +151,7 @@ function OrdersChart({
             domain={{ y: [0, domainMax] }}
             domainPadding={{ top: 8, bottom: 0, left: 8, right: 8 }}
             xAxis={{
-              tickCount: Math.min(data.length, 8),
+              tickCount: Math.min(data.length, isCompact ? 4 : 8),
               labelOffset: 8,
               formatXLabel: (value: unknown) => formatChartDate(String(value), localeTag),
             }}
@@ -316,25 +316,27 @@ export default function DashboardScreen(): React.JSX.Element {
                 ) : (
                   bestSellers.map((product, index) => (
                     <View key={product.product_id}>
-                      <View
-                        className={`gap-3 px-4 py-3.5 ${isCompact ? "items-start" : "flex-row items-center"}`}
-                      >
-                        <View className="size-8 items-center justify-center rounded-full bg-surface-secondary">
-                          <Typography type="body-xs" weight="bold" className="tabular-nums">
-                            {index + 1}
+                      <View className={`flex-1 gap-3 px-4 py-3.5 flex-row items-center`}>
+                        <View className="flex-1 gap-3 flex-row items-center">
+                          <View className="size-8 items-center justify-center rounded-full bg-surface-secondary">
+                            <Typography type="body-xs" weight="bold" className="tabular-nums">
+                              {index + 1}
+                            </Typography>
+                          </View>
+                          <View className="min-w-0 flex-1 gap-0.5">
+                            <Typography type="body-sm" weight="semibold" numberOfLines={1}>
+                              {product.name}
+                            </Typography>
+                            <Typography type="body-xs" color="muted" className="tabular-nums">
+                              {t("dashboard.sold", { count: product.qty_sold })}
+                            </Typography>
+                          </View>
+                        </View>
+                        <View>
+                          <Typography type="body-sm" weight="bold" className="tabular-nums">
+                            {formatRupiah(product.revenue)}
                           </Typography>
                         </View>
-                        <View className="min-w-0 flex-1 gap-0.5">
-                          <Typography type="body-sm" weight="semibold" numberOfLines={1}>
-                            {product.name}
-                          </Typography>
-                          <Typography type="body-xs" color="muted" className="tabular-nums">
-                            {t("dashboard.sold", { count: product.qty_sold })}
-                          </Typography>
-                        </View>
-                        <Typography type="body-sm" weight="bold" className="tabular-nums">
-                          {formatRupiah(product.revenue)}
-                        </Typography>
                       </View>
                       {index < bestSellers.length - 1 ? <Separator className="mx-4" /> : null}
                     </View>
