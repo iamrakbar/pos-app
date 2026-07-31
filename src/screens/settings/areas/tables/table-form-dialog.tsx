@@ -8,11 +8,22 @@ import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-t
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { createTableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Label, Switch, TextField, Typography, useToast } from "heroui-native";
+import {
+  Button,
+  Input,
+  Label,
+  Switch,
+  TextField,
+  Typography,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Pressable, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import TableSymbol, { TableSeatCount } from "@/components/table-symbol";
+import Animated from "react-native-reanimated";
 
 type TableData = App.Data.Merchant.Area.TableData;
 
@@ -23,6 +34,10 @@ type TableFormDialogProps = {
   onOpenChange: (isOpen: boolean) => void;
 };
 
+function getTableSeatCount(pax: number): TableSeatCount {
+  return Math.max(1, Math.min(8, Math.round(pax))) as TableSeatCount;
+}
+
 export default function TableFormDialog({
   areaId,
   table,
@@ -31,6 +46,7 @@ export default function TableFormDialog({
 }: TableFormDialogProps): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { toast } = useToast();
+  const [mutedColor, accentColor, accentSoft] = useThemeColor(["muted", "accent", "accent-soft"]);
   const { isPhonePortrait } = useOverlayPresentation();
   const createMutation = useCreateTable(areaId);
   const updateMutation = useUpdateTable(areaId, table?.id ?? "");
@@ -158,28 +174,38 @@ export default function TableFormDialog({
               </TextField>
             )}
           />
+
           <Controller
             control={control}
             name="pax"
             render={({ field: { value, onChange } }) => (
               <AdaptiveFormKeyboardHandlers>
                 {(keyboardHandlers) => (
-                  <StringNumberField
-                    label={t("areasManagement.capacity")}
-                    value={value}
-                    onChange={onChange}
-                    minValue={1}
-                    isRequired
-                    isInvalid={Boolean(errors.pax)}
-                    inputProps={keyboardHandlers}
-                    inputVariant="secondary"
-                  >
-                    {errors.pax?.message ? (
-                      <Typography type="body-xs" className="text-danger">
-                        {errors.pax.message}
-                      </Typography>
-                    ) : null}
-                  </StringNumberField>
+                  <View className="gap-2">
+                    <Animated.View className="w-32 h-24 self-center items-center justify-center bg-surface-secondary p-5 rounded-3xl">
+                      <TableSymbol
+                        seats={getTableSeatCount(Number(value))}
+                        scale={0.4}
+                        color={accentColor}
+                      />
+                    </Animated.View>
+                    <StringNumberField
+                      label={t("areasManagement.capacity")}
+                      value={value}
+                      onChange={onChange}
+                      minValue={1}
+                      isRequired
+                      isInvalid={Boolean(errors.pax)}
+                      inputProps={keyboardHandlers}
+                      inputVariant="secondary"
+                    >
+                      {errors.pax?.message ? (
+                        <Typography type="body-xs" className="text-danger">
+                          {errors.pax.message}
+                        </Typography>
+                      ) : null}
+                    </StringNumberField>
+                  </View>
                 )}
               </AdaptiveFormKeyboardHandlers>
             )}
