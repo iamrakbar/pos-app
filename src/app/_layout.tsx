@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { ObserveRoot, useObserve } from "expo-observe";
 import * as SplashScreen from "expo-splash-screen";
 import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
@@ -39,17 +40,19 @@ function wrapToastContent(children: ReactNode): JSX.Element {
   );
 }
 
-export default function RootLayout(): JSX.Element {
+function RootLayout(): JSX.Element {
   const token = useAuth((s) => s.token);
   const hasHydrated = useAuth((s) => s.hasHydrated);
   const isDarkMode = useColorScheme() === "dark";
   const session = !!token;
   const navigationTheme = useNavigationTheme();
   const isAppReady = hasHydrated;
+  const { markInteractive } = useObserve();
 
   const handleAppLayout = () => {
     if (isAppReady) {
       SplashScreen.hide();
+      markInteractive();
     }
   };
 
@@ -96,3 +99,5 @@ export default function RootLayout(): JSX.Element {
     </GestureHandlerRootView>
   );
 }
+
+export default ObserveRoot.wrap(RootLayout);
