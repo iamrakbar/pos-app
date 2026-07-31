@@ -57,26 +57,21 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
   const cardWidth = availableWidth / numColumns;
   const listBottomInset = Math.max(bottomInset, 16);
 
-  const {
-    data: allProducts,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isRefetching,
-  } = useProducts(searchQuery || undefined);
+  const { data: allProducts, isLoading, isError, error, refetch, isRefetching } = useProducts();
+  const localeTag = getLocaleTag(locale);
+  const normalizedSearch = searchQuery.trim().toLocaleLowerCase(localeTag);
   const filtered = (allProducts ?? [])
     .filter(
       (product) =>
+        (!normalizedSearch ||
+          product.name.toLocaleLowerCase(localeTag).includes(normalizedSearch)) &&
         (!categoryId || product.category_id === categoryId) &&
         product.is_active &&
         (!product.stock_enabled || (product.stock_qty ?? 0) > 0)
     )
     .sort((left, right) => {
-      if (productSort === "name-asc")
-        return left.name.localeCompare(right.name, getLocaleTag(locale));
-      if (productSort === "name-desc")
-        return right.name.localeCompare(left.name, getLocaleTag(locale));
+      if (productSort === "name-asc") return left.name.localeCompare(right.name, localeTag);
+      if (productSort === "name-desc") return right.name.localeCompare(left.name, localeTag);
       if (productSort === "price-asc") return left.price - right.price;
       return right.price - left.price;
     });

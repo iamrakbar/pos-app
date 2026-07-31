@@ -3,7 +3,6 @@ import ProductGrid from "./components/product-grid";
 import SearchBar from "./components/search-bar";
 import FloatingCartButton, { FLOATING_CART_BUTTON_SPACE } from "./components/floating-cart-button";
 import { useCartStore } from "@/stores/use-cart-store";
-import { usePOSStore } from "@/stores/use-pos-store";
 import { usePOSAddOnSheet } from "@/hooks/use-pos-add-on-sheet";
 import { useCategories } from "@/hooks/db/use-categories";
 import { useProducts } from "@/hooks/db/use-products";
@@ -23,8 +22,7 @@ export default function POSScreen(): JSX.Element {
   const { width: viewportWidth, isWide } = useResponsiveLayout();
   const openAddOnSheet = usePOSAddOnSheet();
   const addItem = useCartStore((s) => s.addItem);
-  const searchQuery = usePOSStore((s) => s.searchQuery);
-  const productsQuery = useProducts(searchQuery || undefined);
+  const productsQuery = useProducts();
   const categoriesQuery = useCategories();
   const isCatalogLoading = productsQuery.isLoading || categoriesQuery.isLoading;
   const theme = useNavigationTheme();
