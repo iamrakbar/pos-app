@@ -18,6 +18,7 @@ import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useRouter } from "expo-router";
 import { resetCurrentOrder } from "@/stores/reset-current-order";
+import Animated from "react-native-reanimated";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -49,7 +50,11 @@ export default function CartContent(): JSX.Element {
   const { isCompact, isPortrait } = useResponsiveLayout();
   const { locale, t } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
-  const [colorAccent, colorMuted] = useThemeColor(["accent", "muted"]);
+  const [colorAccent, colorForeground, colorMuted] = useThemeColor([
+    "accent",
+    "foreground",
+    "muted",
+  ]);
   const cartProducts = useCartStore((s) => s.products);
   const itemCount = useCartStore((s) =>
     s.products.reduce((total, product) => total + product.qty, 0)
@@ -185,7 +190,9 @@ export default function CartContent(): JSX.Element {
           </EmptyState>
         ) : (
           cartProducts.map((item) => (
-            <CartItemRow key={item.id} item={item} product={productById.get(item.product_id)} />
+            <Animated.View key={item.id}>
+              <CartItemRow item={item} product={productById.get(item.product_id)} />
+            </Animated.View>
           ))
         )}
       </ScrollView>
@@ -204,9 +211,18 @@ export default function CartContent(): JSX.Element {
             {formatRupiah(subtotal)}
           </Typography>
         </View>
-        <Button className="w-full" onPress={handleCheckout} isDisabled={cartProducts.length === 0}>
-          {t("navigation.checkout")}
-        </Button>
+        <View className="flex-row items-center gap-3">
+          <Button variant="ghost" isDisabled>
+            <AppIcon name="save-outline" size={18} color={colorForeground} />
+          </Button>
+          <Button
+            className="flex-1"
+            onPress={handleCheckout}
+            isDisabled={cartProducts.length === 0}
+          >
+            {t("navigation.checkout")}
+          </Button>
+        </View>
       </View>
       {usesCheckoutScreen ? null : <CheckoutSheet />}
     </View>
