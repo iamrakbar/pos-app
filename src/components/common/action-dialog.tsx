@@ -45,7 +45,7 @@ export default function ActionDialog({
             <Dialog.Title>{title}</Dialog.Title>
             {description ? <Dialog.Description>{description}</Dialog.Description> : null}
           </View>
-          <View className="flex-row gap-3">
+          <View className="flex-row items-center gap-3">
             <Button variant="ghost" size="sm" onPress={() => onOpenChange(false)}>
               <Button.Label>{cancelLabel ?? t("common.cancel")}</Button.Label>
             </Button>
@@ -53,7 +53,7 @@ export default function ActionDialog({
               <Button
                 variant={actionVariant}
                 size="sm"
-                className="w-full"
+                className="flex-1"
                 isDisabled={isActionDisabled}
                 onPress={handleAction}
               >
