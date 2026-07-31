@@ -1,5 +1,4 @@
 import DialogCloseButton from "@/components/common/dialog-close-button";
-import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { Button, Dialog } from "heroui-native";
 import type { ReactNode } from "react";
 import { View } from "react-native";
@@ -30,7 +29,6 @@ export default function ActionDialog({
   isActionDisabled = false,
   onAction,
 }: ActionDialogProps): React.JSX.Element {
-  const { isCompact } = useResponsiveLayout();
   const { t } = useTranslation();
 
   const handleAction = async () => {
@@ -47,20 +45,15 @@ export default function ActionDialog({
             <Dialog.Title>{title}</Dialog.Title>
             {description ? <Dialog.Description>{description}</Dialog.Description> : null}
           </View>
-          <View className={`gap-3 ${isCompact ? "" : "flex-row justify-end"}`}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={isCompact ? "w-full" : undefined}
-              onPress={() => onOpenChange(false)}
-            >
+          <View className="flex-row gap-3">
+            <Button variant="ghost" size="sm" onPress={() => onOpenChange(false)}>
               <Button.Label>{cancelLabel ?? t("common.cancel")}</Button.Label>
             </Button>
             {actionLabel ? (
               <Button
                 variant={actionVariant}
                 size="sm"
-                className={isCompact ? "w-full" : undefined}
+                className="w-full"
                 isDisabled={isActionDisabled}
                 onPress={handleAction}
               >

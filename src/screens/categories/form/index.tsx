@@ -280,7 +280,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
           </Card.Body>
         </Card>
 
-        <View className="flex-col md:flex-row gap-3 pt-2 w-full max-w-3xl">
+        <View className="flex-row gap-3 pt-2 w-full max-w-3xl">
           <Button variant="ghost" onPress={() => router.back()} isDisabled={isSaving}>
             <Button.Label>{t("common.cancel")}</Button.Label>
           </Button>

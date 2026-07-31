@@ -19,6 +19,7 @@ import OptionRow from "./option-row";
 import SelectionRulesCard from "./selection-rules-card";
 import { useTranslation } from "@/stores/use-locale";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import AppIcon from "@/components/common/app-icon";
 
 const EMPTY_OPTION = { id: null, name: "", price: "0", destroyed: false };
 
@@ -30,7 +31,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
   }>();
   const router = useRouter();
   const { toast } = useToast();
-  const dangerColor = useThemeColor("danger");
+  const [foregroundColor, dangerColor] = useThemeColor(["foreground", "danger"]);
   const isNew = addOnId === "new";
   const addOnQuery = useAddOn(productId, addOnId);
   const createMutation = useCreateAddOn(productId);
@@ -192,6 +193,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
                 </Typography>
               ) : null}
               <Button variant="outline" onPress={() => append(EMPTY_OPTION)}>
+                <AppIcon name="add-outline" size={16} color={foregroundColor} />
                 <Button.Label>{t("addOnManagement.addOption")}</Button.Label>
               </Button>
             </Card.Body>
@@ -203,7 +205,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
                 {errors.root.server.message}
               </Typography>
             ) : null}
-            <View className="flex-col md:flex-row gap-3 pt-2">
+            <View className="flex-row gap-3 pt-2">
               <Button variant="ghost" onPress={() => router.back()}>
                 <Button.Label>{t("common.cancel")}</Button.Label>
               </Button>

@@ -4,7 +4,6 @@ import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
 } from "@/components/common/adaptive-form-overlay";
 import { useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Label, TextField, Typography, useToast } from "heroui-native";
@@ -28,7 +27,6 @@ export default function AreaFormDialog({
 }: AreaFormDialogProps): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { toast } = useToast();
-  const { isPhonePortrait } = useOverlayPresentation();
   const createMutation = useCreateArea();
   const updateMutation = useUpdateArea(area?.id ?? "");
   const deleteMutation = useDeleteArea();
@@ -102,37 +100,14 @@ export default function AreaFormDialog({
         title={area ? t("areasManagement.editAreaOverlay") : t("areasManagement.newAreaOverlay")}
         description={t("areasManagement.areaDescription")}
         footer={
-          <View
-            className={`gap-3 px-5 pb-5 pt-4 ${
-              isPhonePortrait ? "items-stretch" : "flex-row items-center"
-            }`}
-          >
-            {area ? (
-              <Button
-                variant="danger-soft"
-                className={isPhonePortrait ? "w-full" : undefined}
-                onPress={() => setIsDeleteOpen(true)}
-              >
-                <Button.Label>{t("common.delete")}</Button.Label>
-              </Button>
-            ) : null}
-            <View
-              className={`gap-3 ${
-                isPhonePortrait ? "items-stretch" : "ml-auto flex-row justify-end"
-              }`}
-            >
-              <Button
-                variant="ghost"
-                className={isPhonePortrait ? "w-full" : undefined}
-                onPress={() => onOpenChange(false)}
-              >
-                <Button.Label>{t("common.cancel")}</Button.Label>
-              </Button>
-              <Button
-                className={isPhonePortrait ? "w-full" : undefined}
-                onPress={handleSubmit(submitArea)}
-                isDisabled={isSaving}
-              >
+          <View className="gap-3 px-5 pb-5 pt-4">
+            <View className="flex-1 flex-row items-center gap-3">
+              {area ? (
+                <Button variant="danger-soft" size="sm" onPress={() => setIsDeleteOpen(true)}>
+                  <Button.Label>{t("common.delete")}</Button.Label>
+                </Button>
+              ) : null}
+              <Button className="flex-1" onPress={handleSubmit(submitArea)} isDisabled={isSaving}>
                 <Button.Label>
                   {isSaving ? t("common.saving") : t("areasManagement.saveArea")}
                 </Button.Label>

@@ -758,7 +758,7 @@ export const id: TranslationSchema = {
       pos: "Ruang kerja penjualan",
       products: "Katalog dan tambahan",
       orders: "Transaksi dan status",
-      earnings: "Ringkasan pendapatan dan penjualan",
+      earnings: "Pendapatan dan penjualan",
       settings: "Preferensi dan penyiapan",
     },
   },

@@ -117,32 +117,13 @@ export default function TableFormDialog({
               isPhonePortrait ? "items-stretch" : "flex-row items-center"
             }`}
           >
-            {table ? (
-              <Button
-                variant="danger-soft"
-                className={isPhonePortrait ? "w-full" : undefined}
-                onPress={() => setIsDeleteOpen(true)}
-              >
-                <Button.Label>{t("common.delete")}</Button.Label>
-              </Button>
-            ) : null}
-            <View
-              className={`gap-3 ${
-                isPhonePortrait ? "items-stretch" : "ml-auto flex-row justify-end"
-              }`}
-            >
-              <Button
-                variant="ghost"
-                className={isPhonePortrait ? "w-full" : undefined}
-                onPress={() => onOpenChange(false)}
-              >
-                <Button.Label>{t("common.cancel")}</Button.Label>
-              </Button>
-              <Button
-                className={isPhonePortrait ? "w-full" : undefined}
-                onPress={handleSubmit(submitTable)}
-                isDisabled={isSaving}
-              >
+            <View className="flex-1 flex-row items-center gap-3">
+              {table ? (
+                <Button variant="danger-soft" onPress={() => setIsDeleteOpen(true)}>
+                  <Button.Label>{t("common.delete")}</Button.Label>
+                </Button>
+              ) : null}
+              <Button className="flex-1" onPress={handleSubmit(submitTable)} isDisabled={isSaving}>
                 <Button.Label>
                   {isSaving ? t("common.saving") : t("areasManagement.saveTable")}
                 </Button.Label>

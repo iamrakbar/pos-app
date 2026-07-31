@@ -28,7 +28,7 @@ export default function OptionRow({
   onRestore,
 }: OptionRowProps) {
   const { t } = useTranslation();
-  const foregroundColor = useThemeColor("foreground");
+  const dangerSoftForeground = useThemeColor("danger-soft-foreground");
 
   if (isDestroyed) {
     return (
@@ -45,7 +45,10 @@ export default function OptionRow({
 
   return (
     <Surface variant="transparent" className="gap-3 border border-border">
-      <View className="flex-1 flex-col md:flex-row items-start gap-3">
+      <Button size="sm" variant="danger-soft" isIconOnly onPress={onRemove} className="self-end">
+        <AppIcon name="close-outline" size={20} color={dangerSoftForeground} />
+      </Button>
+      <View className="flex-1 flex-col md:flex-row items-center gap-3">
         <Controller
           control={control}
           name={`options.${index}.name`}
@@ -95,10 +98,6 @@ export default function OptionRow({
           )}
         />
       </View>
-      <Button size="sm" variant="ghost" onPress={onRemove}>
-        <AppIcon name="trash-outline" size={16} color={foregroundColor} />
-        <Button.Label>{t("addOnManagement.removeOption")}</Button.Label>
-      </Button>
     </Surface>
   );
 }

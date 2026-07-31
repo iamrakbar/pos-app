@@ -98,21 +98,9 @@ export default function QuickCategoryFormOverlay({
       title={t("productForm.addCategoryTitle")}
       description={t("productForm.addCategoryDescription")}
       footer={
-        <View
-          className={`gap-3 px-5 pb-5 pt-4 ${
-            isPhonePortrait ? "items-stretch" : "flex-row justify-end"
-          }`}
-        >
+        <View className="flex-1 flex-row items-center gap-3 px-5 pb-safe pt-4">
           <Button
-            variant="ghost"
-            className={isPhonePortrait ? "w-full" : undefined}
-            onPress={() => handleOpenChange(false)}
-            isDisabled={createMutation.isPending}
-          >
-            <Button.Label>{t("common.cancel")}</Button.Label>
-          </Button>
-          <Button
-            className={isPhonePortrait ? "w-full" : undefined}
+            className="flex-1"
             onPress={handleSubmit(submitCategory)}
             isDisabled={createMutation.isPending}
           >

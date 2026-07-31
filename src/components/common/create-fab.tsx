@@ -28,7 +28,7 @@ export default function CreateFAB({
         classNames={{ container: "bg-accent" }}
         onPress={onPress}
       >
-        <AppIcon name="add" size={22} color={accentForeground} />
+        <AppIcon name="add-outline" size={22} color={accentForeground} />
       </FAB.Trigger>
     </FAB>
   );

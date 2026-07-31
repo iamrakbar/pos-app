@@ -589,7 +589,7 @@ function SaveProductCard({
           {serverError}
         </Typography>
       ) : null}
-      <View className="flex-col md:flex-row gap-3">
+      <View className="flex-row gap-3">
         <Button variant="ghost" onPress={onCancel} isDisabled={isSaving}>
           <Button.Label>{t("common.cancel")}</Button.Label>
         </Button>

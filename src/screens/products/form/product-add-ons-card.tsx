@@ -31,7 +31,7 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
   const mutedColor = useThemeColor("muted");
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="gap-3 overflow-hidden">
       <Card.Header>
         <View className="flex-1 gap-1">
           <Card.Title>{t("productForm.addOnsTitle")}</Card.Title>
@@ -82,8 +82,8 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
             )}
           </Typography>
         ) : null}
-        <Card.Footer>
-          <Button variant="outline" className="self-center" onPress={onAdd}>
+        <Card.Footer className="pt-4 items-center">
+          <Button variant="outline" size="sm" onPress={onAdd}>
             <Button.Label>{t("productForm.add")}</Button.Label>
           </Button>
         </Card.Footer>
