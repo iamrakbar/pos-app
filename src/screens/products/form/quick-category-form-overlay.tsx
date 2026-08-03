@@ -98,12 +98,8 @@ export default function QuickCategoryFormOverlay({
       title={t("productForm.addCategoryTitle")}
       description={t("productForm.addCategoryDescription")}
       footer={
-        <View className="flex-1 flex-row items-center gap-3 px-5 pb-safe pt-4">
-          <Button
-            className="flex-1"
-            onPress={handleSubmit(submitCategory)}
-            isDisabled={createMutation.isPending}
-          >
+        <View className="px-5 pb-safe pt-4">
+          <Button onPress={handleSubmit(submitCategory)} isDisabled={createMutation.isPending}>
             <Button.Label>
               {createMutation.isPending ? t("common.saving") : t("productForm.createCategory")}
             </Button.Label>
