@@ -12,6 +12,10 @@ export declare const useRadioButtonGroupItem: () => UseRadioButtonGroupItemRetur
  * @component RadioButtonGroup.Item - Wraps `RadioGroup.Item` with `data-selected` and `data-variant`
  * for Tailwind and aligns item `variant` with the group for styling the radio row.
  *
+ * @component RadioButtonGroup.ItemBackground - Absolute-fill background container behind the item
+ * surface. With no children, the active library theme decides the default content (e.g. a glass
+ * blur layer); pass children to host custom content with the same positioning and clipping.
+ *
  * @component RadioButtonGroup.ItemContent - Optional row container for label, description, and
  * `Radio` / `Radio.Indicator` (place the control inside the item as needed).
  *
@@ -21,7 +25,14 @@ export declare const useRadioButtonGroupItem: () => UseRadioButtonGroupItemRetur
  */
 declare const RadioButtonGroup: import("react").ForwardRefExoticComponent<import("heroui-native").RadioGroupProps & import("react").RefAttributes<View>> & {
     /** @optional Radio row; wraps `RadioGroup.Item` with selection and variant data attributes */
-    Item: import("react").ForwardRefExoticComponent<import("heroui-native").RadioGroupItemProps & import("react").RefAttributes<View>>;
+    Item: import("react").ForwardRefExoticComponent<import("heroui-native").RadioGroupItemProps & {
+        background?: import("react").ReactNode;
+    } & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background container behind the item surface */
+    ItemBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        children?: import("react").ReactNode;
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     /** @optional Layout container for label and control within an item */
     ItemContent: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
         className?: string;

@@ -5,6 +5,7 @@
  */
 export declare const DISPLAY_NAME: {
     readonly ROOT: "HeroUINative.Widget.Root";
+    readonly BACKGROUND: "HeroUINative.Widget.Background";
     readonly HEADER: "HeroUINative.Widget.Header";
     readonly TITLE: "HeroUINative.Widget.Title";
     readonly DESCRIPTION: "HeroUINative.Widget.Description";

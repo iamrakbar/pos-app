@@ -44,7 +44,17 @@ const value = tv({
     variant: 'default'
   }
 });
+
+/**
+ * Value background style definition.
+ * Absolute-fill container rendered behind the value pill surface, matching
+ * the default variant's border radius and clipping.
+ */
+const valueBackground = tv({
+  base: 'chart-crosshair__value-background'
+});
 export const chartCrosshairClassNames = combineStyles({
   value,
+  valueBackground,
   label
 });

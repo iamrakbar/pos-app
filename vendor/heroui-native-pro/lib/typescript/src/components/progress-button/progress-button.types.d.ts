@@ -119,11 +119,43 @@ export interface ProgressButtonRootProps extends Omit<PressableProps, 'children'
      * Pass an object with configs to customize fill, scale, or reset animations.
      */
     animation?: ProgressButtonRootAnimation;
+    /**
+     * Background layer rendered behind the button surface.
+     * - `undefined` (default): renders `ProgressButton.Background` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: React.ReactNode;
 }
 /**
  * Ref type for the ProgressButton root component.
  */
 export type ProgressButtonRootRef = PressableRef;
+/**
+ * Props for the ProgressButton.Background component.
+ * Absolute-fill container rendered behind the button surface. With no
+ * children, the active library theme decides the default content (e.g. a
+ * glass blur layer); pass children to host custom content with the same
+ * positioning and clipping.
+ */
+export interface ProgressButtonBackgroundProps extends ViewProps {
+    /**
+     * Custom content to render inside the background container.
+     * When omitted, the active library theme's default background content is
+     * rendered.
+     */
+    children?: React.ReactNode;
+    /**
+     * Additional CSS classes for the background container.
+     */
+    className?: string;
+}
+/**
+ * Ref type for the ProgressButton.Background component.
+ */
+export type ProgressButtonBackgroundRef = ViewRef;
 /**
  * Animation configuration for the ProgressButton root.
  * Extends `AnimationRoot` with a spring config for progress reset and controlled-sync,

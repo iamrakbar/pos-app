@@ -54,7 +54,9 @@ const portal = tv({
 });
 
 /**
- * Overlay backdrop behind the FAB content.
+ * Overlay backdrop behind the FAB content. The `blur` variant drops the solid
+ * backdrop color so the animated blur layer rendered behind the overlay shows
+ * through.
  *
  * @note ANIMATED PROPERTIES (applied to an internal wrapper around the overlay):
  * - `opacity` - Animated for the overlay show/hide transitions (idle: 0, open: 1, close: 0)
@@ -71,7 +73,16 @@ const portal = tv({
  * To disable animated styles, set `isAnimatedStyleActive={false}`.
  */
 const overlay = tv({
-  base: 'fab__overlay'
+  base: 'fab__overlay',
+  variants: {
+    variant: {
+      default: '',
+      blur: 'fab__overlay--variant-blur'
+    }
+  },
+  defaultVariants: {
+    variant: 'default'
+  }
 });
 
 /**
@@ -123,6 +134,15 @@ const item = tv({
 });
 
 /**
+ * Item background style definition — absolute-fill container behind the
+ * item content, hosting theme-specific layers (e.g. glass blur) or custom
+ * content (gradients, images).
+ */
+const itemBackground = tv({
+  base: 'fab__item-background'
+});
+
+/**
  * Text label inside a FAB item.
  */
 const itemLabel = tv({
@@ -135,6 +155,7 @@ export const fabClassNames = combineStyles({
   overlay,
   content,
   item,
+  itemBackground,
   itemLabel
 });
 export const fabStyleSheet = StyleSheet.create({

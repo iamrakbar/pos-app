@@ -92,6 +92,7 @@ export declare const chartCrosshairClassNames: import("../../helpers/internal/ty
         container: string;
         label: string;
     }, undefined, unknown, unknown, undefined>>;
+    valueBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "chart-crosshair__value-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "chart-crosshair__value-background", unknown, unknown, undefined>>;
     label: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "chart-crosshair__label", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "chart-crosshair__label", unknown, unknown, undefined>>;
 }>;
 export type ValueSlots = keyof ReturnType<typeof value>;

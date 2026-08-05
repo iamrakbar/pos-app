@@ -22,9 +22,11 @@ declare const useFAB: () => FABPrimitives.IRootContext;
  * re-provides the FAB contexts to portaled descendants.
  *
  * @component FAB.Overlay - Optional backdrop behind the content. Fades with
- * the shared progress and closes the FAB when pressed. Replace it with a
- * custom component (e.g. a blur backdrop built on `useFABAnimation`) for
- * custom backdrops.
+ * the shared progress and closes the FAB when pressed. The `default` variant
+ * paints a solid backdrop; the `blur` variant renders an animated blur layer
+ * (iOS only, requires expo-blur) and is the default under the `glass` theme.
+ * Replace it with a custom component (e.g. a backdrop built on
+ * `useFABAnimation`) for fully custom backdrops.
  *
  * @component FAB.Content - Positioned column of items. Placement/alignment
  * follow the root resolution; provides each child its index so items can
@@ -33,6 +35,12 @@ declare const useFAB: () => FABPrimitives.IRootContext;
  * @component FAB.Item - Single action row. Appears with the shared progress
  * (staggered by default, nearest to the trigger first) and closes the FAB on
  * press. String children are wrapped in `FAB.ItemLabel` automatically.
+ *
+ * @component FAB.ItemBackground - Absolute-fill background container behind
+ * the item content. With no children, the active library theme decides the
+ * content (glass theme renders a blur layer). Accepts children to host custom
+ * content such as gradients with the container's positioning and clipping
+ * applied. Replaceable via the `background` prop on FAB.Item.
  *
  * @component FAB.ItemLabel - Optional text label inside an item.
  *
@@ -54,6 +62,10 @@ declare const FAB: import("react").ForwardRefExoticComponent<FABRootProps & impo
     Content: import("react").ForwardRefExoticComponent<FABContentProps & import("react").RefAttributes<View>>;
     /** @optional Single action row; staggered by default and closes the FAB on press. */
     Item: import("react").ForwardRefExoticComponent<FABItemProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background container behind the item content. */
+    ItemBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     /** @optional Text label inside an item; applied automatically for string children. */
     ItemLabel: import("react").ForwardRefExoticComponent<FABItemLabelProps & import("react").RefAttributes<import("react-native").Text>>;
 };

@@ -8,6 +8,13 @@ import type { WidgetContentProps, WidgetDescriptionProps, WidgetFooterProps, Wid
  * and an optional footer row. The root only renders its children — every
  * sub-component is opt-in.
  *
+ * @component Widget.Background - Absolute-fill background container behind
+ * the widget shell. With no children, the active library theme decides the
+ * content (glass theme renders a blur layer with a surface-secondary-matched
+ * fallback). Accepts children to host custom content such as gradients with
+ * the container's positioning and clipping applied. Replaceable via the
+ * `background` prop on Widget.
+ *
  * @component Widget.Header - Optional header row with `space-between`
  * justification. Typically pairs `Widget.Title` (and optional
  * `Widget.Description`) with an inline `Widget.Legend`.
@@ -41,6 +48,10 @@ import type { WidgetContentProps, WidgetDescriptionProps, WidgetFooterProps, Wid
  *
  */
 declare const Widget: import("react").ForwardRefExoticComponent<WidgetRootProps & import("react").RefAttributes<View>> & {
+    /** @optional Theme-aware background container behind the widget shell. */
+    Background: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     /** @optional Header row container with title + legend layout. */
     Header: import("react").ForwardRefExoticComponent<WidgetHeaderProps & import("react").RefAttributes<View>>;
     /** @optional Primary widget label. */

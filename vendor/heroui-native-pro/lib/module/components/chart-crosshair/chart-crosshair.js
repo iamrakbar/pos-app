@@ -1,6 +1,6 @@
 "use strict";
 
-import { colorKit, useThemeColor } from 'heroui-native';
+import { colorKit, ThemeBackground, useHasDefaultThemeBackground, useThemeColor } from 'heroui-native';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, useDerivedValue, useSharedValue } from 'react-native-reanimated';
@@ -77,6 +77,32 @@ ChartCrosshairSkia.displayName = DISPLAY_NAME.ROOT;
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the value pill
+ * surface. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const ChartCrosshairValueBackground = /*#__PURE__*/forwardRef((props, ref) => {
+  const {
+    className,
+    ...restProps
+  } = props;
+  const valueBackgroundClassName = chartCrosshairClassNames.valueBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: valueBackgroundClassName,
+    fallbackColor: "default",
+    ...restProps
+  });
+});
+ChartCrosshairValueBackground.displayName = DISPLAY_NAME.VALUE_BACKGROUND;
+
+// --------------------------------------------------
+
 const ChartCrosshairValueRoot = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
@@ -88,8 +114,10 @@ const ChartCrosshairValueRoot = /*#__PURE__*/forwardRef((props, ref) => {
     placement = 'top',
     value,
     variant = 'default',
+    background,
     ...restViewProps
   } = props;
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const anchor = useChartCrosshairAnchor();
   /**
    * Snapshot for horizontal clamping: same coordinate space as `anchor.x` (victory-native plot).
@@ -160,18 +188,27 @@ const ChartCrosshairValueRoot = /*#__PURE__*/forwardRef((props, ref) => {
   const labelSlotClassName = label({
     className: classNames?.label
   });
+
+  /**
+   * Background layer rendered behind the value pill surface.
+   * - `undefined`: theme-aware default for the `default` variant, whose
+   *   background resolves to `--color-default` (ghost stays transparent)
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground && variant === 'default' ? /*#__PURE__*/_jsx(ChartCrosshairValueBackground, {}) : null;
   return /*#__PURE__*/_jsx(ChartCrosshairValueProvider, {
     value: chartCrosshairValueContextValue,
-    children: /*#__PURE__*/_jsx(Animated.View, {
+    children: /*#__PURE__*/_jsxs(Animated.View, {
       ref: ref,
       className: containerClassName,
       style: [rContainerStyle, stylesProp?.container, style],
       onLayout: onLayout,
       ...restViewProps,
-      children: children ?? /*#__PURE__*/_jsx(ChartCrosshairValueLabel, {
+      children: [backgroundElement, children ?? /*#__PURE__*/_jsx(ChartCrosshairValueLabel, {
         className: labelSlotClassName,
         style: stylesProp?.label
-      })
+      })]
     })
   });
 });
@@ -239,12 +276,15 @@ ChartCrosshairAnchorRoot.displayName = DISPLAY_NAME.ANCHOR;
  *   supplies horizontal position, bounds, and press activity via context.
  * @component ChartCrosshair.Value — Absolutely positioned Animated overlay hosting the tooltip value;
  *   **requires** {@link ChartCrosshair.Anchor}.
+ * @component ChartCrosshair.ValueBackground — Theme-aware absolute-fill background layer behind the
+ *   value pill surface (default variant).
  * @component ChartCrosshair.ValueLabel — Read-only animated label driven by {@link ChartCrosshair.Value}
  *   `value` prop / {@link ChartCrosshairValueContextValue}.
  */
 const ChartCrosshair = Object.assign(ChartCrosshairSkia, {
   Anchor: ChartCrosshairAnchorRoot,
   Value: ChartCrosshairValueRoot,
+  ValueBackground: ChartCrosshairValueBackground,
   ValueLabel: ChartCrosshairValueLabel
 });
 export default ChartCrosshair;

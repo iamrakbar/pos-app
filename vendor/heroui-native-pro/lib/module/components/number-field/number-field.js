@@ -31,7 +31,6 @@ const NumberFieldRoot = /*#__PURE__*/forwardRef((props, ref) => {
     maxValue,
     step = 1,
     formatOptions,
-    locale,
     isDisabled = false,
     isInvalid = false,
     isRequired = false,
@@ -43,16 +42,16 @@ const NumberFieldRoot = /*#__PURE__*/forwardRef((props, ref) => {
     defaultProp: defaultValue,
     onChange
   });
-  const [displayValue, setDisplayValue] = useState(() => formatNumber(numberValue, formatOptions, locale));
+  const [displayValue, setDisplayValue] = useState(() => formatNumber(numberValue, formatOptions));
 
   // Keep displayValue in sync when the external value changes
   const prevNumberValueRef = useRef(numberValue);
   useEffect(() => {
     if (prevNumberValueRef.current !== numberValue) {
-      setDisplayValue(formatNumber(numberValue, formatOptions, locale));
+      setDisplayValue(formatNumber(numberValue, formatOptions));
       prevNumberValueRef.current = numberValue;
     }
-  }, [numberValue, formatOptions, locale]);
+  }, [numberValue, formatOptions]);
 
   // Button width measurements (for auto-padding the Input)
   const [decrementButtonWidth, setDecrementButtonWidth] = useState(0);
@@ -64,29 +63,29 @@ const NumberFieldRoot = /*#__PURE__*/forwardRef((props, ref) => {
     const snapped = snapToStep(current, step, 'up', minValue);
     const next = clampValue(snapped, minValue, maxValue);
     setNumberValue(next);
-    setDisplayValue(formatNumber(next, formatOptions, locale));
+    setDisplayValue(formatNumber(next, formatOptions));
     prevNumberValueRef.current = next;
-  }, [numberValue, step, minValue, maxValue, setNumberValue, formatOptions, locale]);
+  }, [numberValue, step, minValue, maxValue, setNumberValue, formatOptions]);
   const decrement = useCallback(() => {
     const current = Number.isNaN(numberValue) ? 0 : numberValue;
     const snapped = snapToStep(current, step, 'down', minValue);
     const next = clampValue(snapped, minValue, maxValue);
     setNumberValue(next);
-    setDisplayValue(formatNumber(next, formatOptions, locale));
+    setDisplayValue(formatNumber(next, formatOptions));
     prevNumberValueRef.current = next;
-  }, [numberValue, step, minValue, maxValue, setNumberValue, formatOptions, locale]);
+  }, [numberValue, step, minValue, maxValue, setNumberValue, formatOptions]);
   const commit = useCallback(() => {
-    const parsed = parseNumber(displayValue, formatOptions, locale);
+    const parsed = parseNumber(displayValue, formatOptions);
     if (Number.isNaN(parsed)) {
       // Revert to last valid formatted value
-      setDisplayValue(formatNumber(numberValue, formatOptions, locale));
+      setDisplayValue(formatNumber(numberValue, formatOptions));
       return;
     }
     const clamped = clampValue(parsed, minValue, maxValue);
     setNumberValue(clamped);
-    setDisplayValue(formatNumber(clamped, formatOptions, locale));
+    setDisplayValue(formatNumber(clamped, formatOptions));
     prevNumberValueRef.current = clamped;
-  }, [displayValue, formatOptions, locale, numberValue, minValue, maxValue, setNumberValue]);
+  }, [displayValue, formatOptions, numberValue, minValue, maxValue, setNumberValue]);
   const {
     isAllAnimationsDisabled
   } = useNumberFieldRootAnimation({

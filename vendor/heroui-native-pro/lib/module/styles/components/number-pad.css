@@ -30,6 +30,18 @@
   background-color: var(--color-default);
 }
 
+/* Key background — absolute-fill layer behind the key surface */
+
+.number-pad__key-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--radius-3xl);
+  overflow: hidden;
+}
+
 .number-pad__key-label {
   color: var(--color-foreground);
   font-family: var(--font-semibold);

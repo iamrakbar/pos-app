@@ -1,11 +1,13 @@
 import { View } from 'react-native';
-import type { EmptyStateContentProps, EmptyStateDescriptionProps, EmptyStateHeaderProps, EmptyStateMediaProps, EmptyStateRootProps, EmptyStateTitleProps } from './empty-state.types';
+import type { EmptyStateContentProps, EmptyStateDescriptionProps, EmptyStateHeaderProps, EmptyStateMediaBackgroundProps, EmptyStateMediaProps, EmptyStateRootProps, EmptyStateTitleProps } from './empty-state.types';
 /**
  * Compound `EmptyState` component with optional media and actions.
  *
  * @component EmptyState - Root container for empty-state messaging and actions.
  * @component EmptyState.Header - Groups media, title, and description.
  * @component EmptyState.Media - Optional icon/avatar container.
+ * @component EmptyState.MediaBackground - Theme-aware background layer
+ * behind the icon media circle.
  * @component EmptyState.Title - Primary heading text.
  * @component EmptyState.Description - Secondary supporting copy.
  * @component EmptyState.Content - Optional action area.
@@ -16,6 +18,8 @@ declare const EmptyState: import("react").ForwardRefExoticComponent<EmptyStateRo
     Header: import("react").ForwardRefExoticComponent<EmptyStateHeaderProps & import("react").RefAttributes<View>>;
     /** @optional Media container for icon or avatar content. */
     Media: import("react").ForwardRefExoticComponent<EmptyStateMediaProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background layer behind the icon media circle. */
+    MediaBackground: import("react").ForwardRefExoticComponent<EmptyStateMediaBackgroundProps & import("react").RefAttributes<View>>;
     /** @optional Primary heading text. */
     Title: import("react").ForwardRefExoticComponent<EmptyStateTitleProps & import("react").RefAttributes<import("react-native").Text>>;
     /** @optional Secondary description text. */

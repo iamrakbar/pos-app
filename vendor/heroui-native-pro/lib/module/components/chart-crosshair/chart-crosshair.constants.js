@@ -7,6 +7,7 @@ export const DISPLAY_NAME = {
   ANCHOR: 'HeroUINative.ChartCrosshair.Anchor',
   ROOT: 'HeroUINative.ChartCrosshair',
   VALUE: 'HeroUINative.ChartCrosshair.Value',
+  VALUE_BACKGROUND: 'HeroUINative.ChartCrosshair.ValueBackground',
   VALUE_LABEL: 'HeroUINative.ChartCrosshair.ValueLabel'
 };
 

@@ -20,6 +20,7 @@ import { ProgressButton } from 'heroui-native-pro';
 ```
 
 - **ProgressButton**: Root container that manages press-and-hold state, fill progress, and completion detection. Supports controlled and uncontrolled completion state with optional auto-reset.
+- **ProgressButton.Background**: Optional theme-aware background container rendered behind the button surface. Mounted automatically when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **ProgressButton.Label**: Base text layer always visible beneath the overlay. Captures its own layout position for the MaskLabel counter-animation.
 - **ProgressButton.Overlay**: Absolutely positioned layer that sweeps left-to-right via animated translateX with a variant-colored background. Renders children (typically MaskLabel).
 - **ProgressButton.MaskLabel**: Inverted-color text inside the Overlay that counter-translates to stay visually aligned with the base Label, creating a color-wipe effect.
@@ -176,6 +177,7 @@ export default function ConfirmProgressButton() {
 | `onComplete`         | `() => void`                                                                 | -           | Callback fired when the hold action completes             |
 | `onReset`            | `() => void`                                                                 | -           | Callback fired when the button resets to start            |
 | `animation`          | `ProgressButtonRootAnimation`                                                | -           | Animation configuration for the root component            |
+| `background`         | `React.ReactNode`                                                            | -           | Background layer behind the button surface. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it |
 | `...PressableProps`  | `PressableProps`                                                             | -           | All standard React Native Pressable props are supported   |
 
 #### ProgressButtonRenderProps
@@ -203,6 +205,16 @@ Animation configuration for the root component. Can be:
 | ---------------------- | ----------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------- |
 | `progressSpringConfig` | `WithSpringConfig`                                    | `{ damping: 120, stiffness: 900, mass: 4 }`         | Spring configuration for the progress reset and controlled-sync |
 | `scale`                | `{ value?: number; timingConfig?: WithTimingConfig }` | `{ value: 0.985, timingConfig: { duration: 150 } }` | Scale press-feedback configuration                              |
+
+### ProgressButton.Background
+
+Absolute-fill container rendered behind the button surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### ProgressButton.Overlay
 

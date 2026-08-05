@@ -1,3 +1,4 @@
+import type { ViewProps } from 'react-native';
 import type { AnimatedProps, EntryOrExitLayoutType, WithTimingConfig } from 'react-native-reanimated';
 import type { HeroTextProps } from '../../helpers/internal/components';
 import type { Animation, AnimationRootDisableAll, AnimationValue } from '../../helpers/internal/types';
@@ -21,7 +22,27 @@ export interface NumberStepperRootProps extends NumberStepperPrimitivesTypes.Roo
      * Set to "disable-all" to cascade animation disabling to all children.
      */
     animation?: AnimationRootDisableAll;
+    /**
+     * Background layer rendered behind the root surface.
+     * - `undefined` (default): renders `NumberStepper.RootBackground` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `NumberStepper.RootBackground` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: React.ReactNode;
 }
+/**
+ * Props for the NumberStepper.RootBackground sub-component.
+ * Generic absolute-fill container behind the root surface. When no
+ * `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type NumberStepperRootBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
 /**
  * Ref type for the NumberStepper root component.
  */
@@ -137,6 +158,16 @@ export interface NumberStepperButtonIconProps {
     color?: string;
 }
 /**
+ * Props for the NumberStepper.ButtonBackground sub-component.
+ * Generic absolute-fill container behind a stepper button's content. When
+ * no `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type NumberStepperButtonBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
+/**
  * Props for the NumberStepper.DecrementButton component.
  * Pressable button that decreases the value by one step.
  *
@@ -153,6 +184,15 @@ export interface NumberStepperDecrementButtonProps extends NumberStepperPrimitiv
      * Additional CSS classes.
      */
     className?: string;
+    /**
+     * Background layer rendered behind the button content.
+     * - `undefined` (default): renders `NumberStepper.ButtonBackground` when
+     *   the active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: React.ReactNode;
     /**
      * Props forwarded to the default minus icon. Ignored when `children` is provided.
      */
@@ -189,6 +229,15 @@ export interface NumberStepperIncrementButtonProps extends NumberStepperPrimitiv
      * Additional CSS classes.
      */
     className?: string;
+    /**
+     * Background layer rendered behind the button content.
+     * - `undefined` (default): renders `NumberStepper.ButtonBackground` when
+     *   the active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: React.ReactNode;
     /**
      * Props forwarded to the default plus icon. Ignored when `children` is provided.
      */

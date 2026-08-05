@@ -1,5 +1,6 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useMemo } from 'react';
 import { View } from 'react-native';
@@ -11,12 +12,37 @@ import { widgetClassNames, widgetStyleSheet } from "./widget.styles.js";
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the widget
+ * shell. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const WidgetBackground = /*#__PURE__*/forwardRef(({
+  className,
+  ...props
+}, ref) => {
+  const backgroundClassName = widgetClassNames.background({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: backgroundClassName,
+    fallbackColor: "surface-secondary",
+    ...props
+  });
+});
+
+// --------------------------------------------------
+
 const WidgetRoot = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
     className,
     style,
     animation,
+    background,
     ...restProps
   } = props;
   const rootClassName = widgetClassNames.root({
@@ -27,17 +53,31 @@ const WidgetRoot = /*#__PURE__*/forwardRef((props, ref) => {
   } = useWidgetRootAnimation({
     animation
   });
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const animationSettingsContextValue = useMemo(() => ({
     isAllAnimationsDisabled
   }), [isAllAnimationsDisabled]);
+
+  /**
+   * Background layer rendered behind the widget shell.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   *
+   * `Widget.Content` intentionally keeps its translucent surface tint with
+   * no blur layer of its own — it composites over this root layer, which
+   * avoids stacking multiple native blur views.
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(WidgetBackground, {}) : null;
   return /*#__PURE__*/_jsx(AnimationSettingsProvider, {
     value: animationSettingsContextValue,
-    children: /*#__PURE__*/_jsx(View, {
+    children: /*#__PURE__*/_jsxs(View, {
       ref: ref,
       className: rootClassName,
       style: [widgetStyleSheet.root, style],
       ...restProps,
-      children: children
+      children: [backgroundElement, children]
     })
   });
 });
@@ -210,6 +250,7 @@ const WidgetLegendItem = /*#__PURE__*/forwardRef((props, ref) => {
 // --------------------------------------------------
 
 WidgetRoot.displayName = DISPLAY_NAME.ROOT;
+WidgetBackground.displayName = DISPLAY_NAME.BACKGROUND;
 WidgetHeader.displayName = DISPLAY_NAME.HEADER;
 WidgetTitle.displayName = DISPLAY_NAME.TITLE;
 WidgetDescription.displayName = DISPLAY_NAME.DESCRIPTION;
@@ -227,6 +268,13 @@ WidgetLegendItem.displayName = DISPLAY_NAME.LEGEND_ITEM;
  * `rounded-2xl`) hosting an optional header row, an elevated content card,
  * and an optional footer row. The root only renders its children — every
  * sub-component is opt-in.
+ *
+ * @component Widget.Background - Absolute-fill background container behind
+ * the widget shell. With no children, the active library theme decides the
+ * content (glass theme renders a blur layer with a surface-secondary-matched
+ * fallback). Accepts children to host custom content such as gradients with
+ * the container's positioning and clipping applied. Replaceable via the
+ * `background` prop on Widget.
  *
  * @component Widget.Header - Optional header row with `space-between`
  * justification. Typically pairs `Widget.Title` (and optional
@@ -261,6 +309,8 @@ WidgetLegendItem.displayName = DISPLAY_NAME.LEGEND_ITEM;
  *
  */
 const Widget = Object.assign(WidgetRoot, {
+  /** @optional Theme-aware background container behind the widget shell. */
+  Background: WidgetBackground,
   /** @optional Header row container with title + legend layout. */
   Header: WidgetHeader,
   /** @optional Primary widget label. */

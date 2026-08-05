@@ -10,6 +10,15 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
   base: 'chart-tooltip__root'
 });
+
+/**
+ * Background style definition — absolute-fill container behind the card
+ * content, hosting theme-specific layers (e.g. glass blur) or custom
+ * content (gradients, images).
+ */
+const background = tv({
+  base: 'chart-tooltip__background'
+});
 const header = tv({
   base: 'chart-tooltip__header'
 });
@@ -35,6 +44,7 @@ const value = tv({
   base: 'chart-tooltip__value'
 });
 export const chartTooltipClassNames = combineStyles({
+  background,
   header,
   indicator,
   item,

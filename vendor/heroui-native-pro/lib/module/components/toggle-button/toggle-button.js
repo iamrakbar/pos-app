@@ -1,5 +1,6 @@
 "use strict";
 
+import { useHasDefaultThemeBackground } from 'heroui-native';
 import { Button } from 'heroui-native/button';
 import { forwardRef, useCallback, useContext, useMemo } from 'react';
 import { useControllableState } from "../../helpers/internal/hooks/index.js";
@@ -26,6 +27,7 @@ const ToggleButton = /*#__PURE__*/forwardRef((props, ref) => {
     style,
     animation,
     onPress,
+    background,
     ...restProps
   } = props;
   const groupCtx = useContext(ToggleButtonGroupContext);
@@ -64,6 +66,26 @@ const ToggleButton = /*#__PURE__*/forwardRef((props, ref) => {
   const buttonAnimation = inAttachedGroup ? {
     scale: false
   } : animation;
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
+
+  /**
+   * Resolves the background layer forwarded to the underlying `Button`.
+   * The toggle owns the decision because the wrapped `Button` renders with
+   * the `ghost` variant, which never mounts a theme background on its own.
+   * The layer is scoped to the `default` variant while unselected, since
+   * selection paints an opaque accent-soft tint over the surface.
+   */
+  const resolvedBackground = useMemo(() => {
+    if (background !== undefined) {
+      return background;
+    }
+    if (hasDefaultThemeBackground && variant === 'default' && !isSelected) {
+      return /*#__PURE__*/_jsx(Button.Background, {
+        className: inAttachedGroup ? 'rounded-none' : undefined
+      });
+    }
+    return null;
+  }, [background, hasDefaultThemeBackground, variant, isSelected, inAttachedGroup]);
   const contextValue = useMemo(() => ({
     isSelected,
     isDisabled,
@@ -82,6 +104,7 @@ const ToggleButton = /*#__PURE__*/forwardRef((props, ref) => {
       className: rootClassName,
       style: [bgStyle, style],
       onPress: handlePress,
+      background: resolvedBackground,
       ...restProps,
       children: children
     })

@@ -15,6 +15,16 @@ import type { LegendItemSlots } from './widget.styles';
  */
 export type WidgetRootAnimation = AnimationRootDisableAll;
 /**
+ * Props for the {@link Widget.Background} sub-component.
+ * Generic absolute-fill container behind the widget shell. When no
+ * `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type WidgetBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
+/**
  * Per-slot inline style overrides for {@link WidgetLegendItem}.
  *
  * Defined as an explicit object (rather than `Partial<Record<...>>`)
@@ -54,6 +64,16 @@ export interface WidgetRootProps extends ViewProps {
      * - `undefined`: use default animations.
      */
     animation?: WidgetRootAnimation;
+    /**
+     * Background layer rendered behind the widget shell.
+     * - `undefined` (default): renders `Widget.Background` when the active
+     *   library theme registers default background content (e.g. `glass`);
+     *   otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `Widget.Background` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
 /**
  * Imperative ref type for the {@link Widget} root element.

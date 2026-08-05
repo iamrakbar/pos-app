@@ -11,6 +11,7 @@ export declare const DISPLAY_NAME: {
     readonly OVERLAY: "HeroUINative.FAB.Overlay";
     readonly CONTENT: "HeroUINative.FAB.Content";
     readonly ITEM: "HeroUINative.FAB.Item";
+    readonly ITEM_BACKGROUND: "HeroUINative.FAB.ItemBackground";
     readonly ITEM_LABEL: "HeroUINative.FAB.ItemLabel";
 };
 /** Progress value while the FAB is closed / idle. */

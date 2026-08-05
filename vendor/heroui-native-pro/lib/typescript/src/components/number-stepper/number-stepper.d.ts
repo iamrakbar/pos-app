@@ -1,3 +1,4 @@
+import type { View } from 'react-native';
 import * as NumberStepperPrimitives from '../../primitives/number-stepper';
 import type { NumberStepperDecrementButtonProps, NumberStepperIncrementButtonProps, NumberStepperRootProps, NumberStepperValueProps } from './number-stepper.types';
 declare const useNumberStepper: typeof NumberStepperPrimitives.useRootContext;
@@ -8,9 +9,20 @@ declare const useNumberStepper: typeof NumberStepperPrimitives.useRootContext;
  * Provides disabled context to sub-components.
  * Supports both controlled and uncontrolled value state.
  *
+ * @component NumberStepper.RootBackground - Absolute-fill background
+ * container behind the root surface. With no children, the active library
+ * theme decides the content (glass theme renders a blur layer with a
+ * default-matched fallback). Replaceable via the `background` prop on
+ * NumberStepper.
+ *
  * @component NumberStepper.DecrementButton - Pressable button that decreases
  * the value by one step. Auto-disabled at minValue. Renders a minus icon
  * by default; accepts custom children for full customization.
+ *
+ * @component NumberStepper.ButtonBackground - Absolute-fill background
+ * container behind a stepper button's content. With no children, the active
+ * library theme decides the content (glass theme renders a blur layer).
+ * Replaceable via the `background` prop on the buttons.
  *
  * @component NumberStepper.Value - Displays the current numeric value with
  * flip animations on change (matching InputOTP pattern). Remounts on
@@ -24,13 +36,21 @@ declare const useNumberStepper: typeof NumberStepperPrimitives.useRootContext;
  * isDisabled, isAtMin, isAtMax, increment, decrement).
  *
  */
-declare const NumberStepper: import("react").ForwardRefExoticComponent<NumberStepperRootProps & import("react").RefAttributes<import("react-native").View>> & {
+declare const NumberStepper: import("react").ForwardRefExoticComponent<NumberStepperRootProps & import("react").RefAttributes<View>> & {
+    /** @optional Theme-aware background container behind the root surface */
+    RootBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     /** @optional Pressable button to decrease value by one step */
-    DecrementButton: import("react").ForwardRefExoticComponent<NumberStepperDecrementButtonProps & import("react").RefAttributes<import("react-native").View>>;
+    DecrementButton: import("react").ForwardRefExoticComponent<NumberStepperDecrementButtonProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background container behind a stepper button */
+    ButtonBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     /** @optional Display for the current numeric value with animations */
     Value: import("react").ForwardRefExoticComponent<NumberStepperValueProps & import("react").RefAttributes<import("react-native").Text>>;
     /** @optional Pressable button to increase value by one step */
-    IncrementButton: import("react").ForwardRefExoticComponent<NumberStepperIncrementButtonProps & import("react").RefAttributes<import("react-native").View>>;
+    IncrementButton: import("react").ForwardRefExoticComponent<NumberStepperIncrementButtonProps & import("react").RefAttributes<View>>;
 };
 export default NumberStepper;
 export { useNumberStepper };

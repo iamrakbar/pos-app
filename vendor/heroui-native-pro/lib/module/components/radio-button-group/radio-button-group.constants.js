@@ -6,5 +6,6 @@
 export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.RadioButtonGroup.Root',
   ITEM: 'HeroUINative.RadioButtonGroup.Item',
+  ITEM_BACKGROUND: 'HeroUINative.RadioButtonGroup.ItemBackground',
   ITEM_CONTENT: 'HeroUINative.RadioButtonGroup.ItemContent'
 };

@@ -1,6 +1,6 @@
 {
   "name": "heroui-native-pro",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "description": "Beautiful, fast and modern React Native UI library",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -12,6 +12,7 @@
     "./styles": "./lib/module/styles/index.css",
     "./package.json": "./package.json",
     "./themes/brutalism": "./lib/module/themes/brutalism/index.css",
+    "./themes/glass": "./lib/module/themes/glass/index.css",
     "./hooks": {
       "types": "./lib/typescript/src/helpers/external/hooks/index.d.ts",
       "default": "./lib/module/helpers/external/hooks/index.js"
@@ -226,6 +227,7 @@
     "typecheck": "bash ./scripts/typecheck.sh",
     "lint": "eslint \"src/**/*.{ts,tsx}\" \"example/src/**/*.{ts,tsx}\"",
     "clean": "del-cli lib",
+    "sync-lib": "node scripts/sync-lib.js",
     "minify": "node scripts/minify.js",
     "prepare": "bob build",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
@@ -280,7 +282,7 @@
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",
-    "heroui-native": "^1.0.6",
+    "heroui-native": "^1.0.7",
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
     "prettier-plugin-organize-imports": "^4.1.0",
@@ -305,7 +307,7 @@
     "@internationalized/date": "^3.12.0",
     "@internationalized/number": "^3.6.6",
     "@shopify/react-native-skia": ">=2.0.0",
-    "heroui-native": "^1.0.6",
+    "heroui-native": "^1.0.7",
     "react-native-screens": ">=4.0.0",
     "victory-native": "^41.20.2"
   },

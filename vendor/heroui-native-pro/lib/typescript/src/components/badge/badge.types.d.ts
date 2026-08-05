@@ -94,11 +94,44 @@ export interface BadgeRootProps extends ViewProps {
      * - `undefined`: Use default animations
      */
     animation?: AnimationRootDisableAll;
+    /**
+     * Background layer rendered behind the badge surface.
+     * - `undefined` (default): renders `Badge.Background` for the `secondary`
+     *   variant and for `primary`/`soft` variants with `color="default"` when
+     *   the active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
 /**
  * Ref type for the Badge root component.
  */
 export type BadgeRootRef = ViewRef;
+/**
+ * Props for the Badge.Background component.
+ * Absolute-fill container rendered behind the badge surface. With no
+ * children, the active library theme decides the default content (e.g. a
+ * glass blur layer); pass children to host custom content with the same
+ * positioning and clipping.
+ */
+export interface BadgeBackgroundProps extends ViewProps {
+    /**
+     * Custom content to render inside the background container.
+     * When omitted, the active library theme's default background content is
+     * rendered.
+     */
+    children?: ReactNode;
+    /**
+     * Additional CSS classes for the background container.
+     */
+    className?: string;
+}
+/**
+ * Ref type for the Badge.Background component.
+ */
+export type BadgeBackgroundRef = ViewRef;
 /**
  * Props for the Badge.Label component.
  * Text content inside the badge.

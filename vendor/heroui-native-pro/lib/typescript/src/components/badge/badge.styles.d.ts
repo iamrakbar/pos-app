@@ -84,6 +84,7 @@ export declare const badgeClassNames: import("../../helpers/internal/types").Com
             false: string;
         };
     }, undefined, "badge__root", unknown, unknown, undefined>>;
+    background: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "badge__background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "badge__background", unknown, unknown, undefined>>;
     label: import("tailwind-variants").TVReturnType<{
         size: {
             sm: string;

@@ -8,7 +8,8 @@
 export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.FlipCard.Root',
   FRONT: 'HeroUINative.FlipCard.Front',
-  BACK: 'HeroUINative.FlipCard.Back'
+  BACK: 'HeroUINative.FlipCard.Back',
+  FACE_BACKGROUND: 'HeroUINative.FlipCard.FaceBackground'
 };
 
 /**

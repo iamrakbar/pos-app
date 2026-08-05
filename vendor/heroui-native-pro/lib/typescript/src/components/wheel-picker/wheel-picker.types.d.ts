@@ -303,11 +303,44 @@ export interface WheelPickerIndicatorProps extends ViewProps {
      * Styles for the indicator slots.
      */
     styles?: Partial<Record<WheelPickerIndicatorSlots, ViewStyle>>;
+    /**
+     * Background layer rendered behind the highlight band's surface.
+     * - `undefined` (default): renders `WheelPicker.IndicatorBackground` when
+     *   the active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
 /**
  * Ref type for the {@link WheelPicker.Indicator} sub-component.
  */
 export type WheelPickerIndicatorRef = ViewRef;
+/**
+ * Props for the {@link WheelPicker.IndicatorBackground} sub-component.
+ *
+ * Absolute-fill container rendered behind the highlight band's surface.
+ * With no children, the active library theme decides the default content
+ * (e.g. a glass blur layer); pass children to host custom content with the
+ * same positioning and clipping.
+ */
+export interface WheelPickerIndicatorBackgroundProps extends ViewProps {
+    /**
+     * Custom content to render inside the background container.
+     * When omitted, the active library theme's default background content is
+     * rendered.
+     */
+    children?: ReactNode;
+    /**
+     * Additional CSS classes for the background container.
+     */
+    className?: string;
+}
+/**
+ * Ref type for the {@link WheelPicker.IndicatorBackground} sub-component.
+ */
+export type WheelPickerIndicatorBackgroundRef = ViewRef;
 /**
  * Props for the {@link WheelPicker.Mask} sub-component.
  *

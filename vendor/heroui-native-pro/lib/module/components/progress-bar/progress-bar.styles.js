@@ -48,6 +48,15 @@ const track = tv({
 });
 
 /**
+ * Track background style definition.
+ * Absolute-fill container rendered behind the track surface, matching its
+ * border radius and clipping.
+ */
+const trackBackground = tv({
+  base: 'progress-bar__track-background'
+});
+
+/**
  * Fill style definition.
  * Represents the filled portion of the track.
  *
@@ -95,6 +104,7 @@ export const progressBarClassNames = combineStyles({
   root,
   labelRow,
   track,
+  trackBackground,
   fill,
   label,
   valueLabel

@@ -216,6 +216,7 @@ export declare const wheelPickerClassNames: import("../../helpers/internal/types
         wrapper: string;
         highlight: string;
     }, undefined, unknown, unknown, undefined>>;
+    indicatorBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "wheel-picker__indicator-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "wheel-picker__indicator-background", unknown, unknown, undefined>>;
     mask: import("tailwind-variants").TVReturnType<{
         [key: string]: {
             [key: string]: import("tailwind-merge").ClassNameValue | {

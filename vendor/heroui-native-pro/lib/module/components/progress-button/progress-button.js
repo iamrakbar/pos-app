@@ -1,5 +1,6 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Pressable } from 'react-native';
@@ -24,6 +25,31 @@ const [ProgressButtonProvider, useProgressButton] = createContext({
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the button
+ * surface. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const ProgressButtonBackground = /*#__PURE__*/forwardRef((props, ref) => {
+  const {
+    className,
+    ...restProps
+  } = props;
+  const backgroundClassName = progressButtonClassNames.background({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: backgroundClassName,
+    fallbackColor: "default",
+    ...restProps
+  });
+});
+
+// --------------------------------------------------
+
 const ProgressButtonRoot = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
@@ -43,8 +69,10 @@ const ProgressButtonRoot = /*#__PURE__*/forwardRef((props, ref) => {
     onPressOut,
     onLayout,
     animation,
+    background,
     ...restProps
   } = props;
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const [isCompleted = false, setIsCompleted] = useControllableState({
     prop: isCompletedProp,
     defaultProp: isDefaultCompleted,
@@ -164,11 +192,20 @@ const ProgressButtonRoot = /*#__PURE__*/forwardRef((props, ref) => {
       })
     })]
   }) : children;
+
+  /**
+   * Background layer rendered behind the button surface.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content (the root always paints `--color-default`)
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(ProgressButtonBackground, {}) : null;
   return /*#__PURE__*/_jsx(AnimationSettingsProvider, {
     value: animationSettingsContextValue,
     children: /*#__PURE__*/_jsx(ProgressButtonProvider, {
       value: contextValue,
-      children: /*#__PURE__*/_jsx(AnimatedPressable, {
+      children: /*#__PURE__*/_jsxs(AnimatedPressable, {
         ref: ref,
         className: rootClassName,
         style: [progressButtonStyleSheet.root, rContainerStyle, style],
@@ -181,7 +218,7 @@ const ProgressButtonRoot = /*#__PURE__*/forwardRef((props, ref) => {
           disabled: isDisabled
         },
         ...restProps,
-        children: resolvedChildren
+        children: [backgroundElement, resolvedChildren]
       })
     })
   });
@@ -281,6 +318,7 @@ const ProgressButtonMaskLabel = /*#__PURE__*/forwardRef((props, ref) => {
 // --------------------------------------------------
 
 ProgressButtonRoot.displayName = DISPLAY_NAME.ROOT;
+ProgressButtonBackground.displayName = DISPLAY_NAME.BACKGROUND;
 ProgressButtonOverlay.displayName = DISPLAY_NAME.OVERLAY;
 ProgressButtonLabel.displayName = DISPLAY_NAME.LABEL;
 ProgressButtonMaskLabel.displayName = DISPLAY_NAME.MASK_LABEL;
@@ -292,6 +330,11 @@ ProgressButtonMaskLabel.displayName = DISPLAY_NAME.MASK_LABEL;
  * Uses an AnimatedPressable that scales down on press and fills a progress
  * animation from 0 to 1 over the configured hold duration. Supports controlled
  * and uncontrolled completion state with optional auto-reset.
+ *
+ * @component ProgressButton.Background - Absolute-fill background container
+ * behind the button surface. With no children, the active library theme
+ * decides the default content (e.g. a glass blur layer); pass children to
+ * host custom content with the same positioning and clipping.
  *
  * @component ProgressButton.Label - Base text layer always visible beneath the overlay.
  * Captures its own layout position (x, width) to enable the MaskLabel
@@ -310,6 +353,8 @@ ProgressButtonMaskLabel.displayName = DISPLAY_NAME.MASK_LABEL;
  *
  */
 const ProgressButton = Object.assign(ProgressButtonRoot, {
+  /** @optional Theme-aware background container behind the button surface */
+  Background: ProgressButtonBackground,
   /** @optional Base text label (captures layout for MaskLabel alignment) */
   Label: ProgressButtonLabel,
   /** @optional Overlay that sweeps left-to-right on hold */

@@ -33,7 +33,16 @@ const row = tv({
  * To disable animated styles, set `isAnimatedStyleActive={false}`.
  */
 const key = tv({
-  base: ['number-pad__key', 'data-[pressed=true]:bg-default-hover', 'data-[disabled=true]:opacity-disabled', 'data-[disabled=true]:pointer-events-none']
+  base: ['number-pad__key', 'data-[disabled=true]:opacity-disabled', 'data-[disabled=true]:pointer-events-none']
+});
+
+/**
+ * Key background style definition — absolute-fill container behind the key
+ * surface, hosting theme-specific layers (e.g. glass blur) or custom
+ * content (gradients, images).
+ */
+const keyBackground = tv({
+  base: 'number-pad__key-background'
 });
 
 /** Digit label text rendered inside a key. */
@@ -61,6 +70,7 @@ export const numberPadClassNames = combineStyles({
   root,
   row,
   key,
+  keyBackground,
   keyLabel,
   backspace,
   spacerActive,

@@ -83,6 +83,17 @@ export interface SlideButtonRootProps extends Omit<ViewProps, 'children'> {
      */
     autoReset?: boolean;
     /**
+     * Background layer rendered behind the container surface.
+     * - `undefined` (default): renders `SlideButton.ContainerBackground` when
+     *   the active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `SlideButton.ContainerBackground` to keep the absolute-fill and
+     *   clipping)
+     * - `null`: removes the background layer
+     */
+    background?: React.ReactNode;
+    /**
      * Delay in milliseconds before auto-reset occurs.
      * Only used when `autoReset` is `true`.
      *
@@ -185,7 +196,37 @@ export interface SlideButtonThumbProps extends ViewProps {
      * Ignored when custom `children` are provided.
      */
     iconProps?: SlideButtonThumbIconProps;
+    /**
+     * Background layer rendered behind the thumb surface.
+     * - `undefined` (default): renders `SlideButton.ThumbBackground` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `SlideButton.ThumbBackground` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: React.ReactNode;
 }
+/**
+ * Props for the SlideButton.ThumbBackground sub-component.
+ * Generic absolute-fill container behind the thumb surface. When no
+ * `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type SlideButtonThumbBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
+/**
+ * Props for the SlideButton.ContainerBackground sub-component.
+ * Generic absolute-fill container behind the container surface. When no
+ * `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type SlideButtonContainerBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
 /**
  * Ref type for the SlideButton.Thumb component.
  */

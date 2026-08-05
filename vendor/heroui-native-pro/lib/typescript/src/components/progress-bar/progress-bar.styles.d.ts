@@ -35,6 +35,7 @@ export declare const progressBarClassNames: import("../../helpers/internal/types
             lg: string;
         };
     }, undefined, "progress-bar__track", unknown, unknown, undefined>>;
+    trackBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "progress-bar__track-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "progress-bar__track-background", unknown, unknown, undefined>>;
     fill: import("tailwind-variants").TVReturnType<{
         color: {
             default: string;

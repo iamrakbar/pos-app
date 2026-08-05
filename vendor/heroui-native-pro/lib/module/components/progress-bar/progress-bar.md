@@ -22,6 +22,7 @@ import { ProgressBar } from 'heroui-native-pro';
 
 - **ProgressBar**: Root container that manages progress state, formatting, and variant configuration. Computes percentage and formatted value text from `value`, `minValue`, `maxValue`, and `formatOptions`. When plain string children are provided, they auto-expand into Label, ValueLabel, Track, and Fill.
 - **ProgressBar.Track**: Background container for the fill element. Applies rounded corners, overflow hidden, and size-based height.
+- **ProgressBar.TrackBackground**: Optional theme-aware background container rendered behind the track surface. Mounted automatically when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **ProgressBar.Fill**: Animated element representing filled progress. Automatically switches between determinate (width animation) and indeterminate (translateX sweep) based on the root's `isIndeterminate` prop.
 - **ProgressBar.Label**: Text describing the progress operation.
 - **ProgressBar.ValueLabel**: Displays the formatted progress value with tabular figures for consistent digit alignment. Hidden when indeterminate.
@@ -243,7 +244,18 @@ Animation configuration for the ProgressBar root. Can be:
 | -------------- | ----------- | ------- | ------------------------------------------------------------------ |
 | `children`     | `ReactNode` | -       | Content to display inside the track (typically `ProgressBar.Fill`) |
 | `className`    | `string`    | -       | Additional CSS classes for the track container                     |
+| `background`   | `ReactNode` | -       | Background layer behind the track surface. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it |
 | `...ViewProps` | `ViewProps` | -       | All standard React Native View props are supported                 |
+
+### ProgressBar.TrackBackground
+
+Absolute-fill container rendered behind the track surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type        | default | description                                         |
+| -------------- | ----------- | ------- | --------------------------------------------------- |
+| `children`     | `ReactNode` | -       | Custom content inside the background container      |
+| `className`    | `string`    | -       | Additional CSS classes                              |
+| `...ViewProps` | `ViewProps` | -       | All standard React Native View props are supported  |
 
 ### ProgressBar.Fill
 

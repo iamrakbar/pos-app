@@ -42,6 +42,7 @@ declare const legendItem: import("tailwind-variants").TVReturnType<{
 }, undefined, unknown, unknown, undefined>>;
 export declare const widgetClassNames: import("../../helpers/internal/types").CombinedStyles<{
     root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__root", unknown, unknown, undefined>>;
+    background: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__background", unknown, unknown, undefined>>;
     header: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__header", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__header", unknown, unknown, undefined>>;
     title: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__title", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__title", unknown, unknown, undefined>>;
     description: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "widget__description", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "widget__description", unknown, unknown, undefined>>;

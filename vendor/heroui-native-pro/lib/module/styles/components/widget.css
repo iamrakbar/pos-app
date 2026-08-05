@@ -4,6 +4,16 @@
   padding: calc(var(--spacing) * 1.5);
 }
 
+.widget__background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+}
+
 .widget__header {
   flex-direction: row;
   align-items: center;

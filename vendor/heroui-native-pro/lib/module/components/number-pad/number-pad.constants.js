@@ -7,6 +7,7 @@ export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.NumberPad.Root',
   ROW: 'HeroUINative.NumberPad.Row',
   KEY: 'HeroUINative.NumberPad.Key',
+  KEY_BACKGROUND: 'HeroUINative.NumberPad.KeyBackground',
   KEY_LABEL: 'HeroUINative.NumberPad.KeyLabel',
   BACKSPACE: 'HeroUINative.NumberPad.Backspace',
   SPACER: 'HeroUINative.NumberPad.Spacer'

@@ -71,6 +71,16 @@
   padding-inline: 0;
 }
 
+.badge__background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+}
+
 /* Root - variant x color compounds */
 
 .badge__root--variant-primary--color-default {

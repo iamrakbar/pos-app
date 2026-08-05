@@ -34,6 +34,10 @@
   background-color: var(--color-backdrop);
 }
 
+.fab__overlay--variant-blur {
+  background-color: transparent;
+}
+
 .fab__content {
   gap: calc(var(--spacing) * 3);
 }
@@ -66,6 +70,16 @@
 .fab__item--is-disabled {
   opacity: var(--opacity-disabled);
   pointer-events: none;
+}
+
+.fab__item-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
 }
 
 .fab__item-label {

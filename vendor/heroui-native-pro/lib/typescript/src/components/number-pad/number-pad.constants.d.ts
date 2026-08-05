@@ -6,6 +6,7 @@ export declare const DISPLAY_NAME: {
     readonly ROOT: "HeroUINative.NumberPad.Root";
     readonly ROW: "HeroUINative.NumberPad.Row";
     readonly KEY: "HeroUINative.NumberPad.Key";
+    readonly KEY_BACKGROUND: "HeroUINative.NumberPad.KeyBackground";
     readonly KEY_LABEL: "HeroUINative.NumberPad.KeyLabel";
     readonly BACKSPACE: "HeroUINative.NumberPad.Backspace";
     readonly SPACER: "HeroUINative.NumberPad.Spacer";

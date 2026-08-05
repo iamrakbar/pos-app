@@ -4,6 +4,7 @@ import type { BadgeColor, BadgePlacement, BadgeSize, BadgeVariant } from './badg
  */
 export declare const DISPLAY_NAME: {
     readonly ROOT: "HeroUINative.Badge.Root";
+    readonly BACKGROUND: "HeroUINative.Badge.Background";
     readonly ANCHOR: "HeroUINative.Badge.Anchor";
     readonly LABEL: "HeroUINative.Badge.Label";
 };

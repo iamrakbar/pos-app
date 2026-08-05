@@ -6,6 +6,8 @@ export declare const DISPLAY_NAME: {
     readonly UNDERLAY_CONTENT: "HeroUINative.SlideButton.UnderlayContent";
     readonly OVERLAY_CONTENT: "HeroUINative.SlideButton.OverlayContent";
     readonly THUMB: "HeroUINative.SlideButton.Thumb";
+    readonly THUMB_BACKGROUND: "HeroUINative.SlideButton.ThumbBackground";
+    readonly CONTAINER_BACKGROUND: "HeroUINative.SlideButton.ContainerBackground";
     readonly LABEL: "HeroUINative.SlideButton.Label";
 };
 /** Default progress threshold at which slide completion triggers. */

@@ -5,4 +5,5 @@ export * from "./base-cartesian-chart.js";
 export * from "./base-polar-chart.js";
 export * from "./full-window-overlay.js";
 export * from "./hero-text.js";
+export * from "./popup-overlay-blur-view.js";
 export { default as ReText } from "./re-text.js";

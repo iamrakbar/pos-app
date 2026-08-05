@@ -1,4 +1,4 @@
-import type { ProgressButtonContextValue, ProgressButtonLabelProps, ProgressButtonMaskLabelProps, ProgressButtonOverlayProps, ProgressButtonRootProps } from './progress-button.types';
+import type { ProgressButtonBackgroundProps, ProgressButtonContextValue, ProgressButtonLabelProps, ProgressButtonMaskLabelProps, ProgressButtonOverlayProps, ProgressButtonRootProps } from './progress-button.types';
 declare const useProgressButton: () => ProgressButtonContextValue;
 /**
  * Compound ProgressButton component with sub-components
@@ -7,6 +7,11 @@ declare const useProgressButton: () => ProgressButtonContextValue;
  * Uses an AnimatedPressable that scales down on press and fills a progress
  * animation from 0 to 1 over the configured hold duration. Supports controlled
  * and uncontrolled completion state with optional auto-reset.
+ *
+ * @component ProgressButton.Background - Absolute-fill background container
+ * behind the button surface. With no children, the active library theme
+ * decides the default content (e.g. a glass blur layer); pass children to
+ * host custom content with the same positioning and clipping.
  *
  * @component ProgressButton.Label - Base text layer always visible beneath the overlay.
  * Captures its own layout position (x, width) to enable the MaskLabel
@@ -25,6 +30,8 @@ declare const useProgressButton: () => ProgressButtonContextValue;
  *
  */
 declare const ProgressButton: import("react").ForwardRefExoticComponent<ProgressButtonRootProps & import("react").RefAttributes<import("react-native").View>> & {
+    /** @optional Theme-aware background container behind the button surface */
+    Background: import("react").ForwardRefExoticComponent<ProgressButtonBackgroundProps & import("react").RefAttributes<import("react-native").View>>;
     /** @optional Base text label (captures layout for MaskLabel alignment) */
     Label: import("react").ForwardRefExoticComponent<ProgressButtonLabelProps & import("react").RefAttributes<import("react-native").Text>>;
     /** @optional Overlay that sweeps left-to-right on hold */

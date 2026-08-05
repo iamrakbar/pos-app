@@ -32,12 +32,32 @@ const button = tv({
     isDisabled: false
   }
 });
+
+/**
+ * Button background style definition — absolute-fill container behind a
+ * stepper button's content, hosting theme-specific layers (e.g. glass blur)
+ * or custom content (gradients, images).
+ */
+const buttonBackground = tv({
+  base: 'number-stepper__button-background'
+});
+
+/**
+ * Root background style definition — absolute-fill container behind the
+ * root surface, hosting theme-specific layers (e.g. glass blur) or custom
+ * content (gradients, images).
+ */
+const rootBackground = tv({
+  base: 'number-stepper__root-background'
+});
 const value = tv({
   base: 'number-stepper__value'
 });
 export const numberStepperClassNames = combineStyles({
   root,
+  rootBackground,
   button,
+  buttonBackground,
   value
 });
 export const numberStepperStyleSheet = StyleSheet.create({

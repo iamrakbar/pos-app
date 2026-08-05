@@ -67,9 +67,38 @@ export interface EmptyStateMediaProps extends ViewProps {
     variant?: EmptyStateMediaVariant;
     /** Additional classes for the media container. */
     className?: string;
+    /**
+     * Background layer rendered behind the icon media circle.
+     * - `undefined` (default): renders `EmptyState.MediaBackground` for the
+     *   `icon` variant when the active library theme registers default
+     *   background content (e.g. `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
 /** Imperative ref type for {@link EmptyStateMedia}. */
 export type EmptyStateMediaRef = ViewRef;
+/**
+ * Props for the {@link EmptyStateMediaBackground} part.
+ *
+ * Absolute-fill container rendered behind the icon media circle. With no
+ * children, the active library theme decides the default content (e.g. a
+ * glass blur layer); pass children to host custom content with the same
+ * positioning and clipping.
+ */
+export interface EmptyStateMediaBackgroundProps extends ViewProps {
+    /**
+     * Custom content to render inside the background container.
+     * When omitted, the active library theme's default background content is
+     * rendered.
+     */
+    children?: ReactNode;
+    /** Additional classes for the background container. */
+    className?: string;
+}
+/** Imperative ref type for {@link EmptyStateMediaBackground}. */
+export type EmptyStateMediaBackgroundRef = ViewRef;
 /**
  * Props for the {@link EmptyStateTitle} part.
  *

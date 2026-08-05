@@ -24,6 +24,7 @@ import { EmptyState } from 'heroui-native-pro';
 - **EmptyState**: Root container. Centers compound parts vertically with consistent spacing and padding, and cascades `disable-all` to animated descendants. Sub-components are fully optional.
 - **EmptyState.Header**: Groups `Media`, `Title`, and `Description` in a centered column.
 - **EmptyState.Media**: Optional container for an icon, avatar, or custom media block. Supports `variant="default"` (render as-is) and `variant="icon"` (circular muted surface).
+- **EmptyState.MediaBackground**: Optional theme-aware background container rendered behind the icon media circle. Mounted automatically for the `icon` variant when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **EmptyState.Title**: Primary heading text rendered with `accessibilityRole="header"`.
 - **EmptyState.Description**: Secondary muted text below the title.
 - **EmptyState.Content**: Optional action area below the header for buttons, inputs, or other controls.
@@ -182,6 +183,7 @@ Animation configuration for the EmptyState root. Can be:
 | `children`     | `React.ReactNode`        | -           | Media content to render (icon, avatar, etc.)               |
 | `variant`      | `EmptyStateMediaVariant` | `'default'` | Media visual treatment                                     |
 | `className`    | `string`                 | -           | Additional CSS classes for the media container             |
+| `background`   | `React.ReactNode`        | -           | Background layer behind the icon media circle. `undefined` renders the theme-aware default for the `icon` variant; custom node replaces it; `null` removes it |
 | `...ViewProps` | `ViewProps`              | -           | All standard React Native View props are supported         |
 
 #### EmptyStateMediaVariant
@@ -189,6 +191,16 @@ Animation configuration for the EmptyState root. Can be:
 | type                   | description                                                              |
 | ---------------------- | ------------------------------------------------------------------------ |
 | `'default' \| 'icon'` | `default` renders media as-is. `icon` wraps it in a circular muted surface |
+
+### EmptyState.MediaBackground
+
+Absolute-fill container rendered behind the icon media circle. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### EmptyState.Title
 

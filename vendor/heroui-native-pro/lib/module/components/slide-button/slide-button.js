@@ -1,5 +1,6 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View } from 'react-native';
@@ -12,9 +13,35 @@ import { useSlideButtonOverlayAnimation, useSlideButtonRootAnimation, useSlideBu
 import { DEFAULT_AUTO_RESET_DELAY, DEFAULT_COMPLETION_THRESHOLD, DISPLAY_NAME } from "./slide-button.constants.js";
 import { ChevronRightIcon } from "./slide-button.icons.js";
 import { slideButtonClassNames, slideButtonStyleSheet } from "./slide-button.styles.js";
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 const [SlideButtonProvider, useSlideButton] = createContext({
   name: 'SlideButtonContext'
+});
+
+// --------------------------------------------------
+
+/**
+ * Generic absolute-fill background container rendered behind the container
+ * surface. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied. The container
+ * paints the `--color-default` tint, so the Android / web fallback flattens
+ * the `default` token to match.
+ */
+const SlideButtonContainerBackground = /*#__PURE__*/forwardRef(({
+  className,
+  ...props
+}, ref) => {
+  const containerBackgroundClassName = slideButtonClassNames.containerBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: containerBackgroundClassName,
+    fallbackColor: "default",
+    ...props
+  });
 });
 
 // --------------------------------------------------
@@ -37,8 +64,10 @@ const SlideButtonRoot = /*#__PURE__*/forwardRef((props, ref) => {
     onComplete,
     onReset,
     animation,
+    background,
     ...restProps
   } = props;
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const [isCompleted = false, setIsCompleted] = useControllableState({
     prop: isCompletedProp,
     defaultProp: isDefaultCompleted,
@@ -160,11 +189,20 @@ const SlideButtonRoot = /*#__PURE__*/forwardRef((props, ref) => {
     variant
   };
   const resolvedChildren = typeof children === 'function' ? children(renderProps) : children;
+
+  /**
+   * Background layer rendered behind the container surface.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(SlideButtonContainerBackground, {}) : null;
   return /*#__PURE__*/_jsx(AnimationSettingsProvider, {
     value: animationSettingsContextValue,
     children: /*#__PURE__*/_jsx(SlideButtonProvider, {
       value: contextValue,
-      children: /*#__PURE__*/_jsx(View, {
+      children: /*#__PURE__*/_jsxs(View, {
         ref: ref,
         className: containerClassName,
         style: [slideButtonStyleSheet.root, stylesProp?.container, style],
@@ -173,12 +211,12 @@ const SlideButtonRoot = /*#__PURE__*/forwardRef((props, ref) => {
           disabled: isDisabled
         },
         ...restProps,
-        children: /*#__PURE__*/_jsx(View, {
+        children: [backgroundElement, /*#__PURE__*/_jsx(View, {
           className: contentContainerClassName,
           style: stylesProp?.contentContainer,
           onLayout: handleLayout,
           children: resolvedChildren
-        })
+        })]
       })
     })
   });
@@ -274,6 +312,30 @@ const SlideButtonOverlayContent = /*#__PURE__*/forwardRef((props, ref) => {
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the thumb
+ * surface. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const SlideButtonThumbBackground = /*#__PURE__*/forwardRef(({
+  className,
+  ...props
+}, ref) => {
+  const thumbBackgroundClassName = slideButtonClassNames.thumbBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: thumbBackgroundClassName,
+    fallbackColor: "surface",
+    ...props
+  });
+});
+
+// --------------------------------------------------
+
 const SlideButtonThumb = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
@@ -283,9 +345,11 @@ const SlideButtonThumb = /*#__PURE__*/forwardRef((props, ref) => {
     isAnimatedStyleActive = true,
     iconProps,
     onLayout,
+    background,
     ...restProps
   } = props;
   const ctx = useSlideButton();
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const {
     rThumbStyle,
     panGesture
@@ -312,17 +376,23 @@ const SlideButtonThumb = /*#__PURE__*/forwardRef((props, ref) => {
     ctx.thumbHeight.set(height);
     onLayout?.(event);
   }, [ctx.thumbWidth, ctx.thumbHeight, onLayout]);
+
+  /**
+   * Background layer rendered behind the thumb surface. `undefined` falls
+   * back to the theme-aware default; `null` removes the layer.
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(SlideButtonThumbBackground, {}) : null;
   return /*#__PURE__*/_jsx(GestureDetector, {
     gesture: panGesture,
-    children: /*#__PURE__*/_jsx(Animated.View, {
+    children: /*#__PURE__*/_jsxs(Animated.View, {
       ref: ref,
       className: thumbClassName,
       style: thumbStyle,
       onLayout: handleThumbLayout,
       ...restProps,
-      children: children ?? /*#__PURE__*/_jsx(ChevronRightIcon, {
+      children: [backgroundElement, children ?? /*#__PURE__*/_jsx(ChevronRightIcon, {
         ...iconProps
-      })
+      })]
     })
   });
 });
@@ -358,6 +428,8 @@ SlideButtonRoot.displayName = DISPLAY_NAME.ROOT;
 SlideButtonUnderlayContent.displayName = DISPLAY_NAME.UNDERLAY_CONTENT;
 SlideButtonOverlayContent.displayName = DISPLAY_NAME.OVERLAY_CONTENT;
 SlideButtonThumb.displayName = DISPLAY_NAME.THUMB;
+SlideButtonThumbBackground.displayName = DISPLAY_NAME.THUMB_BACKGROUND;
+SlideButtonContainerBackground.displayName = DISPLAY_NAME.CONTAINER_BACKGROUND;
 SlideButtonLabel.displayName = DISPLAY_NAME.LABEL;
 
 /**
@@ -379,6 +451,19 @@ SlideButtonLabel.displayName = DISPLAY_NAME.LABEL;
  * Uses react-native-gesture-handler for 60fps native gesture tracking.
  * Renders a chevron-right icon by default; accepts custom children.
  *
+ * @component SlideButton.ThumbBackground - Absolute-fill background container
+ * behind the thumb surface. With no children, the active library theme
+ * decides the content (glass theme renders a blur layer with a
+ * surface-matched fallback). Accepts children to host custom content such as
+ * gradients with the container's positioning and clipping applied.
+ * Replaceable via the `background` prop on SlideButton.Thumb.
+ *
+ * @component SlideButton.ContainerBackground - Absolute-fill background
+ * container behind the container surface. With no children, the active
+ * library theme decides the content (glass theme renders a blur layer with a
+ * default-matched fallback). Replaceable via the `background` prop on
+ * SlideButton.
+ *
  * @component SlideButton.Label - Styled text that inherits the variant color.
  * Use inside UnderlayContent or OverlayContent for consistent label text.
  *
@@ -393,6 +478,10 @@ const SlideButton = Object.assign(SlideButtonRoot, {
   OverlayContent: SlideButtonOverlayContent,
   /** @optional Draggable thumb handle with gesture support */
   Thumb: SlideButtonThumb,
+  /** @optional Theme-aware background container behind the thumb surface */
+  ThumbBackground: SlideButtonThumbBackground,
+  /** @optional Theme-aware background container behind the container surface */
+  ContainerBackground: SlideButtonContainerBackground,
   /** @optional Styled text label that inherits the variant color */
   Label: SlideButtonLabel
 });

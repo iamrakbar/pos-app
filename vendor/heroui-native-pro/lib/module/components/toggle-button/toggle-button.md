@@ -112,9 +112,15 @@ Place toggles inside a `ToggleButtonGroup` and assign each an `id`. The group ma
 
 ```tsx
 <ToggleButtonGroup selectionMode="multiple">
-  <ToggleButton id="bold" isIconOnly>...</ToggleButton>
-  <ToggleButton id="italic" isIconOnly>...</ToggleButton>
-  <ToggleButton id="underline" isIconOnly>...</ToggleButton>
+  <ToggleButton id="bold" isIconOnly>
+    ...
+  </ToggleButton>
+  <ToggleButton id="italic" isIconOnly>
+    ...
+  </ToggleButton>
+  <ToggleButton id="underline" isIconOnly>
+    ...
+  </ToggleButton>
 </ToggleButtonGroup>
 ```
 
@@ -188,28 +194,31 @@ export default function ToggleButtonExample() {
 
 `ToggleButton` extends every prop of HeroUI Native [`Button`](https://heroui.com/docs/native/components/button#api-reference) except `variant` (redefined as `ToggleButtonVariant`) and `feedbackVariant` (owned by `ToggleButton`).
 
-| prop                | type                                     | default     | description                                                                          |
-| ------------------- | ---------------------------------------- | ----------- | ------------------------------------------------------------------------------------ |
-| `children`          | `React.ReactNode`                        | -           | Content of the toggle button. Plain strings are rendered as a label                  |
-| `variant`           | `ToggleButtonVariant`                    | `'default'` | Visual style variant                                                                 |
-| `size`              | `ButtonSize`                             | `'md'`      | Size of the button. Inherited from the underlying `Button`                           |
-| `isIconOnly`        | `boolean`                                | `false`     | Whether the button displays an icon only (square aspect ratio)                       |
-| `id`                | `string`                                 | -           | Unique identifier. Required when used inside `ToggleButtonGroup`                     |
-| `isSelected`        | `boolean`                                | -           | Controlled selected state                                                            |
-| `defaultSelected`   | `boolean`                                | `false`     | Default selected state (uncontrolled)                                                |
-| `isDisabled`        | `boolean`                                | `false`     | Whether the button is disabled                                                       |
-| `className`         | `string`                                 | -           | Additional CSS classes for the button container                                      |
-| `selectedColor`     | `string`                                 | -           | Override background color for the selected state. Defaults to theme `accent-soft`    |
-| `unselectedColor`   | `string`                                 | -           | Override background color for the unselected state. Defaults to theme `default`      |
-| `onChange`          | `(isSelected: boolean) => void`          | -           | Handler called when the selection changes                                            |
-| `onPress`           | `(event: GestureResponderEvent) => void` | -           | Press handler invoked after the toggle is applied                                    |
-| `animation`         | `ButtonAnimation`                        | -           | Animation configuration forwarded to the underlying `Button` (scale press feedback)  |
-| `...PressableProps` | `PressableProps`                         | -           | All standard React Native Pressable props are supported                              |
+| prop                | type                                     | default     | description                                                                                                                                                     |
+| ------------------- | ---------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `children`          | `React.ReactNode`                        | -           | Content of the toggle button. Plain strings are rendered as a label                                                                                             |
+| `variant`           | `ToggleButtonVariant`                    | `'default'` | Visual style variant                                                                                                                                            |
+| `size`              | `ButtonSize`                             | `'md'`      | Size of the button. Inherited from the underlying `Button`                                                                                                      |
+| `isIconOnly`        | `boolean`                                | `false`     | Whether the button displays an icon only (square aspect ratio)                                                                                                  |
+| `id`                | `string`                                 | -           | Unique identifier. Required when used inside `ToggleButtonGroup`                                                                                                |
+| `isSelected`        | `boolean`                                | -           | Controlled selected state                                                                                                                                       |
+| `defaultSelected`   | `boolean`                                | `false`     | Default selected state (uncontrolled)                                                                                                                           |
+| `isDisabled`        | `boolean`                                | `false`     | Whether the button is disabled                                                                                                                                  |
+| `className`         | `string`                                 | -           | Additional CSS classes for the button container                                                                                                                 |
+| `selectedColor`     | `string`                                 | -           | Override background color for the selected state. Defaults to theme `accent-soft`                                                                               |
+| `unselectedColor`   | `string`                                 | -           | Override background color for the unselected state. Defaults to theme `default`                                                                                 |
+| `background`        | `React.ReactNode`                        | -           | Background layer behind the toggle surface. `undefined` renders the theme-aware default (scoped as described below); custom node replaces it; `null` removes it |
+| `onChange`          | `(isSelected: boolean) => void`          | -           | Handler called when the selection changes                                                                                                                       |
+| `onPress`           | `(event: GestureResponderEvent) => void` | -           | Press handler invoked after the toggle is applied                                                                                                               |
+| `animation`         | `ButtonAnimation`                        | -           | Animation configuration forwarded to the underlying `Button` (scale press feedback)                                                                             |
+| `...PressableProps` | `PressableProps`                         | -           | All standard React Native Pressable props are supported                                                                                                         |
+
+The `background` prop forwards to the underlying core `Button`, which renders `Button.Background` behind the toggle surface for the `default` variant while unselected (selection paints its own accent-soft tint) when the active library theme registers default background content (e.g. `glass`).
 
 #### ToggleButtonVariant
 
-| type                   | description                              |
-| ---------------------- | ---------------------------------------- |
+| type                   | description                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
 | `'default' \| 'ghost'` | Visual style variants of the toggle. `default` uses an opaque resting background; `ghost` is transparent |
 
 ### ToggleButton.Label
@@ -234,9 +243,9 @@ const { isSelected, isDisabled, size, variant } = useToggleButton();
 
 #### Returns: ToggleButtonContextValue
 
-| property     | type                  | description                       |
-| ------------ | --------------------- | --------------------------------- |
-| `isSelected` | `boolean`             | Whether the toggle is selected    |
-| `isDisabled` | `boolean`             | Whether the toggle is disabled    |
-| `size`       | `ButtonSize`          | Resolved size variant             |
-| `variant`    | `ToggleButtonVariant` | Resolved visual variant           |
+| property     | type                  | description                    |
+| ------------ | --------------------- | ------------------------------ |
+| `isSelected` | `boolean`             | Whether the toggle is selected |
+| `isDisabled` | `boolean`             | Whether the toggle is disabled |
+| `size`       | `ButtonSize`          | Resolved size variant          |
+| `variant`    | `ToggleButtonVariant` | Resolved visual variant        |

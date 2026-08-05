@@ -21,6 +21,7 @@ import { RadioButtonGroup } from 'heroui-native-pro';
 
 - **RadioButtonGroup**: Root wrapper around HeroUI Native `RadioGroup`. Holds the selected `value`, `onValueChange`, and optional group `variant`. Exposes the same context as `RadioGroup` (`useRadioButtonGroup` matches `useRadioGroup`).
 - **RadioButtonGroup.Item**: Wraps `RadioGroup.Item`. Sets `data-selected` and `data-variant` for Tailwind variants, merges default item styles, and maps your `variant` to the underlying item variant so row styling stays consistent.
+- **RadioButtonGroup.ItemBackground**: Optional theme-aware background container rendered behind the item surface. Mounted automatically for the unselected `secondary` variant when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **RadioButtonGroup.ItemContent**: Optional row container (`flex-1`) for label text, descriptions, and `Radio` / `Radio.Indicator`. Place the `Radio` inside the item as sibling or child depending on layout.
 - **Radio**: The radio control component.
 
@@ -178,7 +179,8 @@ Full prop tables, render-prop shapes, and hook return values are documented for 
 Inheritance in this package:
 
 - **`RadioButtonGroup`** — Same API as **`RadioGroup`** ([`RadioGroupProps`](https://heroui.com/docs/native/components/radio-group#api-reference)). Forwarded to the underlying `RadioGroup` root.
-- **`RadioButtonGroup.Item`** — Same API as **`RadioGroup.Item`** ([`RadioGroupItemProps`](https://heroui.com/docs/native/components/radio-group#api-reference), including `RadioGroupItemRenderProps` for render children). Adds `data-selected`, `data-variant`, default item styling, and variant mapping for the wrapped row; see the source if you rely on those details.
+- **`RadioButtonGroup.Item`** — Same API as **`RadioGroup.Item`** ([`RadioGroupItemProps`](https://heroui.com/docs/native/components/radio-group#api-reference), including `RadioGroupItemRenderProps` for render children). Adds `data-selected`, `data-variant`, default item styling, and variant mapping for the wrapped row; see the source if you rely on those details. Also adds a `background` prop (`React.ReactNode`) for the layer behind the item surface: `undefined` renders the theme-aware default for the unselected `secondary` variant; a custom node replaces it; `null` removes it.
+- **`RadioButtonGroup.ItemBackground`** — Not part of HeroUI `RadioGroup`. Absolute-fill container rendered behind the item surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping. Extends React Native **`View`** with optional `children` and `className` (see `RadioButtonGroupItemBackgroundProps` in this repo).
 - **`RadioButtonGroup.ItemContent`** — Not part of HeroUI `RadioGroup`. Extends React Native **`View`** with an optional `className` (see `RadioButtonGroupItemContentProps` in this repo).
 - **`useRadioButtonGroup`** — Same behavior as **`useRadioGroup`** from `heroui-native`.
 - **`useRadioButtonGroupItem`** — Same behavior as **`useRadioGroupItem`** from `heroui-native`.

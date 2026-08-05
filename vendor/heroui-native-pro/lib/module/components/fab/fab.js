@@ -1,18 +1,19 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider, useAnimationSettings } from 'heroui-native/contexts';
 import { Children, forwardRef, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { FullWindowOverlay, HeroText } from "../../helpers/internal/components/index.js";
-import { useControllableState } from "../../helpers/internal/hooks/index.js";
+import { FullWindowOverlay, HeroText, PopupOverlayBlurView } from "../../helpers/internal/components/index.js";
+import { useControllableState, usePopupOverlayVariant } from "../../helpers/internal/hooks/index.js";
 import { childrenToString, isStringifiableChildren } from "../../helpers/internal/utils/index.js";
 import * as FABPrimitives from "../../primitives/fab/index.js";
 import { useFABItemAnimation, useFABOverlayAnimation, useFABRootAnimation, useFABTriggerAnimation } from "./fab.animation.js";
 import { DEFAULT_CONTENT_OFFSET, DEFAULT_INSETS, DISPLAY_NAME } from "./fab.constants.js";
 import { FABAnimationProvider, FABItemIndexProvider, FABProvider, useFABAnimation, useFABContext, useFABItemIndex } from "./fab.context.js";
 import { fabClassNames, fabStyleSheet } from "./fab.styles.js";
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 const useFAB = FABPrimitives.useRootContext;
 
 // --------------------------------------------------
@@ -192,7 +193,9 @@ const FABOverlay = /*#__PURE__*/forwardRef((props, ref) => {
     className,
     style,
     animation,
-    isAnimatedStyleActive = true,
+    isAnimatedStyleActive,
+    variant,
+    blurViewProps,
     ...restProps
   } = props;
   const {
@@ -201,7 +204,12 @@ const FABOverlay = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     progress
   } = useFABAnimation();
+  const {
+    resolvedVariant,
+    isBlurVariant
+  } = usePopupOverlayVariant(variant);
   const overlayClassName = fabClassNames.overlay({
+    variant: resolvedVariant,
     className
   });
   const {
@@ -211,20 +219,26 @@ const FABOverlay = /*#__PURE__*/forwardRef((props, ref) => {
     progress
   });
 
+  // The blur variant animates blur intensity instead of the overlay opacity
+  const isAnimatedStyleResolved = isAnimatedStyleActive ?? !isBlurVariant;
+
   // The animated opacity lives on the wrapper so the primitive keeps a
   // plain (non-animated) ref type.
-  const containerStyle = isAnimatedStyleActive ? [StyleSheet.absoluteFill, rOverlayStyle] : StyleSheet.absoluteFill;
-  return /*#__PURE__*/_jsx(Animated.View, {
+  const containerStyle = isAnimatedStyleResolved ? [StyleSheet.absoluteFill, rOverlayStyle] : StyleSheet.absoluteFill;
+  return /*#__PURE__*/_jsxs(Animated.View, {
     style: containerStyle,
     pointerEvents: "box-none",
-    children: /*#__PURE__*/_jsx(FABPrimitives.Overlay, {
+    children: [isBlurVariant ? /*#__PURE__*/_jsx(PopupOverlayBlurView, {
+      progress: progress,
+      blurViewProps: blurViewProps
+    }) : null, /*#__PURE__*/_jsx(FABPrimitives.Overlay, {
       ref: ref,
       className: overlayClassName,
       style: style,
       forceMount: true,
       pointerEvents: isOpen ? 'auto' : 'none',
       ...restProps
-    })
+    })]
   });
 });
 
@@ -275,12 +289,36 @@ const FABContent = /*#__PURE__*/forwardRef((props, ref) => {
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the item
+ * content. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const FABItemBackground = /*#__PURE__*/forwardRef(({
+  className,
+  ...props
+}, ref) => {
+  const itemBackgroundClassName = fabClassNames.itemBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: itemBackgroundClassName,
+    ...props
+  });
+});
+
+// --------------------------------------------------
+
 const FABItem = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
     disabled,
     className,
     style,
+    background,
     animation,
     isAnimatedStyleActive = true,
     ...restProps
@@ -299,6 +337,7 @@ const FABItem = /*#__PURE__*/forwardRef((props, ref) => {
     index,
     total
   } = useFABItemIndex();
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const itemClassName = fabClassNames.item({
     isDisabled: !!disabled,
     className
@@ -317,19 +356,28 @@ const FABItem = /*#__PURE__*/forwardRef((props, ref) => {
   const resolvedChildren = isStringifiableChildren(children) ? /*#__PURE__*/_jsx(FABItemLabel, {
     children: childrenToString(children)
   }) : children;
+
+  /**
+   * Background layer rendered behind the item content.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(FABItemBackground, {}) : null;
   const itemStyle = typeof style === 'function' ? state => [fabStyleSheet.item, style(state)] : [fabStyleSheet.item, style];
 
   // The animated appearing motion lives on a wrapper so the primitive
   // keeps a plain (non-animated) ref type.
   return /*#__PURE__*/_jsx(Animated.View, {
     style: isAnimatedStyleActive ? rItemStyle : undefined,
-    children: /*#__PURE__*/_jsx(FABPrimitives.Item, {
+    children: /*#__PURE__*/_jsxs(FABPrimitives.Item, {
       ref: ref,
       className: itemClassName,
       style: itemStyle,
       disabled: disabled,
       ...restProps,
-      children: resolvedChildren
+      children: [backgroundElement, resolvedChildren]
     })
   });
 });
@@ -361,6 +409,7 @@ FABPortal.displayName = DISPLAY_NAME.PORTAL;
 FABOverlay.displayName = DISPLAY_NAME.OVERLAY;
 FABContent.displayName = DISPLAY_NAME.CONTENT;
 FABItem.displayName = DISPLAY_NAME.ITEM;
+FABItemBackground.displayName = DISPLAY_NAME.ITEM_BACKGROUND;
 FABItemLabel.displayName = DISPLAY_NAME.ITEM_LABEL;
 
 /**
@@ -382,9 +431,11 @@ FABItemLabel.displayName = DISPLAY_NAME.ITEM_LABEL;
  * re-provides the FAB contexts to portaled descendants.
  *
  * @component FAB.Overlay - Optional backdrop behind the content. Fades with
- * the shared progress and closes the FAB when pressed. Replace it with a
- * custom component (e.g. a blur backdrop built on `useFABAnimation`) for
- * custom backdrops.
+ * the shared progress and closes the FAB when pressed. The `default` variant
+ * paints a solid backdrop; the `blur` variant renders an animated blur layer
+ * (iOS only, requires expo-blur) and is the default under the `glass` theme.
+ * Replace it with a custom component (e.g. a backdrop built on
+ * `useFABAnimation`) for fully custom backdrops.
  *
  * @component FAB.Content - Positioned column of items. Placement/alignment
  * follow the root resolution; provides each child its index so items can
@@ -393,6 +444,12 @@ FABItemLabel.displayName = DISPLAY_NAME.ITEM_LABEL;
  * @component FAB.Item - Single action row. Appears with the shared progress
  * (staggered by default, nearest to the trigger first) and closes the FAB on
  * press. String children are wrapped in `FAB.ItemLabel` automatically.
+ *
+ * @component FAB.ItemBackground - Absolute-fill background container behind
+ * the item content. With no children, the active library theme decides the
+ * content (glass theme renders a blur layer). Accepts children to host custom
+ * content such as gradients with the container's positioning and clipping
+ * applied. Replaceable via the `background` prop on FAB.Item.
  *
  * @component FAB.ItemLabel - Optional text label inside an item.
  *
@@ -411,6 +468,8 @@ const FAB = Object.assign(FABRoot, {
   Content: FABContent,
   /** @optional Single action row; staggered by default and closes the FAB on press. */
   Item: FABItem,
+  /** @optional Theme-aware background container behind the item content. */
+  ItemBackground: FABItemBackground,
   /** @optional Text label inside an item; applied automatically for string children. */
   ItemLabel: FABItemLabel
 });

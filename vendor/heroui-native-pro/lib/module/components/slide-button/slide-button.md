@@ -23,6 +23,7 @@ import { SlideButton } from 'heroui-native-pro';
 ```
 
 - **SlideButton**: Root container that manages gesture state, progress tracking, and completion detection. Supports controlled and uncontrolled completion state with optional auto-reset.
+- **SlideButton.ContainerBackground**: Optional theme-aware background container rendered behind the container surface. Mounted automatically when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **SlideButton.UnderlayContent**: Static content layer beneath the overlay. Right-anchored clip wrapper that reveals content to the right of the thumb as it slides.
 - **SlideButton.OverlayContent**: Progress fill layer that clips from left to right as the thumb slides. Uses an overflow-hidden wrapper with animated width tied to thumb position.
 - **SlideButton.Thumb**: Draggable handle driven by a pan gesture. Renders a chevron-right icon by default; accepts custom children.
@@ -226,6 +227,7 @@ export default function PurchaseSlideButton() {
 | `completionThreshold` | `number`                                                                  | `0.85`      | Progress threshold (0–1) at which the slide action triggers |
 | `autoReset`           | `boolean`                                                                 | `false`     | Whether the slider automatically resets after completion    |
 | `autoResetDelay`      | `number`                                                                  | `1000`      | Delay in milliseconds before auto-reset occurs              |
+| `background`          | `React.ReactNode`                                                         | -           | Background layer behind the container surface. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it |
 | `className`           | `string`                                                                  | -           | Additional CSS classes for the root container               |
 | `classNames`          | `ElementSlots<SlideButtonRootSlots>`                                      | -           | Additional CSS classes for individual slots                 |
 | `styles`              | `Partial<Record<SlideButtonRootSlots, ViewStyle>>`                        | -           | Styles for individual slots                                 |
@@ -274,6 +276,16 @@ Animation configuration for the root component. Can be:
 | prop                | type               | default                                     | description                                                 |
 | ------------------- | ------------------ | ------------------------------------------- | ----------------------------------------------------------- |
 | `resetSpringConfig` | `WithSpringConfig` | `{ damping: 120, stiffness: 900, mass: 4 }` | Spring configuration for the reset and auto-reset animation |
+
+### SlideButton.ContainerBackground
+
+Absolute-fill container rendered behind the container surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### SlideButton.UnderlayContent
 

@@ -21,6 +21,7 @@ import { WheelPicker } from 'heroui-native-pro';
 - **WheelPicker.Item**: Animated row container. Auto-rendered for every option, or used as the outer element inside a custom `renderItem`. When no children are provided, renders `WheelPicker.ItemLabel` with the option's label. Tapping a row scrolls the wheel to focus it.
 - **WheelPicker.ItemLabel**: Default label primitive. Used by the auto-fallback inside `WheelPicker.Item`; reuse inside a custom `renderItem` to keep the default label styling.
 - **WheelPicker.Indicator**: Optional selection band rendered absolutely at the center of the viewport. Purely visual — selection logic lives on the root.
+- **WheelPicker.IndicatorBackground**: Optional theme-aware background container rendered behind the highlight band's surface. Mounted automatically when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **WheelPicker.Mask**: Optional top / bottom fade overlays that soften the wheel into the surrounding background.
 
 ## Usage
@@ -303,6 +304,7 @@ Exposed via the root `ref` on top of the underlying `View` ref.
 | `className`    | `string`                                                | -       | Additional CSS classes for the indicator container                                                                                                                                            |
 | `classNames`   | `ElementSlots<WheelPickerIndicatorSlots>`               | -       | Additional CSS classes for individual indicator slots                                                                                                                                         |
 | `styles`       | `Partial<Record<WheelPickerIndicatorSlots, ViewStyle>>` | -       | Inline styles for individual indicator slots                                                                                                                                                  |
+| `background`   | `React.ReactNode`                                       | -       | Background layer behind the highlight band's surface. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it                                                 |
 | `...ViewProps` | `ViewProps`                                             | -       | All standard React Native View props are supported                                                                                                                                            |
 
 #### ElementSlots\<WheelPickerIndicatorSlots\>
@@ -318,6 +320,16 @@ Exposed via the root `ref` on top of the underlying `View` ref.
 | ----------- | ----------- | ---------------------------------------- |
 | `wrapper`   | `ViewStyle` | Inline style for the indicator wrapper   |
 | `highlight` | `ViewStyle` | Inline style for the indicator highlight |
+
+### WheelPicker.IndicatorBackground
+
+Absolute-fill container rendered behind the highlight band's surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### WheelPicker.Mask
 

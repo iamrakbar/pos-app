@@ -6,6 +6,7 @@ export declare const DISPLAY_NAME: {
     readonly ITEM: "HeroUINative.WheelPicker.Item";
     readonly ITEM_LABEL: "HeroUINative.WheelPicker.ItemLabel";
     readonly INDICATOR: "HeroUINative.WheelPicker.Indicator";
+    readonly INDICATOR_BACKGROUND: "HeroUINative.WheelPicker.IndicatorBackground";
     readonly MASK: "HeroUINative.WheelPicker.Mask";
 };
 /**

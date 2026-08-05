@@ -40,6 +40,15 @@ const root = tv({
 });
 
 /**
+ * Background style definition.
+ * Absolute-fill container rendered behind the root surface, matching the
+ * root's pill radius and clipping.
+ */
+const background = tv({
+  base: 'progress-button__background'
+});
+
+/**
  * Overlay style definition.
  * Sweeps from left to right via translateX with a variant-colored background.
  *
@@ -105,6 +114,7 @@ const maskLabel = tv({
 });
 export const progressButtonClassNames = combineStyles({
   root,
+  background,
   overlay,
   label,
   maskLabel

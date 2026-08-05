@@ -1,7 +1,21 @@
+/*
+ * Chart ramp. The `--chart-*` variables are the theme-facing tokens: a theme
+ * (e.g. glass) can redefine the whole ramp inside its `@variant light` /
+ * `@variant dark` blocks. By default the ramp is derived from `--accent` so a
+ * theme that only swaps its accent still gets a coherent palette.
+ */
+@theme static {
+  --chart-1: color-mix(in oklab, var(--accent) 60%, black);
+  --chart-2: color-mix(in oklab, var(--accent) 80%, black);
+  --chart-3: var(--accent);
+  --chart-4: color-mix(in oklab, var(--accent) 80%, white);
+  --chart-5: color-mix(in oklab, var(--accent) 60%, white);
+}
+
 @theme inline static {
-  --color-chart-1: color-mix(in oklab, var(--accent) 60%, black);
-  --color-chart-2: color-mix(in oklab, var(--accent) 80%, black);
-  --color-chart-3: var(--accent);
-  --color-chart-4: color-mix(in oklab, var(--accent) 80%, white);
-  --color-chart-5: color-mix(in oklab, var(--accent) 60%, white);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 }

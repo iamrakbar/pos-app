@@ -7,6 +7,7 @@ import { Easing } from 'react-native-reanimated';
 export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.ProgressBar.Root',
   TRACK: 'HeroUINative.ProgressBar.Track',
+  TRACK_BACKGROUND: 'HeroUINative.ProgressBar.TrackBackground',
   FILL: 'HeroUINative.ProgressBar.Fill',
   LABEL: 'HeroUINative.ProgressBar.Label',
   VALUE_LABEL: 'HeroUINative.ProgressBar.ValueLabel'

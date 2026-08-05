@@ -38,10 +38,20 @@ const front = tv({
 const back = tv({
   base: 'flip-card__back'
 });
+
+/**
+ * Face background style definition — absolute-fill container behind a
+ * card face's surface, hosting theme-specific layers (e.g. glass blur) or
+ * custom content (gradients, images).
+ */
+const faceBackground = tv({
+  base: 'flip-card__face-background'
+});
 export const flipCardClassNames = combineStyles({
   root,
   front,
-  back
+  back,
+  faceBackground
 });
 
 /**

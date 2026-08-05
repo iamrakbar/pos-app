@@ -8,6 +8,8 @@ export const DISPLAY_NAME = {
   UNDERLAY_CONTENT: 'HeroUINative.SlideButton.UnderlayContent',
   OVERLAY_CONTENT: 'HeroUINative.SlideButton.OverlayContent',
   THUMB: 'HeroUINative.SlideButton.Thumb',
+  THUMB_BACKGROUND: 'HeroUINative.SlideButton.ThumbBackground',
+  CONTAINER_BACKGROUND: 'HeroUINative.SlideButton.ContainerBackground',
   LABEL: 'HeroUINative.SlideButton.Label'
 };
 

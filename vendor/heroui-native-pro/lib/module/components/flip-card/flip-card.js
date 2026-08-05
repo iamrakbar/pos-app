@@ -1,5 +1,6 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Pressable } from 'react-native';
@@ -9,7 +10,7 @@ import { createContext } from "../../helpers/internal/utils/index.js";
 import { FlipCardAnimationProvider, useFlipCardAnimation, useFlipCardFaceAnimation, useFlipCardRootAnimation } from "./flip-card.animation.js";
 import { DISPLAY_NAME } from "./flip-card.constants.js";
 import { flipCardClassNames, flipCardStyleSheet } from "./flip-card.styles.js";
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 const [FlipCardProvider, useFlipCard] = createContext({
   name: 'FlipCardContext'
 });
@@ -90,6 +91,30 @@ const FlipCardRoot = /*#__PURE__*/forwardRef((props, ref) => {
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind a card face's
+ * surface. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const FlipCardFaceBackground = /*#__PURE__*/forwardRef(({
+  className,
+  ...props
+}, ref) => {
+  const faceBackgroundClassName = flipCardClassNames.faceBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: faceBackgroundClassName,
+    fallbackColor: "surface",
+    ...props
+  });
+});
+
+// --------------------------------------------------
+
 const FlipCardFront = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
@@ -97,6 +122,7 @@ const FlipCardFront = /*#__PURE__*/forwardRef((props, ref) => {
     style,
     animation,
     isAnimatedStyleActive = true,
+    background,
     ...restProps
   } = props;
   const {
@@ -107,9 +133,16 @@ const FlipCardFront = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     progress
   } = useFlipCardAnimation();
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const frontClassName = flipCardClassNames.front({
     className
   });
+
+  /**
+   * Background layer rendered behind the front face surface. `undefined`
+   * falls back to the theme-aware default; `null` removes the layer.
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(FlipCardFaceBackground, {}) : null;
   const {
     rFaceStyle
   } = useFlipCardFaceAnimation({
@@ -120,7 +153,7 @@ const FlipCardFront = /*#__PURE__*/forwardRef((props, ref) => {
     progress
   });
   const frontStyle = isAnimatedStyleActive ? [flipCardStyleSheet.face, rFaceStyle, style] : [flipCardStyleSheet.face, style];
-  return /*#__PURE__*/_jsx(Animated.View, {
+  return /*#__PURE__*/_jsxs(Animated.View, {
     ref: ref,
     className: frontClassName,
     style: frontStyle,
@@ -128,7 +161,7 @@ const FlipCardFront = /*#__PURE__*/forwardRef((props, ref) => {
     importantForAccessibility: isFlipped ? 'no-hide-descendants' : 'auto',
     pointerEvents: isFlipped ? 'none' : 'auto',
     ...restProps,
-    children: children
+    children: [backgroundElement, children]
   });
 });
 
@@ -141,6 +174,7 @@ const FlipCardBack = /*#__PURE__*/forwardRef((props, ref) => {
     style,
     animation,
     isAnimatedStyleActive = true,
+    background,
     ...restProps
   } = props;
   const {
@@ -151,9 +185,16 @@ const FlipCardBack = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     progress
   } = useFlipCardAnimation();
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const backClassName = flipCardClassNames.back({
     className
   });
+
+  /**
+   * Background layer rendered behind the back face surface. `undefined`
+   * falls back to the theme-aware default; `null` removes the layer.
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(FlipCardFaceBackground, {}) : null;
   const {
     rFaceStyle
   } = useFlipCardFaceAnimation({
@@ -164,7 +205,7 @@ const FlipCardBack = /*#__PURE__*/forwardRef((props, ref) => {
     progress
   });
   const backStyle = isAnimatedStyleActive ? [flipCardStyleSheet.face, rFaceStyle, style] : [flipCardStyleSheet.face, style];
-  return /*#__PURE__*/_jsx(Animated.View, {
+  return /*#__PURE__*/_jsxs(Animated.View, {
     ref: ref,
     className: backClassName,
     style: backStyle,
@@ -172,7 +213,7 @@ const FlipCardBack = /*#__PURE__*/forwardRef((props, ref) => {
     importantForAccessibility: isFlipped ? 'auto' : 'no-hide-descendants',
     pointerEvents: isFlipped ? 'auto' : 'none',
     ...restProps,
-    children: children
+    children: [backgroundElement, children]
   });
 });
 
@@ -181,6 +222,7 @@ const FlipCardBack = /*#__PURE__*/forwardRef((props, ref) => {
 FlipCardRoot.displayName = DISPLAY_NAME.ROOT;
 FlipCardFront.displayName = DISPLAY_NAME.FRONT;
 FlipCardBack.displayName = DISPLAY_NAME.BACK;
+FlipCardFaceBackground.displayName = DISPLAY_NAME.FACE_BACKGROUND;
 
 /**
  * Compound FlipCard component with sub-components.
@@ -202,6 +244,13 @@ FlipCardBack.displayName = DISPLAY_NAME.BACK;
  * receives touches while the card is flipped, so hidden interactive
  * content cannot intercept presses meant for the front face.
  *
+ * @component FlipCard.FaceBackground - Absolute-fill background container
+ * behind a face's surface. With no children, the active library theme
+ * decides the content (glass theme renders a blur layer with a
+ * surface-matched fallback). Accepts children to host custom content such
+ * as gradients with the container's positioning and clipping applied.
+ * Replaceable via the `background` prop on each face.
+ *
  * Props flow from FlipCard to sub-components via context
  * (isFlipped, direction, toggle, and the shared flip progress).
  *
@@ -210,7 +259,9 @@ const FlipCard = Object.assign(FlipCardRoot, {
   /** @optional Face visible at rest (progress 0). */
   Front: FlipCardFront,
   /** @optional Face revealed when the card is flipped (progress 1). */
-  Back: FlipCardBack
+  Back: FlipCardBack,
+  /** @optional Theme-aware background container behind a face surface. */
+  FaceBackground: FlipCardFaceBackground
 });
 export default FlipCard;
 export { useFlipCard, useFlipCardAnimation };

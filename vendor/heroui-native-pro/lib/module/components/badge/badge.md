@@ -20,6 +20,7 @@ import { Badge } from 'heroui-native-pro';
 ```
 
 - **Badge**: Root container. Renders as a dot when no children are passed, or as a pill with content otherwise. Supports `color`, `variant`, `size`, and `placement` props. When used inside `Badge.Anchor`, it is absolutely positioned at the specified corner.
+- **Badge.Background**: Optional theme-aware background container rendered behind the badge surface. Mounted automatically for the variants whose background resolves to the default color when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **Badge.Anchor**: Relative wrapper that positions the `Badge` over another element (e.g. `Avatar`, `Icon`).
 - **Badge.Label**: Text content inside the badge. Automatically used when string or number children are passed to `Badge`.
 
@@ -172,6 +173,7 @@ export default function BadgeExample() {
 | `placement`    | `BadgePlacement`          | `'top-right'` | Position of the badge relative to its anchor. Only takes effect when used inside a `Badge.Anchor` |
 | `className`    | `string`                  | -             | Additional CSS classes for the badge container                                                    |
 | `animation`    | `AnimationRootDisableAll` | -             | Animation configuration for the badge subtree                                                     |
+| `background`   | `React.ReactNode`         | -             | Background layer behind the surface. `undefined` renders the theme-aware default for the `secondary` variant and `primary`/`soft` variants with `color="default"`; custom node replaces it; `null` removes it |
 | `...ViewProps` | `ViewProps`               | -             | All standard React Native View props are supported                                                |
 
 #### BadgeSize
@@ -204,6 +206,16 @@ Animation configuration for the Badge root. Can be:
 
 - `"disable-all"`: Disable all animations including children (cascades down)
 - `undefined`: Use default animations
+
+### Badge.Background
+
+Absolute-fill container rendered behind the badge surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### Badge.Anchor
 

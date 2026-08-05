@@ -26,6 +26,7 @@ export declare const DISPLAY_NAME: {
     readonly TRIGGER_HEADING: "HeroUINative.CalendarYearPicker.TriggerHeading";
     readonly TRIGGER_INDICATOR: "HeroUINative.CalendarYearPicker.TriggerIndicator";
     readonly GRID: "HeroUINative.CalendarYearPicker.Grid";
+    readonly GRID_BACKGROUND: "HeroUINative.CalendarYearPicker.GridBackground";
     readonly GRID_BODY: "HeroUINative.CalendarYearPicker.GridBody";
     readonly CELL: "HeroUINative.CalendarYearPicker.Cell";
 };

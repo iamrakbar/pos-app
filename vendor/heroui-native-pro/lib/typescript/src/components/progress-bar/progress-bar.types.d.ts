@@ -134,11 +134,43 @@ export interface ProgressBarTrackProps extends ViewProps {
      * Additional CSS classes for the track container.
      */
     className?: string;
+    /**
+     * Background layer rendered behind the track surface.
+     * - `undefined` (default): renders `ProgressBar.TrackBackground` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
 /**
  * Ref type for the ProgressBar.Track component.
  */
 export type ProgressBarTrackRef = ViewRef;
+/**
+ * Props for the ProgressBar.TrackBackground component.
+ * Absolute-fill container rendered behind the track surface. With no
+ * children, the active library theme decides the default content (e.g. a
+ * glass blur layer); pass children to host custom content with the same
+ * positioning and clipping.
+ */
+export interface ProgressBarTrackBackgroundProps extends ViewProps {
+    /**
+     * Custom content to render inside the background container.
+     * When omitted, the active library theme's default background content is
+     * rendered.
+     */
+    children?: ReactNode;
+    /**
+     * Additional CSS classes for the background container.
+     */
+    className?: string;
+}
+/**
+ * Ref type for the ProgressBar.TrackBackground component.
+ */
+export type ProgressBarTrackBackgroundRef = ViewRef;
 /**
  * Props for the ProgressBar.Fill component.
  * Animated element that represents the filled portion.

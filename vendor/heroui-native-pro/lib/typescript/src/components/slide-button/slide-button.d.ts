@@ -20,6 +20,19 @@ declare const useSlideButton: () => SlideButtonContextValue;
  * Uses react-native-gesture-handler for 60fps native gesture tracking.
  * Renders a chevron-right icon by default; accepts custom children.
  *
+ * @component SlideButton.ThumbBackground - Absolute-fill background container
+ * behind the thumb surface. With no children, the active library theme
+ * decides the content (glass theme renders a blur layer with a
+ * surface-matched fallback). Accepts children to host custom content such as
+ * gradients with the container's positioning and clipping applied.
+ * Replaceable via the `background` prop on SlideButton.Thumb.
+ *
+ * @component SlideButton.ContainerBackground - Absolute-fill background
+ * container behind the container surface. With no children, the active
+ * library theme decides the content (glass theme renders a blur layer with a
+ * default-matched fallback). Replaceable via the `background` prop on
+ * SlideButton.
+ *
  * @component SlideButton.Label - Styled text that inherits the variant color.
  * Use inside UnderlayContent or OverlayContent for consistent label text.
  *
@@ -34,6 +47,14 @@ declare const SlideButton: import("react").ForwardRefExoticComponent<SlideButton
     OverlayContent: import("react").ForwardRefExoticComponent<SlideButtonOverlayContentProps & import("react").RefAttributes<View>>;
     /** @optional Draggable thumb handle with gesture support */
     Thumb: import("react").ForwardRefExoticComponent<SlideButtonThumbProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background container behind the thumb surface */
+    ThumbBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background container behind the container surface */
+    ContainerBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     /** @optional Styled text label that inherits the variant color */
     Label: import("react").ForwardRefExoticComponent<SlideButtonLabelProps & import("react").RefAttributes<import("react-native").Text>>;
 };

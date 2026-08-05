@@ -198,10 +198,30 @@ export interface ChartTooltipRootProps extends Omit<ViewProps, 'children'> {
      */
     offset?: ChartTooltipOffset;
     /**
+     * Background layer rendered behind the card content.
+     * - `undefined` (default): renders `ChartTooltip.Background` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `ChartTooltip.Background` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
+    /**
      * Additional classes merged onto the animated card container.
      */
     className?: string;
 }
+/**
+ * Props for {@link ChartTooltip.Background} — generic absolute-fill
+ * container behind the card content. When no `children` are given, the
+ * active library theme decides the default content (e.g. a frosted-glass
+ * blur layer when the theme is `glass`).
+ */
+export type ChartTooltipBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
 /**
  * Props for {@link ChartTooltip.Header} — optional title row (e.g. X-axis label).
  */

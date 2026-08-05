@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import type { BadgeAnchorProps, BadgeContextValue, BadgeLabelProps, BadgeRootProps } from './badge.types';
+import type { BadgeAnchorProps, BadgeBackgroundProps, BadgeContextValue, BadgeLabelProps, BadgeRootProps } from './badge.types';
 declare const useBadge: () => BadgeContextValue;
 /**
  * Compound Badge component with sub-components
@@ -12,6 +12,11 @@ declare const useBadge: () => BadgeContextValue;
  * @component Badge.Anchor - Relative wrapper that positions the Badge
  * over another element (e.g. Avatar, Icon).
  *
+ * @component Badge.Background - Absolute-fill background container behind
+ * the badge surface. With no children, the active library theme decides the
+ * default content (e.g. a glass blur layer); pass children to host custom
+ * content with the same positioning and clipping.
+ *
  * @component Badge.Label - Text content inside the badge. Automatically
  * used when string/number children are passed to Badge.
  *
@@ -22,6 +27,8 @@ declare const useBadge: () => BadgeContextValue;
 declare const Badge: import("react").ForwardRefExoticComponent<BadgeRootProps & import("react").RefAttributes<View>> & {
     /** Relative wrapper for positioning the badge over another element */
     Anchor: import("react").ForwardRefExoticComponent<BadgeAnchorProps & import("react").RefAttributes<View>>;
+    /** Theme-aware background container behind the badge surface */
+    Background: import("react").ForwardRefExoticComponent<BadgeBackgroundProps & import("react").RefAttributes<View>>;
     /** Text content inside the badge */
     Label: import("react").ForwardRefExoticComponent<BadgeLabelProps & import("react").RefAttributes<import("react-native").Text>>;
 };

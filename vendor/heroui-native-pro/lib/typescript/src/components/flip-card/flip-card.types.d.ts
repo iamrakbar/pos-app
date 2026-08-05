@@ -55,6 +55,16 @@ export type FlipCardRootAnimation = AnimationRoot<{
  */
 export type FlipCardFaceAnimation = AnimationDisabled;
 /**
+ * Props for the {@link FlipCard.FaceBackground} sub-component.
+ * Generic absolute-fill container behind a card face's surface. When no
+ * `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type FlipCardFaceBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
+/**
  * Context value shared between {@link FlipCard} compound parts.
  */
 export interface FlipCardContextValue {
@@ -178,6 +188,16 @@ export interface FlipCardFrontProps extends ViewProps {
      * @default true
      */
     isAnimatedStyleActive?: boolean;
+    /**
+     * Background layer rendered behind the face surface.
+     * - `undefined` (default): renders `FlipCard.FaceBackground` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `FlipCard.FaceBackground` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
 /**
  * Imperative ref type for the {@link FlipCardFront} element.
@@ -219,6 +239,16 @@ export interface FlipCardBackProps extends ViewProps {
      * @default true
      */
     isAnimatedStyleActive?: boolean;
+    /**
+     * Background layer rendered behind the face surface.
+     * - `undefined` (default): renders `FlipCard.FaceBackground` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `FlipCard.FaceBackground` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
 /**
  * Imperative ref type for the {@link FlipCardBack} element.

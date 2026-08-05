@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import type { ProgressBarContextValue, ProgressBarFillProps, ProgressBarLabelProps, ProgressBarRootProps, ProgressBarTrackProps, ProgressBarValueLabelProps } from './progress-bar.types';
+import type { ProgressBarContextValue, ProgressBarFillProps, ProgressBarLabelProps, ProgressBarRootProps, ProgressBarTrackBackgroundProps, ProgressBarTrackProps, ProgressBarValueLabelProps } from './progress-bar.types';
 declare const useProgressBar: () => ProgressBarContextValue;
 /**
  * Compound ProgressBar component with sub-components
@@ -11,6 +11,11 @@ declare const useProgressBar: () => ProgressBarContextValue;
  *
  * @component ProgressBar.Track - Background container for the fill element.
  * Applies rounded corners, overflow hidden, and size-based height.
+ *
+ * @component ProgressBar.TrackBackground - Absolute-fill background container
+ * behind the track surface. With no children, the active library theme
+ * decides the default content (e.g. a glass blur layer); pass children to
+ * host custom content with the same positioning and clipping.
  *
  * @component ProgressBar.Fill - Animated element representing filled progress.
  * Automatically switches between determinate (width animation) and
@@ -29,6 +34,8 @@ declare const useProgressBar: () => ProgressBarContextValue;
 declare const ProgressBar: import("react").ForwardRefExoticComponent<ProgressBarRootProps & import("react").RefAttributes<View>> & {
     /** Background container for the fill element */
     Track: import("react").ForwardRefExoticComponent<ProgressBarTrackProps & import("react").RefAttributes<View>>;
+    /** Theme-aware background container behind the track surface */
+    TrackBackground: import("react").ForwardRefExoticComponent<ProgressBarTrackBackgroundProps & import("react").RefAttributes<View>>;
     /** Animated fill representing progress */
     Fill: import("react").ForwardRefExoticComponent<ProgressBarFillProps & import("react").RefAttributes<View>>;
     /** Text label describing the operation */

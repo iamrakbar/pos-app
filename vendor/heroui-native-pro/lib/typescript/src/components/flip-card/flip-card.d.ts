@@ -1,3 +1,4 @@
+import { type View } from 'react-native';
 import { useFlipCardAnimation } from './flip-card.animation';
 import type { FlipCardBackProps, FlipCardContextValue, FlipCardFrontProps, FlipCardRootProps } from './flip-card.types';
 declare const useFlipCard: () => FlipCardContextValue;
@@ -21,15 +22,26 @@ declare const useFlipCard: () => FlipCardContextValue;
  * receives touches while the card is flipped, so hidden interactive
  * content cannot intercept presses meant for the front face.
  *
+ * @component FlipCard.FaceBackground - Absolute-fill background container
+ * behind a face's surface. With no children, the active library theme
+ * decides the content (glass theme renders a blur layer with a
+ * surface-matched fallback). Accepts children to host custom content such
+ * as gradients with the container's positioning and clipping applied.
+ * Replaceable via the `background` prop on each face.
+ *
  * Props flow from FlipCard to sub-components via context
  * (isFlipped, direction, toggle, and the shared flip progress).
  *
  */
-declare const FlipCard: import("react").ForwardRefExoticComponent<FlipCardRootProps & import("react").RefAttributes<import("react-native").View>> & {
+declare const FlipCard: import("react").ForwardRefExoticComponent<FlipCardRootProps & import("react").RefAttributes<View>> & {
     /** @optional Face visible at rest (progress 0). */
-    Front: import("react").ForwardRefExoticComponent<FlipCardFrontProps & import("react").RefAttributes<import("react-native").View>>;
+    Front: import("react").ForwardRefExoticComponent<FlipCardFrontProps & import("react").RefAttributes<View>>;
     /** @optional Face revealed when the card is flipped (progress 1). */
-    Back: import("react").ForwardRefExoticComponent<FlipCardBackProps & import("react").RefAttributes<import("react-native").View>>;
+    Back: import("react").ForwardRefExoticComponent<FlipCardBackProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background container behind a face surface. */
+    FaceBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
 };
 export default FlipCard;
 export { useFlipCard, useFlipCardAnimation };

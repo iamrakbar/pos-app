@@ -5,6 +5,7 @@ import type { ChartTooltipRootAnimationConfig } from './chart-tooltip.types';
 export declare const DISPLAY_NAME: {
     readonly ANCHOR: "HeroUINative.ChartTooltip.Anchor";
     readonly ROOT: "HeroUINative.ChartTooltip";
+    readonly BACKGROUND: "HeroUINative.ChartTooltip.Background";
     readonly HEADER: "HeroUINative.ChartTooltip.Header";
     readonly ITEM: "HeroUINative.ChartTooltip.Item";
     readonly INDICATOR: "HeroUINative.ChartTooltip.Indicator";

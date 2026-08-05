@@ -7,6 +7,7 @@
  */
 export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.Widget.Root',
+  BACKGROUND: 'HeroUINative.Widget.Background',
   HEADER: 'HeroUINative.Widget.Header',
   TITLE: 'HeroUINative.Widget.Title',
   DESCRIPTION: 'HeroUINative.Widget.Description',

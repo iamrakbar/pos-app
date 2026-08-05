@@ -5,6 +5,7 @@
  */
 export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.Badge.Root',
+  BACKGROUND: 'HeroUINative.Badge.Background',
   ANCHOR: 'HeroUINative.Badge.Anchor',
   LABEL: 'HeroUINative.Badge.Label'
 };

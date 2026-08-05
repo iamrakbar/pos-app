@@ -1,4 +1,5 @@
 import type { RadioGroupItemContextValue, RadioGroupItemProps, RadioGroupProps } from 'heroui-native';
+import type { ReactNode } from 'react';
 import type { ViewProps } from 'react-native';
 /**
  * Return type of the `useRadioButtonGroup` hook.
@@ -38,7 +39,38 @@ export type RadioButtonGroupProps = RadioGroupProps;
  * Extends HeroUI Native `RadioGroup.Item` props (`RadioGroupItemProps`). Each item corresponds to
  * one selectable option (`value`) and receives `data-selected` / `data-variant` for styling.
  */
-export type RadioButtonGroupItemProps = RadioGroupItemProps;
+export type RadioButtonGroupItemProps = RadioGroupItemProps & {
+    /**
+     * Background layer rendered behind the item surface.
+     * - `undefined` (default): renders `RadioButtonGroup.ItemBackground` for
+     *   the unselected `secondary` variant when the active library theme
+     *   registers default background content (e.g. `glass`); otherwise no
+     *   layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
+};
+/**
+ * Props for `RadioButtonGroup.ItemBackground`.
+ *
+ * Absolute-fill container rendered behind the item surface. With no
+ * children, the active library theme decides the default content (e.g. a
+ * glass blur layer); pass children to host custom content with the same
+ * positioning and clipping.
+ */
+export type RadioButtonGroupItemBackgroundProps = ViewProps & {
+    /**
+     * Custom content to render inside the background container.
+     * When omitted, the active library theme's default background content is
+     * rendered.
+     */
+    children?: ReactNode;
+    /**
+     * Additional CSS classes (Uniwind/Tailwind).
+     */
+    className?: string;
+};
 /**
  * Props for `RadioButtonGroup.ItemContent`.
  *

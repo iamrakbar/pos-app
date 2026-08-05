@@ -1,5 +1,6 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -105,15 +106,42 @@ const ProgressBarRoot = /*#__PURE__*/forwardRef((props, ref) => {
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the track
+ * surface. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const ProgressBarTrackBackground = /*#__PURE__*/forwardRef((props, ref) => {
+  const {
+    className,
+    ...restProps
+  } = props;
+  const trackBackgroundClassName = progressBarClassNames.trackBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: trackBackgroundClassName,
+    fallbackColor: "default",
+    ...restProps
+  });
+});
+
+// --------------------------------------------------
+
 const ProgressBarTrack = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
     className,
     style,
     onLayout,
+    background,
     ...restProps
   } = props;
   const ctx = useProgressBar();
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const trackClassName = progressBarClassNames.track({
     size: ctx.size,
     className
@@ -125,7 +153,16 @@ const ProgressBarTrack = /*#__PURE__*/forwardRef((props, ref) => {
     onTrackLayout(event.nativeEvent.layout.width);
     onLayout?.(event);
   }, [onTrackLayout, onLayout]);
-  return /*#__PURE__*/_jsx(View, {
+
+  /**
+   * Background layer rendered behind the track surface.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content (the track paints `--color-default`)
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(ProgressBarTrackBackground, {}) : null;
+  return /*#__PURE__*/_jsxs(View, {
     ref: ref,
     accessible: false,
     accessibilityRole: "none",
@@ -134,7 +171,7 @@ const ProgressBarTrack = /*#__PURE__*/forwardRef((props, ref) => {
     style: [progressBarStyleSheet.track, style],
     onLayout: handleLayout,
     ...restProps,
-    children: children
+    children: [backgroundElement, children]
   });
 });
 
@@ -294,6 +331,7 @@ const ProgressBarValueLabel = /*#__PURE__*/forwardRef((props, ref) => {
 
 ProgressBarRoot.displayName = DISPLAY_NAME.ROOT;
 ProgressBarTrack.displayName = DISPLAY_NAME.TRACK;
+ProgressBarTrackBackground.displayName = DISPLAY_NAME.TRACK_BACKGROUND;
 ProgressBarFill.displayName = DISPLAY_NAME.FILL;
 ProgressBarLabel.displayName = DISPLAY_NAME.LABEL;
 ProgressBarValueLabel.displayName = DISPLAY_NAME.VALUE_LABEL;
@@ -308,6 +346,11 @@ ProgressBarValueLabel.displayName = DISPLAY_NAME.VALUE_LABEL;
  *
  * @component ProgressBar.Track - Background container for the fill element.
  * Applies rounded corners, overflow hidden, and size-based height.
+ *
+ * @component ProgressBar.TrackBackground - Absolute-fill background container
+ * behind the track surface. With no children, the active library theme
+ * decides the default content (e.g. a glass blur layer); pass children to
+ * host custom content with the same positioning and clipping.
  *
  * @component ProgressBar.Fill - Animated element representing filled progress.
  * Automatically switches between determinate (width animation) and
@@ -326,6 +369,8 @@ ProgressBarValueLabel.displayName = DISPLAY_NAME.VALUE_LABEL;
 const ProgressBar = Object.assign(ProgressBarRoot, {
   /** Background container for the fill element */
   Track: ProgressBarTrack,
+  /** Theme-aware background container behind the track surface */
+  TrackBackground: ProgressBarTrackBackground,
   /** Animated fill representing progress */
   Fill: ProgressBarFill,
   /** Text label describing the operation */

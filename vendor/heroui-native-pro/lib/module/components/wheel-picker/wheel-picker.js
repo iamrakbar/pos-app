@@ -1,6 +1,6 @@
 "use strict";
 
-import { colorKit } from 'heroui-native';
+import { colorKit, ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { useThemeColor } from 'heroui-native/hooks';
 import { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -672,6 +672,31 @@ const WheelPickerItemLabel = /*#__PURE__*/forwardRef((props, ref) => {
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the highlight
+ * band's surface. With no `children`, the active library theme decides the
+ * default content: `glass` renders a `GlassView` blur layer; other themes
+ * render nothing. Pass `children` to host arbitrary content (gradients,
+ * images) with the container's positioning and clipping applied.
+ */
+const WheelPickerIndicatorBackground = /*#__PURE__*/forwardRef((props, ref) => {
+  const {
+    className,
+    ...restProps
+  } = props;
+  const indicatorBackgroundClassName = wheelPickerClassNames.indicatorBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: indicatorBackgroundClassName,
+    fallbackColor: "default",
+    ...restProps
+  });
+});
+
+// --------------------------------------------------
+
 const WheelPickerIndicator = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
@@ -679,8 +704,10 @@ const WheelPickerIndicator = /*#__PURE__*/forwardRef((props, ref) => {
     classNames,
     styles: stylesProp,
     style,
+    background,
     ...restProps
   } = props;
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const {
     itemHeight,
     visibleCount
@@ -703,6 +730,15 @@ const WheelPickerIndicator = /*#__PURE__*/forwardRef((props, ref) => {
    */
   const wrapperHeight = itemHeight;
   const wrapperTop = (visibleCount - 1) / 2 * itemHeight;
+
+  /**
+   * Background layer rendered behind the highlight band's surface.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content (the band paints `--color-default`)
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(WheelPickerIndicatorBackground, {}) : null;
   return /*#__PURE__*/_jsx(View, {
     ref: ref,
     className: wrapperClassName,
@@ -712,10 +748,10 @@ const WheelPickerIndicator = /*#__PURE__*/forwardRef((props, ref) => {
     }, stylesProp?.wrapper, style],
     pointerEvents: "none",
     ...restProps,
-    children: /*#__PURE__*/_jsx(View, {
+    children: /*#__PURE__*/_jsxs(View, {
       className: highlightClassName,
       style: [styleSheet.indicatorHighlight, stylesProp?.highlight],
-      children: children
+      children: [backgroundElement, children]
     })
   });
 });
@@ -790,6 +826,7 @@ WheelPickerRoot.displayName = DISPLAY_NAME.ROOT;
 WheelPickerItem.displayName = DISPLAY_NAME.ITEM;
 WheelPickerItemLabel.displayName = DISPLAY_NAME.ITEM_LABEL;
 WheelPickerIndicator.displayName = DISPLAY_NAME.INDICATOR;
+WheelPickerIndicatorBackground.displayName = DISPLAY_NAME.INDICATOR_BACKGROUND;
 WheelPickerMask.displayName = DISPLAY_NAME.MASK;
 
 /**
@@ -812,6 +849,12 @@ WheelPickerMask.displayName = DISPLAY_NAME.MASK;
  * absolutely at the center of the viewport. When the root has no compound
  * children, an indicator is rendered by default.
  *
+ * @component WheelPicker.IndicatorBackground - Absolute-fill background
+ * container behind the highlight band's surface. With no children, the
+ * active library theme decides the default content (e.g. a glass blur
+ * layer); pass children to host custom content with the same positioning
+ * and clipping.
+ *
  * @component WheelPicker.Mask - Optional top/bottom fade overlays that
  * soften the wheel into the surrounding background.
  *
@@ -828,6 +871,8 @@ const WheelPicker = Object.assign(WheelPickerRoot, {
   ItemLabel: WheelPickerItemLabel,
   /** @optional Selection band at the center of the wheel viewport */
   Indicator: WheelPickerIndicator,
+  /** @optional Theme-aware background layer behind the highlight band */
+  IndicatorBackground: WheelPickerIndicatorBackground,
   /** @optional Top / bottom fade overlays */
   Mask: WheelPickerMask
 });

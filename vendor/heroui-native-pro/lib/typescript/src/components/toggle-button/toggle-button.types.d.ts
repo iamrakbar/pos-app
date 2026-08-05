@@ -52,6 +52,16 @@ export interface ToggleButtonProps extends Omit<ButtonRootProps, 'variant' | 'fe
      * color string. Defaults to theme `default` (or `transparent` for `ghost`).
      */
     unselectedColor?: string;
+    /**
+     * Background layer rendered behind the toggle surface.
+     * - `undefined` (default): renders `Button.Background` for the `default`
+     *   variant while unselected (selection paints its own accent-soft tint)
+     *   when the active library theme registers default background content
+     *   (e.g. `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: React.ReactNode;
 }
 /**
  * Ref type for the {@link ToggleButton} component.

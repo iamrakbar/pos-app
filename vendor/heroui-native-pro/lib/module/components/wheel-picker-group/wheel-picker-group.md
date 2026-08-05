@@ -21,6 +21,7 @@ import { WheelPicker, WheelPickerGroup } from 'heroui-native-pro';
 
 - **WheelPickerGroup**: Root container. Owns a shared controllable `values` record keyed by each child wheel's `name`, broadcasts `itemHeight` / `visibleCount` to the group, coordinates cross-wheel scroll syncing, and cascades `animation="disable-all"` to all child wheels. Child wheels nested in the group automatically receive `flex-1` so they distribute the row evenly.
 - **WheelPickerGroup.Indicator**: Optional shared selection band spanning every wheel at the center of the group viewport. Replaces the per-wheel indicator when a `WheelPicker` is nested in the group.
+- **WheelPickerGroup.IndicatorBackground**: Optional theme-aware background container rendered behind the highlight band's surface. Mounted automatically when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **WheelPickerGroup.Mask**: Optional top / bottom fade overlays spanning the full group viewport.
 
 ## Usage
@@ -248,6 +249,7 @@ Animation configuration for the group root. The group has no animated styles of 
 | `className`    | `string`                                                     | -       | Additional CSS classes for the indicator container                                                                                                                                                         |
 | `classNames`   | `ElementSlots<WheelPickerGroupIndicatorSlots>`               | -       | Additional CSS classes for individual indicator slots                                                                                                                                                      |
 | `styles`       | `Partial<Record<WheelPickerGroupIndicatorSlots, ViewStyle>>` | -       | Inline styles for individual indicator slots                                                                                                                                                               |
+| `background`   | `React.ReactNode`                                            | -       | Background layer behind the highlight band's surface. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it                                                              |
 | `...ViewProps` | `ViewProps`                                                  | -       | All standard React Native View props are supported                                                                                                                                                         |
 
 #### ElementSlots\<WheelPickerGroupIndicatorSlots\>
@@ -263,6 +265,16 @@ Animation configuration for the group root. The group has no animated styles of 
 | ----------- | ----------- | ---------------------------------------- |
 | `wrapper`   | `ViewStyle` | Inline style for the indicator wrapper   |
 | `highlight` | `ViewStyle` | Inline style for the indicator highlight |
+
+### WheelPickerGroup.IndicatorBackground
+
+Absolute-fill container rendered behind the highlight band's surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### WheelPickerGroup.Mask
 

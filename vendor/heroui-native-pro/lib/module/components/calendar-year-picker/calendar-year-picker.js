@@ -1,5 +1,6 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { forwardRef, Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable } from 'react-native';
@@ -17,7 +18,7 @@ import calendarYearPickerClassNames, { calendarYearPickerStyleSheet } from "./ca
 import { getYearRange, getYearScrollOffset } from "./calendar-year-picker.utils.js";
 
 // --------------------------------------------------
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 const [YearPickerTriggerContextProvider, useYearPickerTriggerContext] = createStrictContext({
   name: 'HeroUINative.YearPickerTrigger',
   errorMessage: 'Year picker trigger subcomponents must be used within YearPicker.Trigger.'
@@ -183,10 +184,35 @@ YearPickerTriggerIndicator.displayName = DISPLAY_NAME.TRIGGER_INDICATOR;
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the year grid
+ * content. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const YearPickerGridBackground = /*#__PURE__*/forwardRef(({
+  className,
+  ...props
+}, ref) => {
+  const gridBackgroundClassName = calendarYearPickerClassNames.yearGridBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: gridBackgroundClassName,
+    ...props
+  });
+});
+YearPickerGridBackground.displayName = DISPLAY_NAME.GRID_BACKGROUND;
+
+// --------------------------------------------------
+
 const YearPickerGrid = /*#__PURE__*/forwardRef(({
   children,
   className,
   animation,
+  background,
   isAnimatedStyleActive = true,
   style,
   ...viewProps
@@ -195,6 +221,7 @@ const YearPickerGrid = /*#__PURE__*/forwardRef(({
     isYearPickerOpen,
     gridBounds
   } = useYearPicker();
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
 
   /**
    * Defer mounting the `Animated.View` + its animated-style worklet until the picker is opened
@@ -235,7 +262,16 @@ const YearPickerGrid = /*#__PURE__*/forwardRef(({
   if (!hasOpenedOnce) {
     return null;
   }
-  return /*#__PURE__*/_jsx(Animated.View, {
+
+  /**
+   * Background layer rendered behind the year grid content.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(YearPickerGridBackground, {}) : null;
+  return /*#__PURE__*/_jsxs(Animated.View, {
     ref: ref,
     accessibilityElementsHidden: !isYearPickerOpen,
     importantForAccessibility: isYearPickerOpen ? 'auto' : 'no-hide-descendants',
@@ -244,7 +280,7 @@ const YearPickerGrid = /*#__PURE__*/forwardRef(({
     "data-open": isYearPickerOpen,
     style: animatedStyle,
     ...viewProps,
-    children: children
+    children: [backgroundElement, children]
   });
 });
 YearPickerGrid.displayName = DISPLAY_NAME.GRID;
@@ -546,8 +582,9 @@ const CalendarYearPicker = {
   TriggerHeading: YearPickerTriggerHeading,
   TriggerIndicator: YearPickerTriggerIndicator,
   Grid: YearPickerGrid,
+  GridBackground: YearPickerGridBackground,
   GridBody: YearPickerGridBody,
   Cell: YearPickerCell
 };
-export { CalendarYearPicker, YearPickerCell, YearPickerContextProvider, YearPickerGrid, YearPickerGridBody, YearPickerTrigger, YearPickerTriggerHeading, YearPickerTriggerIndicator };
+export { CalendarYearPicker, YearPickerCell, YearPickerContextProvider, YearPickerGrid, YearPickerGridBackground, YearPickerGridBody, YearPickerTrigger, YearPickerTriggerHeading, YearPickerTriggerIndicator };
 export default CalendarYearPicker;

@@ -3,6 +3,7 @@
  */
 export declare const DISPLAY_NAME: {
     readonly ROOT: "HeroUINative.ProgressButton.Root";
+    readonly BACKGROUND: "HeroUINative.ProgressButton.Background";
     readonly OVERLAY: "HeroUINative.ProgressButton.Overlay";
     readonly LABEL: "HeroUINative.ProgressButton.Label";
     readonly MASK_LABEL: "HeroUINative.ProgressButton.MaskLabel";

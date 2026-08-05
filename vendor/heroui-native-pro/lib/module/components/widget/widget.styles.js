@@ -6,6 +6,15 @@ import { combineStyles } from "../../helpers/internal/utils/index.js";
 const root = tv({
   base: 'widget__root'
 });
+
+/**
+ * Background style definition — absolute-fill container behind the widget
+ * shell, hosting theme-specific layers (e.g. glass blur) or custom content
+ * (gradients, images).
+ */
+const background = tv({
+  base: 'widget__background'
+});
 const header = tv({
   base: 'widget__header'
 });
@@ -39,6 +48,7 @@ const legendItem = tv({
 });
 export const widgetClassNames = combineStyles({
   root,
+  background,
   header,
   title,
   description,

@@ -35,6 +35,16 @@
   border-color: var(--color-border);
 }
 
+.calendar-year-picker__year-grid-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+}
+
 .calendar-year-picker__year-grid-body-content {
   padding: calc(var(--spacing) * 2);
 }

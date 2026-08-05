@@ -22,6 +22,16 @@
   background-color: var(--color-default);
 }
 
+.wheel-picker-group__indicator-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+}
+
 .wheel-picker-group__mask-top {
   position: absolute;
   left: 0;

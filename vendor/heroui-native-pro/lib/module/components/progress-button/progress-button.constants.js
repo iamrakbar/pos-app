@@ -5,6 +5,7 @@
  */
 export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.ProgressButton.Root',
+  BACKGROUND: 'HeroUINative.ProgressButton.Background',
   OVERLAY: 'HeroUINative.ProgressButton.Overlay',
   LABEL: 'HeroUINative.ProgressButton.Label',
   MASK_LABEL: 'HeroUINative.ProgressButton.MaskLabel'

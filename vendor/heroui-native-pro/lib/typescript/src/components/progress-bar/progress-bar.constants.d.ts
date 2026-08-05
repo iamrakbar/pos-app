@@ -5,6 +5,7 @@ import type { ProgressBarColor, ProgressBarSize } from './progress-bar.types';
 export declare const DISPLAY_NAME: {
     readonly ROOT: "HeroUINative.ProgressBar.Root";
     readonly TRACK: "HeroUINative.ProgressBar.Track";
+    readonly TRACK_BACKGROUND: "HeroUINative.ProgressBar.TrackBackground";
     readonly FILL: "HeroUINative.ProgressBar.Fill";
     readonly LABEL: "HeroUINative.ProgressBar.Label";
     readonly VALUE_LABEL: "HeroUINative.ProgressBar.ValueLabel";

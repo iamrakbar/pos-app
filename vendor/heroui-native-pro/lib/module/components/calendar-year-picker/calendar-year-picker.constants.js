@@ -31,6 +31,7 @@ export const DISPLAY_NAME = {
   TRIGGER_HEADING: 'HeroUINative.CalendarYearPicker.TriggerHeading',
   TRIGGER_INDICATOR: 'HeroUINative.CalendarYearPicker.TriggerIndicator',
   GRID: 'HeroUINative.CalendarYearPicker.Grid',
+  GRID_BACKGROUND: 'HeroUINative.CalendarYearPicker.GridBackground',
   GRID_BODY: 'HeroUINative.CalendarYearPicker.GridBody',
   CELL: 'HeroUINative.CalendarYearPicker.Cell'
 };

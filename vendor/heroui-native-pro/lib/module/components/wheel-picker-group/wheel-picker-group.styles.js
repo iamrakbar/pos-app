@@ -37,6 +37,15 @@ const indicator = tv({
 });
 
 /**
+ * Indicator background style definition.
+ * Absolute-fill container rendered behind the highlight band's surface,
+ * matching its border radius and clipping.
+ */
+const indicatorBackground = tv({
+  base: 'wheel-picker-group__indicator-background'
+});
+
+/**
  * Mask style definition.
  *
  * Slots:
@@ -57,6 +66,7 @@ const mask = tv({
 export const wheelPickerGroupClassNames = combineStyles({
   root,
   indicator,
+  indicatorBackground,
   mask
 });
 export const styleSheet = StyleSheet.create({

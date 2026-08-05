@@ -4,6 +4,7 @@
 export declare const DISPLAY_NAME: {
     readonly ROOT: "HeroUINative.WheelPickerGroup.Root";
     readonly INDICATOR: "HeroUINative.WheelPickerGroup.Indicator";
+    readonly INDICATOR_BACKGROUND: "HeroUINative.WheelPickerGroup.IndicatorBackground";
     readonly MASK: "HeroUINative.WheelPickerGroup.Mask";
 };
 /**

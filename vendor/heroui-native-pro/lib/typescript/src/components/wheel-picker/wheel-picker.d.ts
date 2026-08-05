@@ -1,6 +1,6 @@
 import { type ReactElement } from 'react';
 import { View } from 'react-native';
-import type { WheelPickerContextValue, WheelPickerIndicatorProps, WheelPickerItemLabelProps, WheelPickerItemProps, WheelPickerItemRenderProps, WheelPickerMaskProps, WheelPickerRootProps, WheelPickerRootRef } from './wheel-picker.types';
+import type { WheelPickerContextValue, WheelPickerIndicatorBackgroundProps, WheelPickerIndicatorProps, WheelPickerItemLabelProps, WheelPickerItemProps, WheelPickerItemRenderProps, WheelPickerMaskProps, WheelPickerRootProps, WheelPickerRootRef } from './wheel-picker.types';
 declare const useWheelPicker: () => WheelPickerContextValue;
 export { useWheelPicker };
 declare const useWheelPickerItem: () => WheelPickerItemRenderProps<unknown>;
@@ -25,6 +25,12 @@ export { useWheelPickerItem };
  * absolutely at the center of the viewport. When the root has no compound
  * children, an indicator is rendered by default.
  *
+ * @component WheelPicker.IndicatorBackground - Absolute-fill background
+ * container behind the highlight band's surface. With no children, the
+ * active library theme decides the default content (e.g. a glass blur
+ * layer); pass children to host custom content with the same positioning
+ * and clipping.
+ *
  * @component WheelPicker.Mask - Optional top/bottom fade overlays that
  * soften the wheel into the surrounding background.
  *
@@ -43,6 +49,8 @@ declare const WheelPicker: (<T>(props: WheelPickerRootProps<T> & {
     ItemLabel: import("react").ForwardRefExoticComponent<WheelPickerItemLabelProps & import("react").RefAttributes<import("react-native").Text>>;
     /** @optional Selection band at the center of the wheel viewport */
     Indicator: import("react").ForwardRefExoticComponent<WheelPickerIndicatorProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background layer behind the highlight band */
+    IndicatorBackground: import("react").ForwardRefExoticComponent<WheelPickerIndicatorBackgroundProps & import("react").RefAttributes<View>>;
     /** @optional Top / bottom fade overlays */
     Mask: import("react").ForwardRefExoticComponent<WheelPickerMaskProps & import("react").RefAttributes<View>>;
 };

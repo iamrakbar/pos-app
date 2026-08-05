@@ -14,6 +14,11 @@ declare const useNumberPad: () => NumberPadContextValue;
  * Appends its value to the pad value by default. Renders a default
  * NumberPad.KeyLabel showing its value when no children are provided.
  *
+ * @component NumberPad.KeyBackground - Absolute-fill background container
+ * behind a key's surface. With no children, the active library theme decides
+ * the content (glass theme renders a blur layer with a default-matched
+ * fallback). Replaceable via the `background` prop on NumberPad.Key.
+ *
  * @component NumberPad.KeyLabel - Text label inside a key. Defaults to the
  * parent key's value when no children are provided.
  *
@@ -31,6 +36,10 @@ declare const NumberPad: import("react").ForwardRefExoticComponent<NumberPadRoot
     Row: import("react").ForwardRefExoticComponent<NumberPadRowProps & import("react").RefAttributes<View>>;
     /** @optional Pressable digit key with press animation */
     Key: import("react").ForwardRefExoticComponent<NumberPadKeyProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background container behind a key's surface */
+    KeyBackground: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     /** @optional Text label inside a key, defaults to the key's value */
     KeyLabel: import("react").ForwardRefExoticComponent<NumberPadKeyLabelProps & import("react").RefAttributes<import("react-native").Text>>;
     /** @optional Backspace key — press to delete, long-press to clear */

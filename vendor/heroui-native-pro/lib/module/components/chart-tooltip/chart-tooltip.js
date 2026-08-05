@@ -1,5 +1,6 @@
 "use strict";
 
+import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -10,7 +11,7 @@ import { createContext } from "../../helpers/internal/utils/index.js";
 import { useChartTooltipAnchorRootAnimation, useChartTooltipRootAnimation } from "./chart-tooltip.animation.js";
 import { DEFAULT_INDICATOR_VARIANT, DEFAULT_IS_VISIBLE, DEFAULT_PLACEMENT, DEFAULT_TOOLTIP_GAP, DISPLAY_NAME } from "./chart-tooltip.constants.js";
 import chartTooltipClassNames from "./chart-tooltip.styles.js";
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 // --------------------------------------------------
 
 const [ChartTooltipAnchorProvider, useChartTooltipAnchor] = createContext({
@@ -80,6 +81,30 @@ ChartTooltipAnchorRoot.displayName = DISPLAY_NAME.ANCHOR;
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the card
+ * content. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const ChartTooltipBackground = /*#__PURE__*/forwardRef(({
+  className,
+  ...props
+}, ref) => {
+  const backgroundClassName = chartTooltipClassNames.background({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: backgroundClassName,
+    ...props
+  });
+});
+ChartTooltipBackground.displayName = DISPLAY_NAME.BACKGROUND;
+
+// --------------------------------------------------
+
 const ChartTooltipRoot = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     animation,
@@ -89,10 +114,12 @@ const ChartTooltipRoot = /*#__PURE__*/forwardRef((props, ref) => {
     isVisible = DEFAULT_IS_VISIBLE,
     offset,
     placement = DEFAULT_PLACEMENT,
+    background,
     style,
     ...restViewProps
   } = props;
   const anchor = useChartTooltipAnchor();
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const measuredWidth = useSharedValue(0);
   const measuredHeight = useSharedValue(0);
   const {
@@ -117,7 +144,16 @@ const ChartTooltipRoot = /*#__PURE__*/forwardRef((props, ref) => {
   const rootClassName = chartTooltipClassNames.root({
     className
   });
-  return /*#__PURE__*/_jsx(Animated.View, {
+
+  /**
+   * Background layer rendered behind the card content.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(ChartTooltipBackground, {}) : null;
+  return /*#__PURE__*/_jsxs(Animated.View, {
     ref: ref,
     accessibilityLiveRegion: "polite",
     accessibilityRole: "summary",
@@ -126,7 +162,7 @@ const ChartTooltipRoot = /*#__PURE__*/forwardRef((props, ref) => {
     style: [rContainerStyle, style],
     onLayout: onLayout,
     ...restViewProps,
-    children: children
+    children: [backgroundElement, children]
   });
 });
 ChartTooltipRoot.displayName = DISPLAY_NAME.ROOT;
@@ -255,6 +291,9 @@ ChartTooltipValue.displayName = DISPLAY_NAME.VALUE;
  *   {@link ChartTooltip.Anchor}.
  * @component ChartTooltip.Anchor — Relative wrapper supplying press coordinates, active index,
  *   and plot bounds.
+ * @component ChartTooltip.Background — Absolute-fill background container behind the card
+ *   content. With no children, the active library theme decides the content (glass theme
+ *   renders a blur layer). Replaceable via the `background` prop on ChartTooltip.
  * @component ChartTooltip.Header — Optional title row (typically the X-axis category).
  * @component ChartTooltip.Item — One series row (indicator + label + value).
  * @component ChartTooltip.Indicator — Color swatch beside a series name.
@@ -263,6 +302,7 @@ ChartTooltipValue.displayName = DISPLAY_NAME.VALUE;
  */
 const ChartTooltip = Object.assign(ChartTooltipRoot, {
   Anchor: ChartTooltipAnchorRoot,
+  Background: ChartTooltipBackground,
   Header: ChartTooltipHeader,
   Indicator: ChartTooltipIndicator,
   Item: ChartTooltipItem,

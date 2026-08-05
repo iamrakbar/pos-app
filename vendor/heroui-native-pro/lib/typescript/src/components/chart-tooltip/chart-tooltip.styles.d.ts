@@ -1,4 +1,5 @@
 export declare const chartTooltipClassNames: import("../../helpers/internal/types").CombinedStyles<{
+    background: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "chart-tooltip__background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "chart-tooltip__background", unknown, unknown, undefined>>;
     header: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "chart-tooltip__header", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "chart-tooltip__header", unknown, unknown, undefined>>;
     indicator: import("tailwind-variants").TVReturnType<{
         variant: {

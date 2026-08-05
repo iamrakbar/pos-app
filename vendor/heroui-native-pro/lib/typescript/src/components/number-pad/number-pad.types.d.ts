@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { PressableProps, TextProps, ViewProps } from 'react-native';
+import type { ColorValue, PressableProps, TextProps, ViewProps } from 'react-native';
 import type { WithTimingConfig } from 'react-native-reanimated';
 import type { Animation, AnimationRootDisableAll, AnimationValue, PressableRef, TextRef, ViewRef } from '../../helpers/internal/types';
 /**
@@ -65,6 +65,12 @@ export interface NumberPadContextValue {
     clear: () => void;
     /** Default press handler for the spacer cell when it renders as a key */
     onSpacerPress?: () => void;
+    /**
+     * Highlight color applied to a key's surface while pressed, cascaded to
+     * every key. `undefined` when the root does not override the theme-aware
+     * default. A per-key `highlightColor` takes precedence over this value.
+     */
+    highlightColor?: ColorValue;
 }
 /**
  * Props for the NumberPad root component.
@@ -135,6 +141,14 @@ export interface NumberPadRootProps extends ViewProps {
      * - `undefined`: use default animations.
      */
     animation?: NumberPadRootAnimation;
+    /**
+     * Highlight color applied to each key's surface while pressed, shared by
+     * every key in the pad. Overrides the theme-aware default (solid
+     * `default-hover`, or a translucent variant when the active theme registers
+     * default background content such as `glass`). Individual keys can still
+     * override this via their own `highlightColor` prop.
+     */
+    highlightColor?: ColorValue;
 }
 /**
  * Ref type for the NumberPad root component.
@@ -236,7 +250,34 @@ export interface NumberPadKeyProps extends Omit<PressableProps, 'children' | 'di
      * @default true
      */
     isAnimatedStyleActive?: boolean;
+    /**
+     * Highlight color applied to the key's surface while pressed. Overrides
+     * both the root's `highlightColor` and the theme-aware default (solid
+     * `default-hover`, or a translucent variant when the active theme registers
+     * default background content such as `glass`).
+     */
+    highlightColor?: ColorValue;
+    /**
+     * Background layer rendered behind the key surface.
+     * - `undefined` (default): renders `NumberPad.KeyBackground` when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `NumberPad.KeyBackground` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
+/**
+ * Props for the NumberPad.KeyBackground sub-component.
+ * Generic absolute-fill container behind the key surface. When no
+ * `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type NumberPadKeyBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
 /**
  * Ref type for the NumberPad.Key component.
  */

@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import type { ChartCrosshairAnchorContextValue, ChartCrosshairAnchorProps, ChartCrosshairProps, ChartCrosshairValueContextValue, ChartCrosshairValueLabelProps, ChartCrosshairValueProps } from './chart-crosshair.types';
+import type { ChartCrosshairAnchorContextValue, ChartCrosshairAnchorProps, ChartCrosshairProps, ChartCrosshairValueBackgroundProps, ChartCrosshairValueContextValue, ChartCrosshairValueLabelProps, ChartCrosshairValueProps } from './chart-crosshair.types';
 /**
  * Crosshair layout context: supplied only by {@link ChartCrosshair.Anchor}. {@link ChartCrosshair.Value}
  * consumes it via {@link useChartCrosshairAnchor} (strict).
@@ -25,12 +25,15 @@ declare namespace ChartCrosshairSkia {
  *   supplies horizontal position, bounds, and press activity via context.
  * @component ChartCrosshair.Value — Absolutely positioned Animated overlay hosting the tooltip value;
  *   **requires** {@link ChartCrosshair.Anchor}.
+ * @component ChartCrosshair.ValueBackground — Theme-aware absolute-fill background layer behind the
+ *   value pill surface (default variant).
  * @component ChartCrosshair.ValueLabel — Read-only animated label driven by {@link ChartCrosshair.Value}
  *   `value` prop / {@link ChartCrosshairValueContextValue}.
  */
 declare const ChartCrosshair: typeof ChartCrosshairSkia & {
     Anchor: import("react").ForwardRefExoticComponent<ChartCrosshairAnchorProps & import("react").RefAttributes<View>>;
     Value: import("react").ForwardRefExoticComponent<ChartCrosshairValueProps & import("react").RefAttributes<never>>;
+    ValueBackground: import("react").ForwardRefExoticComponent<ChartCrosshairValueBackgroundProps & import("react").RefAttributes<View>>;
     ValueLabel: import("react").ForwardRefExoticComponent<ChartCrosshairValueLabelProps & import("react").RefAttributes<import("react-native").TextInput>>;
 };
 export default ChartCrosshair;

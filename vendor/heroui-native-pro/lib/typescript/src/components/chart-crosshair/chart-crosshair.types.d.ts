@@ -255,7 +255,40 @@ export interface ChartCrosshairValueProps extends Omit<ViewProps, 'children'> {
      * Optional children rendered after the auto or explicit label in a horizontal row (e.g. icons).
      */
     children?: ReactNode;
+    /**
+     * Background layer rendered behind the value pill surface.
+     * - `undefined` (default): renders `ChartCrosshair.ValueBackground` for the
+     *   `default` variant when the active library theme registers default
+     *   background content (e.g. `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
 }
+/**
+ * Props for {@link ChartCrosshair.ValueBackground}.
+ *
+ * Absolute-fill container rendered behind the value pill surface. With no
+ * children, the active library theme decides the default content (e.g. a
+ * glass blur layer); pass children to host custom content with the same
+ * positioning and clipping.
+ */
+export interface ChartCrosshairValueBackgroundProps extends ViewProps {
+    /**
+     * Custom content to render inside the background container.
+     * When omitted, the active library theme's default background content is
+     * rendered.
+     */
+    children?: ReactNode;
+    /**
+     * Additional classes for the background container.
+     */
+    className?: string;
+}
+/**
+ * Ref to {@link ChartCrosshair.ValueBackground}'s container `View`.
+ */
+export type ChartCrosshairValueBackgroundRef = ViewRef;
 /**
  * Props for {@link ChartCrosshair.ValueLabel}. The animated string is **never** a prop — use
  * `const { value } = useChartCrosshairValue()` (set on {@link ChartCrosshair.Value}). Extra props forward

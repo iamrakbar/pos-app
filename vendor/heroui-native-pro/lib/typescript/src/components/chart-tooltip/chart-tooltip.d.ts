@@ -8,6 +8,9 @@ declare const useChartTooltipAnchor: () => ChartTooltipAnchorContextValue;
  *   {@link ChartTooltip.Anchor}.
  * @component ChartTooltip.Anchor — Relative wrapper supplying press coordinates, active index,
  *   and plot bounds.
+ * @component ChartTooltip.Background — Absolute-fill background container behind the card
+ *   content. With no children, the active library theme decides the content (glass theme
+ *   renders a blur layer). Replaceable via the `background` prop on ChartTooltip.
  * @component ChartTooltip.Header — Optional title row (typically the X-axis category).
  * @component ChartTooltip.Item — One series row (indicator + label + value).
  * @component ChartTooltip.Indicator — Color swatch beside a series name.
@@ -16,6 +19,9 @@ declare const useChartTooltipAnchor: () => ChartTooltipAnchorContextValue;
  */
 declare const ChartTooltip: import("react").ForwardRefExoticComponent<ChartTooltipRootProps & import("react").RefAttributes<never>> & {
     Anchor: import("react").ForwardRefExoticComponent<ChartTooltipAnchorProps & import("react").RefAttributes<View>>;
+    Background: import("react").ForwardRefExoticComponent<import("react-native").ViewProps & {
+        className?: string;
+    } & import("react").RefAttributes<View>>;
     Header: import("react").ForwardRefExoticComponent<ChartTooltipHeaderProps & import("react").RefAttributes<import("react-native").Text>>;
     Indicator: import("react").ForwardRefExoticComponent<ChartTooltipIndicatorProps & import("react").RefAttributes<View>>;
     Item: import("react").ForwardRefExoticComponent<ChartTooltipItemProps & import("react").RefAttributes<View>>;

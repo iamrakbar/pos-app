@@ -8,6 +8,7 @@ export const DISPLAY_NAME = {
   ITEM: 'HeroUINative.WheelPicker.Item',
   ITEM_LABEL: 'HeroUINative.WheelPicker.ItemLabel',
   INDICATOR: 'HeroUINative.WheelPicker.Indicator',
+  INDICATOR_BACKGROUND: 'HeroUINative.WheelPicker.IndicatorBackground',
   MASK: 'HeroUINative.WheelPicker.Mask'
 };
 

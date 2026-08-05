@@ -94,6 +94,15 @@ const root = tv({
     isDot: false
   }
 });
+
+/**
+ * Background style definition.
+ * Absolute-fill container rendered behind the badge surface, matching the
+ * root's border radius and clipping.
+ */
+const background = tv({
+  base: 'badge__background'
+});
 const label = tv({
   base: 'badge__label',
   variants: {
@@ -190,6 +199,7 @@ const label = tv({
 });
 export const badgeClassNames = combineStyles({
   root,
+  background,
   label
 });
 export const badgeStyleSheet = StyleSheet.create({

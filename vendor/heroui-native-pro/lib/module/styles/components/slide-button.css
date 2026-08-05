@@ -10,6 +10,18 @@
   opacity: var(--opacity-disabled);
 }
 
+/* Container background — absolute-fill layer behind the container surface (clipped by the container) */
+
+.slide-button__container-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--radius-4xl);
+  overflow: hidden;
+}
+
 .slide-button__content-container {
   flex: 1;
 }
@@ -80,6 +92,16 @@
   background-color: var(--color-surface);
   box-shadow: var(--shadow-sm);
   z-index: 10;
+}
+
+.slide-button__thumb-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--radius-4xl);
+  overflow: hidden;
 }
 
 .slide-button__label {

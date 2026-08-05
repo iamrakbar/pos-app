@@ -6,6 +6,7 @@
 export const DISPLAY_NAME = {
   ANCHOR: 'HeroUINative.ChartTooltip.Anchor',
   ROOT: 'HeroUINative.ChartTooltip',
+  BACKGROUND: 'HeroUINative.ChartTooltip.Background',
   HEADER: 'HeroUINative.ChartTooltip.Header',
   ITEM: 'HeroUINative.ChartTooltip.Item',
   INDICATOR: 'HeroUINative.ChartTooltip.Indicator',

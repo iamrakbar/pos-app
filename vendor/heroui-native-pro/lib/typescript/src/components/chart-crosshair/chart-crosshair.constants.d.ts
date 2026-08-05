@@ -5,6 +5,7 @@ export declare const DISPLAY_NAME: {
     readonly ANCHOR: "HeroUINative.ChartCrosshair.Anchor";
     readonly ROOT: "HeroUINative.ChartCrosshair";
     readonly VALUE: "HeroUINative.ChartCrosshair.Value";
+    readonly VALUE_BACKGROUND: "HeroUINative.ChartCrosshair.ValueBackground";
     readonly VALUE_LABEL: "HeroUINative.ChartCrosshair.ValueLabel";
 };
 /**

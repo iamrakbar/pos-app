@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { useWheelPickerGroup } from './wheel-picker-group.context';
-import type { WheelPickerGroupIndicatorProps, WheelPickerGroupMaskProps, WheelPickerGroupRootProps } from './wheel-picker-group.types';
+import type { WheelPickerGroupIndicatorBackgroundProps, WheelPickerGroupIndicatorProps, WheelPickerGroupMaskProps, WheelPickerGroupRootProps } from './wheel-picker-group.types';
 /**
  * Compound `WheelPickerGroup` component for coordinating multiple
  * `WheelPicker` instances (e.g. a date picker with year / month / day).
@@ -13,6 +13,12 @@ import type { WheelPickerGroupIndicatorProps, WheelPickerGroupMaskProps, WheelPi
  * @component WheelPickerGroup.Indicator - Optional shared selection band
  * spanning every wheel at the center of the group viewport. Replaces the
  * per-wheel indicator when a child `WheelPicker` is nested in the group.
+ *
+ * @component WheelPickerGroup.IndicatorBackground - Absolute-fill background
+ * container behind the highlight band's surface. With no children, the
+ * active library theme decides the default content (e.g. a glass blur
+ * layer); pass children to host custom content with the same positioning
+ * and clipping.
  *
  * @component WheelPickerGroup.Mask - Optional top / bottom fade overlays
  * that span the full group viewport.
@@ -27,6 +33,8 @@ import type { WheelPickerGroupIndicatorProps, WheelPickerGroupMaskProps, WheelPi
 declare const WheelPickerGroup: import("react").ForwardRefExoticComponent<WheelPickerGroupRootProps & import("react").RefAttributes<View>> & {
     /** @optional Shared selection band spanning every wheel */
     Indicator: import("react").ForwardRefExoticComponent<WheelPickerGroupIndicatorProps & import("react").RefAttributes<View>>;
+    /** @optional Theme-aware background layer behind the highlight band */
+    IndicatorBackground: import("react").ForwardRefExoticComponent<WheelPickerGroupIndicatorBackgroundProps & import("react").RefAttributes<View>>;
     /** @optional Shared top / bottom fade overlays */
     Mask: import("react").ForwardRefExoticComponent<WheelPickerGroupMaskProps & import("react").RefAttributes<View>>;
 };

@@ -99,6 +99,24 @@ const thumb = tv({
 });
 
 /**
+ * Thumb background style definition — absolute-fill container behind the
+ * thumb surface, hosting theme-specific layers (e.g. glass blur) or custom
+ * content (gradients, images).
+ */
+const thumbBackground = tv({
+  base: 'slide-button__thumb-background'
+});
+
+/**
+ * Container background style definition — absolute-fill container behind
+ * the container surface, hosting theme-specific layers (e.g. glass blur) or
+ * custom content (gradients, images).
+ */
+const containerBackground = tv({
+  base: 'slide-button__container-background'
+});
+
+/**
  * Label style definition.
  * Text label used within underlay or overlay content parts.
  */
@@ -121,6 +139,8 @@ export const slideButtonClassNames = combineStyles({
   underlayContent,
   overlayContent,
   thumb,
+  thumbBackground,
+  containerBackground,
   label
 });
 export const slideButtonStyleSheet = StyleSheet.create({

@@ -19,6 +19,7 @@ import { NumberStepper } from 'heroui-native-pro';
 ```
 
 - **NumberStepper**: Root container that manages numeric value state, and provides context to sub-components. Supports both controlled and uncontrolled modes.
+- **NumberStepper.RootBackground**: Optional theme-aware background container rendered behind the root surface. Mounted automatically when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **NumberStepper.DecrementButton**: Pressable button that decreases the value by one step. Auto-disables at the minimum boundary. Renders a minus icon by default.
 - **NumberStepper.Value**: Displays the current numeric value with direction-aware flip animations on change.
 - **NumberStepper.IncrementButton**: Pressable button that increases the value by one step. Auto-disables at the maximum boundary. Renders a plus icon by default.
@@ -167,6 +168,7 @@ export default function NumberStepperExample() {
 | `className`     | `string`                                                                                | -           | Additional CSS classes for the root container                          |
 | `onValueChange` | `(value: number) => void`                                                               | -           | Callback fired when the value changes                                  |
 | `animation`     | `AnimationRootDisableAll`                                                               | -           | Animation configuration for the root component                         |
+| `background`    | `React.ReactNode`                                                                       | -           | Background layer behind the root surface. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it |
 | `...ViewProps`  | `ViewProps`                                                                             | -           | All standard React Native View props are supported                     |
 
 #### NumberStepperRootRenderProps
@@ -188,6 +190,16 @@ Animation configuration for the number stepper root component. Can be:
 - `false` or `"disabled"`: Disable only root animations
 - `"disable-all"`: Disable all animations including children
 - `true` or `undefined`: Use default animations
+
+### NumberStepper.RootBackground
+
+Absolute-fill container rendered behind the root surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### NumberStepper.DecrementButton
 

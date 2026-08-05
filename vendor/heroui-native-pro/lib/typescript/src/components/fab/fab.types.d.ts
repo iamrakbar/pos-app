@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import type { TextProps, ViewStyle } from 'react-native';
+import type { TextProps, ViewProps, ViewStyle } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
-import type { Animation, AnimationRoot, AnimationValue, ElementSlots, PressableRef, SpringAnimationConfig, TextRef, TimingAnimationConfig } from '../../helpers/internal/types';
+import type { Animation, AnimationRoot, AnimationValue, ElementSlots, PopupOverlayBlurViewProps, PopupOverlayVariant, PressableRef, SpringAnimationConfig, TextRef, TimingAnimationConfig } from '../../helpers/internal/types';
 import type * as FABPrimitivesTypes from '../../primitives/fab/fab.types';
 import type { TriggerSlots } from './fab.styles';
 /**
@@ -307,6 +307,14 @@ export interface FABPortalProps extends FABPrimitivesTypes.PortalProps {
     className?: string;
 }
 /**
+ * Visual variant of the {@link FAB.Overlay} compound part.
+ */
+export type FABOverlayVariant = PopupOverlayVariant;
+/**
+ * Props forwarded to the BlurView rendered by the `blur` overlay variant.
+ */
+export type FABOverlayBlurViewProps = PopupOverlayBlurViewProps;
+/**
  * Props for the {@link FAB.Overlay} compound part.
  *
  * Backdrop behind the FAB content. Its opacity is driven by the shared
@@ -334,9 +342,24 @@ export interface FABOverlayProps extends Omit<FABPrimitivesTypes.OverlayProps, '
     /**
      * When `false`, animated styles are not applied.
      *
-     * @default true
+     * @default true for the `default` variant, false for the `blur` variant
+     * (the animated blur intensity replaces the opacity animation)
      */
     isAnimatedStyleActive?: boolean;
+    /**
+     * Visual variant of the overlay.
+     * - `default`: solid backdrop colored by the `--color-backdrop` token
+     * - `blur`: blur backdrop (iOS only, requires expo-blur; falls back to
+     *   `default` otherwise)
+     *
+     * @default 'blur' when the library theme is `glass`, otherwise 'default'
+     */
+    variant?: FABOverlayVariant;
+    /**
+     * Props forwarded to the BlurView rendered by the `blur` variant.
+     * `intensity` is treated as the maximum (animated) blur intensity.
+     */
+    blurViewProps?: FABOverlayBlurViewProps;
 }
 /**
  * Imperative ref type for the {@link FAB.Overlay} element.
@@ -388,6 +411,16 @@ export interface FABItemProps extends Omit<FABPrimitivesTypes.ItemProps, 'asChil
      */
     className?: string;
     /**
+     * Background layer rendered behind the item content.
+     * - `undefined` (default): renders `FAB.ItemBackground` when the active
+     *   library theme registers default background content (e.g. `glass`);
+     *   otherwise no layer
+     * - custom node: replaces the default layer entirely (wrap content in
+     *   `FAB.ItemBackground` to keep the absolute-fill and clipping)
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
+    /**
      * Animation configuration for the item appearing motion.
      * - `true` or `undefined`: use default animations.
      * - `false` or `"disabled"`: the item snaps between hidden and visible.
@@ -405,6 +438,16 @@ export interface FABItemProps extends Omit<FABPrimitivesTypes.ItemProps, 'asChil
  * Imperative ref type for the {@link FAB.Item} element.
  */
 export type FABItemRef = PressableRef;
+/**
+ * Props for the {@link FAB.ItemBackground} compound part.
+ * Generic absolute-fill container behind the item content. When no
+ * `children` are given, the active library theme decides the default
+ * content (e.g. a frosted-glass blur layer when the theme is `glass`).
+ */
+export type FABItemBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
 /**
  * Props for the {@link FAB.ItemLabel} compound part.
  */

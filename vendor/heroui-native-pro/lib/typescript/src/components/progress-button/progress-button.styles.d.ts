@@ -33,6 +33,7 @@ export declare const progressButtonClassNames: import("../../helpers/internal/ty
             false: string;
         };
     }, undefined, "progress-button__root", unknown, unknown, undefined>>;
+    background: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "progress-button__background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "progress-button__background", unknown, unknown, undefined>>;
     overlay: import("tailwind-variants").TVReturnType<{
         variant: {
             default: string;

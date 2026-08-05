@@ -126,6 +126,7 @@ export declare const wheelPickerGroupClassNames: import("../../helpers/internal/
         wrapper: string;
         highlight: string;
     }, undefined, unknown, unknown, undefined>>;
+    indicatorBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "wheel-picker-group__indicator-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "wheel-picker-group__indicator-background", unknown, unknown, undefined>>;
     mask: import("tailwind-variants").TVReturnType<{
         [key: string]: {
             [key: string]: import("tailwind-merge").ClassNameValue | {

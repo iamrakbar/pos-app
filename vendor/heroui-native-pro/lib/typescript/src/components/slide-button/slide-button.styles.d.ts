@@ -254,6 +254,8 @@ export declare const slideButtonClassNames: import("../../helpers/internal/types
         contentContainer: string;
     }, undefined, unknown, unknown, undefined>>;
     thumb: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "slide-button__thumb", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "slide-button__thumb", unknown, unknown, undefined>>;
+    thumbBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "slide-button__thumb-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "slide-button__thumb-background", unknown, unknown, undefined>>;
+    containerBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "slide-button__container-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "slide-button__container-background", unknown, unknown, undefined>>;
     label: import("tailwind-variants").TVReturnType<{
         variant: {
             default: string;

@@ -127,12 +127,31 @@ export interface YearPickerGridProps extends ViewProps {
      */
     animation?: YearPickerGridAnimation;
     /**
+     * Background layer rendered behind the year grid content.
+     * - `undefined` (default): renders the grid background container when the
+     *   active library theme registers default background content (e.g.
+     *   `glass`); otherwise no layer
+     * - custom node: replaces the default layer entirely
+     * - `null`: removes the background layer
+     */
+    background?: ReactNode;
+    /**
      * When `false`, animated opacity is skipped.
      *
      * @default true
      */
     isAnimatedStyleActive?: boolean;
 }
+/**
+ * Props for the year grid background — generic absolute-fill container
+ * behind the year grid content. When no `children` are given, the active
+ * library theme decides the default content (e.g. a frosted-glass blur
+ * layer when the theme is `glass`).
+ */
+export type YearPickerGridBackgroundProps = ViewProps & {
+    /** Additional CSS classes */
+    className?: string;
+};
 /**
  * Props for `CalendarYearPicker.GridBody` / `Calendar.YearPickerGridBody`.
  *

@@ -17,6 +17,7 @@ export declare const emptyStateClassNames: import("../../helpers/internal/types"
             icon: string;
         };
     }, undefined, "empty-state__media", unknown, unknown, undefined>>;
+    mediaBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "empty-state__media-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "empty-state__media-background", unknown, unknown, undefined>>;
     title: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "empty-state__title", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "empty-state__title", unknown, unknown, undefined>>;
     description: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "empty-state__description", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "empty-state__description", unknown, unknown, undefined>>;
     content: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "empty-state__content", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "empty-state__content", unknown, unknown, undefined>>;

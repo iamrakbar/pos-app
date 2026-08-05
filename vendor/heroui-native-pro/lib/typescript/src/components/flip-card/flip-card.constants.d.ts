@@ -8,6 +8,7 @@ export declare const DISPLAY_NAME: {
     readonly ROOT: "HeroUINative.FlipCard.Root";
     readonly FRONT: "HeroUINative.FlipCard.Front";
     readonly BACK: "HeroUINative.FlipCard.Back";
+    readonly FACE_BACKGROUND: "HeroUINative.FlipCard.FaceBackground";
 };
 /**
  * Default spring configuration driving the flip progress. Tuned for a

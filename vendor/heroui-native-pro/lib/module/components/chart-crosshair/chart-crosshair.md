@@ -26,6 +26,7 @@ import { ChartCrosshair } from 'heroui-native-pro';
 - **ChartCrosshair**: Skia vertical rule (`Path`) drawn from `(x, top)` to `(x, bottom)`. Renders dashed by default via `DashPathEffect`; pass `variant="solid"` for an unbroken stroke. Render inside the chart canvas with `useChartPressState`-driven shared values.
 - **ChartCrosshair.Anchor**: Relatively positioned React Native `View` that wraps the chart and the sibling RN value overlay. Supplies crosshair context (`x`, `isActive`, `chartBounds`) so descendants can position themselves on the same coordinate system as the Skia rule.
 - **ChartCrosshair.Value**: Absolutely positioned animated overlay that hosts the tooltip pill. Measures its own width to center on `x`, clamps to `chartBounds`, and tracks press activity via `isActive` opacity. Must be a descendant of `ChartCrosshair.Anchor`.
+- **ChartCrosshair.ValueBackground**: Optional theme-aware background container rendered behind the value pill surface. Mounted automatically for the `default` variant when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop.
 - **ChartCrosshair.ValueLabel**: Read-only animated label backed by an internal `ReText` (read-only Reanimated `TextInput`). Reads the `value` shared string from `ChartCrosshair.Value` context, so the label updates on the UI thread without React renders.
 
 ## Usage
@@ -328,6 +329,7 @@ export default function CrosshairChartExample() {
 | `classNames`   | `ElementSlots<ValueSlots>`     | -           | Additional classes per slot (`container`, `label`)                                                                 |
 | `styles`       | `ChartCrosshairValueStyles`    | -           | Inline style overrides per slot                                                                                    |
 | `children`     | `ReactNode`                    | -           | Optional content rendered after (or replacing) the default label                                                   |
+| `background`   | `ReactNode`                    | -           | Background layer behind the value pill surface. `undefined` renders the theme-aware default for the `default` variant; custom node replaces it; `null` removes it |
 | `...ViewProps` | `Omit<ViewProps, 'children'>`  | -           | All standard React Native View props are supported except `children` (typed above)                                 |
 
 #### ChartCrosshairValueVariant
@@ -366,6 +368,16 @@ Pixel offsets applied to the animated overlay on top of auto-centering. Values a
 | ----------- | ----------- | -------------------------------------------------- |
 | `container` | `ViewStyle` | Style for the animated overlay `Animated.View`     |
 | `label`     | `TextStyle` | Style for the read-only animated `TextInput` label |
+
+### ChartCrosshair.ValueBackground
+
+Absolute-fill container rendered behind the value pill surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type        | default | description                                        |
+| -------------- | ----------- | ------- | -------------------------------------------------- |
+| `children`     | `ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`    | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps` | -       | All standard React Native View props are supported |
 
 ### ChartCrosshair.ValueLabel
 

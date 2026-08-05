@@ -112,11 +112,6 @@ export interface NumberFieldProps extends ViewProps {
      */
     formatOptions?: Intl.NumberFormatOptions;
     /**
-     * Locale used to format and parse the value.
-     * @default Device locale
-     */
-    locale?: string;
-    /**
      * Whether the entire number field and its children are disabled.
      *
      * @default false

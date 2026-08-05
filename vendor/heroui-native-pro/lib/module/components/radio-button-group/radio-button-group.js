@@ -1,11 +1,11 @@
 "use strict";
 
-import { RadioGroup, useRadioGroup, useRadioGroupItem } from 'heroui-native';
+import { RadioGroup, ThemeBackground, useHasDefaultThemeBackground, useRadioGroup, useRadioGroupItem } from 'heroui-native';
 import { forwardRef } from 'react';
 import { View } from 'react-native';
 import { DISPLAY_NAME } from "./radio-button-group.constants.js";
 import { radioButtonGroupClassNames, radioButtonGroupStyleSheet } from "./radio-button-group.styles.js";
-import { jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 // --------------------------------------------------
 
 export const useRadioButtonGroup = useRadioGroup;
@@ -22,6 +22,31 @@ const RadioButtonGroupRoot = /*#__PURE__*/forwardRef((props, ref) => {
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the item
+ * surface. With no `children`, the active library theme decides the default
+ * content: `glass` renders a `GlassView` blur layer; other themes render
+ * nothing. Pass `children` to host arbitrary content (gradients, images)
+ * with the container's positioning and clipping applied.
+ */
+const RadioButtonGroupItemBackground = /*#__PURE__*/forwardRef((props, ref) => {
+  const {
+    className,
+    ...restProps
+  } = props;
+  const itemBackgroundClassName = radioButtonGroupClassNames.itemBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: itemBackgroundClassName,
+    fallbackColor: "default",
+    ...restProps
+  });
+});
+
+// --------------------------------------------------
+
 const RadioButtonGroupItem = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
@@ -29,8 +54,10 @@ const RadioButtonGroupItem = /*#__PURE__*/forwardRef((props, ref) => {
     style,
     variant: variantProp,
     isDisabled: isDisabledProp,
+    background,
     ...restProps
   } = props;
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const {
     value,
     variant: variantGroup,
@@ -42,6 +69,16 @@ const RadioButtonGroupItem = /*#__PURE__*/forwardRef((props, ref) => {
   const itemClassName = radioButtonGroupClassNames.item({
     className
   });
+
+  /**
+   * Background layer rendered behind the item surface.
+   * - `undefined`: theme-aware default for the unselected `secondary`
+   *   variant (its background resolves to `--color-default`; selection
+   *   paints an opaque accent-soft tint)
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground && variant === 'secondary' && !isSelected ? /*#__PURE__*/_jsx(RadioButtonGroupItemBackground, {}) : null;
   return /*#__PURE__*/_jsx(RadioGroup.Item, {
     ref: ref,
     className: itemClassName,
@@ -51,7 +88,11 @@ const RadioButtonGroupItem = /*#__PURE__*/forwardRef((props, ref) => {
     "data-variant": variant,
     "data-disabled": isDisabled,
     ...restProps,
-    children: children
+    children: typeof children === 'function' ? renderProps => /*#__PURE__*/_jsxs(_Fragment, {
+      children: [backgroundElement, children(renderProps)]
+    }) : /*#__PURE__*/_jsxs(_Fragment, {
+      children: [backgroundElement, children]
+    })
   });
 });
 
@@ -76,6 +117,7 @@ const RadioButtonGroupItemContent = /*#__PURE__*/forwardRef((props, ref) => {
 
 RadioButtonGroupRoot.displayName = DISPLAY_NAME.ROOT;
 RadioButtonGroupItem.displayName = DISPLAY_NAME.ITEM;
+RadioButtonGroupItemBackground.displayName = DISPLAY_NAME.ITEM_BACKGROUND;
 RadioButtonGroupItemContent.displayName = DISPLAY_NAME.ITEM_CONTENT;
 
 /**
@@ -88,6 +130,10 @@ RadioButtonGroupItemContent.displayName = DISPLAY_NAME.ITEM_CONTENT;
  * @component RadioButtonGroup.Item - Wraps `RadioGroup.Item` with `data-selected` and `data-variant`
  * for Tailwind and aligns item `variant` with the group for styling the radio row.
  *
+ * @component RadioButtonGroup.ItemBackground - Absolute-fill background container behind the item
+ * surface. With no children, the active library theme decides the default content (e.g. a glass
+ * blur layer); pass children to host custom content with the same positioning and clipping.
+ *
  * @component RadioButtonGroup.ItemContent - Optional row container for label, description, and
  * `Radio` / `Radio.Indicator` (place the control inside the item as needed).
  *
@@ -98,6 +144,8 @@ RadioButtonGroupItemContent.displayName = DISPLAY_NAME.ITEM_CONTENT;
 const RadioButtonGroup = Object.assign(RadioButtonGroupRoot, {
   /** @optional Radio row; wraps `RadioGroup.Item` with selection and variant data attributes */
   Item: RadioButtonGroupItem,
+  /** @optional Theme-aware background container behind the item surface */
+  ItemBackground: RadioButtonGroupItemBackground,
   /** @optional Layout container for label and control within an item */
   ItemContent: RadioButtonGroupItemContent
 });

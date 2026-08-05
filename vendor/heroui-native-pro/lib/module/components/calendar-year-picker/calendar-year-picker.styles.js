@@ -34,6 +34,15 @@ const yearGrid = tv({
 });
 
 /**
+ * Grid background style definition — absolute-fill container behind the
+ * year grid content, hosting theme-specific layers (e.g. glass blur) or
+ * custom content (gradients, images).
+ */
+const yearGridBackground = tv({
+  base: 'calendar-year-picker__year-grid-background'
+});
+
+/**
  * Scroll content wrapper for the year `FlatList` (`contentContainerClassName`).
  */
 const yearGridBodyContent = tv({
@@ -65,6 +74,7 @@ export const calendarYearPickerClassNames = combineStyles({
   triggerHeading,
   triggerIndicator,
   yearGrid,
+  yearGridBackground,
   yearGridBodyContent,
   yearCell,
   yearCellLabel

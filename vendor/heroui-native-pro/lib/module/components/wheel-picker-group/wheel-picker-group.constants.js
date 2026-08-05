@@ -8,6 +8,7 @@ import { DEFAULT_ITEM_HEIGHT, DEFAULT_VISIBLE_COUNT } from "../wheel-picker/whee
 export const DISPLAY_NAME = {
   ROOT: 'HeroUINative.WheelPickerGroup.Root',
   INDICATOR: 'HeroUINative.WheelPickerGroup.Indicator',
+  INDICATOR_BACKGROUND: 'HeroUINative.WheelPickerGroup.IndicatorBackground',
   MASK: 'HeroUINative.WheelPickerGroup.Mask'
 };
 

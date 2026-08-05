@@ -2,6 +2,7 @@ export declare const flipCardClassNames: import("../../helpers/internal/types").
     root: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flip-card__root", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flip-card__root", unknown, unknown, undefined>>;
     front: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flip-card__front", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flip-card__front", unknown, unknown, undefined>>;
     back: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flip-card__back", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flip-card__back", unknown, unknown, undefined>>;
+    faceBackground: import("tailwind-variants").TVReturnType<{} | {} | {}, undefined, "flip-card__face-background", {} | {}, undefined, import("tailwind-variants").TVReturnType<unknown, undefined, "flip-card__face-background", unknown, unknown, undefined>>;
 }>;
 /**
  * Native-only style sheet for properties Tailwind cannot express. The

@@ -20,6 +20,15 @@ const media = tv({
     variant: 'default'
   }
 });
+
+/**
+ * Media background style definition.
+ * Absolute-fill container rendered behind the icon media circle, matching
+ * its pill radius and clipping.
+ */
+const mediaBackground = tv({
+  base: 'empty-state__media-background'
+});
 const title = tv({
   base: 'empty-state__title'
 });
@@ -33,6 +42,7 @@ export const emptyStateClassNames = combineStyles({
   root,
   header,
   media,
+  mediaBackground,
   title,
   description,
   content

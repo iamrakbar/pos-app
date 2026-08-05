@@ -12,6 +12,7 @@ export const DISPLAY_NAME = {
   OVERLAY: 'HeroUINative.FAB.Overlay',
   CONTENT: 'HeroUINative.FAB.Content',
   ITEM: 'HeroUINative.FAB.Item',
+  ITEM_BACKGROUND: 'HeroUINative.FAB.ItemBackground',
   ITEM_LABEL: 'HeroUINative.FAB.ItemLabel'
 };
 

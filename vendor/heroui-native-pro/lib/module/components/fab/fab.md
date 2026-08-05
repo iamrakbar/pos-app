@@ -29,9 +29,10 @@ import { FAB } from 'heroui-native-pro';
 - **FAB**: Root container. Owns the open state (controlled via `isOpen` + `onOpenChange` or uncontrolled via `isDefaultOpen`), resolves the content placement and alignment — automatically from the trigger position on screen by default — and drives the shared open/close progress (`0` = idle, `1` = open, `2` = close) that orchestrates the overlay, items, and trigger rotation. Cascades `disable-all` to animated descendants.
 - **FAB.Trigger**: The floating button itself. Toggles the open state on press and measures its own position so auto placement can resolve. Its content rotates with the shared progress (a plus icon reads as a close affordance while open). Position the FAB by passing positioning classes (e.g. `absolute bottom-6 right-6`) to the root.
 - **FAB.Portal**: Renders the overlay and content in a portal layer above other content (using `FullWindowOverlay` on iOS). Stays mounted while the close animation plays and re-provides the FAB contexts to portaled descendants.
-- **FAB.Overlay**: Optional backdrop behind the content. Its opacity follows the shared progress and pressing it closes the FAB. Replace it with a custom component built on `useFABAnimation` (e.g. a blur backdrop) for custom backdrops.
+- **FAB.Overlay**: Optional backdrop behind the content. Its opacity follows the shared progress and pressing it closes the FAB. The `default` variant paints a solid backdrop; the `blur` variant renders an animated blur layer instead. Replace the part with a custom component built on `useFABAnimation` for fully custom backdrops.
 - **FAB.Content**: Positioned column of items. Placement and alignment follow the root resolution and the column hugs the trigger edge. Provides each child its index so items can stagger.
 - **FAB.Item**: Single action row. Appears and disappears with the shared progress — staggered by default, starting from the item nearest the trigger — and closes the FAB on press unless `closeOnPress={false}`. Plain string children are wrapped in `FAB.ItemLabel` automatically.
+- **FAB.ItemBackground**: Optional theme-aware background container rendered behind the item content. Mounted automatically when the active theme registers default background content (e.g. `glass`). Replace or remove it via the `background` prop on `FAB.Item`.
 - **FAB.ItemLabel**: Text label inside an item. Only needed for custom layouts (e.g. icon + label); string children get it for free.
 
 ## Usage
@@ -122,7 +123,21 @@ const [isOpen, setIsOpen] = useState(false);
 </FAB>;
 ```
 
-### Custom backdrop (blur)
+### Blur backdrop
+
+Use the built-in `blur` variant for an animated blur backdrop: the blur intensity follows the shared progress instead of the overlay opacity. iOS only, requires the optional `expo-blur` package; other platforms (or a missing package) fall back to the default solid backdrop. When the library theme is `glass`, the blur variant is used by default.
+
+```tsx
+<FAB>
+  <FAB.Trigger>...</FAB.Trigger>
+  <FAB.Portal>
+    <FAB.Overlay variant="blur" blurViewProps={{ intensity: 60 }} />
+    <FAB.Content>...</FAB.Content>
+  </FAB.Portal>
+</FAB>
+```
+
+### Custom backdrop
 
 Build a custom backdrop on the shared progress via `useFABAnimation` and place it inside `FAB.Portal` instead of `FAB.Overlay`. The progress follows the `[idle, open, close]` = `[0, 1, 2]` convention.
 
@@ -373,13 +388,15 @@ The trigger ref exposes imperative methods:
 
 ### FAB.Overlay
 
-| prop                    | type                  | default | description                                              |
-| ----------------------- | --------------------- | ------- | --------------------------------------------------------- |
-| `closeOnPress`          | `boolean`             | `true`  | Whether pressing the overlay closes the FAB               |
-| `className`             | `string`              | -       | Additional CSS classes for the overlay                    |
-| `animation`             | `FABOverlayAnimation` | -       | Animation configuration for the overlay opacity           |
-| `isAnimatedStyleActive` | `boolean`             | `true`  | Whether animated styles are active                        |
-| `...PressableProps`     | `PressableProps`      | -       | All standard React Native Pressable props are supported   |
+| prop                    | type                       | default | description                                              |
+| ----------------------- | -------------------------- | ------- | --------------------------------------------------------- |
+| `closeOnPress`          | `boolean`                  | `true`  | Whether pressing the overlay closes the FAB               |
+| `className`             | `string`                   | -       | Additional CSS classes for the overlay                    |
+| `variant`               | `'default' \| 'blur'`      | `'default'` (`'blur'` when the library theme is `glass`) | Overlay variant. `'blur'` renders an animated blur backdrop (iOS only, requires `expo-blur`; falls back to `'default'` otherwise) |
+| `blurViewProps`         | `FABOverlayBlurViewProps`  | -       | Props forwarded to the BlurView rendered by the `'blur'` variant; `intensity` acts as the maximum (animated) intensity |
+| `animation`             | `FABOverlayAnimation`      | -       | Animation configuration for the overlay opacity           |
+| `isAnimatedStyleActive` | `boolean`                  | `true` for the `default` variant, `false` for the `blur` variant | Whether animated styles are active. The blur variant animates blur intensity instead of the overlay opacity |
+| `...PressableProps`     | `PressableProps`           | -       | All standard React Native Pressable props are supported   |
 
 #### FABOverlayAnimation
 
@@ -413,6 +430,7 @@ The trigger ref exposes imperative methods:
 | `children`              | `React.ReactNode`  | -       | Item content. Strings/numbers are wrapped in `FAB.ItemLabel` automatically      |
 | `closeOnPress`          | `boolean`          | `true`  | Whether pressing the item closes the FAB                                        |
 | `className`             | `string`           | -       | Additional CSS classes for the item container                                   |
+| `background`            | `React.ReactNode`  | -       | Background layer behind the item content. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it |
 | `animation`             | `FABItemAnimation` | -       | Animation configuration for the appearing motion                                |
 | `isAnimatedStyleActive` | `boolean`          | `true`  | Whether animated styles are active                                              |
 | `...PressableProps`     | `PressableProps`   | -       | All standard React Native Pressable props are supported                        |
@@ -435,6 +453,16 @@ The trigger ref exposes imperative methods:
 | prop    | type               | default     | description                                |
 | ------- | ------------------ | ----------- | ------------------------------------------- |
 | `value` | `[number, number]` | `[0.9, 1]`  | Scale values for the `[hidden, visible]` states |
+
+### FAB.ItemBackground
+
+Absolute-fill container rendered behind the item content. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container      |
+| `className`    | `string`          | -       | Additional CSS classes                              |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported  |
 
 ### FAB.ItemLabel
 

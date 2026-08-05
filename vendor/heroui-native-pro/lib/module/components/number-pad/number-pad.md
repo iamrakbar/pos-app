@@ -28,6 +28,7 @@ import { NumberPad } from 'heroui-native-pro';
 - **NumberPad**: Root column container that manages the value state and provides context to sub-components. Auto-renders the default 3×4 digit layout when no children are provided. Supports both controlled and uncontrolled modes.
 - **NumberPad.Row**: Horizontal container that lays out a row of cells with equal widths. Required when composing keys manually.
 - **NumberPad.Key**: Pressable digit key with a subtle press animation. Appends its `value` to the pad value by default. Renders a default `NumberPad.KeyLabel` showing its value when no children are provided.
+- **NumberPad.KeyBackground**: Optional theme-aware background container rendered behind the key surface. Mounted automatically for keys when the active theme registers default background content (e.g. `glass`); `NumberPad.Backspace` and `NumberPad.Spacer` default it to `null` (transparent surfaces). Replace or remove it via the `background` prop.
 - **NumberPad.KeyLabel**: Text label rendered inside a key. Defaults to the parent key's value.
 - **NumberPad.Backspace**: Delete key. Press removes one character; long-press clears the entire value. Renders a backspace icon by default.
 - **NumberPad.Spacer**: Grid cell that preserves alignment. Renders an inert empty cell by default; behaves like a `NumberPad.Key` when given children.
@@ -202,6 +203,7 @@ Animation configuration for the number pad root component. Can be:
 | `className`             | `string`                                                                   | -       | Additional CSS classes for the key container                 |
 | `animation`             | `NumberPadKeyAnimation`                                                    | -       | Animation configuration for the key press feedback           |
 | `isAnimatedStyleActive` | `boolean`                                                                  | `true`  | Whether animated styles (react-native-reanimated) are active |
+| `background`            | `React.ReactNode`                                                          | -       | Background layer behind the key surface. `undefined` renders the theme-aware default; custom node replaces it; `null` removes it |
 | `...PressableProps`     | `PressableProps`                                                           | -       | All standard React Native Pressable props are supported      |
 
 #### NumberPadKeyRenderProps
@@ -229,6 +231,16 @@ Animation configuration for the key press scale effect. Can be:
 | -------------- | ------------------ | ------------------- | --------------------------------------------- |
 | `value`        | `number`           | `0.97`              | Scale value applied when the key is pressed   |
 | `timingConfig` | `WithTimingConfig` | `{ duration: 150 }` | Timing configuration for the scale transition |
+
+### NumberPad.KeyBackground
+
+Absolute-fill container rendered behind the key surface. With no children, the active library theme decides the default content (e.g. a glass blur layer); pass children to host custom content with the same positioning and clipping.
+
+| prop           | type              | default | description                                        |
+| -------------- | ----------------- | ------- | -------------------------------------------------- |
+| `children`     | `React.ReactNode` | -       | Custom content inside the background container     |
+| `className`    | `string`          | -       | Additional CSS classes                             |
+| `...ViewProps` | `ViewProps`       | -       | All standard React Native View props are supported |
 
 ### NumberPad.KeyLabel
 

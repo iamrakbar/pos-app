@@ -1,6 +1,6 @@
 "use strict";
 
-import { colorKit } from 'heroui-native';
+import { colorKit, ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { useThemeColor } from 'heroui-native/hooks';
 import { forwardRef, useCallback, useMemo, useRef } from 'react';
@@ -126,6 +126,31 @@ const WheelPickerGroupRoot = /*#__PURE__*/forwardRef((props, ref) => {
 
 // --------------------------------------------------
 
+/**
+ * Generic absolute-fill background container rendered behind the highlight
+ * band's surface. With no `children`, the active library theme decides the
+ * default content: `glass` renders a `GlassView` blur layer; other themes
+ * render nothing. Pass `children` to host arbitrary content (gradients,
+ * images) with the container's positioning and clipping applied.
+ */
+const WheelPickerGroupIndicatorBackground = /*#__PURE__*/forwardRef((props, ref) => {
+  const {
+    className,
+    ...restProps
+  } = props;
+  const indicatorBackgroundClassName = wheelPickerGroupClassNames.indicatorBackground({
+    className
+  });
+  return /*#__PURE__*/_jsx(ThemeBackground, {
+    ref: ref,
+    className: indicatorBackgroundClassName,
+    fallbackColor: "default",
+    ...restProps
+  });
+});
+
+// --------------------------------------------------
+
 const WheelPickerGroupIndicator = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,
@@ -133,8 +158,10 @@ const WheelPickerGroupIndicator = /*#__PURE__*/forwardRef((props, ref) => {
     classNames,
     styles: stylesProp,
     style,
+    background,
     ...restProps
   } = props;
+  const hasDefaultThemeBackground = useHasDefaultThemeBackground();
   const {
     itemHeight,
     visibleCount
@@ -154,6 +181,15 @@ const WheelPickerGroupIndicator = /*#__PURE__*/forwardRef((props, ref) => {
   // half of the rows above the center.
   const wrapperHeight = itemHeight;
   const wrapperTop = (visibleCount - 1) / 2 * itemHeight;
+
+  /**
+   * Background layer rendered behind the highlight band's surface.
+   * - `undefined`: theme-aware default when the active theme registers
+   *   default background content (the band paints `--color-default`)
+   * - custom node: replaces the default layer
+   * - `null`: removes the layer
+   */
+  const backgroundElement = background !== undefined ? background : hasDefaultThemeBackground ? /*#__PURE__*/_jsx(WheelPickerGroupIndicatorBackground, {}) : null;
   return /*#__PURE__*/_jsx(View, {
     ref: ref,
     className: wrapperClassName,
@@ -163,10 +199,10 @@ const WheelPickerGroupIndicator = /*#__PURE__*/forwardRef((props, ref) => {
     }, stylesProp?.wrapper, style],
     pointerEvents: "none",
     ...restProps,
-    children: /*#__PURE__*/_jsx(View, {
+    children: /*#__PURE__*/_jsxs(View, {
       className: highlightClassName,
       style: [styleSheet.indicatorHighlight, stylesProp?.highlight],
-      children: children
+      children: [backgroundElement, children]
     })
   });
 });
@@ -239,6 +275,7 @@ const WheelPickerGroupMask = /*#__PURE__*/forwardRef((props, ref) => {
 
 WheelPickerGroupRoot.displayName = DISPLAY_NAME.ROOT;
 WheelPickerGroupIndicator.displayName = DISPLAY_NAME.INDICATOR;
+WheelPickerGroupIndicatorBackground.displayName = DISPLAY_NAME.INDICATOR_BACKGROUND;
 WheelPickerGroupMask.displayName = DISPLAY_NAME.MASK;
 
 /**
@@ -254,6 +291,12 @@ WheelPickerGroupMask.displayName = DISPLAY_NAME.MASK;
  * spanning every wheel at the center of the group viewport. Replaces the
  * per-wheel indicator when a child `WheelPicker` is nested in the group.
  *
+ * @component WheelPickerGroup.IndicatorBackground - Absolute-fill background
+ * container behind the highlight band's surface. With no children, the
+ * active library theme decides the default content (e.g. a glass blur
+ * layer); pass children to host custom content with the same positioning
+ * and clipping.
+ *
  * @component WheelPickerGroup.Mask - Optional top / bottom fade overlays
  * that span the full group viewport.
  *
@@ -267,6 +310,8 @@ WheelPickerGroupMask.displayName = DISPLAY_NAME.MASK;
 const WheelPickerGroup = Object.assign(WheelPickerGroupRoot, {
   /** @optional Shared selection band spanning every wheel */
   Indicator: WheelPickerGroupIndicator,
+  /** @optional Theme-aware background layer behind the highlight band */
+  IndicatorBackground: WheelPickerGroupIndicatorBackground,
   /** @optional Shared top / bottom fade overlays */
   Mask: WheelPickerGroupMask
 });
