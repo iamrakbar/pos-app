@@ -20,12 +20,10 @@ export default function StringNumberField({
   inputVariant,
   inputProps,
   formatOptions,
-  locale,
   children,
   ...props
 }: StringNumberFieldProps) {
   const numericValue = value.trim() === "" ? Number.NaN : Number(value);
-  const resolvedLocale = locale ?? (formatOptions?.currency === "IDR" ? "id-ID" : undefined);
 
   return (
     <NumberField
@@ -33,7 +31,6 @@ export default function StringNumberField({
       value={numericValue}
       onChange={(nextValue) => onChange(Number.isNaN(nextValue) ? "" : String(nextValue))}
       formatOptions={formatOptions ?? { maximumFractionDigits: 0 }}
-      locale={resolvedLocale}
     >
       {label ? <Label>{label}</Label> : null}
       <NumberField.Group>
