@@ -7,12 +7,13 @@ import { useAreaTables } from "@/hooks/db/use-tables";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { Card, Chip, useThemeColor } from "heroui-native";
+import { Button, Card, Chip, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
-import { FlatList, Pressable, View } from "react-native";
+import { FlatList, View } from "react-native";
 import TableFormDialog from "./table-form-dialog";
 import { useTranslation } from "@/stores/use-locale";
+import TableQrOverlay from "./table-qr-overlay";
 
 type TableData = App.Data.Merchant.Area.TableData;
 
@@ -29,6 +30,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
   const tablesQuery = useAreaTables(areaId);
   const [editingTable, setEditingTable] = React.useState<TableData | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
+  const [qrTable, setQrTable] = React.useState<TableData | null>(null);
 
   const openCreate = () => {
     setEditingTable(null);
@@ -74,17 +76,8 @@ export default function AreaTablesScreen(): React.JSX.Element {
             const status = table.active ? t("common.active") : t("common.inactive");
 
             return (
-              <Card className="m-2 p-0 min-h-40 overflow-hidden" style={{ width: cardWidth }}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t("areasManagement.editTableAccessibility", {
-                    table: table.name,
-                    seats,
-                    status,
-                  })}
-                  onPress={() => openEdit(table)}
-                  className="flex-1 items-center justify-between gap-2 p-4 active:bg-surface-tertiary"
-                >
+              <Card className="m-2 min-h-40 gap-4 overflow-hidden" style={{ width: cardWidth }}>
+                <Card.Body className="flex-1 items-center justify-between gap-2 p-4 active:bg-surface-tertiary">
                   <Chip color="default">
                     <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
                   </Chip>
@@ -102,7 +95,39 @@ export default function AreaTablesScreen(): React.JSX.Element {
                       <Chip.Label>{status}</Chip.Label>
                     </Chip>
                   </View>
-                </Pressable>
+                </Card.Body>
+                <Card.Footer className="flex-row gap-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    accessibilityLabel={t("areasManagement.tableQrAccessibility", {
+                      table: table.name,
+                    })}
+                    onPress={() => setQrTable(table)}
+                    className="flex-1"
+                  >
+                    <AppIcon name="qr-code-sharp" size={16} color={mutedColor} />
+                    <Button.Label className="ml-2">
+                      {t("areasManagement.tableQrAction")}
+                    </Button.Label>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    accessibilityLabel={t("areasManagement.editTableAccessibility", {
+                      table: table.name,
+                      seats,
+                      status,
+                    })}
+                    onPress={() => openEdit(table)}
+                    className="flex-1"
+                  >
+                    <AppIcon name="pencil-outline" size={18} color={mutedColor} />
+                    <Button.Label className="ml-2">
+                      {t("areasManagement.editTableAction")}
+                    </Button.Label>
+                  </Button>
+                </Card.Footer>
               </Card>
             );
           }}
@@ -131,6 +156,14 @@ export default function AreaTablesScreen(): React.JSX.Element {
         table={editingTable}
         isOpen={isFormOpen}
         onOpenChange={setIsFormOpen}
+      />
+      <TableQrOverlay
+        table={qrTable}
+        areaName={areaQuery.data?.name}
+        isOpen={qrTable !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setQrTable(null);
+        }}
       />
     </>
   );

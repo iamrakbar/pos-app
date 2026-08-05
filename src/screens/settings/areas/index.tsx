@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import { Button, Card, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
-import { FlatList, Pressable, View } from "react-native";
+import { FlatList, View } from "react-native";
 import AreaFormDialog from "./area-form-dialog";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -58,19 +58,12 @@ export default function AreasScreen(): React.JSX.Element {
         columnWrapperClassName={columnCount > 1 ? "gap-4" : undefined}
         ItemSeparatorComponent={() => <View className="h-4" />}
         renderItem={({ item: area }) => (
-          <Card className="min-w-0 p-0 overflow-hidden" style={{ width: cardWidth }}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("areasManagement.openTablesAccessibility", {
-                area: area.name,
-              })}
-              onPress={() => router.push(`/settings/areas/${area.id}/tables`)}
-              className="min-h-32 flex-1 justify-between gap-6 p-5 active:bg-surface-secondary"
-            >
+          <Card className="gap-4" style={{ width: cardWidth }}>
+            <Card.Body className="flex-row gap-3 active:bg-surface-secondary">
               <View className="size-12 items-center justify-center rounded-panel-inner bg-accent-soft">
                 <AppIcon name="restaurant-outline" size={20} color={accentColor} />
               </View>
-              <View className="gap-1 pr-12">
+              <View>
                 <Card.Title numberOfLines={1}>{area.name}</Card.Title>
                 <Card.Description>
                   {t(
@@ -81,19 +74,33 @@ export default function AreasScreen(): React.JSX.Element {
                   )}
                 </Card.Description>
               </View>
-            </Pressable>
-            <Button
-              size="sm"
-              variant="outline"
-              isIconOnly
-              accessibilityLabel={t("areasManagement.editAreaAccessibility", {
-                area: area.name,
-              })}
-              className="absolute right-3 top-3"
-              onPress={() => openEdit(area)}
-            >
-              <AppIcon name="pencil-outline" size={18} color={mutedColor} />
-            </Button>
+            </Card.Body>
+            <Card.Footer className="flex-row gap-4">
+              <Button
+                size="sm"
+                variant="outline"
+                accessibilityLabel={t("areasManagement.openTablesAccessibility", {
+                  area: area.name,
+                })}
+                onPress={() => router.push(`/settings/areas/${area.id}/tables`)}
+                className="flex-1"
+              >
+                <AppIcon name="eye-outline" size={18} color={mutedColor} />
+                <Button.Label className="ml-2">{t("areasManagement.viewTables")}</Button.Label>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                accessibilityLabel={t("areasManagement.editAreaAccessibility", {
+                  area: area.name,
+                })}
+                onPress={() => openEdit(area)}
+                className="flex-1"
+              >
+                <AppIcon name="pencil-outline" size={18} color={mutedColor} />
+                <Button.Label className="ml-2">{t("areasManagement.editAreaAction")}</Button.Label>
+              </Button>
+            </Card.Footer>
           </Card>
         )}
         ListEmptyComponent={

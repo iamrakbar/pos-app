@@ -160,6 +160,15 @@ module.exports = {
         },
       ],
       "expo-image",
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          photosPermission: "Allow $(PRODUCT_NAME) to access your photos to set product images.",
+          savePhotosPermission: "Allow $(PRODUCT_NAME) to save table QR codes to your photos.",
+          granularPermissions: ["photo"],
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,
