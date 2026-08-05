@@ -91,6 +91,13 @@ export default function SettingsScreen(): JSX.Element {
   ];
   const applicationItems: SettingsItem[] = [
     {
+      id: "notifications",
+      href: "/settings/notifications",
+      icon: "notifications-outline",
+      label: t("settings.notifications"),
+      description: t("settings.notificationsDescription"),
+    },
+    {
       id: "preferences",
       href: "/settings/preferences",
       icon: "options-outline",

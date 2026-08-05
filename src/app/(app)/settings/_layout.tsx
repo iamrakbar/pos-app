@@ -38,6 +38,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="printers/[id]" options={{ title: t("settings.printer") }} />
       <Stack.Screen name="receipt" options={{ title: t("navigation.receiptSetup") }} />
       <Stack.Screen name="updates" options={{ title: t("navigation.appUpdates") }} />
+      <Stack.Screen name="notifications" options={{ title: t("settings.notifications") }} />
       <Stack.Screen name="areas/index" options={{ title: t("navigation.areasAndTables") }} />
       <Stack.Screen name="areas/[id]" options={{ title: t("navigation.area") }} />
       <Stack.Screen name="areas/[areaId]/tables" options={{ title: t("navigation.tables") }} />

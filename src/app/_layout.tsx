@@ -18,6 +18,7 @@ import OfflineBanner from "@/components/common/offline-banner";
 import AppUpdateManager from "@/components/common/app-update-manager";
 import POSAddOnSheet from "@/screens/pos/add-ons";
 import { TrueSheetProvider } from "@lodev09/react-native-true-sheet";
+import NotificationManager from "@/components/common/notification-manager";
 
 import "../global.css";
 
@@ -87,6 +88,7 @@ function RootLayout(): JSX.Element {
                       </Stack.Protected>
                     </Stack>
                     {session ? <POSAddOnSheet /> : null}
+                    <NotificationManager />
                   </View>
                 )}
                 <OfflineBanner />

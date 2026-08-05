@@ -160,6 +160,7 @@ module.exports = {
         },
       ],
       "expo-image",
+      ["expo-notifications", { defaultChannel: "default" }],
       "expo-sharing",
       [
         "expo-media-library",
