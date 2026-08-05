@@ -11,6 +11,7 @@ import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 type AreaData = App.Data.Merchant.Area.AreaData;
 
@@ -31,6 +32,7 @@ export default function AreaFormDialog({
   const updateMutation = useUpdateArea(area?.id ?? "");
   const deleteMutation = useDeleteArea();
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const { isPhonePortrait } = useOverlayPresentation();
   const areaSchema = createAreaSchema(t);
   const {
     control,
@@ -100,7 +102,11 @@ export default function AreaFormDialog({
         title={area ? t("areasManagement.editAreaOverlay") : t("areasManagement.newAreaOverlay")}
         description={t("areasManagement.areaDescription")}
         footer={
-          <View className="gap-3 px-5 pb-5 pt-4">
+          <View
+            className={`gap-3 px-5 pb-5 pt-4 ${
+              isPhonePortrait ? "items-stretch" : "flex-row items-center"
+            }`}
+          >
             <View className="flex-1 flex-row items-center gap-3">
               {area ? (
                 <Button variant="danger-soft" size="sm" onPress={() => setIsDeleteOpen(true)}>
