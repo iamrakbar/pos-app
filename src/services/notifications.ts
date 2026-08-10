@@ -26,7 +26,6 @@ export async function configureNotifications(): Promise<void> {
     name: "General",
     description: "Order and application notifications",
     importance: Notifications.AndroidImportance.HIGH,
-    sound: "default",
     enableVibrate: true,
     vibrationPattern: [0, 250, 150, 250],
     showBadge: true,
@@ -77,7 +76,7 @@ export async function scheduleTestNotification(title: string, body: string): Pro
     content: {
       title,
       body,
-      sound: "default",
+      sound: true,
       data: { type: "test" },
     },
     trigger: Platform.OS === "android" ? { channelId: DEFAULT_NOTIFICATION_CHANNEL_ID } : null,
