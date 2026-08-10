@@ -8,6 +8,7 @@
 declare namespace App.Requests.Merchant {
     export type CancellationRequestStatusEnum = "pending" | "approved" | "rejected";
     export type GalleryCategoryEnum = "Food" | "Ambiance";
+    export type PaymentGroupEnum = "cash" | "card" | "bank_transfer" | "qris" | "e_wallet" | "food_delivery" | "marketplace" | "over_the_counter";
     export type ReviewStatusEnum = "approved" | "unapproved";
     export type UnitTypeEnum = "percentage" | "fixed";
     export type UserRoleEnum = "owner" | "manager" | "cashier" | "waiter" | "chef";
@@ -69,6 +70,12 @@ declare namespace App.Requests.Merchant.Cancellation {
     };
 }
 declare namespace App.Requests.Merchant.Category {
+    export type ReorderCategoryRequest = {
+        categories: {
+            id: string;
+            position: number;
+        }[];
+    };
     export type StoreCategoryRequest = {
         name: string;
         slug?: string | null;
@@ -114,6 +121,7 @@ declare namespace App.Requests.Merchant.Checkout {
         table_id?: string | null;
         pickup_time?: string | null;
         payment_id: string;
+        tender_value?: string | null;
         notes?: string | null;
         products: {
             id: string;
@@ -235,6 +243,13 @@ declare namespace App.Requests.Merchant.Order {
     export type UpdateOrderStatusRequest = {
         status: "new" | "process" | "completed" | "rejected";
         reason?: string | null;
+    };
+}
+declare namespace App.Requests.Merchant.Payment {
+    export type UpdateMerchantPaymentRequest = {
+        active: boolean;
+        sort?: number;
+        display_name?: string | null;
     };
 }
 declare namespace App.Requests.Merchant.Product {

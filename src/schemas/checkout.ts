@@ -32,6 +32,7 @@ export function createCheckoutSchema(t: Translate) {
       pickup_time: z.string().nullable(),
       payment_group: z.string().min(1, t("validation.paymentGroupRequired")),
       payment_id: z.string().min(1, t("validation.paymentMethodRequired")),
+      tender_value: z.string().nullable(),
       customer_type: z.enum(["guest", "customer", "anonymous"]),
       guest_id: z.string().nullable(),
       customer_id: z.string().nullable(),

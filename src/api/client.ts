@@ -11,6 +11,7 @@ type RequestOptions = {
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined>;
   auth?: boolean;
+  headers?: Record<string, string>;
 };
 
 function buildUrl(path: string, query: RequestOptions["query"]): string {
@@ -69,7 +70,7 @@ export async function apiRequest<T>(
   const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   const url = buildUrl(path, opts.query);
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: "application/json", ...opts.headers };
   const isFormData = typeof FormData !== "undefined" && opts.body instanceof FormData;
   if (opts.body !== undefined && !isFormData) headers["Content-Type"] = "application/json";
   if (opts.auth !== false) {

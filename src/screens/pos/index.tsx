@@ -16,6 +16,7 @@ import { paymentGroupsQueryOptions } from "@/hooks/db/use-payments";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useTranslation } from "@/stores/use-locale";
+import { useAuth } from "@/stores/use-auth";
 
 export default function POSScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -27,11 +28,12 @@ export default function POSScreen(): JSX.Element {
   const isCatalogLoading = productsQuery.isLoading || categoriesQuery.isLoading;
   const theme = useNavigationTheme();
   const queryClient = useQueryClient();
+  const merchantId = useAuth((state) => state.merchantId);
   const cartPanelWidth = Math.min(Math.max(Math.floor(viewportWidth * 0.34), 340), 460);
 
   useEffect(() => {
-    void queryClient.prefetchQuery(paymentGroupsQueryOptions);
-  }, [queryClient]);
+    if (merchantId) void queryClient.prefetchQuery(paymentGroupsQueryOptions(merchantId));
+  }, [merchantId, queryClient]);
 
   useFocusEffect(() => {
     if (Platform.OS !== "android") return;

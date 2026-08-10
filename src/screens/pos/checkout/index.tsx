@@ -14,11 +14,11 @@ export default function CheckoutScreen(): JSX.Element {
   const handlePaymentReady = (
     session: PaymentSession,
     result: MerchantCheckoutData,
-    options: { isCash: boolean }
+    options: { processingMode: PaymentSession["processing_mode"] }
   ) => {
     setPaymentSession(session, result);
     clearCart();
-    router.replace(options.isCash ? "/pos/payment-success" : "/pos/payment");
+    router.replace(options.processingMode === "gateway" ? "/pos/payment" : "/pos/payment-success");
   };
 
   return <CheckoutContent presentation="screen" onPaymentReady={handlePaymentReady} />;

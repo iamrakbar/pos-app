@@ -712,7 +712,13 @@ export type OrderPaymentData = {
 id: string | null;
 name: string;
 code: string;
-group_type: string;
+group_type: 'cash' | 'card' | 'bank_transfer' | 'qris' | 'e_wallet' | 'food_delivery' | 'marketplace' | 'over_the_counter';
+processing_mode: 'merchant_collected' | 'external_platform' | 'gateway';
+tender_type: 'amount' | 'reference' | 'none';
+tender_value: string | null;
+amount_received: number | null;
+change_due: number;
+reference: string | null;
 };
 export type OrderPaymentDetailsData = {
 code: string | null;
@@ -788,6 +794,46 @@ payment_status: string;
 payment_status_label: string;
 payment_status_color: string;
 is_successful: boolean;
+};
+}
+declare namespace App.Data.Merchant.Payment {
+export type MerchantPaymentData = {
+id: string;
+merchant_payment_id: string;
+code: string;
+name: string;
+image: string | null;
+fees: App.Data.Merchant.Payment.MerchantPaymentFeesData;
+group: App.Data.Merchant.Payment.MerchantPaymentGroupData;
+provider: App.Data.Merchant.Payment.MerchantPaymentProviderData;
+tender_input: App.Data.Merchant.Payment.MerchantTenderInputData;
+processing_mode: App.Data.Merchant.Payment.MerchantPaymentProcessingModeData;
+sort: number;
+is_active: boolean;
+};
+export type MerchantPaymentFeesData = {
+payment_fee: number;
+app_fee: number;
+total_fee: number;
+unit: 'fixed' | 'percentage';
+};
+export type MerchantPaymentGroupData = {
+value: 'cash' | 'card' | 'bank_transfer' | 'qris' | 'e_wallet' | 'food_delivery' | 'marketplace' | 'over_the_counter';
+label: string;
+};
+export type MerchantPaymentProcessingModeData = {
+value: 'merchant_collected' | 'external_platform' | 'gateway';
+label: string;
+};
+export type MerchantPaymentProviderData = {
+value: string;
+label: string;
+};
+export type MerchantTenderInputData = {
+type: 'amount' | 'reference' | 'none';
+label: string | null;
+placeholder: string | null;
+required: boolean;
 };
 }
 declare namespace App.Data.Merchant.Pos {

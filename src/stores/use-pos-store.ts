@@ -34,8 +34,6 @@ const DEFAULT_CHECKOUT_FORM: CheckoutFormState = {
   order_type: "dine-in",
   table_id: null,
   pickup_time: null,
-  payment_group: "e-money",
-  payment_id: "pay-qris",
   customer_type: "anonymous",
   guest_id: null,
   customer_id: null,

@@ -3,6 +3,9 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { checkout } from "@/api/endpoints/checkout";
 import { useAuth } from "@/stores/use-auth";
 import type { CheckoutFormValues } from "@/schemas/checkout";
+import { useRef } from "react";
+import { isApiError } from "@/api/api-error";
+import { paymentQueryKeys } from "@/hooks/db/use-payments";
 
 type PosProductData = App.Data.Merchant.Pos.ProductData;
 type CheckoutData = App.Data.Merchant.Checkout.CheckoutData;
@@ -82,6 +85,7 @@ function prependOrderToCachedPages(
 export function useCheckout() {
   const merchantId = useAuth((s) => s.merchantId);
   const queryClient = useQueryClient();
+  const attemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
 
   return useMutation({
     mutationFn: async (form: CheckoutFormValues) => {
@@ -93,11 +97,19 @@ export function useCheckout() {
         table_id: form.order_type === "dine-in" ? form.table_id : undefined,
         pickup_time: form.order_type === "takeaway" ? form.pickup_time : undefined,
         payment_id: form.payment_id!,
+        tender_value: form.tender_value?.trim() || undefined,
         notes: form.notes || undefined,
         products: form.products,
       };
 
-      const res = await checkout(merchantId!, body);
+      const fingerprint = JSON.stringify(body);
+      if (attemptRef.current?.fingerprint !== fingerprint) {
+        attemptRef.current = {
+          fingerprint,
+          key: `pos:${Date.now()}:${Math.random().toString(36).slice(2, 14)}`,
+        };
+      }
+      const res = await checkout(merchantId!, body, attemptRef.current.key);
       return res.data;
     },
     onMutate: async (form) => {
@@ -115,12 +127,16 @@ export function useCheckout() {
 
       return { previousProducts };
     },
-    onError: (_error, _form, context) => {
+    onError: (error, _form, context) => {
       for (const [queryKey, data] of context?.previousProducts ?? []) {
         queryClient.setQueryData(queryKey, data);
       }
+      if (isApiError(error) && error.code === "PAYMENT_METHOD_UNAVAILABLE" && merchantId) {
+        queryClient.invalidateQueries({ queryKey: paymentQueryKeys.pos(merchantId) });
+      }
     },
     onSuccess: (data) => {
+      attemptRef.current = null;
       const order = toOrderListData(data);
       const cachedOrderLists = queryClient.getQueriesData<InfiniteData<OrdersResponse>>({
         queryKey: ["orders"],

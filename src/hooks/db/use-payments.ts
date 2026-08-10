@@ -1,34 +1,91 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
-import { getPaymentGroups } from "@/api/endpoints/payments";
-import { extractFee } from "@/api/mappers/order";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  getMerchantPayments,
+  getPOSPayments,
+  updateMerchantPayment,
+  type MerchantPayment,
+} from "@/api/endpoints/payments";
+import { useAuth } from "@/stores/use-auth";
 import type { POSPaymentGroup } from "@/types/pos";
 
 const PAYMENTS_STALE_TIME_MS = 30 * 60 * 1000;
 const PAYMENTS_GC_TIME_MS = 24 * 60 * 60 * 1000;
 
-export const paymentGroupsQueryOptions = queryOptions<POSPaymentGroup[]>({
-  queryKey: ["payment_groups"],
-  queryFn: async () => {
-    const res = await getPaymentGroups();
-    return res.data.map((group) => ({
-      group_type: group.group_type,
-      group_label: group.group_label,
-      payments: group.payments.map((payment) => {
-        const fee = extractFee(payment.fees);
-        return {
-          id: payment.id,
-          code: payment.code,
-          name: payment.name,
-          fee_unit: fee.unit,
-          fee_value: fee.value,
-        };
-      }),
-    }));
-  },
-  staleTime: PAYMENTS_STALE_TIME_MS,
-  gcTime: PAYMENTS_GC_TIME_MS,
-});
+export const paymentQueryKeys = {
+  all: (merchantId: string) => ["merchants", merchantId, "payments"] as const,
+  pos: (merchantId: string) => [...paymentQueryKeys.all(merchantId), "pos"] as const,
+  settings: (merchantId: string) => [...paymentQueryKeys.all(merchantId), "settings"] as const,
+};
+
+function groupPOSPayments(payments: MerchantPayment[]): POSPaymentGroup[] {
+  const groups = new Map<string, POSPaymentGroup>();
+  for (const payment of [...payments].sort((a, b) => a.sort - b.sort)) {
+    const { group: paymentGroup } = payment;
+    const group = groups.get(paymentGroup.value) ?? {
+      group_type: paymentGroup.value,
+      group_label: paymentGroup.label,
+      payments: [],
+    };
+    group.payments.push({
+      id: payment.id,
+      merchant_payment_id: payment.merchant_payment_id,
+      code: payment.code,
+      name: payment.name,
+      image: payment.image,
+      fee_unit: payment.fees.unit,
+      fee_value: payment.fees.total_fee,
+      provider: payment.provider,
+      tender_input: payment.tender_input,
+      processing_mode: payment.processing_mode,
+      sort: payment.sort,
+      is_active: payment.is_active,
+    });
+    groups.set(paymentGroup.value, group);
+  }
+  return [...groups.values()];
+}
+
+export function paymentGroupsQueryOptions(merchantId: string) {
+  return queryOptions({
+    queryKey: paymentQueryKeys.pos(merchantId),
+    queryFn: async () => groupPOSPayments((await getPOSPayments(merchantId)).data),
+    enabled: Boolean(merchantId),
+    staleTime: PAYMENTS_STALE_TIME_MS,
+    gcTime: PAYMENTS_GC_TIME_MS,
+  });
+}
+
+export function merchantPaymentsQueryOptions(merchantId: string) {
+  return queryOptions({
+    queryKey: paymentQueryKeys.settings(merchantId),
+    queryFn: async () => (await getMerchantPayments(merchantId)).data,
+    enabled: Boolean(merchantId),
+  });
+}
 
 export function usePaymentGroups() {
-  return useQuery(paymentGroupsQueryOptions);
+  const merchantId = useAuth((state) => state.merchantId) ?? "";
+  return useQuery(paymentGroupsQueryOptions(merchantId));
+}
+
+export function useMerchantPayments() {
+  const merchantId = useAuth((state) => state.merchantId) ?? "";
+  return useQuery(merchantPaymentsQueryOptions(merchantId));
+}
+
+export function useUpdateMerchantPayment() {
+  const merchantId = useAuth((state) => state.merchantId) ?? "";
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      paymentId,
+      body,
+    }: {
+      paymentId: string;
+      body: App.Requests.Merchant.Payment.UpdateMerchantPaymentRequest;
+    }) => updateMerchantPayment(merchantId, paymentId, body),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: paymentQueryKeys.all(merchantId) });
+    },
+  });
 }

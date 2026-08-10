@@ -24,6 +24,9 @@ import {
   Select,
   Surface,
   TextArea,
+  TextField,
+  Input,
+  Label,
   Typography,
   useThemeColor,
 } from "heroui-native";
@@ -41,7 +44,7 @@ import {
 } from "react-native";
 import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView, useKeyboardState } from "react-native-keyboard-controller";
-import type { PaymentSession, POSPaymentGroup } from "@/types/pos";
+import type { PaymentSession, POSPayment, POSPaymentGroup } from "@/types/pos";
 import {
   useForm,
   Controller,
@@ -68,13 +71,9 @@ type CheckoutContentProps = {
   onPaymentReady: (
     session: PaymentSession,
     result: MerchantCheckoutData,
-    options: { isCash: boolean }
+    options: { processingMode: PaymentSession["processing_mode"] }
   ) => void;
 };
-
-const isEMoneyGroup = (groupType: string) => groupType.toLowerCase() === "e-money";
-const isCashPaymentSelection = (groupType: string, paymentCode?: string) =>
-  groupType.toLowerCase().includes("cash") || paymentCode === "cashier";
 
 function getCashPresets(total: number): number[] {
   if (total <= 0) return [];
@@ -241,29 +240,27 @@ function PaymentFields({
   paymentGroup,
   paymentId,
   isPending,
-  isCashPayment,
+  selectedPayment,
   cashPresets,
-  cashReceived,
+  tenderValue,
   cashReceivedAmount,
   subtotal,
   change,
   errors,
   setValue,
-  setCashReceived,
 }: {
   paymentGroups: POSPaymentGroup[];
   paymentGroup: string;
   paymentId: string;
   isPending: boolean;
-  isCashPayment: boolean;
+  selectedPayment: POSPayment | undefined;
   cashPresets: number[];
-  cashReceived: string;
+  tenderValue: string;
   cashReceivedAmount: number;
   subtotal: number;
   change: number;
   errors: FieldErrors<CheckoutFormValues>;
   setValue: UseFormSetValue<CheckoutFormValues>;
-  setCashReceived: (value: string) => void;
 }) {
   const { t } = useTranslation();
 
@@ -290,10 +287,9 @@ function PaymentFields({
                 : 0;
               setValue("payment_group", group.group_type);
               setValue("payment_id", firstPayment?.id ?? "");
-              setCashReceived(
-                isCashPaymentSelection(group.group_type, firstPayment?.code)
-                  ? String(subtotal + paymentFee)
-                  : ""
+              setValue(
+                "tender_value",
+                firstPayment?.tender_input.type === "amount" ? String(subtotal + paymentFee) : null
               );
             }}
           >
@@ -329,40 +325,65 @@ function PaymentFields({
         )}
       </View>
 
-      {!isCashPayment ? (
-        <View className="gap-2">
-          <Typography type="body-sm" weight="semibold">
-            {t("checkout.payment")}
+      <View className="gap-2">
+        <Typography type="body-sm" weight="semibold">
+          {t("checkout.payment")}
+        </Typography>
+        {isPending ? (
+          <PaymentButtonSkeleton widths={[96, 120, 88]} />
+        ) : (
+          <View className="min-h-8 flex-row flex-wrap gap-2">
+            {paymentGroups
+              .find((group) => group.group_type === paymentGroup)
+              ?.payments.map((payment) => (
+                <Button
+                  key={payment.id}
+                  size="sm"
+                  variant={paymentId === payment.id ? "primary" : "secondary"}
+                  onPress={() => {
+                    setValue("payment_id", payment.id);
+                    setValue(
+                      "tender_value",
+                      payment.tender_input.type === "amount" ? String(subtotal) : null
+                    );
+                  }}
+                >
+                  <Button.Label>{payment.name}</Button.Label>
+                </Button>
+              ))}
+          </View>
+        )}
+        {errors.payment_id ? (
+          <Typography type="body-xs" className="text-danger">
+            {errors.payment_id.message}
           </Typography>
-          {isPending ? (
-            <PaymentButtonSkeleton widths={[96, 120, 88]} />
-          ) : (
-            <View className="min-h-8 flex-row flex-wrap gap-2">
-              {paymentGroups
-                .find((group) => group.group_type === paymentGroup)
-                ?.payments.map((payment) => (
-                  <Button
-                    key={payment.id}
-                    size="sm"
-                    variant={paymentId === payment.id ? "primary" : "secondary"}
-                    onPress={() => setValue("payment_id", payment.id)}
-                  >
-                    <Button.Label>{payment.name}</Button.Label>
-                  </Button>
-                ))}
-            </View>
-          )}
-          {errors.payment_id ? (
-            <Typography type="body-xs" className="text-danger">
-              {errors.payment_id.message}
-            </Typography>
-          ) : null}
+        ) : null}
+      </View>
+
+      {selectedPayment?.tender_input.type === "reference" ? (
+        <View className="gap-2">
+          <TextField
+            isRequired={selectedPayment.tender_input.required}
+            isInvalid={Boolean(errors.tender_value)}
+          >
+            <Label>{selectedPayment.tender_input.label ?? t("checkout.paymentReference")}</Label>
+            <Input
+              value={tenderValue}
+              onChangeText={(value) => setValue("tender_value", value, { shouldValidate: true })}
+              placeholder={selectedPayment.tender_input.placeholder ?? t("checkout.optional")}
+            />
+            {errors.tender_value ? (
+              <Typography type="body-xs" className="text-danger">
+                {errors.tender_value.message}
+              </Typography>
+            ) : null}
+          </TextField>
         </View>
-      ) : (
+      ) : selectedPayment?.tender_input.type === "amount" ? (
         <View className="gap-3">
           <View className="gap-2">
             <Typography type="body-sm" weight="semibold">
-              {t("checkout.cashAmount")}
+              {selectedPayment.tender_input.label ?? t("checkout.cashAmount")}
             </Typography>
             <View className="flex-row flex-wrap gap-2">
               {cashPresets.map((amount, index) => (
@@ -370,7 +391,7 @@ function PaymentFields({
                   key={amount}
                   size="sm"
                   variant={cashReceivedAmount === amount ? "primary" : "secondary"}
-                  onPress={() => setCashReceived(String(amount))}
+                  onPress={() => setValue("tender_value", String(amount), { shouldValidate: true })}
                 >
                   <Button.Label>
                     {index === 0
@@ -385,9 +406,9 @@ function PaymentFields({
             <StringNumberField
               className="flex-1"
               label={t("checkout.otherAmount")}
-              value={cashReceived}
-              onChange={setCashReceived}
-              placeholder="Rp0"
+              value={tenderValue}
+              onChange={(value) => setValue("tender_value", value, { shouldValidate: true })}
+              placeholder={selectedPayment.tender_input.placeholder ?? "Rp0"}
               minValue={0}
               step={1000}
               formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
@@ -401,8 +422,13 @@ function PaymentFields({
               </Typography>
             </View>
           </View>
+          {errors.tender_value ? (
+            <Typography type="body-xs" className="text-danger">
+              {errors.tender_value.message}
+            </Typography>
+          ) : null}
         </View>
-      )}
+      ) : null}
     </>
   );
 }
@@ -665,22 +691,21 @@ export function CheckoutContent({
   const shouldHideSheetFooter =
     presentation === "sheet" && isKeyboardVisible && windowWidth > windowHeight;
 
-  const [cashReceived, setCashReceived] = useState("");
   const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [sheetFooterHeight, setSheetFooterHeight] = useState(0);
   const checkoutSchema = createCheckoutSchema(t);
 
-  const defaultPaymentGroup =
-    paymentGroups.find((group) => isEMoneyGroup(group.group_type)) ?? paymentGroups[0];
+  const defaultPaymentGroup = paymentGroups[0];
   const defaultPaymentId = defaultPaymentGroup?.payments[0]?.id ?? "";
 
   const DEFAULT_VALUES: CheckoutFormValues = {
     order_type: checkoutForm.order_type,
     table_id: checkoutForm.table_id,
     pickup_time: checkoutForm.pickup_time,
-    payment_group: defaultPaymentGroup?.group_type ?? "E-Money",
+    payment_group: defaultPaymentGroup?.group_type ?? "",
     payment_id: defaultPaymentId,
+    tender_value: null,
     customer_type: "anonymous",
     guest_id: null,
     customer_id: null,
@@ -693,6 +718,7 @@ export function CheckoutContent({
     control,
     clearErrors,
     handleSubmit,
+    setError,
     setValue,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
@@ -702,6 +728,7 @@ export function CheckoutContent({
 
   const paymentGroup = useWatch({ control, name: "payment_group" });
   const paymentId = useWatch({ control, name: "payment_id" });
+  const tenderValue = useWatch({ control, name: "tender_value" }) ?? "";
   const customerType = useWatch({ control, name: "customer_type" });
   const guestId = useWatch({ control, name: "guest_id" });
   const customerId = useWatch({ control, name: "customer_id" });
@@ -727,10 +754,7 @@ export function CheckoutContent({
     if (paymentGroups.length === 0) return;
 
     const selectedGroup = paymentGroups.find((g) => g.group_type === paymentGroup);
-    const fallbackGroup =
-      selectedGroup ??
-      paymentGroups.find((group) => isEMoneyGroup(group.group_type)) ??
-      paymentGroups[0];
+    const fallbackGroup = selectedGroup ?? paymentGroups[0];
     const firstPayment = fallbackGroup.payments[0];
 
     if (!selectedGroup) {
@@ -741,6 +765,9 @@ export function CheckoutContent({
 
     if (!fallbackGroup.payments.some((payment) => payment.id === paymentId)) {
       setValue("payment_id", firstPayment?.id ?? "", { shouldValidate: true });
+      setValue("tender_value", firstPayment?.tender_input.type === "amount" ? "0" : null, {
+        shouldValidate: true,
+      });
     }
   }, [paymentGroups, paymentGroup, paymentId, setValue]);
 
@@ -765,16 +792,24 @@ export function CheckoutContent({
       : selectedPayment.fee_value
     : 0;
   const total = subtotal + paymentFee;
-  const isCashPayment = isCashPaymentSelection(paymentGroup, selectedPayment?.code);
-  const cashReceivedAmount = Number(cashReceived.replace(/\D/g, "")) || 0;
+  const isAmountTender = selectedPayment?.tender_input.type === "amount";
+  const cashReceivedAmount = Number(tenderValue.replace(/\D/g, "")) || 0;
   const change = Math.max(0, cashReceivedAmount - total);
   const cashPresets = getCashPresets(total);
 
   const onSubmit = async (values: CheckoutFormValues) => {
     setCheckoutError(null);
 
-    if (isCashPayment && cashReceivedAmount < total) {
+    if (isAmountTender && cashReceivedAmount < total) {
       setCheckoutError({ key: "checkout.cashInsufficient" });
+      return;
+    }
+
+    if (selectedPayment?.tender_input.required && !values.tender_value?.trim()) {
+      setError("tender_value", {
+        type: "required",
+        message: selectedPayment.tender_input.label ?? t("checkout.completeRequired"),
+      });
       return;
     }
 
@@ -792,6 +827,7 @@ export function CheckoutContent({
     try {
       const result = await checkout.mutateAsync(values);
       const payment = allPayments.find((p) => p.id === values.payment_id);
+      const paymentSnapshot = result.payment;
       const session: PaymentSession = {
         order_id: result.id,
         transaction_id: result.code,
@@ -799,13 +835,21 @@ export function CheckoutContent({
         qr_url: extractPaymentQrUrl(result),
         expires_at: extractPaymentExpiry(result.payment_details),
         amount: extractCheckoutTotal(result, total),
-        cash_received: isCashPayment ? cashReceivedAmount : undefined,
-        change: isCashPayment ? change : undefined,
+        cash_received: paymentSnapshot.amount_received ?? undefined,
+        change: paymentSnapshot.change_due,
+        reference: paymentSnapshot.reference ?? undefined,
+        processing_mode: paymentSnapshot.processing_mode,
       };
       setIsCompleting(true);
-      onPaymentReady(session, result, { isCash: isCashPayment });
+      onPaymentReady(session, result, { processingMode: paymentSnapshot.processing_mode });
     } catch (error) {
-      setCheckoutError({ message: getErrorMessage(error) });
+      if (isApiError(error) && error.errors?.tender_value?.[0]) {
+        setError("tender_value", { type: "server", message: error.errors.tender_value[0] });
+      } else if (isApiError(error) && error.code === "PAYMENT_METHOD_UNAVAILABLE") {
+        setCheckoutError({ message: error.message });
+      } else {
+        setCheckoutError({ message: getErrorMessage(error) });
+      }
     }
   };
 
@@ -819,7 +863,8 @@ export function CheckoutContent({
     arePaymentGroupsPending ||
     paymentGroups.length === 0 ||
     cartProducts.length === 0 ||
-    (isCashPayment && cashReceivedAmount < total);
+    (isAmountTender && cashReceivedAmount < total) ||
+    Boolean(selectedPayment?.tender_input.required && !tenderValue.trim());
 
   const footer =
     isCheckoutPending || shouldHideSheetFooter ? undefined : (
@@ -849,15 +894,14 @@ export function CheckoutContent({
             paymentGroup,
             paymentId,
             isPending: arePaymentGroupsPending,
-            isCashPayment,
+            selectedPayment,
             cashPresets,
-            cashReceived,
+            tenderValue,
             cashReceivedAmount,
             subtotal,
             change,
             errors,
             setValue,
-            setCashReceived,
           }}
           customerFields={{
             control,
