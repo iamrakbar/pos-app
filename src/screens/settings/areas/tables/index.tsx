@@ -24,13 +24,15 @@ function getTableSeatCount(pax: number): TableSeatCount {
 export default function AreaTablesScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { areaId } = useLocalSearchParams<{ areaId: string }>();
-  const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
+  const { width, isCompact, isMedium, isPortrait, horizontalPagePadding } =
+    useResponsiveLayout();
   const [mutedColor, accentColor, accentSoft] = useThemeColor(["muted", "accent", "accent-soft"]);
   const areaQuery = useArea(areaId);
   const tablesQuery = useAreaTables(areaId);
   const [editingTable, setEditingTable] = React.useState<TableData | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [qrTable, setQrTable] = React.useState<TableData | null>(null);
+  const [isQrOpen, setIsQrOpen] = React.useState(false);
 
   const openCreate = () => {
     setEditingTable(null);
@@ -42,13 +44,18 @@ export default function AreaTablesScreen(): React.JSX.Element {
     setIsFormOpen(true);
   };
 
+  const openQr = (table: TableData) => {
+    setQrTable(table);
+    requestAnimationFrame(() => setIsQrOpen(true));
+  };
+
   if (tablesQuery.isLoading) return <LoadingState message={t("areasManagement.loadingTables")} />;
   if (tablesQuery.isError) {
     return <ErrorState error={tablesQuery.error} onRetry={tablesQuery.refetch} />;
   }
 
   const tables = tablesQuery.data ?? [];
-  const columnCount = isCompact ? 2 : isMedium ? 3 : 4;
+  const columnCount = isCompact ? 1 : isMedium && isPortrait ? 2 : isMedium ? 3 : 4;
   const listHorizontalPadding = horizontalPagePadding - 6;
   const cardWidth = (width - listHorizontalPadding * 2) / columnCount - 16;
 
@@ -67,7 +74,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
             paddingBottom: 104,
             flexGrow: tables.length === 0 ? 1 : undefined,
           }}
-          columnWrapperClassName="items-stretch"
+          columnWrapperClassName={columnCount > 1 ? "items-stretch" : undefined}
           renderItem={({ item: table }) => {
             const pax = Number(table.pax);
             const seats = t(pax === 1 ? "areasManagement.seatOne" : "areasManagement.seatOther", {
@@ -103,7 +110,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
                     accessibilityLabel={t("areasManagement.tableQrAccessibility", {
                       table: table.name,
                     })}
-                    onPress={() => setQrTable(table)}
+                    onPress={() => openQr(table)}
                     className="flex-1"
                   >
                     <AppIcon name="qr-code-sharp" size={16} color={mutedColor} />
@@ -159,11 +166,8 @@ export default function AreaTablesScreen(): React.JSX.Element {
       />
       <TableQrOverlay
         table={qrTable}
-        areaName={areaQuery.data?.name}
-        isOpen={qrTable !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) setQrTable(null);
-        }}
+        isOpen={isQrOpen}
+        onOpenChange={setIsQrOpen}
       />
     </>
   );

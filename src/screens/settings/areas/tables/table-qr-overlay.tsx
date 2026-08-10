@@ -1,15 +1,14 @@
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import AppIcon from "@/components/common/app-icon";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useTranslation } from "@/stores/use-locale";
 import { getTableOrderUrl } from "@/utils/table-order-url";
 import { Asset, requestPermissionsAsync } from "expo-media-library";
 import { EncodingType, File as ExpoFile, Paths } from "expo-file-system";
 import * as Linking from "expo-linking";
 import * as Sharing from "expo-sharing";
-import { Button, Chip, Separator, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, Typography, useThemeColor, useToast } from "heroui-native";
 import React from "react";
-import { Platform, ScrollView, View } from "react-native";
+import { Platform, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 type TableData = App.Data.Merchant.Area.TableData;
@@ -20,12 +19,26 @@ type QrSvgRef = {
 
 type TableQrOverlayProps = {
   table: TableData | null;
-  areaName?: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 };
 
 const QR_EXPORT_SIZE = 1024;
+const QR_CODE_SIZE = 240;
+const QR_LOGO_SIZE = 48;
+const SOEAT_LOGO = require("../../../../../assets/images/logo.svg");
+
+function getTableNumberLabel(tableName: string): string {
+  const tableNumber = tableName.match(/\d+/)?.[0];
+  if (tableNumber) return `TABLE ${tableNumber}`;
+
+  const fallback = tableName
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .trim()
+    .slice(0, 10);
+  return fallback || "TABLE";
+}
 
 function getQrFileName(tableName: string): string {
   const safeName = tableName
@@ -52,6 +65,7 @@ async function shareOnWeb(
   unavailableMessage: string
 ): Promise<void> {
   const response = await fetch(dataUrl);
+  if (!response.ok) throw new Error(unavailableMessage);
   const blob = await response.blob();
   const file = new globalThis.File([blob], fileName, { type: "image/png" });
 
@@ -63,22 +77,41 @@ async function shareOnWeb(
   throw new Error(unavailableMessage);
 }
 
+async function runQrAction(
+  action: () => Promise<void>,
+  onSuccess: () => void,
+  onError: (error: unknown) => void,
+  onFinally: () => void
+): Promise<void> {
+  try {
+    await action();
+    onSuccess();
+  } catch (error) {
+    onError(error);
+  } finally {
+    onFinally();
+  }
+}
+
 export default function TableQrOverlay({
   table,
-  areaName,
   isOpen,
   onOpenChange,
 }: TableQrOverlayProps): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { isPhonePortrait } = useOverlayPresentation();
-  const [mutedColor, accentForegroundColor] = useThemeColor(["muted", "accent-foreground"]);
+  const [foregroundColor, mutedColor, accentForegroundColor] = useThemeColor([
+    "foreground",
+    "muted",
+    "accent-foreground",
+  ]);
   const [activeAction, setActiveAction] = React.useState<QrAction>(null);
   const qrRef = React.useRef<QrSvgRef | null>(null);
   const orderUrl = table ? getTableOrderUrl(table.id) : null;
+  const tableNumberLabel = table ? getTableNumberLabel(table.name) : "TABLE";
   const isUnavailable = !orderUrl;
 
-  const getQrDataUrl = React.useCallback(async (): Promise<string> => {
+  const getQrDataUrl = async (): Promise<string> => {
     if (!qrRef.current) throw new Error(t("areasManagement.tableQrNotReady"));
     const base64 = await new Promise<string>((resolve) => {
       qrRef.current?.toDataURL(resolve, {
@@ -87,108 +120,97 @@ export default function TableQrOverlay({
       });
     });
     return `data:image/png;base64,${base64}`;
-  }, [t]);
+  };
 
-  const writeQrFile = React.useCallback(
-    async (fileName: string): Promise<ExpoFile> => {
-      const dataUrl = await getQrDataUrl();
-      const file = new ExpoFile(Paths.cache, fileName);
-      file.create({ overwrite: true });
-      file.write(dataUrl.slice(dataUrl.indexOf(",") + 1), { encoding: EncodingType.Base64 });
-      return file;
-    },
-    [getQrDataUrl]
-  );
+  const writeQrFile = async (fileName: string): Promise<ExpoFile> => {
+    const dataUrl = await getQrDataUrl();
+    const file = new ExpoFile(Paths.cache, fileName);
+    file.create({ overwrite: true });
+    file.write(dataUrl.slice(dataUrl.indexOf(",") + 1), { encoding: EncodingType.Base64 });
+    return file;
+  };
 
   const handleDownload = async () => {
     if (!table || !orderUrl) return;
     setActiveAction("download");
-    try {
-      const fileName = getQrFileName(table.name);
-      if (Platform.OS === "web") {
-        downloadOnWeb(await getQrDataUrl(), fileName);
-      } else {
-        const permission = await requestPermissionsAsync(true, ["photo"]);
-        if (!permission.granted) {
-          throw new Error(t("areasManagement.tableQrPermissionDenied"));
+    const fileName = getQrFileName(table.name);
+    await runQrAction(
+      async () => {
+        if (Platform.OS === "web") {
+          downloadOnWeb(await getQrDataUrl(), fileName);
+        } else {
+          const permission = await requestPermissionsAsync(true, ["photo"]);
+          if (!permission.granted) {
+            return Promise.reject(new Error(t("areasManagement.tableQrPermissionDenied")));
+          }
+          const file = await writeQrFile(fileName);
+          await Asset.create(file.uri);
         }
-        const file = await writeQrFile(fileName);
-        await Asset.create(file.uri);
-      }
-      toast.show({
-        variant: "success",
-        label: t(
-          Platform.OS === "web"
-            ? "areasManagement.tableQrDownloaded"
-            : "areasManagement.tableQrSaved"
-        ),
-      });
-    } catch (error) {
-      toast.show({
-        variant: "danger",
-        label: t("areasManagement.tableQrSaveFailed"),
-        description: error instanceof Error ? error.message : undefined,
-      });
-    } finally {
-      setActiveAction(null);
-    }
+      },
+      () =>
+        toast.show({
+          variant: "success",
+          label: t(
+            Platform.OS === "web"
+              ? "areasManagement.tableQrDownloaded"
+              : "areasManagement.tableQrSaved"
+          ),
+        }),
+      (error) =>
+        toast.show({
+          variant: "danger",
+          label: t("areasManagement.tableQrSaveFailed"),
+          description: error instanceof Error ? error.message : undefined,
+        }),
+      () => setActiveAction(null)
+    );
   };
 
   const handleShare = async () => {
     if (!table || !orderUrl) return;
     setActiveAction("share");
-    try {
-      const fileName = getQrFileName(table.name);
-      const title = t("areasManagement.tableQrTitle", { table: table.name });
-      if (Platform.OS === "web") {
-        await shareOnWeb(
-          await getQrDataUrl(),
-          fileName,
-          title,
-          t("areasManagement.tableQrShareUnavailable")
-        );
-      } else {
-        if (!(await Sharing.isAvailableAsync())) {
-          throw new Error(t("areasManagement.tableQrShareUnavailable"));
+    const fileName = getQrFileName(table.name);
+    const title = t("areasManagement.tableQrTitle", { table: table.name });
+    const unavailableMessage = t("areasManagement.tableQrShareUnavailable");
+    await runQrAction(
+      async () => {
+        if (Platform.OS === "web") {
+          await shareOnWeb(await getQrDataUrl(), fileName, title, unavailableMessage);
+        } else {
+          if (!(await Sharing.isAvailableAsync())) {
+            return Promise.reject(new Error(unavailableMessage));
+          }
+          const file = await writeQrFile(fileName);
+          await Sharing.shareAsync(file.uri, {
+            dialogTitle: title,
+            mimeType: "image/png",
+            UTI: "public.png",
+          });
         }
-        const file = await writeQrFile(fileName);
-        await Sharing.shareAsync(file.uri, {
-          dialogTitle: title,
-          mimeType: "image/png",
-          UTI: "public.png",
-        });
-      }
-      toast.show({ variant: "success", label: t("areasManagement.tableQrShared") });
-    } catch (error) {
-      toast.show({
-        variant: "danger",
-        label: t("areasManagement.tableQrShareFailed"),
-        description: error instanceof Error ? error.message : undefined,
-      });
-    } finally {
-      setActiveAction(null);
-    }
+      },
+      () => toast.show({ variant: "success", label: t("areasManagement.tableQrShared") }),
+      (error) =>
+        toast.show({
+          variant: "danger",
+          label: t("areasManagement.tableQrShareFailed"),
+          description: error instanceof Error ? error.message : undefined,
+        }),
+      () => setActiveAction(null)
+    );
   };
 
   const handlePreview = async () => {
     if (!orderUrl) return;
-    try {
-      await Linking.openURL(orderUrl);
-    } catch (error) {
+    await Linking.openURL(orderUrl).catch((error: unknown) => {
       toast.show({
         variant: "danger",
         label: t("areasManagement.tableQrPreviewFailed"),
         description: error instanceof Error ? error.message : undefined,
       });
-    }
+    });
   };
 
   if (!table) return <></>;
-
-  const seats = t(table.pax === 1 ? "areasManagement.seatOne" : "areasManagement.seatOther", {
-    count: table.pax,
-  });
-  const status = table.active ? t("common.active") : t("common.inactive");
 
   return (
     <AdaptiveFormOverlay
@@ -198,27 +220,7 @@ export default function TableQrOverlay({
       description={t("areasManagement.tableQrDescription")}
       maxWidthClassName="max-w-lg"
       footer={
-        <View
-          className={`gap-3 px-5 pb-5 pt-4 ${
-            isPhonePortrait ? "items-stretch" : "flex-row items-center"
-          }`}
-        >
-          <Button
-            variant="outline"
-            className="flex-1"
-            accessibilityLabel={t("areasManagement.tableQrDownloadAccessibility", {
-              table: table.name,
-            })}
-            isDisabled={isUnavailable || activeAction !== null}
-            onPress={handleDownload}
-          >
-            <AppIcon name="download-outline" size={18} color={mutedColor} />
-            <Button.Label>
-              {activeAction === "download"
-                ? t("areasManagement.tableQrDownloading")
-                : t("areasManagement.tableQrDownload")}
-            </Button.Label>
-          </Button>
+        <View className="flex-row items-center gap-3 px-5 pb-5 pt-4">
           <Button
             variant="outline"
             className="flex-1"
@@ -237,24 +239,23 @@ export default function TableQrOverlay({
           </Button>
           <Button
             className="flex-1"
-            accessibilityLabel={t("areasManagement.tableQrPreviewAccessibility", {
+            accessibilityLabel={t("areasManagement.tableQrDownloadAccessibility", {
               table: table.name,
             })}
             isDisabled={isUnavailable || activeAction !== null}
-            onPress={handlePreview}
+            onPress={handleDownload}
           >
-            <AppIcon name="open-outline" size={18} color={accentForegroundColor} />
-            <Button.Label>{t("areasManagement.tableQrPreview")}</Button.Label>
+            <AppIcon name="download-outline" size={18} color={accentForegroundColor} />
+            <Button.Label>
+              {activeAction === "download"
+                ? t("areasManagement.tableQrDownloading")
+                : t("areasManagement.tableQrDownload")}
+            </Button.Label>
           </Button>
         </View>
       }
     >
-      <Separator />
-      <ScrollView
-        className={isPhonePortrait ? "min-h-0 flex-1" : "min-h-0"}
-        contentContainerClassName="items-center gap-5 px-5 py-5"
-        showsVerticalScrollIndicator={false}
-      >
+      <View className="px-5 gap-4">
         {orderUrl ? (
           <View
             className="rounded-3xl border border-border bg-white p-4"
@@ -264,17 +265,27 @@ export default function TableQrOverlay({
               table: table.name,
             })}
           >
-            <QRCode
-              value={orderUrl}
-              size={240}
-              quietZone={12}
-              backgroundColor="#ffffff"
-              color="#000000"
-              ecl="H"
-              getRef={(ref) => {
-                qrRef.current = ref as QrSvgRef | null;
-              }}
-            />
+            <View className="items-center gap-1">
+              <QRCode
+                value={orderUrl}
+                size={QR_CODE_SIZE}
+                quietZone={12}
+                backgroundColor="#ffffff"
+                color="#000000"
+                ecl="H"
+                logoSVG={SOEAT_LOGO}
+                logoSize={QR_LOGO_SIZE}
+                logoMargin={6}
+                logoBackgroundColor="#ffffff"
+                logoBorderRadius={12}
+                getRef={(ref) => {
+                  qrRef.current = ref as QrSvgRef | null;
+                }}
+              />
+              <Typography type="h6" weight="bold" className="text-center text-black">
+                {tableNumberLabel}
+              </Typography>
+            </View>
           </View>
         ) : (
           <View className="w-full rounded-panel border border-danger/30 bg-danger-soft p-4">
@@ -283,39 +294,30 @@ export default function TableQrOverlay({
             </Typography>
           </View>
         )}
-
-        <View className="w-full gap-4 rounded-panel bg-surface-secondary p-4">
-          <View className="flex-row flex-wrap items-center gap-2">
-            {areaName ? (
-              <Chip size="sm" variant="soft">
-                <Chip.Label>{areaName}</Chip.Label>
-              </Chip>
-            ) : null}
-            <Chip size="sm" variant="soft">
-              <Chip.Label>{seats}</Chip.Label>
-            </Chip>
-            <Chip size="sm" color={table.active ? "success" : "default"} variant="soft">
-              <Chip.Label>{status}</Chip.Label>
-            </Chip>
-          </View>
-          <View className="gap-1">
-            <Typography type="body-xs" color="muted">
-              {t("areasManagement.tableQrDestination")}
-            </Typography>
-            <Typography type="body-sm" weight="semibold">
-              {t("areasManagement.tableQrDestinationValue")}
-            </Typography>
-          </View>
-          <View className="gap-1">
-            <Typography type="body-xs" color="muted">
-              {t("areasManagement.tableQrOrderLink")}
-            </Typography>
-            <Typography type="body-xs" selectable className="text-foreground">
-              {orderUrl ?? t("areasManagement.tableQrUnavailable")}
-            </Typography>
+        <View className="gap-1">
+          <Typography type="body-xs" color="muted">
+            {t("areasManagement.tableQrOrderLink")}
+          </Typography>
+          <View className="flex-row justify-center items-center w-full rounded-lg bg-surface-secondary ">
+            <View className="flex-1 py-2 px-3 overflow-hidden">
+              <Typography type="body-sm" selectable className="text-foreground">
+                {orderUrl ?? t("areasManagement.tableQrUnavailable")}
+              </Typography>
+            </View>
+            <Button
+              variant="ghost"
+              isIconOnly
+              accessibilityLabel={t("areasManagement.tableQrPreviewAccessibility", {
+                table: table.name,
+              })}
+              isDisabled={isUnavailable || activeAction !== null}
+              onPress={handlePreview}
+            >
+              <AppIcon name="open-outline" size={16} color={foregroundColor} />
+            </Button>
           </View>
         </View>
-      </ScrollView>
+      </View>
     </AdaptiveFormOverlay>
   );
 }
