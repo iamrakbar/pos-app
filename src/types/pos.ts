@@ -16,16 +16,21 @@ export type AddOnGroup = {
 
 export type POSProduct = {
   id: string;
+  merchant_id: string;
   name: string;
+  slug: string | null;
+  description: string | null;
   price: number;
-  original_price: number | null;
-  image_url: string | null;
-  thumbnail_url: string | null;
-  category_id: string | null;
-  stock_enabled?: boolean;
-  stock_qty?: number | null;
+  discount: App.Data.Merchant.Pos.ProductDiscountData | null;
+  stock: App.Data.Merchant.Pos.ProductStockData;
+  image: App.Data.Merchant.Pos.ProductImageData;
+  category: App.Data.Merchant.Pos.ProductCategoryData | null;
   add_ons: AddOnGroup[];
   is_active: boolean;
+  is_po: boolean;
+  po_availability: App.Data.Merchant.Pos.ProductPoAvailabilityData | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type POSCategory = {

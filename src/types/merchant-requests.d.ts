@@ -114,15 +114,6 @@ declare namespace App.Requests.Merchant.Checkout {
         coupon_codes?: string[] | null;
     };
     export type CheckoutRequest = {
-        customer_type: "guest" | "customer" | "anonymous";
-        guest_id?: string | null;
-        customer_id?: string | null;
-        order_type: "dine-in" | "takeaway";
-        table_id?: string | null;
-        pickup_time?: string | null;
-        payment_id: string;
-        tender_value?: string | null;
-        notes?: string | null;
         products: {
             id: string;
             product_id: string;
@@ -141,11 +132,20 @@ declare namespace App.Requests.Merchant.Checkout {
                 }[] | null;
             }[] | null;
         }[];
+        customer_type: "guest" | "customer" | "anonymous";
+        guest_id?: string | null;
         guest?: {
             name?: string;
             email?: string | null;
             phone?: string | null;
         };
+        customer_id?: string | null;
+        order_type: "dine-in" | "takeaway";
+        table_id?: string | null;
+        pickup_time?: string | null;
+        payment_id: string;
+        tender_value?: string | null;
+        notes?: string | null;
         coupon_codes?: string[] | null;
     };
 }

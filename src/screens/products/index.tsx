@@ -39,7 +39,7 @@ export default function ProductsScreen(): React.JSX.Element {
   const { data: categoriesList = [] } = useCategories();
 
   const filtered = (allProductsRaw ?? []).filter((product) => {
-    const matchesCategory = !categoryId || product.category_id === categoryId;
+    const matchesCategory = !categoryId || product.category?.id === categoryId;
     const matchesStatus =
       activeFilter === "all" ||
       (activeFilter === "active" && product.is_active) ||
@@ -127,8 +127,8 @@ export default function ProductsScreen(): React.JSX.Element {
               </EmptyState>
             ) : (
               filtered.map((product, index) => {
-                const category = categoriesList.find((c) => c.id === product.category_id);
-                const isDiscounted = product.original_price !== null;
+                const category = categoriesList.find((c) => c.id === product.category?.id);
+                const isDiscounted = product.discount !== null;
 
                 return (
                   <View key={product.id}>
@@ -138,9 +138,9 @@ export default function ProductsScreen(): React.JSX.Element {
                     >
                       {/* Thumbnail */}
                       <View className="w-14 h-14 rounded-panel-inner bg-surface-secondary overflow-hidden items-center justify-center shrink-0">
-                        {product.thumbnail_url ? (
+                        {product.image?.thumbnail ? (
                           <Image
-                            source={{ uri: product.thumbnail_url }}
+                            source={{ uri: product.image.thumbnail }}
                             style={{ width: "100%", height: "100%" }}
                             contentFit="cover"
                           />
@@ -197,7 +197,7 @@ export default function ProductsScreen(): React.JSX.Element {
                         <View className="flex-row items-center gap-2">
                           {isDiscounted && (
                             <Typography type="body-xs" color="muted" className="line-through">
-                              {formatRupiah(product.original_price!)}
+                              {formatRupiah(product.price)}
                             </Typography>
                           )}
                           <Typography
@@ -205,7 +205,10 @@ export default function ProductsScreen(): React.JSX.Element {
                             weight="semibold"
                             className={`tabular-nums ${isDiscounted ? "text-accent" : ""}`}
                           >
-                            {product.price === 0 ? t("common.free") : formatRupiah(product.price)}
+                            {(() => {
+                              const effective = product.discount?.price ?? product.price;
+                              return effective === 0 ? t("common.free") : formatRupiah(effective);
+                            })()}
                           </Typography>
                         </View>
                       </View>

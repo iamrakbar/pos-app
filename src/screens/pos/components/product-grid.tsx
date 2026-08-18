@@ -65,9 +65,9 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
       (product) =>
         (!normalizedSearch ||
           product.name.toLocaleLowerCase(localeTag).includes(normalizedSearch)) &&
-        (!categoryId || product.category_id === categoryId) &&
+        (!categoryId || product.category?.id === categoryId) &&
         product.is_active &&
-        (!product.stock_enabled || (product.stock_qty ?? 0) > 0)
+        (!product.stock?.enabled || (product.stock.qty ?? 0) > 0)
     )
     .sort((left, right) => {
       if (productSort === "name-asc") return left.name.localeCompare(right.name, localeTag);

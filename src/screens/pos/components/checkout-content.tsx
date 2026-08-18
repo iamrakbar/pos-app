@@ -31,6 +31,7 @@ import {
   useThemeColor,
 } from "heroui-native";
 import { SlideButton } from "heroui-native-pro";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ComponentProps, JSX, ReactElement } from "react";
 import { useEffect, useState } from "react";
@@ -273,55 +274,37 @@ function PaymentFields({
         {isPending ? (
           <PaymentTypeSkeleton />
         ) : (
-          <RadioGroup
-            value={paymentGroup}
-            onValueChange={(groupType) => {
-              const group = paymentGroups.find((item) => item.group_type === groupType);
-              if (!group) return;
-
-              const firstPayment = group.payments[0];
-              const paymentFee = firstPayment
-                ? firstPayment.fee_unit === "percentage"
-                  ? Math.round(subtotal * (firstPayment.fee_value / 100))
-                  : firstPayment.fee_value
-                : 0;
-              setValue("payment_group", group.group_type);
-              setValue("payment_id", firstPayment?.id ?? "");
-              setValue(
-                "tender_value",
-                firstPayment?.tender_input.type === "amount" ? String(subtotal + paymentFee) : null
-              );
-            }}
-          >
-            <FlatList
-              horizontal
-              data={paymentGroups}
-              keyExtractor={(group) => group.group_type}
-              showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-2"
-              renderItem={({ item: group }) => (
-                <RadioGroup.Item
-                  value={group.group_type}
-                  className="w-28"
-                  style={{ aspectRatio: 4 / 3 }}
-                >
-                  {({ isSelected }) => (
-                    <View
-                      className={`h-full w-full items-center justify-center rounded-xl border p-3 ${
-                        isSelected
-                          ? "border-accent bg-accent/10"
-                          : "border-border bg-surface-secondary"
-                      }`}
-                    >
-                      <Typography type="body-sm" weight="semibold" className="text-center">
-                        {group.group_label}
-                      </Typography>
-                    </View>
-                  )}
-                </RadioGroup.Item>
-              )}
-            />
-          </RadioGroup>
+          <FlatList
+            horizontal
+            data={paymentGroups}
+            keyExtractor={(group) => group.group_type}
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-2"
+            renderItem={({ item: group }) => (
+              <Button
+                size="sm"
+                variant={paymentGroup === group.group_type ? "primary" : "secondary"}
+                onPress={() => {
+                  const firstPayment = group.payments[0];
+                  const paymentFee = firstPayment
+                    ? firstPayment.fee_unit === "percentage"
+                      ? Math.round(subtotal * (firstPayment.fee_value / 100))
+                      : firstPayment.fee_value
+                    : 0;
+                  setValue("payment_group", group.group_type);
+                  setValue("payment_id", firstPayment?.id ?? "");
+                  setValue(
+                    "tender_value",
+                    firstPayment?.tender_input.type === "amount"
+                      ? String(subtotal + paymentFee)
+                      : null
+                  );
+                }}
+              >
+                <Button.Label className="text-center">{group.group_label}</Button.Label>
+              </Button>
+            )}
+          />
         )}
       </View>
 
@@ -332,26 +315,48 @@ function PaymentFields({
         {isPending ? (
           <PaymentButtonSkeleton widths={[96, 120, 88]} />
         ) : (
-          <View className="min-h-8 flex-row flex-wrap gap-2">
-            {paymentGroups
-              .find((group) => group.group_type === paymentGroup)
-              ?.payments.map((payment) => (
-                <Button
-                  key={payment.id}
-                  size="sm"
-                  variant={paymentId === payment.id ? "primary" : "secondary"}
-                  onPress={() => {
-                    setValue("payment_id", payment.id);
-                    setValue(
-                      "tender_value",
-                      payment.tender_input.type === "amount" ? String(subtotal) : null
-                    );
-                  }}
-                >
-                  <Button.Label>{payment.name}</Button.Label>
-                </Button>
-              ))}
-          </View>
+          <RadioGroup
+            value={paymentId}
+            onValueChange={(id) => {
+              const payment = paymentGroups
+                .find((group) => group.group_type === paymentGroup)
+                ?.payments.find((item) => item.id === id);
+              if (!payment) return;
+
+              setValue("payment_id", payment.id);
+              setValue(
+                "tender_value",
+                payment.tender_input.type === "amount" ? String(subtotal) : null
+              );
+            }}
+          >
+            <View className="min-h-8 flex-row flex-wrap gap-2">
+              {paymentGroups
+                .find((group) => group.group_type === paymentGroup)
+                ?.payments.map((payment) => (
+                  <RadioGroup.Item key={payment.id} value={payment.id}>
+                    {({ isSelected }) => (
+                      <View
+                        className={`w-32 h-24 px-2 justify-center items-center gap-1 rounded-2xl border-2 ${
+                          isSelected
+                            ? "border-accent bg-surface"
+                            : "border-border bg-surface-secondary"
+                        }`}
+                      >
+                        {payment.image ? (
+                          <Image
+                            source={{ uri: payment.image }}
+                            style={{ width: 24, height: 24 }}
+                            contentFit="contain"
+                          />
+                        ) : null}
+                        <Typography className="text-center text-sm">{payment.name}</Typography>
+                      </View>
+                    )}
+                  </RadioGroup.Item>
+                ))}
+            </View>
+          </RadioGroup>
         )}
         {errors.payment_id ? (
           <Typography type="body-xs" className="text-danger">

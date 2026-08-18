@@ -9,58 +9,61 @@ import {
   uploadProductImage,
   type ProductImageAsset,
 } from "@/api/endpoints/products";
-import { extractOriginalPrice, extractSellingPrice } from "@/api/mappers/product";
 import { useAuth } from "@/stores/use-auth";
 import type { POSProduct } from "@/types/pos";
 
 const PRODUCTS_STALE_TIME_MS = 5 * 60 * 1000;
 
 export function mapProduct(raw: App.Data.Merchant.Pos.ProductData): POSProduct {
-  return {
-    id: raw.id,
-    name: raw.name,
-    price: extractSellingPrice(raw.discount, raw.price),
-    original_price: extractOriginalPrice(raw.discount, raw.price),
-    image_url: raw.image?.default ?? null,
-    thumbnail_url: raw.image?.thumbnail ?? null,
-    category_id: raw.category?.id ?? null,
-    stock_enabled: raw.stock.enabled,
-    stock_qty: raw.stock.enabled ? raw.stock.qty : null,
-    is_active: raw.is_active,
-    add_ons: raw.add_ons,
-  };
+  return raw;
 }
 
 function mapManagementProduct(raw: App.Data.Merchant.Product.ProductData): POSProduct {
   return {
     id: raw.id,
+    merchant_id: raw.merchant_id,
     name: raw.name,
-    price: extractSellingPrice(raw.discount, raw.price),
-    original_price: extractOriginalPrice(raw.discount, raw.price),
-    image_url: raw.image.default,
-    thumbnail_url: raw.image.thumbnail,
-    category_id: raw.category?.id ?? null,
-    stock_enabled: raw.stock.enabled,
-    stock_qty: raw.stock.enabled ? raw.stock.qty : null,
-    is_active: raw.active,
+    slug: raw.slug,
+    description: raw.description,
+    price: raw.price,
+    discount: raw.discount,
+    stock: raw.stock,
+    image: raw.image,
+    category: raw.category,
     add_ons: raw.add_ons,
+    is_active: raw.active,
+    is_po: false,
+    po_availability: null,
+    created_at: raw.created_at,
+    updated_at: raw.updated_at,
   };
 }
 
 type ProductListSnapshot = [readonly unknown[], POSProduct[] | undefined];
 
 function optimisticListProduct(payload: ProductFormPayload, id: string): POSProduct {
+  const imageUri = payload.image?.uri ?? null;
   return {
     id,
+    merchant_id: "",
     name: payload.values.name,
+    slug: null,
+    description: null,
     price: payload.values.price,
-    original_price: null,
-    image_url: payload.image?.uri ?? null,
-    thumbnail_url: payload.image?.uri ?? null,
-    category_id: payload.values.category_id,
-    stock_enabled: payload.values.stock_enabled ?? false,
-    stock_qty: payload.values.stock_enabled ? (payload.values.stock ?? 0) : null,
+    discount: null,
+    stock: {
+      enabled: payload.values.stock_enabled ?? false,
+      qty: payload.values.stock_enabled ? (payload.values.stock ?? 0) : null,
+    },
+    image: { default: imageUri, thumbnail: imageUri },
+    category: payload.values.category_id
+      ? { id: payload.values.category_id, name: "", slug: null }
+      : null,
     is_active: payload.values.active ?? true,
+    is_po: false,
+    po_availability: null,
+    created_at: "",
+    updated_at: "",
     add_ons: [],
   };
 }
@@ -71,7 +74,7 @@ function productMatchesManagementQuery(product: POSProduct, queryKey: readonly u
   const active = queryKey[4] as boolean | undefined;
   return (
     (!search || product.name.toLowerCase().includes(search)) &&
-    (!categoryId || product.category_id === categoryId) &&
+    (!categoryId || product.category?.id === categoryId) &&
     (active === undefined || product.is_active === active)
   );
 }
@@ -236,10 +239,10 @@ export function useUpdateProduct(productId: string) {
               ? {
                   ...item,
                   ...optimistic,
-                  original_price: item.original_price,
                   add_ons: item.add_ons,
-                  image_url: payload.image?.uri ?? item.image_url,
-                  thumbnail_url: payload.image?.uri ?? item.thumbnail_url,
+                  image: payload.image?.uri
+                    ? { default: payload.image.uri, thumbnail: payload.image.uri }
+                    : item.image,
                 }
               : item;
           return item.id !== productId || productMatchesManagementQuery(nextItem, queryKey)

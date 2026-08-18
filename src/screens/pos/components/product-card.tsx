@@ -16,9 +16,9 @@ type Props = {
 function ProductCard({ product, onPress, width }: Props): JSX.Element {
   const { t } = useTranslation();
   const themeColorMuted = useThemeColor("muted");
-  const isDiscounted = product.original_price !== null;
-  const isOutOfStock = product.stock_enabled && (product.stock_qty ?? 0) <= 0;
-  const effectivePrice = product.price;
+  const isDiscounted = product.discount !== null;
+  const isOutOfStock = product.stock?.enabled && (product.stock.qty ?? 0) <= 0;
+  const effectivePrice = product.discount?.price ?? product.price;
   const handlePress = () => {
     onPress(product);
   };
@@ -36,9 +36,9 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
     >
       <Card className="flex-1 overflow-hidden p-0">
         <View className="aspect-square bg-surface-secondary items-center justify-center">
-          {product.image_url ? (
+          {product.image?.thumbnail ? (
             <Image
-              source={{ uri: product.image_url }}
+              source={{ uri: product.image.thumbnail }}
               style={{ width: "100%", height: "100%" }}
               contentFit="cover"
             />
@@ -51,7 +51,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
             {product.name}
           </Typography>
           <View className="gap-0.5">
-            {product.stock_enabled && (
+            {/* {product.stock_enabled && (
               <Typography
                 type="body-xs"
                 color={isOutOfStock ? undefined : "muted"}
@@ -61,10 +61,10 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
                   ? t("pos.outOfStock")
                   : t("pos.stockRemaining", { count: product.stock_qty ?? 0 })}
               </Typography>
-            )}
+            )} */}
             {isDiscounted && (
               <Typography type="body-xs" color="muted" className="line-through">
-                {formatRupiah(product.original_price!)}
+                {formatRupiah(product.price)}
               </Typography>
             )}
             <Typography
