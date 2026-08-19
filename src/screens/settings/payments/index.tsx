@@ -25,10 +25,11 @@ function groupPayments(payments: MerchantPayment[]): PaymentGroupSection[] {
   const sections: PaymentGroupSection[] = [];
   const sectionByKey = new Map<string, PaymentGroupSection>();
   for (const payment of payments) {
-    let section = sectionByKey.get(payment.group.value);
+    const groupValue = payment.group.value;
+    let section = sectionByKey.get(groupValue);
     if (!section) {
-      section = { key: payment.group.value, label: payment.group.label, payments: [] };
-      sectionByKey.set(payment.group.value, section);
+      section = { key: groupValue, label: payment.group.label, payments: [] };
+      sectionByKey.set(groupValue, section);
       sections.push(section);
     }
     section.payments.push(payment);
