@@ -1,10 +1,30 @@
 import AppIcon from "@/components/common/app-icon";
 import { useNotificationPermission } from "@/hooks/use-notification-permission";
+import type { Translate } from "@/locales";
 import { scheduleTestNotification } from "@/services/notifications";
 import { useTranslation } from "@/stores/use-locale";
 import { Button, Card, Chip, Typography, useThemeColor, useToast } from "heroui-native";
 import React from "react";
 import { Linking, ScrollView, View } from "react-native";
+
+async function sendTestNotification(
+  t: Translate,
+  toast: ReturnType<typeof useToast>["toast"]
+): Promise<void> {
+  try {
+    await scheduleTestNotification(
+      t("notifications.testNotificationTitle"),
+      t("notifications.testNotificationBody")
+    );
+    toast.show({ variant: "success", label: t("notifications.testScheduled") });
+  } catch (error) {
+    toast.show({
+      variant: "danger",
+      label: t("notifications.testFailed"),
+      description: error instanceof Error ? error.message : undefined,
+    });
+  }
+}
 
 export default function NotificationsSettingsScreen(): React.JSX.Element {
   const { t } = useTranslation();
@@ -46,21 +66,7 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
 
   const handleSendTest = async () => {
     setIsSendingTest(true);
-    try {
-      await scheduleTestNotification(
-        t("notifications.testNotificationTitle"),
-        t("notifications.testNotificationBody")
-      );
-      toast.show({ variant: "success", label: t("notifications.testScheduled") });
-    } catch (error) {
-      toast.show({
-        variant: "danger",
-        label: t("notifications.testFailed"),
-        description: error instanceof Error ? error.message : undefined,
-      });
-    } finally {
-      setIsSendingTest(false);
-    }
+    await sendTestNotification(t, toast).finally(() => setIsSendingTest(false));
   };
 
   const handleOpenSettings = async () => {

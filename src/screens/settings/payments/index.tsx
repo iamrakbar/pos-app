@@ -44,9 +44,10 @@ function movePaymentWithinGroup(
   const item = payments.find((payment) => payment.id === paymentId);
   if (!item) return payments;
 
-  const groupIndexes = payments
-    .map((payment, index) => (payment.group.value === item.group.value ? index : -1))
-    .filter((index) => index !== -1);
+  const groupIndexes = payments.reduce<number[]>((indexes, payment, index) => {
+    if (payment.group.value === item.group.value) indexes.push(index);
+    return indexes;
+  }, []);
   const positionInGroup = groupIndexes.indexOf(payments.indexOf(item));
   const targetPosition = positionInGroup + direction;
   if (targetPosition < 0 || targetPosition >= groupIndexes.length) return payments;
@@ -153,20 +154,15 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
   const reorderMutation = useReorderMerchantPayments();
   const [draft, setDraft] = React.useState<MerchantPayment[] | null>(null);
 
-  const sortedPayments = React.useMemo(
-    () => [...(payments.data ?? [])].sort((a, b) => a.sort - b.sort),
-    [payments.data]
-  );
+  const sortedPayments = [...(payments.data ?? [])].sort((a, b) => a.sort - b.sort);
   const orderedPayments = draft ?? sortedPayments;
   const [isDirty, setIsDirty] = React.useState(false);
-  const groupedSections = React.useMemo(() => groupPayments(orderedPayments), [orderedPayments]);
+  const groupedSections = groupPayments(orderedPayments);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setDraft(null);
-      setIsDirty(false);
-    }, [])
-  );
+  useFocusEffect(() => {
+    setDraft(null);
+    setIsDirty(false);
+  });
 
   const handleMove = (paymentId: string, direction: -1 | 1) => {
     setDraft(movePaymentWithinGroup(orderedPayments, paymentId, direction));

@@ -1,6 +1,7 @@
 import { getErrorMessage } from "@/api/api-error";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import AppIcon from "@/components/common/app-icon";
+import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 import { getMerchantOrderUrl } from "@/utils/merchant-order-url";
 import { EncodingType, File as ExpoFile, Paths } from "expo-file-system";
@@ -22,6 +23,48 @@ type MerchantQrOverlayProps = {
 const QR_EXPORT_SIZE = 1024;
 const QR_CODE_SIZE = 220;
 const SOEAT_LOGO = require("../../../../assets/images/logo.svg");
+
+async function downloadMerchantQr({
+  slug,
+  t,
+  toast,
+  getQrDataUrl,
+}: {
+  slug: string | null | undefined;
+  t: Translate;
+  toast: ReturnType<typeof useToast>["toast"];
+  getQrDataUrl: () => Promise<string>;
+}): Promise<void> {
+  try {
+    const dataUrl = await getQrDataUrl();
+    const fileName = `merchant-${slug ?? "profile"}-qr.png`;
+    if (Platform.OS === "web") {
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } else {
+      const permission = await requestPermissionsAsync(true, ["photo"]);
+      if (!permission.granted) throw new Error(t("merchantProfile.permissionDenied"));
+      const file = new ExpoFile(Paths.cache, fileName);
+      file.create({ overwrite: true });
+      file.write(dataUrl.slice(dataUrl.indexOf(",") + 1), { encoding: EncodingType.Base64 });
+      await Asset.create(file.uri);
+    }
+    toast.show({
+      variant: "success",
+      label: t(Platform.OS === "web" ? "merchantProfile.downloaded" : "merchantProfile.saved"),
+    });
+  } catch (error) {
+    toast.show({
+      variant: "danger",
+      label: t("merchantProfile.saveFailed"),
+      description: getErrorMessage(error),
+    });
+  }
+}
 
 export default function MerchantQrOverlay({
   slug,
@@ -47,37 +90,9 @@ export default function MerchantQrOverlay({
   const handleDownload = async () => {
     if (!orderUrl) return;
     setIsDownloading(true);
-    try {
-      const dataUrl = await getQrDataUrl();
-      const fileName = `merchant-${slug ?? "profile"}-qr.png`;
-      if (Platform.OS === "web") {
-        const link = document.createElement("a");
-        link.href = dataUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } else {
-        const permission = await requestPermissionsAsync(true, ["photo"]);
-        if (!permission.granted) throw new Error(t("merchantProfile.permissionDenied"));
-        const file = new ExpoFile(Paths.cache, fileName);
-        file.create({ overwrite: true });
-        file.write(dataUrl.slice(dataUrl.indexOf(",") + 1), { encoding: EncodingType.Base64 });
-        await Asset.create(file.uri);
-      }
-      toast.show({
-        variant: "success",
-        label: t(Platform.OS === "web" ? "merchantProfile.downloaded" : "merchantProfile.saved"),
-      });
-    } catch (error) {
-      toast.show({
-        variant: "danger",
-        label: t("merchantProfile.saveFailed"),
-        description: getErrorMessage(error),
-      });
-    } finally {
-      setIsDownloading(false);
-    }
+    await downloadMerchantQr({ slug, t, toast, getQrDataUrl }).finally(() =>
+      setIsDownloading(false)
+    );
   };
 
   const handlePreview = async () => {

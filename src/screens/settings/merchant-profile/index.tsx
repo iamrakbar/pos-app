@@ -88,6 +88,46 @@ async function optimizeMerchantImage(
   };
 }
 
+async function uploadMerchantImage({
+  asset,
+  kind,
+  t,
+  toast,
+  uploadLogo,
+  uploadCover,
+  onSettled,
+}: {
+  asset: ImagePicker.ImagePickerAsset;
+  kind: ImageKind;
+  t: Translate;
+  toast: ReturnType<typeof useToast>["toast"];
+  uploadLogo: ReturnType<typeof useUploadMerchantLogo>;
+  uploadCover: ReturnType<typeof useUploadMerchantCover>;
+  onSettled: () => void;
+}): Promise<void> {
+  try {
+    const optimized = await optimizeMerchantImage(asset, kind, t);
+    if (kind === "logo") {
+      await uploadLogo.mutateAsync(optimized);
+      toast.show({ variant: "success", label: t("merchantProfile.logoUpdated") });
+    } else {
+      await uploadCover.mutateAsync(optimized);
+      toast.show({ variant: "success", label: t("merchantProfile.coverUpdated") });
+    }
+  } catch (error) {
+    toast.show({
+      variant: "danger",
+      label:
+        kind === "logo"
+          ? t("merchantProfile.logoUpdateFailed")
+          : t("merchantProfile.coverUpdateFailed"),
+      description: getErrorMessage(error),
+    });
+  } finally {
+    onSettled();
+  }
+}
+
 function SectionHeading({ title, description }: { title: string; description?: string }) {
   return (
     <Card.Header className="pb-2">
@@ -561,27 +601,15 @@ export default function MerchantProfileScreen(): React.JSX.Element {
     if (result.canceled) return;
 
     setUploadingKind(kind);
-    try {
-      const asset = await optimizeMerchantImage(result.assets[0], kind, t);
-      if (kind === "logo") {
-        await uploadLogo.mutateAsync(asset);
-        toast.show({ variant: "success", label: t("merchantProfile.logoUpdated") });
-      } else {
-        await uploadCover.mutateAsync(asset);
-        toast.show({ variant: "success", label: t("merchantProfile.coverUpdated") });
-      }
-    } catch (error) {
-      toast.show({
-        variant: "danger",
-        label:
-          kind === "logo"
-            ? t("merchantProfile.logoUpdateFailed")
-            : t("merchantProfile.coverUpdateFailed"),
-        description: getErrorMessage(error),
-      });
-    } finally {
-      setUploadingKind(null);
-    }
+    await uploadMerchantImage({
+      asset: result.assets[0],
+      kind,
+      t,
+      toast,
+      uploadLogo,
+      uploadCover,
+      onSettled: () => setUploadingKind(null),
+    });
   };
 
   const submitProfile = async (values: MerchantProfileFormValues) => {

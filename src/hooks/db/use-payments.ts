@@ -73,23 +73,6 @@ export function useMerchantPayments() {
   return useQuery(merchantPaymentsQueryOptions(merchantId));
 }
 
-export function useUpdateMerchantPayment() {
-  const merchantId = useAuth((state) => state.merchantId) ?? "";
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      paymentId,
-      body,
-    }: {
-      paymentId: string;
-      body: App.Requests.Merchant.Payment.UpdateMerchantPaymentRequest;
-    }) => updateMerchantPayment(merchantId, paymentId, body),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: paymentQueryKeys.all(merchantId) });
-    },
-  });
-}
-
 export function useReorderMerchantPayments() {
   const merchantId = useAuth((state) => state.merchantId) ?? "";
   const queryClient = useQueryClient();

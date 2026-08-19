@@ -230,21 +230,3 @@ export function extractOrderItems(products: unknown): OrderLineItem[] {
     };
   });
 }
-
-export type PaymentFee = { unit: "fixed" | "percentage"; value: number };
-
-// Confirmed shape from the `GET /payments` endpoint's own documentation:
-// { payment_fee, app_fee, total_fee, unit: "fixed" | "percentage" }.
-// `total_fee` is the combined payment+app fee to charge; `unit` says whether
-// it's a flat amount or a percentage of the order subtotal.
-export function extractFee(fees: unknown): PaymentFee {
-  const rec = asRecord(fees);
-  if (
-    rec &&
-    typeof rec.total_fee === "number" &&
-    (rec.unit === "fixed" || rec.unit === "percentage")
-  ) {
-    return { unit: rec.unit, value: rec.total_fee };
-  }
-  return { unit: "fixed", value: 0 };
-}

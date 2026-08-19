@@ -15,7 +15,7 @@ export function createMerchantProfileSchema(t: Translate) {
         .string()
         .trim()
         .max(255)
-        .refine((value) => value === "" || z.string().email().safeParse(value).success, {
+        .refine((value) => value === "" || z.email().safeParse(value).success, {
           message: t("validation.merchantEmailInvalid"),
         }),
       website: z.string().trim().max(255, t("validation.merchantWebsiteTooLong")),
