@@ -54,6 +54,8 @@ export default function CategoriesScreen(): React.JSX.Element {
     setDraftOrder(moveCategory(orderedCategories, index, direction));
   };
 
+  const handleCancelOrder = () => setDraftOrder(null);
+
   const handleSaveOrder = async () => {
     try {
       await reorderMutation.mutateAsync({
@@ -123,11 +125,21 @@ export default function CategoriesScreen(): React.JSX.Element {
             <Typography type="body-sm" color="muted" className="flex-1">
               {t("categories.unsavedOrder")}
             </Typography>
-            <Button size="sm" onPress={handleSaveOrder} isDisabled={reorderMutation.isPending}>
-              <Button.Label>
-                {reorderMutation.isPending ? t("common.saving") : t("categories.saveOrder")}
-              </Button.Label>
-            </Button>
+            <View className="flex-row gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onPress={handleCancelOrder}
+                isDisabled={reorderMutation.isPending}
+              >
+                <Button.Label>{t("common.cancel")}</Button.Label>
+              </Button>
+              <Button size="sm" onPress={handleSaveOrder} isDisabled={reorderMutation.isPending}>
+                <Button.Label>
+                  {reorderMutation.isPending ? t("common.saving") : t("categories.saveOrder")}
+                </Button.Label>
+              </Button>
+            </View>
           </View>
         ) : null}
 

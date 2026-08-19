@@ -89,3 +89,26 @@ export function useUpdateMerchantPayment() {
     },
   });
 }
+
+export function useReorderMerchantPayments() {
+  const merchantId = useAuth((state) => state.merchantId) ?? "";
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payments: MerchantPayment[]) => {
+      const saved = payments.map((payment, index) => ({ ...payment, sort: index }));
+      await Promise.all(
+        saved.map((payment) =>
+          updateMerchantPayment(merchantId, payment.id, {
+            active: payment.is_active,
+            sort: payment.sort,
+          }),
+        ),
+      );
+      return saved;
+    },
+    onSuccess: async (saved) => {
+      queryClient.setQueryData(paymentQueryKeys.settings(merchantId), saved);
+      await queryClient.invalidateQueries({ queryKey: paymentQueryKeys.pos(merchantId) });
+    },
+  });
+}
