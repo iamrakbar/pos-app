@@ -6,21 +6,12 @@ import {
   getPaymentStatus,
 } from "@/api/mappers/order";
 import type { ReceiptPreviewData } from "@/components/receipt/receipt-paper";
-import { getLocaleTag, i18n, t as globalTranslate, type Locale, type Translate } from "@/locales";
+import { i18n, t as globalTranslate, type Locale, type Translate } from "@/locales";
+import { formatDateTime } from "@/utils/format";
 import type { ReceiptOrder } from "./escpos";
 
 function record(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
-}
-
-function dateLabel(value: string, locale: Locale): string {
-  return new Date(value).toLocaleString(getLocaleTag(locale), {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function paymentStatusLabel(value: string, fallback: string, t: Translate): string {
@@ -72,9 +63,10 @@ export function toReceiptData(
   const checkoutTable = record(root.table);
   const paymentFee = record(root.payment_fee);
   const deliveryFee = record(root.delivery_fee);
+  const paymentFeeChargedToCustomer = paymentFee?.charged_to_customer !== false;
   const rawFees = [
     ...rawPricingFees.filter((fee) => fee !== taxFee),
-    ...(extractNumber(paymentFee?.amount) > 0 ? [paymentFee] : []),
+    ...(paymentFeeChargedToCustomer && extractNumber(paymentFee?.amount) > 0 ? [paymentFee] : []),
     ...(extractNumber(deliveryFee?.amount) > 0 ? [deliveryFee] : []),
   ];
   const items = extractOrderItems(order.products);
@@ -82,7 +74,7 @@ export function toReceiptData(
 
   return {
     code: order.code,
-    date: dateLabel(order.created_at, locale),
+    date: formatDateTime(order.created_at),
     orderType: order.order_type === "dine-in" ? t("receipt.dineIn") : t("receipt.takeaway"),
     table:
       typeof checkoutTable?.name === "string"

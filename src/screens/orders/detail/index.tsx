@@ -23,7 +23,7 @@ import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
 import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/use-receipt-printer";
-import { formatRupiah } from "@/utils/format";
+import { formatDateTime, formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/api-error";
 import AppIcon from "@/components/common/app-icon";
 import { EmptyState } from "heroui-native-pro";
@@ -34,30 +34,14 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useState } from "react";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { getLocaleTag, type TranslationKey } from "@/locales";
+import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
-function formatDateTime(iso: string, localeTag: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString(localeTag, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatPickupTime(value: string | null | undefined, localeTag: string): string | null {
+function formatPickupTime(value: string | null | undefined): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isFinite(date.getTime())) {
-    return date.toLocaleString(localeTag, {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatDateTime(date, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
   }
 
   const time = /^(\d{2}):(\d{2})/.exec(value);
@@ -248,7 +232,6 @@ function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () =>
 
 function OrderOverview({
   order,
-  localeTag,
   isCompact,
   foregroundColor,
   areaName,
@@ -257,7 +240,6 @@ function OrderOverview({
   customerName,
 }: {
   order: App.Data.Merchant.Order.OrderData;
-  localeTag: string;
   isCompact: boolean;
   foregroundColor: string;
   areaName: string | null;
@@ -282,7 +264,7 @@ function OrderOverview({
               </Chip>
             </View>
             <Typography type="body-sm" color="muted">
-              {formatDateTime(order.created_at, localeTag)}
+              {formatDateTime(order.created_at)}
             </Typography>
           </View>
           <View className={`${isCompact ? "items-start" : "items-end"} gap-1`}>
@@ -348,8 +330,7 @@ export default function OrderDetailScreen() {
 }
 
 function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderData }) {
-  const { locale, t } = useTranslation();
-  const localeTag = getLocaleTag(locale);
+  const { t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const [isQrOpen, setIsQrOpen] = useState(false);
   const themeColorForeground = useThemeColor("foreground");
@@ -399,7 +380,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
       : null;
   const matchedTable = tables?.find((table) => table.id === order.orderable?.table_id);
   const areaName = orderAreaName ?? matchedTable?.area_name ?? null;
-  const pickupTime = formatPickupTime(order.orderable?.pickup_time, localeTag);
+  const pickupTime = formatPickupTime(order.orderable?.pickup_time);
   const items = extractOrderItems(order.products);
   const feeAmount = extractNumber(order.payment_fee);
   const canRefreshPayment = !isCashPayment && !!paymentExpiresAt && !paymentExpired;
@@ -411,7 +392,6 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
           <View className="w-full max-w-3xl self-center gap-5">
             <OrderOverview
               order={order}
-              localeTag={localeTag}
               isCompact={isCompact}
               foregroundColor={themeColorForeground}
               areaName={areaName}
@@ -557,7 +537,13 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                   <SectionTitle>{t("orders.detail.summary")}</SectionTitle>
                   <Surface className="w-full p-4 gap-3">
                     <MoneyRow label={t("common.subtotal")} value={order.subtotal} />
-                    {feeAmount > 0 ? (
+                    {order.tax && (order.tax.amount ?? 0) > 0 ? (
+                      <MoneyRow
+                        label={order.tax.name || t("orders.detail.tax")}
+                        value={order.tax.amount ?? 0}
+                      />
+                    ) : null}
+                    {order.payment_fee.charged_to_customer && feeAmount > 0 ? (
                       <MoneyRow label={t("orders.detail.paymentFee")} value={feeAmount} />
                     ) : null}
                     <Separator />

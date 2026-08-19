@@ -16,6 +16,7 @@ type AuthState = {
   setToken: (token: string | null) => void;
   login: (payload: App.Data.Merchant.Auth.AuthTokenData) => void;
   logout: () => void;
+  updateActiveMerchant: (patch: Partial<App.Data.Merchant.Auth.MerchantSummaryData>) => void;
 };
 
 // Store reference to queryClient for cache invalidation
@@ -67,6 +68,17 @@ export const useAuth = create<AuthState>()(
           merchantId: activeMerchant?.id ?? null,
         });
       },
+      updateActiveMerchant: (patch) =>
+        set((state) =>
+          state.activeMerchant
+            ? {
+                activeMerchant: { ...state.activeMerchant, ...patch },
+                merchants: state.merchants.map((merchant) =>
+                  merchant.id === state.activeMerchant?.id ? { ...merchant, ...patch } : merchant
+                ),
+              }
+            : state
+        ),
       logout: () => {
         // Clear React Query cache to prevent stale data after logout
         queryClientRef?.clear();

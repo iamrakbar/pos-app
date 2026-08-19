@@ -700,6 +700,7 @@ export const en = {
       showQris: "Show QRIS",
       refreshStatus: "Refresh Status",
       summary: "Summary",
+      tax: "Tax",
       paymentFee: "Payment fee",
     },
   },

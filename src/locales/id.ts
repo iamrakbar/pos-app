@@ -704,6 +704,7 @@ export const id: TranslationSchema = {
       showQris: "Tampilkan QRIS",
       refreshStatus: "Perbarui Status",
       summary: "Ringkasan",
+      tax: "Pajak",
       paymentFee: "Biaya pembayaran",
     },
   },

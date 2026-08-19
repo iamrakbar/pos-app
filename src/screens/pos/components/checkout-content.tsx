@@ -7,6 +7,7 @@ import { buildCartProducts, useValidateCart } from "@/hooks/db/use-cart";
 import { useCheckout } from "@/hooks/db/use-checkout";
 import { createCheckoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
 import { formatRupiah, IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
+import { computePricing } from "@/utils/pricing";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import {
   extractCheckoutTotal,
@@ -58,6 +59,7 @@ import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import StringNumberField from "@/components/common/string-number-field";
 import { useTranslation } from "@/stores/use-locale";
+import { useAuth } from "@/stores/use-auth";
 
 type CheckoutError =
   | {
@@ -126,12 +128,18 @@ function CheckoutCostSummary({
   paymentFee,
   feeUnit,
   feeValue,
+  taxIsEnabled,
+  taxName = "Tax",
+  taxAmount = 0,
   total,
 }: {
   subtotal: number;
   paymentFee: number;
   feeUnit?: string;
   feeValue?: number;
+  taxIsEnabled?: boolean;
+  taxName?: string;
+  taxAmount?: number;
   total: number;
 }) {
   const { t } = useTranslation();
@@ -146,6 +154,16 @@ function CheckoutCostSummary({
           {formatRupiah(subtotal)}
         </Typography>
       </View>
+      {taxIsEnabled ? (
+        <View className="flex-row justify-between">
+          <Typography type="body-xs" color="muted">
+            {taxName}
+          </Typography>
+          <Typography type="body-xs" className="tabular-nums">
+            {formatRupiah(taxAmount)}
+          </Typography>
+        </View>
+      ) : null}
       {paymentFee > 0 ? (
         <View className="flex-row justify-between">
           <Typography type="body-xs" color="muted">
@@ -175,6 +193,9 @@ function CheckoutActions({
   paymentFee,
   feeUnit,
   feeValue,
+  taxIsEnabled,
+  taxName,
+  taxAmount,
   total,
   isPending,
   isDisabled,
@@ -186,6 +207,9 @@ function CheckoutActions({
   paymentFee: number;
   feeUnit?: string;
   feeValue?: number;
+  taxIsEnabled?: boolean;
+  taxName?: string;
+  taxAmount?: number;
   total: number;
   isPending: boolean;
   isDisabled: boolean;
@@ -207,6 +231,9 @@ function CheckoutActions({
             paymentFee={paymentFee}
             feeUnit={feeUnit}
             feeValue={feeValue}
+            taxIsEnabled={taxIsEnabled}
+            taxName={taxName}
+            taxAmount={taxAmount}
             total={total}
           />
           <SlideButton
@@ -249,6 +276,9 @@ function PaymentFields({
   change,
   errors,
   setValue,
+  taxIsEnabled,
+  taxValue,
+  chargeAppPaymentFeeToCustomer,
 }: {
   paymentGroups: POSPaymentGroup[];
   paymentGroup: string;
@@ -262,6 +292,9 @@ function PaymentFields({
   change: number;
   errors: FieldErrors<CheckoutFormValues>;
   setValue: UseFormSetValue<CheckoutFormValues>;
+  taxIsEnabled: boolean | undefined;
+  taxValue: number | null | undefined;
+  chargeAppPaymentFeeToCustomer: boolean | undefined;
 }) {
   const { t } = useTranslation();
 
@@ -286,18 +319,20 @@ function PaymentFields({
                 variant={paymentGroup === group.group_type ? "primary" : "secondary"}
                 onPress={() => {
                   const firstPayment = group.payments[0];
-                  const paymentFee = firstPayment
-                    ? firstPayment.fee_unit === "percentage"
-                      ? Math.round(subtotal * (firstPayment.fee_value / 100))
-                      : firstPayment.fee_value
-                    : 0;
+                  const { total: previewTotal } = computePricing({
+                    subtotal,
+                    taxIsEnabled,
+                    taxValue,
+                    taxName: null,
+                    feeUnit: firstPayment?.fee_unit,
+                    feeValue: firstPayment?.fee_value,
+                    chargeAppPaymentFeeToCustomer,
+                  });
                   setValue("payment_group", group.group_type);
                   setValue("payment_id", firstPayment?.id ?? "");
                   setValue(
                     "tender_value",
-                    firstPayment?.tender_input.type === "amount"
-                      ? String(subtotal + paymentFee)
-                      : null
+                    firstPayment?.tender_input.type === "amount" ? String(previewTotal) : null
                   );
                 }}
               >
@@ -688,6 +723,7 @@ export function CheckoutContent({
 
   const cartProducts = useCartStore((s) => s.products);
   const totalPrice = useCartStore((s) => s.totalPrice);
+  const activeMerchant = useAuth((s) => s.activeMerchant);
   const { data: paymentGroups = [], isPending: arePaymentGroupsPending } = usePaymentGroups();
   const { data: guests = [] } = useGuests();
   const validateCart = useValidateCart();
@@ -791,12 +827,16 @@ export function CheckoutContent({
   const subtotal = totalPrice();
   const allPayments = paymentGroups.flatMap((g) => g.payments);
   const selectedPayment = allPayments.find((p) => p.id === paymentId);
-  const paymentFee = selectedPayment
-    ? selectedPayment.fee_unit === "percentage"
-      ? Math.round(subtotal * (selectedPayment.fee_value / 100))
-      : selectedPayment.fee_value
-    : 0;
-  const total = subtotal + paymentFee;
+  const pricing = computePricing({
+    subtotal,
+    taxIsEnabled: activeMerchant?.tax_is_enable,
+    taxValue: activeMerchant?.tax_value,
+    taxName: activeMerchant?.tax_name,
+    feeUnit: selectedPayment?.fee_unit,
+    feeValue: selectedPayment?.fee_value,
+    chargeAppPaymentFeeToCustomer: activeMerchant?.charge_app_payment_fee_to_customer,
+  });
+  const { taxAmount, subtotalWithTax, paymentFeeAmount: paymentFee, total } = pricing;
   const isAmountTender = selectedPayment?.tender_input.type === "amount";
   const cashReceivedAmount = Number(tenderValue.replace(/\D/g, "")) || 0;
   const change = Math.max(0, cashReceivedAmount - total);
@@ -878,6 +918,9 @@ export function CheckoutContent({
         paymentFee={paymentFee}
         feeUnit={selectedPayment?.fee_unit}
         feeValue={selectedPayment?.fee_value}
+        taxIsEnabled={activeMerchant?.tax_is_enable}
+        taxName={activeMerchant?.tax_name ?? "Tax"}
+        taxAmount={taxAmount ?? 0}
         total={total}
         isPending={isCheckoutPending}
         isDisabled={isCheckoutDisabled}
@@ -907,6 +950,9 @@ export function CheckoutContent({
             change,
             errors,
             setValue,
+            taxIsEnabled: activeMerchant?.tax_is_enable,
+            taxValue: activeMerchant?.tax_value,
+            chargeAppPaymentFeeToCustomer: activeMerchant?.charge_app_payment_fee_to_customer,
           }}
           customerFields={{
             control,

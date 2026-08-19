@@ -58,6 +58,15 @@ id: string;
 name: string;
 slug: string;
 logo_url: string | null;
+dine_in: boolean;
+takeaway: boolean;
+delivery: boolean;
+auto_process_on_payment_settlement: boolean;
+tax_is_enable: boolean;
+tax_name: string | null;
+tax_value: number | null;
+charge_app_payment_fee_to_customer: boolean;
+features: Array<string>;
 };
 export type MerchantUserProfileData = {
 id: string;
@@ -421,6 +430,7 @@ name: string;
 unit: string | null;
 value: number | null;
 amount: number | null;
+charged_to_customer: boolean;
 };
 export type OrderPaymentInstructionData = {
 en: string | null;
