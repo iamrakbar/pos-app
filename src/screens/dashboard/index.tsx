@@ -2,13 +2,12 @@ import ErrorState from "@/components/common/error-state";
 import LoadingAnimation from "@/components/common/loading-animation";
 import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { formatRupiah } from "@/utils/format";
+import { formatDate, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import { getLocaleTag } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
 const SUMMARY_ICON_BACKGROUNDS = {
@@ -66,14 +65,10 @@ function SummaryWidget({
   );
 }
 
-function formatChartDate(value: string, localeTag: string): string {
+function formatChartDate(value: string): string {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(localeTag, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  return formatDate(date, { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 type ChartPoint = { date: string; count: number };
@@ -128,11 +123,9 @@ function normalizeChartRange(
 function OrdersChart({
   data,
   isCompact,
-  localeTag,
 }: {
   data: ChartPoint[];
   isCompact: boolean;
-  localeTag: string;
 }) {
   const [width, setWidth] = React.useState(0);
   const height = isCompact ? 192 : 224;
@@ -153,7 +146,7 @@ function OrdersChart({
             xAxis={{
               tickCount: Math.min(data.length, isCompact ? 4 : 8),
               labelOffset: 8,
-              formatXLabel: (value: unknown) => formatChartDate(String(value), localeTag),
+              formatXLabel: (value: unknown) => formatChartDate(String(value)),
             }}
             yAxis={[
               {
@@ -176,8 +169,7 @@ function OrdersChart({
 }
 
 export default function DashboardScreen(): React.JSX.Element {
-  const { locale, t } = useTranslation();
-  const localeTag = getLocaleTag(locale);
+  const { t } = useTranslation();
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const [period, setPeriod] = React.useState<Period>("today");
   const appliedRange = getPeriodRange(period);
@@ -285,7 +277,7 @@ export default function DashboardScreen(): React.JSX.Element {
                     </EmptyState.Header>
                   </EmptyState>
                 ) : (
-                  <OrdersChart data={chart} isCompact={isCompact} localeTag={localeTag} />
+                  <OrdersChart data={chart} isCompact={isCompact} />
                 )}
               </Widget.Content>
               <Widget.Footer>

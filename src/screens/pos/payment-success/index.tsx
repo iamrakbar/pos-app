@@ -1,7 +1,7 @@
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useReceiptPrinter } from "@/hooks/printer/use-receipt-printer";
 import { useReceiptStore } from "@/stores/use-receipt-store";
-import { formatRupiah } from "@/utils/format";
+import { formatDateTime, formatRupiah } from "@/utils/format";
 import {
   Button,
   Separator,
@@ -16,25 +16,14 @@ import { ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
 import ActionDialog from "@/components/common/action-dialog";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { getLocaleTag, type Locale } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
 type PaymentSuccessContentProps = {
   onNewOrder?: () => void;
 };
 
-function formatDateTime(date: Date, locale: Locale): string {
-  return date.toLocaleString(getLocaleTag(locale), {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps): JSX.Element {
-  const { locale, t } = useTranslation();
+  const { t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const themeColorForeground = useThemeColor("foreground");
   const paymentSession = usePOSStore((s) => s.paymentSession);
@@ -144,7 +133,7 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
                   {t("paymentSuccess.dateTime")}
                 </Typography>
                 <Typography type="body-sm" weight="semibold" className="text-right">
-                  {formatDateTime(paidAt, locale)}
+                  {formatDateTime(paidAt)}
                 </Typography>
               </View>
               <View className="flex-row justify-between gap-4">

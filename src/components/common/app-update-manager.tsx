@@ -11,6 +11,7 @@ import {
 import { useState, type JSX } from "react";
 import { Alert as NativeAlert, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import { formatDateTime } from "@/utils/format";
 
 type AppUpdateManagerProps = {
   mode: "banner" | "settings";
@@ -18,18 +19,13 @@ type AppUpdateManagerProps = {
 
 type UpdateActionStatus = "idle" | "checking" | "downloading" | "restarting";
 
-const UPDATE_DATE_FORMATTERS = {
-  en: new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }),
-  id: new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }),
-} as const;
-
 function shortId(value: string | null | undefined, fallback: string): string {
   if (!value) return fallback;
   return value.slice(0, 8);
 }
 
 export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.Element | null {
-  const { locale, t } = useTranslation();
+  const { t } = useTranslation();
   const updates = Updates.useUpdates();
   const [themeColorAccent, themeColorBackground] = useThemeColor(["accent", "background"]);
   const [actionStatus, setActionStatus] = useState<UpdateActionStatus>("idle");
@@ -46,9 +42,16 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
   const isSupported = Updates.isEnabled && !__DEV__;
   const downloadedUpdateId = updates.downloadedUpdate?.updateId ?? "rollback";
   const notAvailable = t("updates.notAvailable");
-  const dateFormatter = UPDATE_DATE_FORMATTERS[locale];
   const formatDate = (value?: Date | null): string =>
-    value ? dateFormatter.format(value) : notAvailable;
+    value
+      ? formatDateTime(value, {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : notAvailable;
 
   const statusText = (() => {
     if (!Updates.isEnabled) return t("updates.disabled");

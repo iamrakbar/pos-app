@@ -4,7 +4,7 @@ import LoadingState from "@/components/common/loading-state";
 import { useEarnings } from "@/hooks/db/use-earnings";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { formatRupiah } from "@/utils/format";
+import { formatDate, formatDateTime, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import {
   Button,
@@ -70,28 +70,21 @@ function getPresetRange(value: Exclude<DateRangeValue, "custom">): AppliedDateRa
   return { dateFrom: toDateParam(from), dateTo: toDateParam(to) };
 }
 
-function toDateOption(value: string, localeTag: string): NonNullable<DatePickerOption> {
+function toDateOption(value: string): NonNullable<DatePickerOption> {
   return {
     value,
-    label: new Date(`${value}T00:00:00`).toLocaleDateString(localeTag, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }),
+    label: formatDate(new Date(`${value}T00:00:00`), { month: "short", day: "numeric", year: "numeric" }),
   };
 }
 
-function formatPeriodLabel(dateFrom: string, dateTo: string, localeTag: string): string {
+function formatPeriodLabel(dateFrom: string, dateTo: string): string {
   const from = new Date(`${dateFrom}T00:00:00`);
   const to = new Date(`${dateTo}T00:00:00`);
   const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
   if (dateFrom === dateTo) {
-    return to.toLocaleDateString(localeTag, { ...options, year: "numeric" });
+    return formatDate(to, { ...options, year: "numeric" });
   }
-  return `${from.toLocaleDateString(localeTag, options)} – ${to.toLocaleDateString(localeTag, {
-    ...options,
-    year: "numeric",
-  })}`;
+  return `${formatDate(from, options)} – ${formatDate(to, { ...options, year: "numeric" })}`;
 }
 
 function formatOrderType(value: string, t: Translate): string {
@@ -383,8 +376,7 @@ function RecentEarningsWidget({
   isCompact: boolean;
   successColor: string;
 }) {
-  const { locale, t } = useTranslation();
-  const localeTag = getLocaleTag(locale);
+  const { t } = useTranslation();
   return (
     <Widget>
       <Widget.Header>
@@ -419,7 +411,7 @@ function RecentEarningsWidget({
                       count: entry.items_count,
                     })}{" "}
                     ·{" "}
-                    {new Date(entry.created_at).toLocaleString(localeTag, {
+                    {formatDateTime(entry.created_at, {
                       day: "numeric",
                       month: "short",
                       hour: "2-digit",
@@ -458,10 +450,10 @@ export default function EarningsScreen(): React.JSX.Element {
     getPresetRange("last-7-days")
   );
   const [customStart, setCustomStart] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").dateFrom, localeTag)
+    toDateOption(getPresetRange("last-7-days").dateFrom)
   );
   const [customEnd, setCustomEnd] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").dateTo, localeTag)
+    toDateOption(getPresetRange("last-7-days").dateTo)
   );
   const [customRangeError, setCustomRangeError] = React.useState<string | null>(null);
   const [isCustomRangeOpen, setIsCustomRangeOpen] = React.useState(false);
@@ -496,11 +488,11 @@ export default function EarningsScreen(): React.JSX.Element {
     .sort((a, b) => b.amount - a.amount);
 
   const recentEntries = data.slice(0, 8);
-  const periodLabel = formatPeriodLabel(dateFrom, dateTo, localeTag);
+  const periodLabel = formatPeriodLabel(dateFrom, dateTo);
   const dateRange = dateRangeOptions.find((option) => option.value === dateRangeValue)!;
   const dateRangeLabel =
     dateRangeValue === "custom"
-      ? `${toDateOption(dateFrom, localeTag).label} – ${toDateOption(dateTo, localeTag).label}`
+      ? `${toDateOption(dateFrom).label} – ${toDateOption(dateTo).label}`
       : dateRange.label;
 
   const handleRangeChange = (option: { value: string; label: string } | undefined) => {

@@ -11,7 +11,7 @@ import {
 } from "@/api/mappers/order";
 import LoadingState from "@/components/common/loading-state";
 import ErrorState from "@/components/common/error-state";
-import { formatRupiah } from "@/utils/format";
+import { formatDateTime, formatRupiah, formatTime } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { LinearGradient } from "expo-linear-gradient";
 import { Chip, ScrollShadow, Separator, Typography, useThemeColor } from "heroui-native";
@@ -21,7 +21,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { useTables } from "@/hooks/db/use-tables";
 import { EmptyState } from "heroui-native-pro";
-import { getLocaleTag, type TranslationKey } from "@/locales";
+import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
 // type StatusFilter = "all" | "new" | "process" | "completed" | "cancelled" | "rejected";
@@ -29,29 +29,18 @@ type StatusFilter = "all" | "new" | "process" | "completed";
 
 const STATUS_FILTERS: StatusFilter[] = ["all", "new", "process", "completed"];
 
-function formatTime(iso: string, localeTag: string): string {
-  const d = new Date(iso);
-  return d.toLocaleTimeString(localeTag, { hour: "2-digit", minute: "2-digit" });
-}
-
-function formatPickupTime(value: string | null, localeTag: string): string | null {
+function formatPickupTime(value: string | null): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isFinite(date.getTime())) {
-    return date.toLocaleString(localeTag, {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatDateTime(date, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
   }
   const time = /^(\d{2}):(\d{2})/.exec(value);
   return time ? `${time[1]}:${time[2]}` : value;
 }
 
 export default function OrdersScreen(): React.JSX.Element {
-  const { locale, t } = useTranslation();
-  const localeTag = getLocaleTag(locale);
+  const { t } = useTranslation();
   const router = useRouter();
   const themeColorMuted = useThemeColor("muted");
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all");
@@ -128,7 +117,6 @@ export default function OrdersScreen(): React.JSX.Element {
                 tables?.find((table) => table.id === extractTableId(item.orderable))?.area_name ??
                 null
               }
-              localeTag={localeTag}
               onPress={() => router.push(`/orders/${item.id}` as never)}
             />
           )}
@@ -142,12 +130,10 @@ export default function OrdersScreen(): React.JSX.Element {
 function OrderRow({
   order,
   areaName,
-  localeTag,
   onPress,
 }: {
   order: App.Data.Merchant.Order.OrderListData;
   areaName: string | null;
-  localeTag: string;
   onPress: () => void;
 }) {
   const { t } = useTranslation();
@@ -157,7 +143,7 @@ function OrderRow({
   const customerName = extractCustomerName(order.customer);
   const paymentName = extractPaymentName(order.payment);
   const tableName = extractTableName(order.orderable);
-  const pickupTime = formatPickupTime(extractPickupTime(order.orderable), localeTag);
+  const pickupTime = formatPickupTime(extractPickupTime(order.orderable));
   const orderStatusLabel = t(`orders.status.${orderStatus.value}` as TranslationKey);
   const paymentStatusLabel = t(`orders.paymentStatus.${paymentStatus.value}` as TranslationKey);
   const orderContext =
@@ -207,7 +193,7 @@ function OrderRow({
             {formatRupiah(order.total)}
           </Typography>
           <Typography type="body-xs" color="muted">
-            {formatTime(order.created_at, localeTag)}
+            {formatTime(order.created_at)}
           </Typography>
         </View>
       </View>
