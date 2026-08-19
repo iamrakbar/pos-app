@@ -1,7 +1,8 @@
 "use strict";
 
+import { useIsRTL } from 'heroui-native/hooks';
 import { Children, cloneElement, createContext, forwardRef, isValidElement, useCallback, useContext, useMemo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { I18nManager, Pressable, Text, View } from 'react-native';
 import { useControllableState } from "../../helpers/internal/hooks/index.js";
 import * as Slot from "../slot/index.js";
 import { jsx as _jsx } from "react/jsx-runtime";
@@ -244,6 +245,16 @@ const Separator = /*#__PURE__*/forwardRef(({
     separator
   } = measurements[index] ?? {};
   const prevMeasurements = measurements[index - 1];
+  const isRTL = useIsRTL();
+
+  // `onLayout` reports `x` from the physical left edge in both directions,
+  // and inline `left`/`right` stay physical under a soft direction change
+  // (Uniwind `LayoutDirection`). Only app-wide RTL (`I18nManager.forceRTL`
+  // with the default swap flag) re-anchors inline `left` to the physical
+  // right — so the geometry mirrors off the layout direction while the
+  // anchor side keys off the swap flag (same approach as heroui-native
+  // Tabs).
+  const isAnchorMirrored = I18nManager.isRTL && I18nManager.doLeftAndRightSwapInRTL;
   const handleLayout = useCallback(event => {
     const {
       x,
@@ -274,24 +285,36 @@ const Separator = /*#__PURE__*/forwardRef(({
       const computedHeight = prevRailGap + rail.y;
       return {
         position: 'absolute',
+        // Centered offset is symmetric, so it holds for either anchor
+        // side. No `right` constraint: with both edges set, Yoga resolves
+        // the over-constrained box by direction and would pin the
+        // separator to the right edge in RTL instead of centering it.
         left: rail.width / 2 - halfW,
-        right: 0,
         top: -(prevRailGap + rail.y),
         height: computedHeight > 0 ? computedHeight : 0
       };
     }
     const halfH = separator ? separator.height / 2 : 0;
-    const prevRailGap = prevMeasurements?.step && prevMeasurements?.rail ? prevMeasurements.step.width - prevMeasurements.rail.x - prevMeasurements.rail.width : 0;
-    const computedWidth = prevRailGap + rail.x;
+
+    // The separator spans the gap toward the previous step, which sits on
+    // the physical left in LTR and the physical right in RTL. Measure both
+    // sides of the gap on the facing edges.
+    const prevRailGap = prevMeasurements?.step && prevMeasurements?.rail ? isRTL ? prevMeasurements.rail.x : prevMeasurements.step.width - prevMeasurements.rail.x - prevMeasurements.rail.width : 0;
+    const ownRailGap = isRTL ? step.width - rail.x - rail.width : rail.x;
+    const computedWidth = Math.max(0, prevRailGap + ownRailGap);
+
+    // In LTR the separator hangs off the rail's left edge (`-width`); in
+    // soft RTL it starts at the rail's right edge (`rail.width`). When the
+    // app-wide anchor swap is active, `left` already means the edge facing
+    // the previous step, so the LTR form applies.
+    const anchorOffset = !isRTL || isAnchorMirrored ? -computedWidth : rail.width;
     return {
       position: 'absolute',
       top: rail.height / 2 - halfH,
-      left: -(prevRailGap + rail.x),
-      bottom: 0,
-      right: 0,
-      width: computedWidth > 0 ? computedWidth : 0
+      left: anchorOffset,
+      width: computedWidth
     };
-  }, [orientation, prevMeasurements?.rail, prevMeasurements?.step, rail, separator, step]);
+  }, [isAnchorMirrored, isRTL, orientation, prevMeasurements?.rail, prevMeasurements?.step, rail, separator, step]);
   if (index === 0 && !force) {
     return null;
   }

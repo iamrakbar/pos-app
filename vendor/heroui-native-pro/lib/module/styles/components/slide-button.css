@@ -14,10 +14,7 @@
 
 .slide-button__container-background {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   border-radius: var(--radius-4xl);
   overflow: hidden;
 }
@@ -26,9 +23,14 @@
   flex: 1;
 }
 
+/*
+ * Underlay clip: anchored to the inline-end edge (the side the thumb slides
+ * toward — right in LTR, left in RTL) and shrinks as progress increases,
+ * revealing only the track portion ahead of the thumb.
+ */
 .slide-button__underlay-content-container {
   position: absolute;
-  right: 0;
+  inset-inline-end: 0;
   top: 0;
   bottom: 0;
   overflow: hidden;
@@ -37,19 +39,23 @@
 
 .slide-button__underlay-content-content-container {
   position: absolute;
-  right: 0;
+  inset-inline-end: 0;
   top: 0;
   bottom: 0;
   align-items: center;
   justify-content: center;
 }
 
+/*
+ * Overlay clip: anchored to the inline-start edge (where the thumb rests)
+ * with an animated width, so the overlay is revealed behind the thumb as it
+ * slides toward the inline-end edge in both directions.
+ */
 .slide-button__overlay-content-container {
   position: absolute;
+  inset-inline-start: 0;
   top: 0;
-  right: 0;
   bottom: 0;
-  left: 0;
   overflow: hidden;
   border-radius: var(--radius-4xl);
 }
@@ -82,8 +88,14 @@
   background-color: var(--color-danger-soft);
 }
 
+/*
+ * Rests on the inline-start edge of the track and slides toward the
+ * inline-end edge; the translateX gesture animation mirrors its sign in RTL
+ * (see `useSlideButtonThumbAnimation`).
+ */
 .slide-button__thumb {
   position: absolute;
+  inset-inline-start: 0;
   height: 100%;
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-4xl);
@@ -96,10 +108,7 @@
 
 .slide-button__thumb-background {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   border-radius: var(--radius-4xl);
   overflow: hidden;
 }

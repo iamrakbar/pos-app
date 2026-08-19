@@ -25,6 +25,12 @@ const [ProgressCircleProvider, useProgressCircle] = createContext({
 
 // --------------------------------------------------
 
+/**
+ * @note RTL: the ring deliberately keeps its clockwise sweep. Circular
+ * progress is direction-neutral by convention (clocks run the same way in
+ * RTL locales), so no mirroring is applied; the centered label follows the
+ * ambient layout direction like any other RN text.
+ */
 const ProgressCircleRoot = /*#__PURE__*/forwardRef((props, ref) => {
   const {
     children,

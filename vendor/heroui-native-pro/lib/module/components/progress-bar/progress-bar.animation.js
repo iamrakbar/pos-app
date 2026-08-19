@@ -1,7 +1,7 @@
 "use strict";
 
 import { useAnimationSettings } from 'heroui-native';
-import { useCombinedAnimationDisabledState } from 'heroui-native/hooks';
+import { useCombinedAnimationDisabledState, useIsRTL } from 'heroui-native/hooks';
 import { useEffect } from 'react';
 import { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { getAnimationState, getAnimationValueMergedConfig, getIsAnimationDisabledValue } from "../../helpers/internal/utils/index.js";
@@ -107,8 +107,9 @@ export function useProgressBarFillAnimation(options) {
 
 /**
  * Animation hook for the ProgressBar.Fill in indeterminate mode.
- * Produces a looping translateX animation that sweeps the fill
- * from fully off-screen left to fully off-screen right.
+ * Produces a looping translateX animation that sweeps the fill along the
+ * reading direction: off-screen leading edge to off-screen trailing edge
+ * (left to right in LTR, right to left in RTL).
  *
  * `trackWidth` must be the measured width of the Track container
  * (not the fill) so the sweep covers the entire visible area.
@@ -119,6 +120,7 @@ export function useProgressBarIndeterminateAnimation(options) {
     isAnimationDisabled,
     indeterminateFillTimingConfig
   } = options;
+  const isRTL = useIsRTL();
   const translateX = useSharedValue(0);
   useEffect(() => {
     if (isAnimationDisabled || trackWidth === 0) {
@@ -126,9 +128,14 @@ export function useProgressBarIndeterminateAnimation(options) {
       return;
     }
     const fillWidth = trackWidth * INDETERMINATE_FILL_WIDTH_RATIO;
-    translateX.set(-fillWidth);
-    translateX.set(withRepeat(withTiming(trackWidth, indeterminateFillTimingConfig), -1, false));
-  }, [trackWidth, isAnimationDisabled, translateX, indeterminateFillTimingConfig]);
+
+    // `translateX` is physical; the fill is anchored at the leading edge, so
+    // the sweep endpoints are negated in RTL to travel toward the left.
+    const sweepFrom = isRTL ? fillWidth : -fillWidth;
+    const sweepTo = isRTL ? -trackWidth : trackWidth;
+    translateX.set(sweepFrom);
+    translateX.set(withRepeat(withTiming(sweepTo, indeterminateFillTimingConfig), -1, false));
+  }, [trackWidth, isAnimationDisabled, translateX, indeterminateFillTimingConfig, isRTL]);
   const rIndeterminateFillStyle = useAnimatedStyle(() => ({
     width: `${INDETERMINATE_FILL_WIDTH_RATIO * 100}%`,
     transform: [{

@@ -1,6 +1,7 @@
 "use strict";
 
 import { useAnimationSettings } from 'heroui-native/contexts';
+import { useIsRTL } from 'heroui-native/hooks';
 import { useEffect } from 'react';
 import { Easing, interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { getAnimationState, getAnimationValueMergedConfig, getAnimationValueProperty, getIsAnimationDisabledValue } from "../../helpers/internal/utils/index.js";
@@ -79,6 +80,7 @@ export function useYearPickerIndicatorAnimation(options) {
   const {
     isAllAnimationsDisabled
   } = useAnimationSettings();
+  const isRTL = useIsRTL();
   const {
     animationConfig,
     isAnimationDisabled
@@ -87,10 +89,19 @@ export function useYearPickerIndicatorAnimation(options) {
     isAnimationDisabled,
     isAllAnimationsDisabled
   });
+
+  /**
+   * The default indicator glyph is a right-pointing chevron. Closed, it points
+   * along the reading direction — right in LTR (0°), left in RTL (180°) — and
+   * open it points down (90°) in both. The flip lives here rather than in a
+   * `rtl:` class because the animated `transform` below would overwrite any
+   * className transform (and mirroring via scale would reverse the sweep).
+   * A consumer-provided `rotation.value` still wins in both directions.
+   */
   const rotationValue = getAnimationValueProperty({
     animationValue: animationConfig?.rotation,
     property: 'value',
-    defaultValue: [0, 90]
+    defaultValue: isRTL ? [180, 90] : [0, 90]
   });
   const rotationSpringConfig = getAnimationValueMergedConfig({
     animationValue: animationConfig?.rotation,

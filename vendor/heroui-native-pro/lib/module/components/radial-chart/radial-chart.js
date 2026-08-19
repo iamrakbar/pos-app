@@ -107,6 +107,13 @@ function useRadialChartLayout() {
 
 // --------------------------------------------------
 
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * the chart canvas (arcs, track, labels) is drawn by Skia in physical
+ * coordinates, and angular progress conventionally sweeps the same way in
+ * RTL locales too. Only the surrounding Yoga wrapper participates in layout
+ * direction.
+ */
 function RadialChartRoot(props) {
   const {
     animation,

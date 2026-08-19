@@ -1,4 +1,11 @@
 import type { PieChartColorFields, PieChartInputFields, PieChartLabelProps, PieChartNumericalFields, PieChartPieProps, PieChartRootProps, PieChartSliceAngularInsetProps, PieChartSliceProps } from './pie-chart.types';
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * the chart canvas (axes, tick labels, series) is drawn by Skia in physical
+ * coordinates — victory-native has no direction concept — and chart axes
+ * conventionally read left-to-right in RTL locales too. Only the surrounding
+ * Yoga wrapper participates in layout direction.
+ */
 declare function PieChartRoot<RawData extends Record<string, unknown>, LabelKey extends Extract<keyof PieChartInputFields<RawData>, string>, ValueKey extends Extract<keyof PieChartNumericalFields<RawData>, string>, ColorKey extends Extract<keyof PieChartColorFields<RawData>, string>>(props: PieChartRootProps<RawData, LabelKey, ValueKey, ColorKey>): import("react/jsx-runtime").JSX.Element;
 declare namespace PieChartRoot {
     var displayName: "HeroUINative.PieChart.Root";

@@ -25,8 +25,7 @@
 
 .calendar-year-picker__year-grid {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   z-index: 10;
   overflow: hidden;
   border-radius: var(--radius-2xl);
@@ -37,10 +36,7 @@
 
 .calendar-year-picker__year-grid-background {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   border-radius: var(--radius-2xl);
   overflow: hidden;
 }

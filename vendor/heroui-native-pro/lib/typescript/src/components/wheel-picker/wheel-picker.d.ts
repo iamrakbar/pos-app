@@ -9,7 +9,7 @@ export { useWheelPickerItem };
  * Compound `WheelPicker` component with sub-components.
  *
  * @component WheelPicker - Root container. Owns the controllable `value`,
- * the shared `scrollY` (UI thread), and the data-driven `Animated.FlatList`
+ * the shared `scrollY` (UI thread), and the data-driven `AnimatedFlatList`
  * that powers the wheel. Provides per-item animation context to children.
  *
  * @component WheelPicker.Item - Animated row container. Rendered

@@ -13,6 +13,13 @@ import composedChartClassNames from "./composed-chart.styles.js";
 import { jsx as _jsx } from "react/jsx-runtime";
 // --------------------------------------------------
 
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * `BaseCartesianChart` (axes, tick labels, series) is drawn on a Skia canvas
+ * in physical coordinates — victory-native has no direction concept — and
+ * cartesian time/value axes conventionally read left-to-right in RTL locales
+ * too. Only the surrounding Yoga wrapper participates in layout direction.
+ */
 function ComposedChartRoot(props) {
   const {
     ref,

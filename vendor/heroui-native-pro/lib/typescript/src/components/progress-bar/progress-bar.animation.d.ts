@@ -44,8 +44,9 @@ export declare function useProgressBarFillAnimation(options: {
 };
 /**
  * Animation hook for the ProgressBar.Fill in indeterminate mode.
- * Produces a looping translateX animation that sweeps the fill
- * from fully off-screen left to fully off-screen right.
+ * Produces a looping translateX animation that sweeps the fill along the
+ * reading direction: off-screen leading edge to off-screen trailing edge
+ * (left to right in LTR, right to left in RTL).
  *
  * `trackWidth` must be the measured width of the Track container
  * (not the fill) so the sweep covers the entire visible area.

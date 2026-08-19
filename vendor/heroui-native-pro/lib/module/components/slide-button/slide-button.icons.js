@@ -1,13 +1,14 @@
 "use strict";
 
-import { useThemeColor } from 'heroui-native/hooks';
+import { useIsRTL, useThemeColor } from 'heroui-native/hooks';
 import React from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 const DEFAULT_ICON_COLOR = '#000000';
 
 /**
- * Default chevron-right icon for the SlideButton thumb.
+ * Default chevron icon for the SlideButton thumb. Points toward the slide
+ * direction — right in LTR, left in RTL (mirrored via `scaleX`).
  * Uses white by default for contrast against the variant background.
  */
 export const ChevronRightIcon = ({
@@ -15,11 +16,17 @@ export const ChevronRightIcon = ({
   color
 }) => {
   const themeColorPlaceholder = useThemeColor('field-placeholder');
+  const isRTL = useIsRTL();
   const fillColor = color ?? themeColorPlaceholder ?? DEFAULT_ICON_COLOR;
   return /*#__PURE__*/_jsxs(Svg, {
     width: size,
     height: size,
     viewBox: "0 0 16 16",
+    style: {
+      transform: [{
+        scaleX: isRTL ? -1 : 1
+      }]
+    },
     children: [/*#__PURE__*/_jsx(Rect, {
       width: 16,
       height: 16,

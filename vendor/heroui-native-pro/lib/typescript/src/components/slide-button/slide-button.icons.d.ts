@@ -1,6 +1,7 @@
 import React from 'react';
 /**
- * Default chevron-right icon for the SlideButton thumb.
+ * Default chevron icon for the SlideButton thumb. Points toward the slide
+ * direction — right in LTR, left in RTL (mirrored via `scaleX`).
  * Uses white by default for contrast against the variant background.
  */
 export declare const ChevronRightIcon: React.FC<{

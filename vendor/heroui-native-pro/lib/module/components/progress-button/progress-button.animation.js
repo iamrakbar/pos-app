@@ -1,6 +1,6 @@
 "use strict";
 
-import { useCombinedAnimationDisabledState } from 'heroui-native/hooks';
+import { useCombinedAnimationDisabledState, useIsRTL } from 'heroui-native/hooks';
 import { useCallback, useEffect, useRef } from 'react';
 import { interpolate, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { getAnimationValueMergedConfig, getAnimationValueProperty, getRootAnimationState } from "../../helpers/internal/utils/index.js";
@@ -148,9 +148,10 @@ export function useProgressButtonRootAnimation(options) {
 
 /**
  * Animation hook for the ProgressButton overlay.
- * Produces a translateX style that sweeps the overlay from left to right
- * as progress goes from 0 to 1. At 0 the overlay is entirely off-screen
- * to the left; at 1 it fully covers the root.
+ * Produces a translateX style that sweeps the overlay across the root in
+ * the reading direction (left-to-right in LTR, right-to-left in RTL) as
+ * progress goes from 0 to 1. At 0 the overlay is entirely off-screen on the
+ * leading side; at 1 it fully covers the root.
  * Also produces a width style that keeps the overlay at track width.
  */
 export function useProgressButtonOverlayAnimation(options) {
@@ -158,8 +159,12 @@ export function useProgressButtonOverlayAnimation(options) {
     progress,
     trackWidth
   } = options;
+  const isRTL = useIsRTL();
   const rOverlayStyle = useAnimatedStyle(() => {
-    const translateX = interpolate(progress.get(), [0, 1], [-trackWidth.get(), 0]);
+    // The overlay enters from the inline-start side: off to the physical
+    // left (negative) in LTR, off to the physical right (positive) in RTL.
+    const hiddenOffset = isRTL ? trackWidth.get() : -trackWidth.get();
+    const translateX = interpolate(progress.get(), [0, 1], [hiddenOffset, 0]);
     return {
       transform: [{
         translateX
@@ -194,12 +199,20 @@ export function useProgressButtonMaskLabelAnimation(options) {
     textX,
     textWidth
   } = options;
+  const isRTL = useIsRTL();
 
-  /** Progress (0-1) at which the overlay left edge reaches the text start */
+  /**
+   * Progress (0-1) at which the overlay's covering edge reaches the text
+   * start. `textX` is a physical layout offset; in RTL the overlay sweeps in
+   * from the physical right, so the window mirrors around the track width.
+   */
   const textStartProgress = useDerivedValue(() => {
     const bw = trackWidth.get();
     const tx = textX.get();
-    return bw > 0 ? Math.min(1, Math.max(0, tx / bw)) : 0;
+    const tw = textWidth.get();
+    if (bw <= 0) return 0;
+    const start = isRTL ? (bw - tx - tw) / bw : tx / bw;
+    return Math.min(1, Math.max(0, start));
   });
 
   /** Progress (0-1) at which the overlay fully covers the text */
@@ -207,14 +220,20 @@ export function useProgressButtonMaskLabelAnimation(options) {
     const bw = trackWidth.get();
     const tx = textX.get();
     const tw = textWidth.get();
-    return bw > 0 ? Math.min(1, Math.max(0, (tx + tw) / bw)) : 0;
+    if (bw <= 0) return 0;
+    const end = isRTL ? (bw - tx) / bw : (tx + tw) / bw;
+    return Math.min(1, Math.max(0, end));
   });
   const rMaskLabelStyle = useAnimatedStyle(() => {
     const p = progress.get();
     const start = textStartProgress.get();
     const end = Math.max(textEndProgress.get(), start);
     const tw = textWidth.get();
-    const translateX = p < start ? 0 : interpolate(p, [start, end], [0, -tw]);
+
+    // Counter-translation runs against the overlay's travel direction so the
+    // mask label is revealed in place rather than dragged along.
+    const target = isRTL ? tw : -tw;
+    const translateX = p < start ? 0 : interpolate(p, [start, end], [0, target]);
     return {
       transform: [{
         translateX

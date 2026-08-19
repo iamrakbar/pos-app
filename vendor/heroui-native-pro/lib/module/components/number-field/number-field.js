@@ -180,14 +180,18 @@ const NumberFieldInput = /*#__PURE__*/forwardRef((props, ref) => {
     if (!isAutoPaddingActive) {
       return undefined;
     }
-    const paddingLeft = context?.decrementButtonWidth && context.decrementButtonWidth > 0 ? context.decrementButtonWidth + autoPaddingAddon : undefined;
-    const paddingRight = context?.incrementButtonWidth && context.incrementButtonWidth > 0 ? context.incrementButtonWidth + autoPaddingAddon : undefined;
-    if (paddingLeft === undefined && paddingRight === undefined) {
+
+    // Logical padding (`paddingStart`/`paddingEnd`) so the measured widths
+    // track the buttons, which are anchored to the inline start/end edges
+    // and therefore swap physical sides in RTL.
+    const paddingStart = context?.decrementButtonWidth && context.decrementButtonWidth > 0 ? context.decrementButtonWidth + autoPaddingAddon : undefined;
+    const paddingEnd = context?.incrementButtonWidth && context.incrementButtonWidth > 0 ? context.incrementButtonWidth + autoPaddingAddon : undefined;
+    if (paddingStart === undefined && paddingEnd === undefined) {
       return undefined;
     }
     return {
-      paddingLeft,
-      paddingRight
+      paddingStart,
+      paddingEnd
     };
   }, [isAutoPaddingActive, autoPaddingAddon, context?.decrementButtonWidth, context?.incrementButtonWidth]);
   const handleChangeText = useCallback(text => {
@@ -407,15 +411,15 @@ NumberFieldDecrementButton.displayName = DISPLAY_NAME.NUMBER_FIELD_DECREMENT_BUT
  *
  * @component NumberField.Input - Pass-through to the Input component.
  * Displays the formatted numeric value and automatically receives
- * paddingLeft/paddingRight from measured button widths. Commits the
+ * paddingStart/paddingEnd from measured button widths. Commits the
  * value on blur.
  *
  * @component NumberField.DecrementButton - Absolutely positioned button
- * anchored to the left side of the Input. Decrements the value by one step.
+ * anchored to the leading edge of the Input. Decrements the value by one step.
  * Auto-disabled when the value reaches minValue. Supports long-press repeat.
  *
  * @component NumberField.IncrementButton - Absolutely positioned button
- * anchored to the right side of the Input. Increments the value by one step.
+ * anchored to the trailing edge of the Input. Increments the value by one step.
  * Auto-disabled when the value reaches maxValue. Supports long-press repeat.
  *
  */

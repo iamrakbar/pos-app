@@ -5,6 +5,10 @@ export { useSegment };
  * Compound `Segment` segmented control built on top of HeroUI Native `Tabs`
  * (`variant="primary"` only).
  *
+ * @note RTL: fully inherited from `Tabs` — item order flips with the flex
+ * row and the animated indicator is positioned from physical `onLayout`
+ * measurements, so it tracks the selected item in both directions.
+ *
  * @component Segment - Bridges controlled / uncontrolled value via optional
  * `value`, `defaultValue`, and `onValueChange`; cascades optional root
  * `isDisabled`; applies `sm` | `md` | `lg` sizing everywhere.

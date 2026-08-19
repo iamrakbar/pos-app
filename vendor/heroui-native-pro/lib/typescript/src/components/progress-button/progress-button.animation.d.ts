@@ -46,9 +46,10 @@ export declare function useProgressButtonRootAnimation(options: {
 };
 /**
  * Animation hook for the ProgressButton overlay.
- * Produces a translateX style that sweeps the overlay from left to right
- * as progress goes from 0 to 1. At 0 the overlay is entirely off-screen
- * to the left; at 1 it fully covers the root.
+ * Produces a translateX style that sweeps the overlay across the root in
+ * the reading direction (left-to-right in LTR, right-to-left in RTL) as
+ * progress goes from 0 to 1. At 0 the overlay is entirely off-screen on the
+ * leading side; at 1 it fully covers the root.
  * Also produces a width style that keeps the overlay at track width.
  */
 export declare function useProgressButtonOverlayAnimation(options: {

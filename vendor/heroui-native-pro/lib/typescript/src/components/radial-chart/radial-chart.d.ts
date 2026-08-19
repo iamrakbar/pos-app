@@ -1,4 +1,11 @@
 import type { RadialChartBarProps, RadialChartColorFields, RadialChartInputFields, RadialChartNumericalFields, RadialChartRootProps } from './radial-chart.types';
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * the chart canvas (arcs, track, labels) is drawn by Skia in physical
+ * coordinates, and angular progress conventionally sweeps the same way in
+ * RTL locales too. Only the surrounding Yoga wrapper participates in layout
+ * direction.
+ */
 declare function RadialChartRoot<RawData extends Record<string, unknown>, LabelKey extends Extract<keyof RadialChartInputFields<RawData>, string>, ValueKey extends Extract<keyof RadialChartNumericalFields<RawData>, string>, ColorKey extends Extract<keyof RadialChartColorFields<RawData>, string>>(props: RadialChartRootProps<RawData, LabelKey, ValueKey, ColorKey>): import("react/jsx-runtime").JSX.Element;
 declare namespace RadialChartRoot {
     var displayName: "HeroUINative.RadialChart.Root";

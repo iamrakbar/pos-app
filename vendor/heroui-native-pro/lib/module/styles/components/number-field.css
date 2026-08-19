@@ -8,16 +8,20 @@
   gap: calc(var(--spacing) * 1.5);
 }
 
+/*
+ * Logical anchors and corners: the decrement button sits at the leading edge
+ * (right in RTL) with its separator on the trailing side, mirroring the field.
+ */
 .number-field__decrement-button-container {
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 0;
   bottom: 0;
   z-index: 10;
-  border-right-width: 1px;
+  border-inline-end-width: 1px;
   border-color: color-mix(in oklab, var(--color-field-placeholder) 15%, transparent);
-  border-top-left-radius: var(--radius-2xl);
-  border-bottom-left-radius: var(--radius-2xl);
+  border-top-start-radius: var(--radius-2xl);
+  border-bottom-start-radius: var(--radius-2xl);
 }
 
 .number-field__decrement-button-container--is-disabled {
@@ -33,14 +37,14 @@
 
 .number-field__increment-button-container {
   position: absolute;
-  right: 0;
+  inset-inline-end: 0;
   top: 0;
   bottom: 0;
   z-index: 10;
-  border-left-width: 1px;
+  border-inline-start-width: 1px;
   border-color: color-mix(in oklab, var(--color-field-placeholder) 15%, transparent);
-  border-top-right-radius: var(--radius-2xl);
-  border-bottom-right-radius: var(--radius-2xl);
+  border-top-end-radius: var(--radius-2xl);
+  border-bottom-end-radius: var(--radius-2xl);
 }
 
 .number-field__increment-button-container--is-disabled {

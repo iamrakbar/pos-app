@@ -14,15 +14,15 @@ import type { NumberFieldButtonProps, NumberFieldGroupProps, NumberFieldInputPro
  *
  * @component NumberField.Input - Pass-through to the Input component.
  * Displays the formatted numeric value and automatically receives
- * paddingLeft/paddingRight from measured button widths. Commits the
+ * paddingStart/paddingEnd from measured button widths. Commits the
  * value on blur.
  *
  * @component NumberField.DecrementButton - Absolutely positioned button
- * anchored to the left side of the Input. Decrements the value by one step.
+ * anchored to the leading edge of the Input. Decrements the value by one step.
  * Auto-disabled when the value reaches minValue. Supports long-press repeat.
  *
  * @component NumberField.IncrementButton - Absolutely positioned button
- * anchored to the right side of the Input. Increments the value by one step.
+ * anchored to the trailing edge of the Input. Increments the value by one step.
  * Auto-disabled when the value reaches maxValue. Supports long-press repeat.
  *
  */

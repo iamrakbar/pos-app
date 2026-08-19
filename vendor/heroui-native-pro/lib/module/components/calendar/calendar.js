@@ -1,7 +1,7 @@
 "use strict";
 
 import { AnimationSettingsProvider, FormFieldProvider } from 'heroui-native/contexts';
-import { useThemeColor } from 'heroui-native/hooks';
+import { useIsRTL, useThemeColor } from 'heroui-native/hooks';
 import { forwardRef, memo, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -175,13 +175,19 @@ const CalendarNavButton = /*#__PURE__*/forwardRef(({
   ...rest
 }, ref) => {
   const themeAccent = useThemeColor('accent-soft-foreground');
+  const isRTL = useIsRTL();
   const isPrevious = slot === 'previous';
   const navButtonClassName = calendarClassNames.navButton({
     className
   });
   const iconSize = iconProps?.size ?? NAV_ICON_SIZE;
   const iconColor = iconProps?.color ?? themeAccent;
-  const defaultIcon = isPrevious ? /*#__PURE__*/_jsx(ChevronLeftIcon, {
+
+  // "Previous" points toward the past side of the reading direction — left in
+  // LTR, right in RTL. The icon components draw fixed physical glyphs, so the
+  // pair is swapped instead of scale-flipping each icon.
+  const pointsLeft = isPrevious !== isRTL;
+  const defaultIcon = pointsLeft ? /*#__PURE__*/_jsx(ChevronLeftIcon, {
     color: iconColor,
     size: iconSize
   }) : /*#__PURE__*/_jsx(ChevronRightIcon, {

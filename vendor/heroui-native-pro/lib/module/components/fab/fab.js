@@ -2,6 +2,7 @@
 
 import { ThemeBackground, useHasDefaultThemeBackground } from 'heroui-native';
 import { AnimationSettingsProvider, useAnimationSettings } from 'heroui-native/contexts';
+import { useIsRTL } from 'heroui-native/hooks';
 import { Children, forwardRef, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -257,12 +258,21 @@ const FABContent = /*#__PURE__*/forwardRef((props, ref) => {
     placement,
     align
   } = useFAB();
+  const isRTL = useIsRTL();
 
-  // Cross-axis alignment of the item column. For vertical placements the
-  // resolved align applies directly; for horizontal placements the items
-  // hug the trigger side instead (the resolved align positions the whole
-  // column vertically via the positioning engine).
-  const itemsAlign = placement === 'left' ? 'end' : placement === 'right' ? 'start' : align;
+  // Cross-axis alignment of the item column, in physical terms ('start' =
+  // screen left). For vertical placements the resolved align applies
+  // directly; for horizontal placements the items hug the trigger side
+  // instead (the resolved align positions the whole column vertically via
+  // the positioning engine). Physical is required here because the
+  // positioning engine anchors the column with physical `left` offsets
+  // computed from the measured trigger position.
+  const physicalItemsAlign = placement === 'left' ? 'end' : placement === 'right' ? 'start' : align;
+
+  // `align-items: flex-start/flex-end` resolves logically under an inherited
+  // RTL direction, so map the physical intent to logical terms to keep the
+  // items hugging the same physical edge the column is anchored to.
+  const itemsAlign = isRTL && physicalItemsAlign !== 'center' ? physicalItemsAlign === 'start' ? 'end' : 'start' : physicalItemsAlign;
   const contentClassName = fabClassNames.content({
     align: itemsAlign,
     className

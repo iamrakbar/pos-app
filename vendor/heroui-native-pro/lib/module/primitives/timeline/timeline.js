@@ -282,8 +282,11 @@ const Connector = /*#__PURE__*/forwardRef(({
     const computedHeight = prevRailGap + rail.y;
     return {
       position: 'absolute',
+      // Centered offset is symmetric, so it holds in both layout
+      // directions. No `right` constraint: with both edges set, Yoga
+      // resolves the over-constrained box by direction and would pin the
+      // connector to the rail's right edge in RTL instead of centering it.
       left: rail.width / 2 - halfW,
-      right: 0,
       top: -(prevRailGap + rail.y),
       height: computedHeight > 0 ? computedHeight : 0
     };

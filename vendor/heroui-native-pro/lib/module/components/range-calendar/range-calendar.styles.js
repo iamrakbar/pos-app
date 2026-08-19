@@ -56,9 +56,22 @@ const headerCellLabel = tv({
 
 /**
  * Day cell (pressable): range highlight strip (`bg-accent-soft`) and row rounding; endpoints use `cellBody`.
+ *
+ * @note The highlight caps must be direction-aware: rows flip in RTL, so the
+ * range start caps the leading edge (physical right in RTL) and the range end
+ * the trailing edge. They are written as arbitrary `border-{top,bottom}-{start,end}-radius`
+ * properties (React Native's older logical corner set) because the two
+ * alternatives break on Android:
+ * - Physical `rounded-l/r-*` with `rtl:` overrides double-flip there (Android
+ *   auto-swaps physical left/right radii in RTL, iOS does not).
+ * - W3C logical `rounded-s/e-*` (`border-start-start-radius` family) hit a
+ *   React Native Android bug: `BorderRadiusStyle.resolve` maps `startEnd` /
+ *   `endStart` to the wrong corners, so two of the four caps vanish.
+ * The `border{Top,Bottom}{Start,End}Radius` props resolve correctly per view
+ * layout direction on both platforms.
  */
 const cell = tv({
-  base: cn('range-calendar__cell', 'data-[range-start=true]:bg-accent-soft data-[range-start=true]:rounded-l-4xl', 'data-[range-end=true]:bg-accent-soft data-[range-end=true]:rounded-r-4xl', 'data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:rounded-none', 'data-[range-middle-row-start=true]:rounded-l-xl', 'data-[range-middle-row-end=true]:rounded-r-xl', 'data-[unavailable=true]:opacity-disabled', 'data-[disabled=true]:opacity-disabled', 'data-[readonly=true]:pointer-events-none')
+  base: cn('range-calendar__cell', 'data-[range-start=true]:bg-accent-soft', 'data-[range-start=true]:[border-top-start-radius:var(--radius-4xl)]', 'data-[range-start=true]:[border-bottom-start-radius:var(--radius-4xl)]', 'data-[range-end=true]:bg-accent-soft', 'data-[range-end=true]:[border-top-end-radius:var(--radius-4xl)]', 'data-[range-end=true]:[border-bottom-end-radius:var(--radius-4xl)]', 'data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:rounded-none', 'data-[range-middle-row-start=true]:[border-top-start-radius:var(--radius-xl)]', 'data-[range-middle-row-start=true]:[border-bottom-start-radius:var(--radius-xl)]', 'data-[range-middle-row-end=true]:[border-top-end-radius:var(--radius-xl)]', 'data-[range-middle-row-end=true]:[border-bottom-end-radius:var(--radius-xl)]', 'data-[unavailable=true]:opacity-disabled', 'data-[disabled=true]:opacity-disabled', 'data-[readonly=true]:pointer-events-none')
 });
 
 /**

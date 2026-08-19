@@ -1,4 +1,11 @@
 import type { BarChartBarGroupItemProps, BarChartBarGroupProps, BarChartBarProps, BarChartInputFields, BarChartNumericalFields, BarChartRootProps, BarChartStackedBarProps } from './bar-chart.types';
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * `BaseCartesianChart` (axes, tick labels, series) is drawn on a Skia canvas
+ * in physical coordinates — victory-native has no direction concept — and
+ * cartesian time/value axes conventionally read left-to-right in RTL locales
+ * too. Only the surrounding Yoga wrapper participates in layout direction.
+ */
 declare function BarChartRoot<RawData extends Record<string, unknown>, XK extends keyof BarChartInputFields<RawData>, YK extends keyof BarChartNumericalFields<RawData>>(props: BarChartRootProps<RawData, XK, YK>): import("react/jsx-runtime").JSX.Element;
 declare namespace BarChartRoot {
     var displayName: "HeroUINative.BarChart.Root";

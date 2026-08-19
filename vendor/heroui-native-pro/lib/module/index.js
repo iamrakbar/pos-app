@@ -1,13 +1,16 @@
 "use strict";
 
 // Components
+export * from "./components/agenda/index.js";
 export * from "./components/area-chart/index.js";
+export * from "./components/autocomplete/index.js";
 export * from "./components/badge/index.js";
 export * from "./components/bar-chart/index.js";
 export * from "./components/calendar/index.js";
 export * from "./components/chart-crosshair/index.js";
 export * from "./components/chart-indicator/index.js";
 export * from "./components/chart-tooltip/index.js";
+export * from "./components/combo-box/index.js";
 export * from "./components/composed-chart/index.js";
 export * from "./components/date-field/index.js";
 export * from "./components/date-picker/index.js";

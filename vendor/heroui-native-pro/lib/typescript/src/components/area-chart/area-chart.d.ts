@@ -1,4 +1,11 @@
 import type { AreaChartAreaProps, AreaChartAreaRangeProps, AreaChartInputFields, AreaChartNumericalFields, AreaChartRootProps, AreaChartStackedAreaProps } from './area-chart.types';
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * `BaseCartesianChart` (axes, tick labels, series) is drawn on a Skia canvas
+ * in physical coordinates — victory-native has no direction concept — and
+ * cartesian time/value axes conventionally read left-to-right in RTL locales
+ * too. Only the surrounding Yoga wrapper participates in layout direction.
+ */
 declare function AreaChartRoot<RawData extends Record<string, unknown>, XK extends keyof AreaChartInputFields<RawData>, YK extends keyof AreaChartNumericalFields<RawData>>(props: AreaChartRootProps<RawData, XK, YK>): import("react/jsx-runtime").JSX.Element;
 declare namespace AreaChartRoot {
     var displayName: "HeroUINative.AreaChart.Root";

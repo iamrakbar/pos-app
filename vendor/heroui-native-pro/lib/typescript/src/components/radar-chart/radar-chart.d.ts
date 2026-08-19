@@ -1,4 +1,10 @@
 import type { RadarChartAngleAxisProps, RadarChartColorFields, RadarChartGridProps, RadarChartInputFields, RadarChartNumericalFields, RadarChartRadarProps, RadarChartRadiusAxisProps, RadarChartRootProps } from './radar-chart.types';
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * the chart canvas (grid, spokes, angle/radius labels, series) is drawn by
+ * Skia in physical coordinates — the polar geometry has no direction concept.
+ * Only the surrounding Yoga wrapper participates in layout direction.
+ */
 declare function RadarChartRoot<RawData extends Record<string, unknown>, LabelKey extends Extract<keyof RadarChartInputFields<RawData>, string> & Extract<keyof RadarChartColorFields<RawData>, string>, DataKey extends Extract<keyof RadarChartNumericalFields<RawData>, string>>(props: RadarChartRootProps<RawData, LabelKey, DataKey>): import("react/jsx-runtime").JSX.Element;
 declare namespace RadarChartRoot {
     var displayName: "HeroUINative.RadarChart.Root";

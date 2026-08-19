@@ -6,6 +6,12 @@
   text-align: center;
 }
 
+/*
+ * `left` stays physical on purpose: the overlay is positioned by an animated
+ * `translateX` carrying physical chart-canvas coordinates (victory-native
+ * press state), and the canvas itself deliberately stays left-to-right.
+ * A logical anchor would tear the two apart under RTL.
+ */
 .chart-crosshair__value-container {
   position: absolute;
   left: 0;
@@ -24,10 +30,7 @@
 
 .chart-crosshair__value-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   border-radius: var(--radius-2xl);
   overflow: hidden;
 }

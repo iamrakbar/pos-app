@@ -32,10 +32,10 @@ export declare function useSlideButtonOverlayAnimation(options: {
 };
 /**
  * Animation hook for the SlideButton underlay content.
- * Mirrors the overlay clip logic: the outer wrapper is anchored to the right
- * and shrinks as progress increases, revealing only the portion to the right
- * of the thumb. The inner container keeps full track width so text stays
- * naturally laid out and is merely clipped on the left edge.
+ * Mirrors the overlay clip logic: the outer wrapper is anchored to the
+ * inline-end edge and shrinks as progress increases, revealing only the
+ * portion ahead of the thumb. The inner container keeps full track width so
+ * text stays naturally laid out and is merely clipped on the trailing edge.
  */
 export declare function useSlideButtonUnderlayAnimation(options: {
     progress: SharedValue<number>;

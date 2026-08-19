@@ -104,6 +104,12 @@ function useRadarChartLayout() {
 
 // --------------------------------------------------
 
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * the chart canvas (grid, spokes, angle/radius labels, series) is drawn by
+ * Skia in physical coordinates — the polar geometry has no direction concept.
+ * Only the surrounding Yoga wrapper participates in layout direction.
+ */
 function RadarChartRoot(props) {
   const {
     animation,

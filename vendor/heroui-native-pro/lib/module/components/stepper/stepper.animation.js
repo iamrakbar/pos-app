@@ -1,7 +1,7 @@
 "use strict";
 
 import { useAnimationSettings } from 'heroui-native/contexts';
-import { useCombinedAnimationDisabledState } from 'heroui-native/hooks';
+import { useCombinedAnimationDisabledState, useIsRTL } from 'heroui-native/hooks';
 import { useEffect, useMemo, useRef } from 'react';
 import { cancelAnimation, Easing, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { createContext, getAnimationState, getAnimationValueMergedConfig, getIsAnimationDisabledValue, getRootAnimationState } from "../../helpers/internal/utils/index.js";
@@ -70,8 +70,10 @@ export function useStepperRootAnimation(options) {
 
 /** Top-center origin — scaleY fills downward from the top */
 const TRANSFORM_ORIGIN_VERTICAL = 'top center';
-/** Left-center origin — scaleX fills rightward from the left */
+/** Left-center origin — scaleX fills rightward from the left (LTR) */
 const TRANSFORM_ORIGIN_HORIZONTAL = 'left center';
+/** Right-center origin — scaleX fills leftward from the right (RTL) */
+const TRANSFORM_ORIGIN_HORIZONTAL_RTL = 'right center';
 
 /**
  * Animated scale for `Stepper.SeparatorFill` from root `progress` and step `index`.
@@ -88,6 +90,7 @@ export function useStepperSeparatorFillAnimation(options) {
   const {
     isAllAnimationsDisabled
   } = useAnimationSettings();
+  const isRTL = useIsRTL();
   const {
     isAnimationDisabled
   } = getAnimationState(animation);
@@ -95,6 +98,10 @@ export function useStepperSeparatorFillAnimation(options) {
     isAnimationDisabled,
     isAllAnimationsDisabled
   });
+
+  // Steps flow right-to-left in RTL, so the horizontal fill grows from the
+  // physical right edge (the previous step's side) instead of the left.
+  const horizontalOrigin = isRTL ? TRANSFORM_ORIGIN_HORIZONTAL_RTL : TRANSFORM_ORIGIN_HORIZONTAL;
   const animatedStyle = useAnimatedStyle(() => {
     const p = progress.get();
     if (isAnimationDisabledValue) {
@@ -111,7 +118,7 @@ export function useStepperSeparatorFillAnimation(options) {
         transform: [{
           scaleX: t
         }],
-        transformOrigin: TRANSFORM_ORIGIN_HORIZONTAL
+        transformOrigin: horizontalOrigin
       };
     }
     const t = interpolate(p, [index - 1, index], [0, 1], Extrapolation.CLAMP);
@@ -127,7 +134,7 @@ export function useStepperSeparatorFillAnimation(options) {
       transform: [{
         scaleX: t
       }],
-      transformOrigin: TRANSFORM_ORIGIN_HORIZONTAL
+      transformOrigin: horizontalOrigin
     };
   }, [index, isAnimationDisabledValue, orientation, progress]);
   return {

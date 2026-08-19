@@ -1,7 +1,7 @@
 "use strict";
 
 import { useAnimationSettings } from 'heroui-native/contexts';
-import { useCombinedAnimationDisabledState } from 'heroui-native/hooks';
+import { useCombinedAnimationDisabledState, useIsRTL } from 'heroui-native/hooks';
 import { useCallback } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import { interpolate, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -77,10 +77,10 @@ export function useSlideButtonOverlayAnimation(options) {
 
 /**
  * Animation hook for the SlideButton underlay content.
- * Mirrors the overlay clip logic: the outer wrapper is anchored to the right
- * and shrinks as progress increases, revealing only the portion to the right
- * of the thumb. The inner container keeps full track width so text stays
- * naturally laid out and is merely clipped on the left edge.
+ * Mirrors the overlay clip logic: the outer wrapper is anchored to the
+ * inline-end edge and shrinks as progress increases, revealing only the
+ * portion ahead of the thumb. The inner container keeps full track width so
+ * text stays naturally laid out and is merely clipped on the trailing edge.
  */
 export function useSlideButtonUnderlayAnimation(options) {
   const {
@@ -133,6 +133,7 @@ export function useSlideButtonThumbAnimation(options) {
   const {
     isAllAnimationsDisabled
   } = useAnimationSettings();
+  const isRTL = useIsRTL();
   const {
     animationConfig,
     isAnimationDisabled
@@ -152,8 +153,12 @@ export function useSlideButtonThumbAnimation(options) {
     if (tw === 0) return 0;
     return tw - tW;
   });
+
+  // The thumb rests on the inline-start edge and slides toward the
+  // inline-end edge, so the physical translateX is negative in RTL.
   const rThumbStyle = useAnimatedStyle(() => {
-    const translateX = progress.get() * maxTranslateX.get();
+    const direction = isRTL ? -1 : 1;
+    const translateX = direction * progress.get() * maxTranslateX.get();
     return {
       transform: [{
         translateX
@@ -170,7 +175,11 @@ export function useSlideButtonThumbAnimation(options) {
     if (isCompleted) return;
     const maxTx = maxTranslateX.get();
     if (maxTx <= 0) return;
-    const delta = event.translationX / maxTx;
+
+    // Gesture translation is physical; in RTL dragging toward the physical
+    // left (negative translationX) increases the progress.
+    const translationX = isRTL ? -event.translationX : event.translationX;
+    const delta = translationX / maxTx;
     const newProgress = Math.min(1, Math.max(0, startProgress.get() + delta));
     progress.set(newProgress);
   }).onEnd(() => {

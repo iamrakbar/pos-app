@@ -39,6 +39,13 @@
  * Tailwind implements them through the composable `translate` mechanism,
  * which has no reliable single-declaration equivalent in the uniwind CSS
  * parser. Only the positioning moves here.
+ *
+ * These anchors stay physical (`left`/`right`) on purpose: the `placement`
+ * prop names physical corners (`top-right`), and the paired `translate-x`
+ * nudges are physical too (transforms never flip with direction), so
+ * converting only the anchors to logical properties would tear the two
+ * apart under RTL. Consumers who want a mirrored badge pass the opposite
+ * placement.
  */
 
 .badge__root--placement-top-right {
@@ -73,10 +80,7 @@
 
 .badge__background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   border-radius: var(--radius-2xl);
   overflow: hidden;
 }

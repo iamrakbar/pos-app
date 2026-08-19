@@ -282,6 +282,12 @@ WheelPickerGroupMask.displayName = DISPLAY_NAME.MASK;
  * Compound `WheelPickerGroup` component for coordinating multiple
  * `WheelPicker` instances (e.g. a date picker with year / month / day).
  *
+ * @note RTL: the column row is pinned to LTR (see `wheel-picker-group.css`).
+ * Grouped wheels compose numeric sequences (hour : minute, day / month /
+ * year) that read left-to-right in every locale, so mirroring the columns
+ * would reverse the reading order of the value — the same rationale as the
+ * NumberPad digit rows.
+ *
  * @component WheelPickerGroup - Root container managing a shared
  * controllable `values` record. Provides `itemHeight`, `visibleCount`,
  * value getters/setters, and scroll coordination to child wheels via

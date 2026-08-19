@@ -37,7 +37,7 @@ declare const root: import("tailwind-variants").TVReturnType<{
 }, undefined, unknown, unknown, undefined>>;
 /**
  * UnderlayContent style definition.
- * Right-anchored clip wrapper that hides content to the left of the thumb.
+ * Inline-end-anchored clip wrapper that hides content behind the thumb.
  *
  * @note ANIMATED PROPERTIES (cannot be set via className):
  * - `width` - Animated to clip content at the thumb's leading edge (applied to container and content container)
@@ -75,7 +75,9 @@ declare const underlayContent: import("tailwind-variants").TVReturnType<{
 }, undefined, unknown, unknown, undefined>>;
 /**
  * OverlayContent style definition.
- * Uses overflow-hidden clip wrapper to reveal content from left to right.
+ * Uses an overflow-hidden clip wrapper anchored to the inline-start edge to
+ * reveal content in the slide direction (left-to-right in LTR, mirrored in
+ * RTL).
  *
  * @note ANIMATED PROPERTIES (cannot be set via className):
  * - `width` - Animated to clip content at the thumb's trailing edge (applied to container and content container)

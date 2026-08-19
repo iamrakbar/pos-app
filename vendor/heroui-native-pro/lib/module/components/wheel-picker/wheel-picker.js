@@ -5,6 +5,7 @@ import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { useThemeColor } from 'heroui-native/hooks';
 import { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 import Animated, { useDerivedValue } from 'react-native-reanimated';
 import { HeroText } from "../../helpers/internal/components/index.js";
 import { useAugmentedRef, useControllableState } from "../../helpers/internal/hooks/index.js";
@@ -18,11 +19,21 @@ import { clampIndex, getIndexForValue, getScrollOffsetForIndex, resolveMaskHeigh
 // --------------------------------------------------
 
 /**
+ * Animated gesture-handler `FlatList` so nested scroll gestures (e.g. inside
+ * a bottom sheet / dialog) compose correctly while still driving the
+ * Reanimated `scrollY` shared value via `onScroll`.
+ *
+ * Asserted as `typeof Animated.FlatList` because `createAnimatedComponent`
+ * erases the `ItemT` generic on gesture-handler's `FlatList`.
+ */
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+
+/**
  * Animated `Pressable` used as the row container for {@link WheelPicker.Item}.
  * Created once at module load so React doesn't allocate a new animated
  * component class on every render.
  */
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /**
@@ -448,7 +459,7 @@ function WheelPickerRootInner(props, ref) {
         },
         pointerEvents: isDisabled || isProgrammaticScrolling ? 'none' : 'auto',
         ...restProps,
-        children: [/*#__PURE__*/_jsx(Animated.FlatList, {
+        children: [/*#__PURE__*/_jsx(AnimatedFlatList, {
           ref: listRef,
           data: items,
           renderItem: renderItem,
@@ -833,7 +844,7 @@ WheelPickerMask.displayName = DISPLAY_NAME.MASK;
  * Compound `WheelPicker` component with sub-components.
  *
  * @component WheelPicker - Root container. Owns the controllable `value`,
- * the shared `scrollY` (UI thread), and the data-driven `Animated.FlatList`
+ * the shared `scrollY` (UI thread), and the data-driven `AnimatedFlatList`
  * that powers the wheel. Provides per-item animation context to children.
  *
  * @component WheelPicker.Item - Animated row container. Rendered

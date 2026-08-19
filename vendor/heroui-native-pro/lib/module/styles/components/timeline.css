@@ -104,9 +104,16 @@
   flex-direction: column;
 }
 
+/*
+ * RN Text resolves `text-align: left` against layout direction, so this
+ * means "start" — copy stays left-aligned in LTR and right-aligned in RTL.
+ * Without it, full-width text defaults to the physical left in both
+ * directions. Explicit alignment passed via className still overrides.
+ */
 .timeline__title {
   font-family: var(--font-medium);
   color: var(--color-foreground);
+  text-align: left;
 }
 
 /* Title - size */
@@ -126,9 +133,11 @@
   line-height: var(--text-lg--line-height);
 }
 
+/* `text-align: left` resolves logically to the start edge (see title). */
 .timeline__description {
   color: var(--color-muted);
   font-family: var(--font-normal);
+  text-align: left;
 }
 
 /* Description - size */

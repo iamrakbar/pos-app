@@ -1,4 +1,11 @@
 import type { LineChartAnimatedLineProps, LineChartInputFields, LineChartLineProps, LineChartNumericalFields, LineChartRootProps } from './line-chart.types';
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * the chart canvas (axes, tick labels, series) is drawn by Skia in physical
+ * coordinates — victory-native has no direction concept — and chart axes
+ * conventionally read left-to-right in RTL locales too. Only the surrounding
+ * Yoga wrapper participates in layout direction.
+ */
 declare function LineChartRoot<RawData extends Record<string, unknown>, XK extends keyof LineChartInputFields<RawData>, YK extends keyof LineChartNumericalFields<RawData>>(props: LineChartRootProps<RawData, XK, YK>): import("react/jsx-runtime").JSX.Element;
 declare namespace LineChartRoot {
     var displayName: "HeroUINative.LineChart.Root";

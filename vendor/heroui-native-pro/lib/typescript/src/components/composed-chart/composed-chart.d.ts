@@ -1,4 +1,11 @@
 import type { ComposedChartInputFields, ComposedChartNumericalFields, ComposedChartRootProps, ComposedChartStaticParts } from './composed-chart.types';
+/**
+ * @note RTL: the chart deliberately stays left-to-right. Everything inside
+ * `BaseCartesianChart` (axes, tick labels, series) is drawn on a Skia canvas
+ * in physical coordinates — victory-native has no direction concept — and
+ * cartesian time/value axes conventionally read left-to-right in RTL locales
+ * too. Only the surrounding Yoga wrapper participates in layout direction.
+ */
 declare function ComposedChartRoot<RawData extends Record<string, unknown>, XK extends keyof ComposedChartInputFields<RawData>, YK extends keyof ComposedChartNumericalFields<RawData>>(props: ComposedChartRootProps<RawData, XK, YK>): import("react/jsx-runtime").JSX.Element;
 declare namespace ComposedChartRoot {
     var displayName: "HeroUINative.ComposedChart.Root";
