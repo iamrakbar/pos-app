@@ -59,6 +59,13 @@ export default function SettingsScreen(): JSX.Element {
   ];
   const storeItems: SettingsItem[] = [
     {
+      id: "merchant-profile",
+      href: "/settings/merchant-profile",
+      icon: "storefront-outline",
+      label: t("settings.merchantProfile"),
+      description: t("settings.merchantProfileDescription"),
+    },
+    {
       id: "payments",
       href: "/settings/payments",
       icon: "card-outline",

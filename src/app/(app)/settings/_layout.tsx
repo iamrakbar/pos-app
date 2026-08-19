@@ -32,6 +32,10 @@ export default function SettingsLayout() {
         }}
       />
       <Stack.Screen name="account" options={{ title: t("navigation.account") }} />
+      <Stack.Screen
+        name="merchant-profile"
+        options={{ title: t("navigation.merchantProfile") }}
+      />
       <Stack.Screen name="preferences" options={{ title: t("settings.appPreferences") }} />
       <Stack.Screen name="printer" options={{ title: t("settings.printer") }} />
       <Stack.Screen name="printers/index" options={{ title: t("navigation.printers") }} />
