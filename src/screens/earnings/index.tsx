@@ -20,7 +20,7 @@ import {
 import { Calendar, DatePicker, EmptyState, Widget, type DatePickerOption } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import { getLocaleTag, type Translate } from "@/locales";
+import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
 const DATE_RANGE_VALUES = [
@@ -73,7 +73,11 @@ function getPresetRange(value: Exclude<DateRangeValue, "custom">): AppliedDateRa
 function toDateOption(value: string): NonNullable<DatePickerOption> {
   return {
     value,
-    label: formatDate(new Date(`${value}T00:00:00`), { month: "short", day: "numeric", year: "numeric" }),
+    label: formatDate(new Date(`${value}T00:00:00`), {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
   };
 }
 
@@ -145,14 +149,12 @@ function EarningsDatePicker({
   onValueChange,
   isInvalid,
   presentation,
-  localeTag,
 }: {
   label: string;
   value: NonNullable<DatePickerOption>;
   onValueChange: (value: DatePickerOption | undefined) => void;
   isInvalid?: boolean;
   presentation: "dialog" | "popover";
-  localeTag: string;
 }) {
   return (
     <DatePicker
@@ -161,7 +163,7 @@ function EarningsDatePicker({
       onValueChange={onValueChange}
       isRequired
       isInvalid={isInvalid}
-      locale={localeTag}
+      locale="id-ID"
       dateDisplayFormat="medium"
     >
       <Label>{label}</Label>
@@ -219,8 +221,7 @@ function CustomDateRangeDialog({
   onCancel: () => void;
   isApplying: boolean;
 }) {
-  const { locale, t } = useTranslation();
-  const localeTag = getLocaleTag(locale);
+  const { t } = useTranslation();
   const { isPhonePortrait } = useOverlayPresentation();
   const pickerPresentation = isPhonePortrait ? "dialog" : "popover";
 
@@ -264,7 +265,6 @@ function CustomDateRangeDialog({
             onValueChange={onStartChange}
             isInvalid={error !== null}
             presentation={pickerPresentation}
-            localeTag={localeTag}
           />
           <EarningsDatePicker
             label={t("earnings.to")}
@@ -272,7 +272,6 @@ function CustomDateRangeDialog({
             onValueChange={onEndChange}
             isInvalid={error !== null}
             presentation={pickerPresentation}
-            localeTag={localeTag}
           />
         </View>
         {error ? (
@@ -435,8 +434,7 @@ function RecentEarningsWidget({
 }
 
 export default function EarningsScreen(): React.JSX.Element {
-  const { locale, t } = useTranslation();
-  const localeTag = getLocaleTag(locale);
+  const { t } = useTranslation();
   const dateRangeOptions: DateRangeOption[] = DATE_RANGE_VALUES.map((value) => ({
     value,
     label: t(`earnings.ranges.${value}`),

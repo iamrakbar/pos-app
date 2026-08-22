@@ -2,6 +2,7 @@ import { zustandStorage } from "@/lib/storage";
 import type { Cart } from "@/types/cart";
 import type { CheckoutFormState } from "@/types/pos";
 import type { ParkedOrder } from "@/types/parked-order";
+import { formatTime } from "@/utils/format";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -32,7 +33,7 @@ export const useParkedOrdersStore = create<ParkedOrdersState>()(
         const draft: ParkedOrder = {
           id: createDraftId(),
           merchant_id: merchantId,
-          label: label.trim() || new Date().toLocaleTimeString(),
+          label: label.trim() || formatTime(new Date()),
           cart,
           checkout_form: checkoutForm,
           created_at: now,

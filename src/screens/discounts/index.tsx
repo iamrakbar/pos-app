@@ -4,7 +4,8 @@ import { EmptyState } from "heroui-native-pro";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { useDiscounts } from "@/hooks/db/use-discounts";
-import { getLocaleTag } from "@/locales";
+import { getToolbarIcon } from "@/utils/toolbar-icons";
+import { formatDate, formatRupiah } from "@/utils/format";
 import { Stack, useRouter } from "expo-router";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
@@ -12,7 +13,7 @@ import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 
 export default function DiscountsScreen(): React.JSX.Element {
-  const { locale, t } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const muted = useThemeColor("muted");
   const [search, setSearch] = React.useState("");
@@ -28,7 +29,11 @@ export default function DiscountsScreen(): React.JSX.Element {
           onChangeText={(event) => setSearch(event.nativeEvent.text)}
           onClose={() => setSearch("")}
         />
-        <Stack.Toolbar.Menu accessibilityLabel={t("discounts.filterAccessibility")}>
+        <Stack.Toolbar.Menu
+          {...getToolbarIcon("filter")}
+          tintColor={muted}
+          accessibilityLabel={t("discounts.filterAccessibility")}
+        >
           <Stack.Toolbar.Label>{t("common.filter")}</Stack.Toolbar.Label>
           {(["all", "active", "inactive"] as const).map((value) => (
             <Stack.Toolbar.MenuAction key={value} onPress={() => setActive(value)} isOn={active === value}>
@@ -77,11 +82,11 @@ export default function DiscountsScreen(): React.JSX.Element {
                       </Chip>
                     </View>
                     <Typography type="body-xs" color="muted">
-                      {discount.unit === "percentage" ? `${discount.value}%` : `Rp ${discount.value.toLocaleString(getLocaleTag(locale))}`}
+                      {discount.unit === "percentage" ? `${discount.value}%` : formatRupiah(discount.value)}
                       {discount.products_count > 0 ? ` · ${t("discounts.productsCount", { count: discount.products_count })}` : ` · ${t("discounts.noProductsSelected")}`}
                     </Typography>
                     {(discount.start || discount.end) ? <Typography type="body-xs" color="muted">
-                      {discount.start ? new Date(discount.start).toLocaleDateString(getLocaleTag(locale), { day: "2-digit", month: "short", year: "numeric" }) : t("discounts.noStart")} – {discount.end ? new Date(discount.end).toLocaleDateString(getLocaleTag(locale), { day: "2-digit", month: "short", year: "numeric" }) : t("discounts.noEnd")}
+                      {discount.start ? formatDate(new Date(`${discount.start}T00:00:00`)) : t("discounts.noStart")} – {discount.end ? formatDate(new Date(`${discount.end}T00:00:00`)) : t("discounts.noEnd")}
                     </Typography> : null}
                   </View>
                   <AppIcon name="chevron-forward" size={16} color={muted} />

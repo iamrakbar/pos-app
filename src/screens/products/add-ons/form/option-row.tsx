@@ -1,6 +1,6 @@
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import StringNumberField from "@/components/common/string-number-field";
-import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
+import { IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { Button, Input, Label, Surface, TextField, Typography, useThemeColor } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
@@ -84,7 +84,8 @@ export default function OptionRow({
               onChange={onChange}
               minValue={0}
               step={1000}
-              formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
+              formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
+              prefix="Rp"
               isRequired
               isInvalid={Boolean(errors.options?.[index]?.price)}
               inputVariant="secondary"

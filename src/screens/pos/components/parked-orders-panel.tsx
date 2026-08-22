@@ -6,6 +6,7 @@ import { useCartStore } from "@/stores/use-cart-store";
 import { useParkedOrdersStore } from "@/stores/use-parked-orders-store";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { resetCurrentOrder } from "@/stores/reset-current-order";
+import { formatTime } from "@/utils/format";
 import type { ParkedOrder } from "@/types/parked-order";
 import {
   Button,
@@ -30,7 +31,7 @@ type ParkedOrdersPanelProps = {
 };
 
 function formatDraftTime(value: string): string {
-  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return formatTime(value);
 }
 
 export default function ParkedOrdersPanel({

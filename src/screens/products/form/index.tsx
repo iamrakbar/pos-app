@@ -43,7 +43,7 @@ import {
 import { createProductSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
 import QuickCategoryFormOverlay from "./quick-category-form-overlay";
-import { IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
+import { IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -143,6 +143,7 @@ function ProductNumberField({
   error,
   step = 1,
   formatOptions,
+  prefix,
 }: {
   label: string;
   placeholder: string;
@@ -153,6 +154,7 @@ function ProductNumberField({
   error?: string;
   step?: number;
   formatOptions?: Intl.NumberFormatOptions;
+  prefix?: string;
 }) {
   return (
     <StringNumberField
@@ -165,6 +167,7 @@ function ProductNumberField({
       minValue={0}
       step={step}
       formatOptions={formatOptions}
+      prefix={prefix}
       isRequired={required}
       isInvalid={!!error}
     >
@@ -532,7 +535,8 @@ function PricingCard({ control, error }: { control: Control<ProductFormValues>; 
               onChangeText={onChange}
               error={error}
               step={1000}
-              formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
+              formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
+              prefix="Rp"
             />
           )}
         />

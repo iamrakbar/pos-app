@@ -5,7 +5,7 @@ import { useManagementProducts } from "@/hooks/db/use-products";
 import { useDiscountProductDraft } from "@/stores/use-discount-product-draft-store";
 import { useCategories } from "@/hooks/db/use-categories";
 import { useTranslation } from "@/stores/use-locale";
-import { getLocaleTag } from "@/locales";
+import { formatRupiah } from "@/utils/format";
 import { Stack, useRouter } from "expo-router";
 import {
   Button,
@@ -21,7 +21,7 @@ import { Pressable, ScrollView, View } from "react-native";
 
 export default function DiscountProductsScreen(): React.JSX.Element {
   const router = useRouter();
-  const { locale, t } = useTranslation();
+  const { t } = useTranslation();
   const muted = useThemeColor("muted");
   const [search, setSearch] = React.useState("");
   const deferredSearch = React.useDeferredValue(search.trim());
@@ -127,7 +127,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                           {product.name}
                         </Typography>
                         <Typography type="body-xs" color="muted">
-                          {product.price.toLocaleString(getLocaleTag(locale))} ·{" "}
+                          {formatRupiah(product.price)} ·{" "}
                           {product.category?.name ?? t("navigation.category")}
                         </Typography>
                       </View>

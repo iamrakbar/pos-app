@@ -246,13 +246,15 @@ function ReceiptPreviewSheet({
   onOpenChange: (open: boolean) => void;
   onPrint: () => void | Promise<void>;
 }) {
+  type ReceiptSheetLifecycle = "closed" | "presenting" | "presented" | "dismissing";
+
   const { t } = useTranslation();
   const { toast } = useToast();
   const receiptSettings = useReceiptStore((state) => state.settings);
   const printerSettings = usePrinterStore((state) => state.settings);
   const themeColorForeground = useThemeColor("foreground");
-  const themeColorBackground = useThemeColor("background");
   const sheetRef = useRef<TrueSheet | null>(null);
+  const sheetLifecycle = useRef<ReceiptSheetLifecycle>("closed");
   const receiptRef = useRef<ViewType | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const cachedExport = useRef<{ fingerprint: string; result: ReceiptExportResult } | null>(null);
@@ -268,10 +270,32 @@ function ReceiptPreviewSheet({
     logoWidthDots: printerSettings.logoWidthDots,
   });
 
+  const dismissSheet = () => {
+    if (sheetLifecycle.current === "closed" || sheetLifecycle.current === "dismissing") return;
+    sheetLifecycle.current = "dismissing";
+    void sheetRef.current?.dismiss();
+  };
+
   useEffect(() => {
-    if (!isOpen) return;
-    void sheetRef.current?.present(0);
-  }, [isOpen]);
+    if (!isOpen) {
+      if (sheetLifecycle.current === "presenting" || sheetLifecycle.current === "presented") {
+        dismissSheet();
+      }
+      return;
+    }
+
+    if (sheetLifecycle.current === "presented") {
+      void sheetRef.current?.resize(0);
+      return;
+    }
+    if (sheetLifecycle.current !== "closed") return;
+
+    sheetLifecycle.current = "presenting";
+    void sheetRef.current?.present(0).catch(() => {
+      sheetLifecycle.current = "closed";
+      onOpenChange(false);
+    });
+  }, [isOpen, onOpenChange]);
 
   const ensureExport = async () => {
     if (cachedExport.current?.fingerprint === fingerprint) return cachedExport.current.result;
@@ -310,7 +334,7 @@ function ReceiptPreviewSheet({
   };
 
   const handlePrint = async () => {
-    await sheetRef.current?.dismiss();
+    dismissSheet();
     await onPrint();
   };
 
@@ -323,7 +347,16 @@ function ReceiptPreviewSheet({
       scrollable
       grabber
       cornerRadius={24}
-      onDidDismiss={() => onOpenChange(false)}
+      onDidPresent={() => {
+        sheetLifecycle.current = "presented";
+      }}
+      onWillDismiss={() => {
+        sheetLifecycle.current = "dismissing";
+      }}
+      onDidDismiss={() => {
+        sheetLifecycle.current = "closed";
+        onOpenChange(false);
+      }}
       header={
         <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
           <Typography type="h4" weight="semibold">
@@ -337,7 +370,7 @@ function ReceiptPreviewSheet({
             size="sm"
             isIconOnly
             className="absolute right-3 top-3"
-            onPress={() => void sheetRef.current?.dismiss()}
+            onPress={dismissSheet}
             accessibilityLabel={t("common.close")}
           >
             <AppIcon name="close-outline" size={20} color={themeColorForeground} />

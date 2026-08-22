@@ -8,6 +8,12 @@ export const IDR_CURRENCY_FORMAT_OPTIONS = {
   maximumFractionDigits: 0,
 } satisfies Intl.NumberFormatOptions;
 
+export const IDR_NUMBER_FIELD_FORMAT_OPTIONS = {
+  useGrouping: true,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+} satisfies Intl.NumberFormatOptions;
+
 const rupiahFormatter = new Intl.NumberFormat("id-ID", IDR_CURRENCY_FORMAT_OPTIONS);
 
 export function formatRupiah(amount: number): string {

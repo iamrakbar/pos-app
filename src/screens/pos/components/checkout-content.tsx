@@ -6,7 +6,7 @@ import { useCustomerSearch } from "@/hooks/db/use-customers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/use-cart";
 import { useCheckout } from "@/hooks/db/use-checkout";
 import { createCheckoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
-import { formatRupiah, IDR_CURRENCY_FORMAT_OPTIONS } from "@/utils/format";
+import { formatRupiah, IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
 import { computePricing } from "@/utils/pricing";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import {
@@ -451,7 +451,8 @@ function PaymentFields({
               placeholder={selectedPayment.tender_input.placeholder ?? "Rp0"}
               minValue={0}
               step={1000}
-              formatOptions={IDR_CURRENCY_FORMAT_OPTIONS}
+              formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
+              prefix="Rp"
             />
             <View className="min-w-32 gap-1">
               <Typography type="body-xs" color="muted">
