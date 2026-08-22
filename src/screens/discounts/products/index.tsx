@@ -10,12 +10,14 @@ import { Stack, useRouter } from "expo-router";
 import {
   Button,
   Card,
+  Checkbox,
   Chip,
   SearchField,
   Separator,
   Typography,
   useThemeColor,
 } from "heroui-native";
+import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
@@ -52,92 +54,103 @@ export default function DiscountProductsScreen(): React.JSX.Element {
           keyboardShouldPersistTaps="handled"
           contentContainerClassName="gap-4 px-4 py-4 pb-28 md:px-6"
         >
-          <View className="gap-1">
-            <Typography type="body" weight="semibold">
-              {productIds.length
-                ? t("discounts.selectedProducts", { count: productIds.length })
-                : t("discounts.noProductsSelected")}
-            </Typography>
-            <Typography type="body-sm" color="muted">
-              {t("discounts.selectionSpecificDescription")}
-            </Typography>
-          </View>
-
-          <SearchField value={search} onChange={setSearch}>
-            <SearchField.Group>
-              <SearchField.SearchIcon />
-              <SearchField.Input placeholder={t("discounts.searchProductsPlaceholder")} />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="gap-2"
-          >
-            <Chip
-              variant={categoryId === null ? "primary" : "secondary"}
-              onPress={() => setCategoryId(null)}
-            >
-              <Chip.Label>{t("common.all")}</Chip.Label>
-            </Chip>
-            {categories.map((category) => (
-              <Chip
-                key={category.id}
-                variant={categoryId === category.id ? "primary" : "secondary"}
-                onPress={() => setCategoryId(category.id)}
-              >
-                <Chip.Label>{category.name}</Chip.Label>
-              </Chip>
-            ))}
-          </ScrollView>
-
-          {productsQuery.isLoading ? (
-            <LoadingState message={t("products.loading")} />
-          ) : productsQuery.isError ? (
-            <ErrorState error={productsQuery.error} onRetry={productsQuery.refetch} />
-          ) : products.length === 0 ? (
-            <View className="items-center gap-2 py-12">
-              <AppIcon name="search-outline" size={24} color={muted} />
-              <Typography weight="semibold">{t("products.empty")}</Typography>
+          <View className="mx-auto w-full max-w-3xl gap-4">
+            <View className="gap-1">
+              <Typography type="body" weight="semibold">
+                {t("discounts.productsTitle")}
+              </Typography>
               <Typography type="body-sm" color="muted">
-                {t("products.emptyDescription")}
+                {t("discounts.selectionSpecificDescription")}
               </Typography>
             </View>
-          ) : (
-            <Card className="overflow-hidden p-0">
-              {products.map((product, index) => {
-                const selected = selectedProductIdSet.has(product.id);
-                return (
-                  <View key={product.id}>
-                    <Pressable
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: selected }}
-                      onPress={() => toggleProduct(product.id)}
-                      className={`flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary ${selected ? "bg-accent-soft" : ""}`}
-                    >
-                      <AppIcon
-                        name={selected ? "checkmark-circle" : "ellipse-outline"}
-                        size={22}
-                        color={selected ? muted : muted}
-                      />
-                      <View className="flex-1 gap-0.5">
-                        <Typography type="body-sm" weight={selected ? "semibold" : undefined}>
-                          {product.name}
-                        </Typography>
-                        <Typography type="body-xs" color="muted">
-                          {formatRupiah(product.price)} ·{" "}
-                          {product.category?.name ?? t("navigation.category")}
-                        </Typography>
+
+            <SearchField value={search} onChange={setSearch}>
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input placeholder={t("discounts.searchProductsPlaceholder")} />
+                <SearchField.ClearButton />
+              </SearchField.Group>
+            </SearchField>
+
+            <View className="gap-2">
+              <Typography type="body-xs" color="muted" weight="semibold">
+                {t("products.filterByCategory")}
+              </Typography>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerClassName="gap-2"
+              >
+                <Chip
+                  variant={categoryId === null ? "primary" : "secondary"}
+                  onPress={() => setCategoryId(null)}
+                >
+                  <Chip.Label>{t("common.all")}</Chip.Label>
+                </Chip>
+                {categories.map((category) => (
+                  <Chip
+                    key={category.id}
+                    variant={categoryId === category.id ? "primary" : "secondary"}
+                    onPress={() => setCategoryId(category.id)}
+                  >
+                    <Chip.Label>{category.name}</Chip.Label>
+                  </Chip>
+                ))}
+              </ScrollView>
+            </View>
+
+            {productsQuery.isLoading ? (
+              <LoadingState message={t("products.loading")} />
+            ) : productsQuery.isError ? (
+              <ErrorState error={productsQuery.error} onRetry={productsQuery.refetch} />
+            ) : products.length === 0 ? (
+              <EmptyState className="py-12">
+                <EmptyState.Header>
+                  <EmptyState.Media variant="icon">
+                    <AppIcon name="search-outline" size={20} color={muted} />
+                  </EmptyState.Media>
+                  <EmptyState.Title>{t("products.empty")}</EmptyState.Title>
+                  <EmptyState.Description>{t("products.emptyDescription")}</EmptyState.Description>
+                </EmptyState.Header>
+              </EmptyState>
+            ) : (
+              <Card className="overflow-hidden p-0">
+                <Card.Body className="p-0">
+                  {products.map((product, index) => {
+                    const selected = selectedProductIdSet.has(product.id);
+                    return (
+                      <View key={product.id}>
+                        <Pressable
+                          accessibilityRole="checkbox"
+                          accessibilityLabel={product.name}
+                          accessibilityState={{ checked: selected }}
+                          onPress={() => toggleProduct(product.id)}
+                          className={`min-h-16 flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary ${selected ? "bg-accent-soft" : ""}`}
+                        >
+                          <Checkbox
+                            isSelected={selected}
+                            accessible={false}
+                            pointerEvents="none"
+                            className="shrink-0"
+                          />
+                          <View className="flex-1 gap-0.5">
+                            <Typography type="body-sm" weight={selected ? "semibold" : undefined}>
+                              {product.name}
+                            </Typography>
+                            <Typography type="body-xs" color="muted" className="tabular-nums">
+                              {formatRupiah(product.price)} ·{" "}
+                              {product.category?.name ?? t("navigation.category")}
+                            </Typography>
+                          </View>
+                        </Pressable>
+                        {index < products.length - 1 ? <Separator className="mx-4" /> : null}
                       </View>
-                    </Pressable>
-                    {index < products.length - 1 ? <Separator className="mx-4" /> : null}
-                  </View>
-                );
-              })}
-            </Card>
-          )}
+                    );
+                  })}
+                </Card.Body>
+              </Card>
+            )}
+          </View>
         </ScrollView>
 
         <View className="absolute inset-x-0 bottom-0 border-t border-border bg-background px-4 pb-safe pt-3 md:px-6">
