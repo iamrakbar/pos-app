@@ -166,7 +166,7 @@ module.exports = {
         "expo-media-library",
         {
           photosPermission: "Allow $(PRODUCT_NAME) to access your photos to set product images.",
-          savePhotosPermission: "Allow $(PRODUCT_NAME) to save table QR codes to your photos.",
+          savePhotosPermission: "Allow $(PRODUCT_NAME) to save images to your photo library.",
           granularPermissions: ["photo"],
         },
       ],

@@ -22,16 +22,38 @@ import Countdown from "@/components/common/countdown";
 import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
 import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
+import { ReceiptPaper } from "@/components/receipt/receipt-paper";
 import { useReceiptPrinter, type PrinterPrompt } from "@/hooks/printer/use-receipt-printer";
+import { toReceiptData } from "@/services/printer/receipt-data";
+import {
+  captureReceiptPng,
+  ReceiptExportError,
+  saveReceiptImage,
+  shareReceiptImage,
+  type ReceiptExportResult,
+} from "@/services/receipt/receipt-export";
+import { useReceiptStore } from "@/stores/use-receipt-store";
+import { usePrinterStore } from "@/stores/use-printer-store";
 import { formatDateTime, formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/api-error";
 import AppIcon from "@/components/common/app-icon";
 import { EmptyState } from "heroui-native-pro";
-import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import {
+  Button,
+  Chip,
+  Separator,
+  Surface,
+  Typography,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
-import { ActivityIndicator, ScrollView, View } from "react-native";
-import { useState } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+import { useEffect, useRef, useState } from "react";
+import type { View as ViewType } from "react-native";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { TranslationKey } from "@/locales";
@@ -41,7 +63,12 @@ function formatPickupTime(value: string | null | undefined): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isFinite(date.getTime())) {
-    return formatDateTime(date, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    return formatDateTime(date, {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   const time = /^(\d{2}):(\d{2})/.exec(value);
@@ -208,6 +235,173 @@ function PrinterPromptDialog({
   );
 }
 
+function ReceiptPreviewSheet({
+  order,
+  isOpen,
+  onOpenChange,
+  onPrint,
+}: {
+  order: App.Data.Merchant.Order.OrderData;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onPrint: () => void | Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const receiptSettings = useReceiptStore((state) => state.settings);
+  const printerSettings = usePrinterStore((state) => state.settings);
+  const themeColorForeground = useThemeColor("foreground");
+  const themeColorBackground = useThemeColor("background");
+  const sheetRef = useRef<TrueSheet | null>(null);
+  const receiptRef = useRef<ViewType | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+  const cachedExport = useRef<{ fingerprint: string; result: ReceiptExportResult } | null>(null);
+  const data = toReceiptData(order);
+  const paperWidth = printerSettings.paperWidth;
+  const columns = printerSettings.charactersPerLine;
+  const exportWidth = paperWidth === "80mm" ? 576 : 384;
+  const fingerprint = JSON.stringify({
+    orderId: order.id,
+    settings: receiptSettings,
+    paperWidth,
+    columns,
+    logoWidthDots: printerSettings.logoWidthDots,
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    void sheetRef.current?.present(0);
+  }, [isOpen]);
+
+  const ensureExport = async () => {
+    if (cachedExport.current?.fingerprint === fingerprint) return cachedExport.current.result;
+    if (!receiptRef.current) throw new Error(t("orders.detail.receiptExportFailed"));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const result = await captureReceiptPng(receiptRef, order.code, exportWidth);
+    cachedExport.current = { fingerprint, result };
+    return result;
+  };
+
+  const runExportAction = async (
+    action: (result: ReceiptExportResult) => Promise<void>,
+    success: string
+  ) => {
+    setIsBusy(true);
+    try {
+      await action(await ensureExport());
+      toast.show({ variant: "success", label: success });
+    } catch (error) {
+      const code = error instanceof ReceiptExportError ? error.code : "CAPTURE_FAILED";
+      const key =
+        code === "PERMISSION_DENIED"
+          ? "orders.detail.receiptPermissionDenied"
+          : code === "MEDIA_LIBRARY_UNAVAILABLE"
+            ? "orders.detail.receiptSaveUnavailable"
+            : code === "SHARING_UNAVAILABLE"
+              ? "orders.detail.receiptSharingUnavailable"
+              : "orders.detail.receiptExportFailed";
+      toast.show({
+        variant: "danger",
+        label: t(key),
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+    setIsBusy(false);
+  };
+
+  const handlePrint = async () => {
+    await sheetRef.current?.dismiss();
+    await onPrint();
+  };
+
+  return (
+    <TrueSheet
+      ref={sheetRef}
+      detents={[0.84, 1]}
+      presentation="page"
+      maxContentWidth={720}
+      scrollable
+      grabber
+      cornerRadius={24}
+      onDidDismiss={() => onOpenChange(false)}
+      header={
+        <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+          <Typography type="h4" weight="semibold">
+            {t("orders.detail.previewReceipt")}
+          </Typography>
+          <Typography type="body-sm" color="muted">
+            {order.code}
+          </Typography>
+          <Button
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            className="absolute right-3 top-3"
+            onPress={() => void sheetRef.current?.dismiss()}
+            accessibilityLabel={t("common.close")}
+          >
+            <AppIcon name="close-outline" size={20} color={themeColorForeground} />
+          </Button>
+        </View>
+      }
+      footer={
+        <View className="flex-row gap-2 bg-surface border-t border-border px-4 pb-safe pt-3">
+          <Button
+            size="sm"
+            className="min-w-0 flex-1 px-1"
+            variant="outline"
+            isDisabled={isBusy}
+            onPress={() => void runExportAction(saveReceiptImage, t("orders.detail.receiptSaved"))}
+          >
+            <AppIcon name="download-outline" size={16} color={themeColorForeground} />
+            <Button.Label numberOfLines={1}>{t("common.save")}</Button.Label>
+          </Button>
+          <Button
+            size="sm"
+            className="min-w-0 flex-1 px-1"
+            variant="outline"
+            isDisabled={isBusy}
+            onPress={() =>
+              void runExportAction(
+                (result) => shareReceiptImage(result, order.code),
+                t("orders.detail.receiptShared")
+              )
+            }
+          >
+            <AppIcon name="share-outline" size={16} color={themeColorForeground} />
+            <Button.Label numberOfLines={1}>{t("orders.detail.shareReceipt")}</Button.Label>
+          </Button>
+          <Button
+            size="sm"
+            className="min-w-0 flex-1 px-1"
+            variant="ghost"
+            isDisabled={isBusy}
+            onPress={() => void handlePrint()}
+          >
+            <AppIcon name="print-outline" size={16} color={themeColorForeground} />
+            <Button.Label numberOfLines={1}>{t("orders.detail.printReceipt")}</Button.Label>
+          </Button>
+        </View>
+      }
+    >
+      <ScrollView
+        className="flex-1 bg-surface-secondary"
+        contentContainerClassName="items-center px-4 py-5"
+        showsVerticalScrollIndicator={false}
+      >
+        <ReceiptPaper
+          ref={receiptRef}
+          settings={receiptSettings}
+          data={data}
+          paperWidth={paperWidth}
+          charactersPerLine={columns}
+          logoWidthDots={printerSettings.logoWidthDots}
+        />
+      </ScrollView>
+    </TrueSheet>
+  );
+}
+
 function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () => void }) {
   const { t } = useTranslation();
   return (
@@ -333,6 +527,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
   const { t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const [isReceiptPreviewOpen, setIsReceiptPreviewOpen] = useState(false);
   const themeColorForeground = useThemeColor("foreground");
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
 
@@ -387,6 +582,20 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
 
   return (
     <>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Button
+              variant="ghost"
+              isIconOnly
+              onPress={() => setIsReceiptPreviewOpen(true)}
+              accessibilityLabel={t("orders.detail.previewReceipt")}
+            >
+              <AppIcon name="receipt-outline" size={21} color={themeColorForeground} />
+            </Button>
+          ),
+        }}
+      />
       <View className="flex-1 bg-background">
         <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-10 md:px-6">
           <View className="w-full max-w-3xl self-center gap-5">
@@ -588,6 +797,14 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
           qrUrl={paymentQrUrl ?? ""}
           total={order.total}
           expiresAt={paymentExpiresAt}
+        />
+        <ReceiptPreviewSheet
+          order={order}
+          isOpen={isReceiptPreviewOpen}
+          onOpenChange={setIsReceiptPreviewOpen}
+          onPrint={async () => {
+            await printReceipt(order, "reprint");
+          }}
         />
         <PrinterPromptDialog
           prompt={prompt}
