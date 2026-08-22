@@ -51,11 +51,7 @@ export default function CartContent(): JSX.Element {
   const { isCompact, isPortrait } = useResponsiveLayout();
   const { locale, t } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
-  const [colorAccent, colorForeground, colorMuted] = useThemeColor([
-    "accent",
-    "foreground",
-    "muted",
-  ]);
+  const [colorAccent, colorMuted] = useThemeColor(["accent", "muted"]);
   const cartProducts = useCartStore((s) => s.products);
   const itemCount = useCartStore((s) =>
     s.products.reduce((total, product) => total + product.qty, 0)
@@ -83,7 +79,7 @@ export default function CartContent(): JSX.Element {
   return (
     <View className="flex-1">
       {/* Header */}
-      <View className="flex-row items-center justify-between gap-2 px-5 py-3">
+      <View className="flex-row items-center justify-between gap-2 px-4 py-4">
         <View className="h-12 flex-row items-center gap-2">
           <Select
             presentation={choicePresentation}
@@ -108,7 +104,7 @@ export default function CartContent(): JSX.Element {
             }}
           >
             <Select.Trigger asChild variant="unstyled">
-              <Button variant="secondary" size="sm" className="min-w-24">
+              <Button variant="secondary" size="sm">
                 <Button.Label className="text-sm" numberOfLines={1}>
                   {checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway")}
                 </Button.Label>
@@ -173,7 +169,6 @@ export default function CartContent(): JSX.Element {
           </Button>
         )}
       </View>
-
       {/* Cart items */}
       <ScrollView
         className="flex-1 px-5"

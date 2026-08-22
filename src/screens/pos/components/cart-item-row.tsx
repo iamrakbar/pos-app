@@ -93,7 +93,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             onPress={() => removeItem(item.id)}
             accessibilityLabel={t("pos.removeProductAccessibility", { product: item.name })}
           >
-            <AppIcon name="trash-outline" size={18} color={themeColorDangerSoftForeground} />
+            <AppIcon name="trash-outline" size={16} color={themeColorDangerSoftForeground} />
           </Button>
         </View>
         <View className="flex-row items-center gap-2 rounded-full bg-surface-secondary p-1">

@@ -154,7 +154,7 @@ declare namespace App.Requests.Merchant.Coupon {
         code: string;
         unit: App.Requests.Merchant.UnitTypeEnum;
         value: number;
-        type: "order" | "product" | "shipping";
+        type: "order";
         start_date?: string | null;
         end_date?: string | null;
         limit_per_user: number;
@@ -166,7 +166,7 @@ declare namespace App.Requests.Merchant.Coupon {
         code?: string;
         unit?: App.Requests.Merchant.UnitTypeEnum;
         value?: number;
-        type?: "order" | "product" | "shipping";
+        type?: "order";
         start_date?: string | null;
         end_date?: string | null;
         limit_per_user?: number;

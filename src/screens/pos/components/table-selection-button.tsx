@@ -20,7 +20,7 @@ export default function TableSelectionButton({
     <Button
       variant="secondary"
       size="sm"
-      className="min-w-24 flex-1 items-center justify-between"
+      className="min-w-20 flex-1 items-center justify-between"
       onPress={() => router.push("/pos/table-selection")}
       accessibilityLabel={
         selectedTable

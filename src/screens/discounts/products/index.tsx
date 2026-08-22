@@ -7,7 +7,15 @@ import { useCategories } from "@/hooks/db/use-categories";
 import { useTranslation } from "@/stores/use-locale";
 import { getLocaleTag } from "@/locales";
 import { Stack, useRouter } from "expo-router";
-import { Button, Card, Chip, SearchField, Separator, Typography, useThemeColor } from "heroui-native";
+import {
+  Button,
+  Card,
+  Chip,
+  SearchField,
+  Separator,
+  Typography,
+  useThemeColor,
+} from "heroui-native";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
@@ -25,10 +33,11 @@ export default function DiscountProductsScreen(): React.JSX.Element {
   const products = (productsQuery.data ?? []).filter(
     (product) => !categoryId || product.category?.id === categoryId
   );
+  const selectedProductIdSet = new Set(productIds);
 
   const toggleProduct = (productId: string) => {
     setProductIds(
-      productIds.includes(productId)
+      selectedProductIdSet.has(productId)
         ? productIds.filter((id) => id !== productId)
         : [...productIds, productId]
     );
@@ -45,7 +54,9 @@ export default function DiscountProductsScreen(): React.JSX.Element {
         >
           <View className="gap-1">
             <Typography type="body" weight="semibold">
-              {productIds.length ? t("discounts.selectedProducts", { count: productIds.length }) : t("discounts.noProductsSelected")}
+              {productIds.length
+                ? t("discounts.selectedProducts", { count: productIds.length })
+                : t("discounts.noProductsSelected")}
             </Typography>
             <Typography type="body-sm" color="muted">
               {t("discounts.selectionSpecificDescription")}
@@ -60,29 +71,44 @@ export default function DiscountProductsScreen(): React.JSX.Element {
             </SearchField.Group>
           </SearchField>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
-            <Chip variant={categoryId === null ? "primary" : "secondary"} onPress={() => setCategoryId(null)}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-2"
+          >
+            <Chip
+              variant={categoryId === null ? "primary" : "secondary"}
+              onPress={() => setCategoryId(null)}
+            >
               <Chip.Label>{t("common.all")}</Chip.Label>
             </Chip>
             {categories.map((category) => (
-              <Chip key={category.id} variant={categoryId === category.id ? "primary" : "secondary"} onPress={() => setCategoryId(category.id)}>
+              <Chip
+                key={category.id}
+                variant={categoryId === category.id ? "primary" : "secondary"}
+                onPress={() => setCategoryId(category.id)}
+              >
                 <Chip.Label>{category.name}</Chip.Label>
               </Chip>
             ))}
           </ScrollView>
 
-          {productsQuery.isLoading ? <LoadingState message={t("products.loading")} /> : productsQuery.isError ? (
+          {productsQuery.isLoading ? (
+            <LoadingState message={t("products.loading")} />
+          ) : productsQuery.isError ? (
             <ErrorState error={productsQuery.error} onRetry={productsQuery.refetch} />
           ) : products.length === 0 ? (
             <View className="items-center gap-2 py-12">
               <AppIcon name="search-outline" size={24} color={muted} />
               <Typography weight="semibold">{t("products.empty")}</Typography>
-              <Typography type="body-sm" color="muted">{t("products.emptyDescription")}</Typography>
+              <Typography type="body-sm" color="muted">
+                {t("products.emptyDescription")}
+              </Typography>
             </View>
           ) : (
             <Card className="overflow-hidden p-0">
               {products.map((product, index) => {
-                const selected = productIds.includes(product.id);
+                const selected = selectedProductIdSet.has(product.id);
                 return (
                   <View key={product.id}>
                     <Pressable
@@ -91,10 +117,19 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                       onPress={() => toggleProduct(product.id)}
                       className={`flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary ${selected ? "bg-accent-soft" : ""}`}
                     >
-                      <AppIcon name={selected ? "checkmark-circle" : "ellipse-outline"} size={22} color={selected ? muted : muted} />
+                      <AppIcon
+                        name={selected ? "checkmark-circle" : "ellipse-outline"}
+                        size={22}
+                        color={selected ? muted : muted}
+                      />
                       <View className="flex-1 gap-0.5">
-                        <Typography type="body-sm" weight={selected ? "semibold" : undefined}>{product.name}</Typography>
-                        <Typography type="body-xs" color="muted">{product.price.toLocaleString(getLocaleTag(locale))} · {product.category?.name ?? t("navigation.category")}</Typography>
+                        <Typography type="body-sm" weight={selected ? "semibold" : undefined}>
+                          {product.name}
+                        </Typography>
+                        <Typography type="body-xs" color="muted">
+                          {product.price.toLocaleString(getLocaleTag(locale))} ·{" "}
+                          {product.category?.name ?? t("navigation.category")}
+                        </Typography>
                       </View>
                     </Pressable>
                     {index < products.length - 1 ? <Separator className="mx-4" /> : null}
@@ -109,11 +144,19 @@ export default function DiscountProductsScreen(): React.JSX.Element {
           <View className="mx-auto w-full max-w-3xl flex-row items-center gap-3">
             <View className="flex-1">
               <Typography type="body-sm" weight="semibold">
-                {productIds.length ? t("discounts.selectedProducts", { count: productIds.length }) : t("discounts.noProductsSelected")}
+                {productIds.length
+                  ? t("discounts.selectedProducts", { count: productIds.length })
+                  : t("discounts.noProductsSelected")}
               </Typography>
             </View>
-            {productIds.length ? <Button variant="ghost" size="sm" onPress={() => setProductIds([])}><Button.Label>{t("common.clear")}</Button.Label></Button> : null}
-            <Button size="sm" isDisabled={!productIds.length} onPress={() => router.back()}><Button.Label>{t("common.apply")}</Button.Label></Button>
+            {productIds.length ? (
+              <Button variant="ghost" size="sm" onPress={() => setProductIds([])}>
+                <Button.Label>{t("common.clear")}</Button.Label>
+              </Button>
+            ) : null}
+            <Button size="sm" isDisabled={!productIds.length} onPress={() => router.back()}>
+              <Button.Label>{t("common.apply")}</Button.Label>
+            </Button>
           </View>
         </View>
       </View>

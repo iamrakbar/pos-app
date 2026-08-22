@@ -1,7 +1,6 @@
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
-import AppIcon from "@/components/common/app-icon";
 import {
   useDiscount,
   useCreateDiscount,
@@ -21,105 +20,17 @@ import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { getLocaleTag } from "@/locales";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  Switch,
-  TextField,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
-import { Controller, useForm } from "react-hook-form";
+import { Button, useThemeColor, useToast } from "heroui-native";
+import { useForm } from "react-hook-form";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { Calendar, DatePicker, type DatePickerOption } from "heroui-native-pro";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
-
-function FieldMessage({ message }: { message?: string }) {
-  return message ? (
-    <Typography type="body-xs" className="text-danger">
-      {message}
-    </Typography>
-  ) : null;
-}
-
-function toDateOption(value: string, localeTag: string): DatePickerOption | undefined {
-  if (!value) return undefined;
-  return {
-    value,
-    label: new Date(`${value}T00:00:00`).toLocaleDateString(localeTag, {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }),
-  };
-}
-
-function DiscountDatePicker({
-  label,
-  value,
-  onChange,
-  localeTag,
-  presentation,
-  isInvalid,
-  message,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  localeTag: string;
-  presentation: "dialog" | "popover" | "bottom-sheet";
-  isInvalid: boolean;
-  message?: string;
-}) {
-  return (
-    <View className="flex-1 gap-1">
-      <DatePicker
-        value={toDateOption(value, localeTag)}
-        onValueChange={(next) => onChange(next?.value ?? "")}
-        locale={localeTag}
-        dateDisplayFormat="medium"
-        isInvalid={isInvalid}
-      >
-        <Label>{label}</Label>
-        <DatePicker.Select presentation={presentation}>
-          <DatePicker.Trigger>
-            <DatePicker.Value />
-            <DatePicker.TriggerIndicator />
-          </DatePicker.Trigger>
-          <DatePicker.Portal>
-            <DatePicker.Overlay />
-            <DatePicker.Content
-              presentation={presentation}
-              width={presentation === "popover" ? "trigger" : undefined}
-            >
-              <DatePicker.Calendar>
-                <Calendar.Header>
-                  <Calendar.Heading />
-                  <Calendar.NavButton slot="previous" />
-                  <Calendar.NavButton slot="next" />
-                </Calendar.Header>
-                <Calendar.Grid>
-                  <Calendar.GridHeader>
-                    {(day) => <Calendar.HeaderCell day={day} />}
-                  </Calendar.GridHeader>
-                  <Calendar.GridBody>
-                    {(date) => <Calendar.Cell date={date} />}
-                  </Calendar.GridBody>
-                </Calendar.Grid>
-              </DatePicker.Calendar>
-            </DatePicker.Content>
-          </DatePicker.Portal>
-        </DatePicker.Select>
-      </DatePicker>
-      <FieldMessage message={message} />
-    </View>
-  );
-}
+import {
+  DiscountDetailsCard,
+  DiscountProductsCard,
+  DiscountStatusCard,
+} from "./discount-form-sections";
 
 export default function DiscountFormScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -236,8 +147,9 @@ export default function DiscountFormScreen(): React.JSX.Element {
     }
   };
   const saving = createMutation.isPending || updateMutation.isPending;
+  const selectedProductIdSet = new Set(selectedProductIds);
   const selectedProducts = (productsQuery.data ?? []).filter((product) =>
-    selectedProductIds.includes(product.id)
+    selectedProductIdSet.has(product.id)
   );
 
   return (
@@ -260,166 +172,22 @@ export default function DiscountFormScreen(): React.JSX.Element {
         contentContainerClassName="items-center gap-3 px-4 py-6 pb-10 md:px-6"
         keyboardShouldPersistTaps="handled"
       >
-        <Card className="w-full max-w-3xl gap-5">
-          <Card.Header>
-            <View className="gap-1">
-              <Card.Title>{t("discounts.detailsTitle")}</Card.Title>
-              <Card.Description>{t("discounts.detailsDescription")}</Card.Description>
-            </View>
-          </Card.Header>
-          <Card.Body className="gap-5">
-            <Controller
-              control={control}
-              name="name"
-              render={({ field: { value, onChange } }) => (
-                <TextField isRequired isInvalid={!!errors.name}>
-                  <Label>{t("discounts.name")}</Label>
-                  <Input
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={t("discounts.namePlaceholder")}
-                  />
-                  <FieldMessage message={errors.name?.message} />
-                </TextField>
-              )}
-            />
-            <Controller
-              control={control}
-              name="unit"
-              render={({ field: { value, onChange } }) => (
-                <View className="gap-2">
-                  <Label>{t("discounts.unit")}</Label>
-                  <View className="flex-row gap-2">
-                    {(["percentage", "fixed"] as const).map((unit) => (
-                      <Button
-                        key={unit}
-                        variant={value === unit ? "primary" : "secondary"}
-                        onPress={() => onChange(unit)}
-                        className="flex-1"
-                      >
-                        <Button.Label>
-                          {unit === "percentage" ? t("discounts.percentage") : t("discounts.fixed")}
-                        </Button.Label>
-                      </Button>
-                    ))}
-                  </View>
-                </View>
-              )}
-            />
-            <Controller
-              control={control}
-              name="value"
-              render={({ field: { value, onChange } }) => (
-                <TextField isRequired isInvalid={!!errors.value}>
-                  <Label>{t("discounts.value")}</Label>
-                  <Input
-                    value={value}
-                    onChangeText={(text) => onChange(text.replace(/[^0-9.]/g, ""))}
-                    keyboardType="decimal-pad"
-                    placeholder="0"
-                  />
-                  <FieldMessage message={errors.value?.message} />
-                </TextField>
-              )}
-            />
-            <View className="gap-1">
-              <Typography type="body-xs" color="muted">
-                {t("discounts.dateHelp")}
-              </Typography>
-              <View className="flex-row gap-3">
-                <Controller
-                  control={control}
-                  name="start"
-                  render={({ field: { value, onChange } }) => (
-                    <DiscountDatePicker
-                      label={t("discounts.start")}
-                      value={value}
-                      onChange={onChange}
-                      localeTag={localeTag}
-                      presentation={pickerPresentation}
-                      isInvalid={!!errors.start}
-                      message={errors.start?.message}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="end"
-                  render={({ field: { value, onChange } }) => (
-                    <DiscountDatePicker
-                      label={t("discounts.end")}
-                      value={value}
-                      onChange={onChange}
-                      localeTag={localeTag}
-                      presentation={pickerPresentation}
-                      isInvalid={!!errors.end}
-                      message={errors.end?.message}
-                    />
-                  )}
-                />
-              </View>
-            </View>
-          </Card.Body>
-        </Card>
-        <Card className="w-full max-w-3xl">
-          <Card.Header>
-            <View className="gap-1">
-              <Card.Title>{t("discounts.productsTitle")}</Card.Title>
-              <Card.Description>{t("discounts.productsDescription")}</Card.Description>
-            </View>
-          </Card.Header>
-          <Card.Body>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push(`/settings/discounts/${id}/products` as never)}
-              className="flex-row items-center gap-3 rounded-panel-inner bg-surface-secondary px-3 py-3 active:bg-surface-tertiary"
-            >
-              <View className="flex-1 gap-1">
-                <Typography type="body-sm" weight="semibold">
-                  {selectedProductIds.length
-                    ? t("discounts.selectedProducts", { count: selectedProductIds.length })
-                    : t("discounts.noProductsSelected")}
-                </Typography>
-              <Typography type="body-xs" color="muted" numberOfLines={1}>
-                {selectedProductIds.length
-                  ? selectedProducts.map((product) => product.name).join(", ")
-                  : t("discounts.noProductsSelected")}
-              </Typography>
-              <FieldMessage message={errors.products?.message} />
-              </View>
-              <Typography type="body-sm" className="text-accent">
-                {t("discounts.changeProducts")}
-              </Typography>
-              <AppIcon name="chevron-forward" size={16} color={muted} />
-            </Pressable>
-          </Card.Body>
-        </Card>
-        <Card className="w-full max-w-3xl">
-          <Card.Header>
-            <Card.Title>{t("discounts.statusTitle")}</Card.Title>
-          </Card.Header>
-          <Card.Body>
-            <Controller
-              control={control}
-              name="active"
-              render={({ field: { value, onChange } }) => (
-                <View className="flex-row items-center gap-3">
-                  <Switch isSelected={value} onSelectedChange={onChange}>
-                    <Switch.Thumb />
-                  </Switch>
-                  <View className="flex-1">
-                    <Typography type="body-sm" weight="semibold">
-                      {value ? t("common.active") : t("common.inactive")}
-                    </Typography>
-                    <Typography type="body-xs" color="muted">
-                      {t("discounts.statusDescription")}
-                    </Typography>
-                  </View>
-                </View>
-              )}
-            />
-          </Card.Body>
-        </Card>
+        <DiscountDetailsCard
+          control={control}
+          errors={errors}
+          localeTag={localeTag}
+          presentation={pickerPresentation}
+          t={t}
+        />
+        <DiscountProductsCard
+          selectedProductIds={selectedProductIds}
+          selectedProducts={selectedProducts}
+          error={errors.products?.message}
+          muted={muted}
+          onChangeProducts={() => router.push(`/settings/discounts/${id}/products` as never)}
+          t={t}
+        />
+        <DiscountStatusCard control={control} t={t} />
         <View className="w-full max-w-3xl flex-row gap-3 pt-2">
           <Button variant="ghost" onPress={() => router.back()} isDisabled={saving}>
             <Button.Label>{t("common.cancel")}</Button.Label>
