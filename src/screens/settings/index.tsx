@@ -80,6 +80,13 @@ export default function SettingsScreen(): JSX.Element {
       description: t("settings.categoriesDescription"),
     },
     {
+      id: "discounts",
+      href: "/settings/discounts",
+      icon: "pricetag-outline",
+      label: t("settings.discounts"),
+      description: t("settings.discountsDescription"),
+    },
+    {
       id: "areas",
       href: "/settings/areas",
       icon: "restaurant-outline",

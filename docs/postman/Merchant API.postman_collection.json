@@ -5947,7 +5947,7 @@
                 }
               ]
             },
-            "description": "**Purpose:** List product/menu discounts.\n\n**Auth required:** Yes. **Feature gate:** `discount`.\n\n**Query params (Spatie QueryBuilder):** `filter[active]` (exact); `filter[search]` (matches name); `sort` (allowed `name`,`start`,`end`,`created_at`, default `-created_at`); `per_page` (default 15, max 50)."
+            "description": "**Purpose:** List product/menu discounts.\n\n**Auth required:** Yes. **Feature gate:** `discount`.\n\n**Query params (Spatie QueryBuilder):** `filter[active]` (exact); `filter[search]` (matches name); `sort` (allowed `name`,`start`,`end`,`created_at`, default `-created_at`); `per_page` (default 15, max 50).\n\n**Response:** each item includes `product_ids` (array of targeted product uuids) alongside `products_count`. `start`/`end` are ISO-8601 in `config('app.timezone')` (UTC by default), not per-merchant local time."
           },
           "response": [],
           "event": [
@@ -6010,7 +6010,7 @@
                 "discounts"
               ]
             },
-            "description": "**Purpose:** Create a product discount (auto-generates `name` if blank when `unit`/`value` are present).\n\n**Auth required:** Yes. **Feature gate:** `discount`.\n\n**Body:** `name` (required unless auto-generated, max:255); `unit` (required, one of `UnitTypeEnum`: `percentage`,`fixed`); `value` (required numeric min:0; max:100 when `unit=percentage`); `start`/`end` (nullable date, `end` after `start`); `active` (boolean); `products` (nullable array of uuid, exists:products).\n\n**Error response (422):** `value` &gt; 100 for percentage unit.",
+            "description": "**Purpose:** Create a product discount (auto-generates `name` if blank when `unit`/`value` are present).\n\n**Auth required:** Yes. **Feature gate:** `discount`.\n\n**Body:** `name` (required unless auto-generated, max:255); `unit` (required, one of `UnitTypeEnum`: `percentage`,`fixed`); `value` (required numeric min:0; max:100 when `unit=percentage`; when `unit=fixed`, cannot exceed the price of the cheapest selected product); `start`/`end` (nullable date in `config('app.timezone')`, `end` after `start`); `active` (boolean); `products` (nullable array of uuid, exists:products; rejected if a product is already claimed by another currently-active discount).\n\n**Error response (422):** `value` &gt; 100 for percentage unit; `value` exceeds cheapest selected product price for fixed unit; `products` contains a product already assigned to another active discount.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Diskon Akhir Pekan\",\n    \"unit\": \"percentage\",\n    \"value\": 15,\n    \"start\": \"2026-07-05\",\n    \"end\": \"2026-07-06\",\n    \"active\": true,\n    \"products\": [\n        \"{{product_id}}\"\n    ]\n}",
@@ -6075,7 +6075,7 @@
                 "{{discount_id}}"
               ]
             },
-            "description": "**Purpose:** Get a single discount.\n\n**Auth required:** Yes. **Feature gate:** `discount`."
+            "description": "**Purpose:** Get a single discount.\n\n**Auth required:** Yes. **Feature gate:** `discount`.\n\n**Response:** includes `product_ids` (array of targeted product uuids) alongside `products_count`."
           },
           "response": [],
           "event": [
@@ -6131,7 +6131,7 @@
                 "{{discount_id}}"
               ]
             },
-            "description": "**Purpose:** Update a discount (all fields `sometimes`, same rules as create).\n\n**Auth required:** Yes. **Feature gate:** `discount`.",
+            "description": "**Purpose:** Update a discount (all fields `sometimes`, same rules as create).\n\n**Auth required:** Yes. **Feature gate:** `discount`.\n\n**Error response (422):** same as Create — fixed `value` exceeding the cheapest assigned/selected product price, or `products` containing a product already claimed by another active discount (excluding this discount itself).",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Diskon Akhir Pekan Updated\",\n    \"value\": 20,\n    \"active\": true\n}",

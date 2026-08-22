@@ -258,6 +258,7 @@ name: string;
 unit: string;
 value: number;
 products_count: number;
+product_ids: { [key: number]: string };
 active: boolean;
 start: string | null;
 end: string | null;
