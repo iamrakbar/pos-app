@@ -20,7 +20,7 @@ import {
 import { Calendar, DatePicker, EmptyState, Widget, type DatePickerOption } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import type { Translate } from "@/locales";
+import { getLocaleTag, type Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
 const DATE_RANGE_VALUES = [
@@ -149,12 +149,14 @@ function EarningsDatePicker({
   onValueChange,
   isInvalid,
   presentation,
+  localeTag,
 }: {
   label: string;
   value: NonNullable<DatePickerOption>;
   onValueChange: (value: DatePickerOption | undefined) => void;
   isInvalid?: boolean;
   presentation: "dialog" | "popover";
+  localeTag: string;
 }) {
   return (
     <DatePicker
@@ -163,7 +165,7 @@ function EarningsDatePicker({
       onValueChange={onValueChange}
       isRequired
       isInvalid={isInvalid}
-      locale="id-ID"
+      locale={localeTag}
       dateDisplayFormat="medium"
     >
       <Label>{label}</Label>
@@ -221,7 +223,8 @@ function CustomDateRangeDialog({
   onCancel: () => void;
   isApplying: boolean;
 }) {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
+  const localeTag = getLocaleTag(locale);
   const { isPhonePortrait } = useOverlayPresentation();
   const pickerPresentation = isPhonePortrait ? "dialog" : "popover";
 
@@ -265,6 +268,7 @@ function CustomDateRangeDialog({
             onValueChange={onStartChange}
             isInvalid={error !== null}
             presentation={pickerPresentation}
+            localeTag={localeTag}
           />
           <EarningsDatePicker
             label={t("earnings.to")}
@@ -272,6 +276,7 @@ function CustomDateRangeDialog({
             onValueChange={onEndChange}
             isInvalid={error !== null}
             presentation={pickerPresentation}
+            localeTag={localeTag}
           />
         </View>
         {error ? (

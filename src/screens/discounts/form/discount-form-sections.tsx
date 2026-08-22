@@ -30,6 +30,7 @@ function DiscountDatePicker({
   label,
   value,
   onChange,
+  localeTag,
   presentation,
   isInvalid,
   message,
@@ -37,6 +38,7 @@ function DiscountDatePicker({
   label: string;
   value: string;
   onChange: (value: string) => void;
+  localeTag: string;
   presentation: "dialog" | "popover" | "bottom-sheet";
   isInvalid: boolean;
   message?: string;
@@ -46,7 +48,7 @@ function DiscountDatePicker({
       <DatePicker
         value={toDateOption(value)}
         onValueChange={(next) => onChange(next?.value ?? "")}
-        locale="id-ID"
+        locale={localeTag}
         dateDisplayFormat="medium"
         isInvalid={isInvalid}
       >
@@ -87,11 +89,13 @@ function DiscountDatePicker({
 export function DiscountDetailsCard({
   control,
   errors,
+  localeTag,
   presentation,
   t,
 }: {
   control: Control<DiscountFormValues>;
   errors: FieldErrors<DiscountFormValues>;
+  localeTag: string;
   presentation: "dialog" | "popover" | "bottom-sheet";
   t: Translate;
 }) {
@@ -183,6 +187,7 @@ export function DiscountDetailsCard({
                     label={t(`discounts.${fieldName}`)}
                     value={value}
                     onChange={onChange}
+                    localeTag={localeTag}
                     presentation={presentation}
                     isInvalid={!!errors[fieldName]}
                     message={errors[fieldName]?.message}

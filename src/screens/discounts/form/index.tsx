@@ -15,6 +15,7 @@ import {
   type DiscountFormValues,
 } from "@/schemas/discount";
 import { getErrorMessage, isApiError } from "@/api/api-error";
+import { getLocaleTag } from "@/locales";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,11 +35,12 @@ import {
 export default function DiscountFormScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === "new";
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
   const muted = useThemeColor("muted");
   const danger = useThemeColor("danger");
+  const localeTag = getLocaleTag(locale);
   const { pickerPresentation } = useOverlayPresentation();
   const discountQuery = useDiscount(id);
   const productsQuery = useManagementProducts();
@@ -173,6 +175,7 @@ export default function DiscountFormScreen(): React.JSX.Element {
         <DiscountDetailsCard
           control={control}
           errors={errors}
+          localeTag={localeTag}
           presentation={pickerPresentation}
           t={t}
         />

@@ -140,7 +140,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
           )}
         </ScrollView>
 
-        <View className="absolute inset-x-0 bottom-0 border-t border-divider bg-background px-4 pb-safe pt-3 md:px-6">
+        <View className="absolute inset-x-0 bottom-0 border-t border-border bg-background px-4 pb-safe pt-3 md:px-6">
           <View className="mx-auto w-full max-w-3xl flex-row items-center gap-3">
             <View className="flex-1">
               <Typography type="body-sm" weight="semibold">

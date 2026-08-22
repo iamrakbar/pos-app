@@ -8,7 +8,7 @@ import { useTrueSheet } from "@lodev09/react-native-true-sheet";
 import { useRouter } from "expo-router";
 import { Separator, Typography } from "heroui-native";
 import type { JSX } from "react";
-import { InteractionManager, View } from "react-native";
+import { View } from "react-native";
 
 export const POS_CHECKOUT_SHEET_NAME = "pos-checkout";
 
@@ -26,11 +26,12 @@ export default function CheckoutSheet(): JSX.Element {
   ) => {
     setPaymentSession(session, result);
     clearCart();
-    router.push(options.processingMode === "gateway" ? "/pos/payment" : "/pos/payment-success");
+    const destination =
+      options.processingMode === "gateway" ? "/pos/payment" : "/pos/payment-success";
 
-    InteractionManager.runAfterInteractions(() => {
-      void dismiss(POS_CHECKOUT_SHEET_NAME);
-    });
+    void dismiss(POS_CHECKOUT_SHEET_NAME)
+      .catch(() => undefined)
+      .then(() => router.replace(destination));
   };
 
   const header = (

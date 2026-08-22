@@ -1,15 +1,10 @@
-import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router/stack";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "@/stores/use-locale";
 
 export default function POSFlowLayout() {
   const theme = useNavigationTheme();
   const { t } = useTranslation();
-  const { height, isWide } = useResponsiveLayout();
-  const insets = useSafeAreaInsets();
-  const maxSheetDetent = height > 0 ? Math.min(1, (height - insets.top) / height) : 1;
 
   return (
     <Stack
@@ -42,13 +37,10 @@ export default function POSFlowLayout() {
         options={{
           title: t("navigation.payment"),
           headerShown: false,
-          presentation: isWide ? "formSheet" : "card",
-          sheetAllowedDetents: isWide ? [0.75, maxSheetDetent] : undefined,
-          sheetInitialDetentIndex: isWide ? "last" : undefined,
-          sheetGrabberVisible: isWide,
-          contentStyle: {
-            backgroundColor: isWide ? "transparent" : theme.background,
-          },
+          presentation: "card",
+          animation: "slide_from_right",
+          gestureEnabled: false,
+          contentStyle: { backgroundColor: theme.background },
         }}
       />
       <Stack.Screen
