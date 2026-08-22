@@ -33,6 +33,7 @@ export type CartAction = {
   setTableId: (id: string) => void;
   setMerchantIdAndTableId: (merchant_id: string, table_id: string) => void;
   setCartNotes: (notes: string) => void;
+  replaceCart: (cart: Cart) => void;
   totalQty: () => number;
   totalPrice: () => number;
   getItemTotal: (id: string) => number;

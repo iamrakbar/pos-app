@@ -19,6 +19,7 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useRouter } from "expo-router";
 import { resetCurrentOrder } from "@/stores/reset-current-order";
 import Animated from "react-native-reanimated";
+import ParkedOrdersPanel from "./parked-orders-panel";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -164,6 +165,7 @@ export default function CartContent(): JSX.Element {
               </TimePicker.Select>
             </TimePicker>
           )}
+          <ParkedOrdersPanel mode="list" />
         </View>
         {cartProducts.length > 0 && (
           <Button variant="danger-soft" size="sm" onPress={resetCurrentOrder}>
@@ -211,10 +213,8 @@ export default function CartContent(): JSX.Element {
             {formatRupiah(subtotal)}
           </Typography>
         </View>
-        <View className="flex-row items-center gap-3">
-          <Button variant="ghost" isDisabled>
-            <AppIcon name="save-outline" size={18} color={colorForeground} />
-          </Button>
+        <View className="flex-row items-center gap-2">
+          <ParkedOrdersPanel mode="park" isDisabled={cartProducts.length === 0} />
           <Button
             className="flex-1"
             onPress={handleCheckout}

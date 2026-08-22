@@ -59,6 +59,8 @@ export const useCartStore = create<Cart & CartAction>()(
       // 🧾 Set or clear cart notes
       setCartNotes: (notes: string) => set({ notes }),
 
+      replaceCart: (cart) => set(cart),
+
       // 🧮 Totals
       totalQty: () => get().products.reduce((acc, product) => acc + product.qty, 0),
 
