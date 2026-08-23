@@ -5,7 +5,7 @@ import { z } from "zod";
 export function createAddOnSchema(groups: AddOnGroup[], t: Translate) {
   return z
     .object({
-      radioSelections: z.record(z.string(), z.string()),
+      radioSelections: z.record(z.string(), z.string().optional()),
       checkboxSelections: z.record(z.string(), z.array(z.string())),
       notes: z.string(),
     })
