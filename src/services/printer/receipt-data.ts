@@ -33,6 +33,7 @@ export function toReceiptData(
   t: Translate = globalTranslate
 ): ReceiptPreviewData {
   const root = record(order) ?? {};
+  const merchant = record(root.merchant);
   const pricing = record(root.pricing);
   const rawPricingFees = Array.isArray(pricing?.fees) ? pricing.fees : [];
   const explicitTax = record(root.tax);
@@ -42,12 +43,14 @@ export function toReceiptData(
   });
   const taxRecord = explicitTax ?? record(taxFee);
   const taxAmount = extractNumber(taxRecord?.amount);
-  const taxIsEnabled =
+  const inferredTaxIsEnabled =
     taxFee !== undefined ||
     (explicitTax !== null &&
       (typeof explicitTax.name === "string" ||
         typeof explicitTax.value === "number" ||
         typeof explicitTax.amount === "number"));
+  const taxIsEnabled =
+    typeof merchant?.tax_is_enable === "boolean" ? merchant.tax_is_enable : inferredTaxIsEnabled;
   const subtotal =
     typeof root.subtotal === "number"
       ? root.subtotal
