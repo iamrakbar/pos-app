@@ -28,10 +28,10 @@ export default function TableSelectionButton({
           : t("pos.selectTable")
       }
     >
+      <AppIcon name="restaurant-outline" size={18} color={colorAccent} />
       <Button.Label className="text-sm" numberOfLines={1}>
         {selectedTable?.name ?? t("pos.table")}
       </Button.Label>
-      <AppIcon name="restaurant-outline" size={16} color={colorAccent} />
     </Button>
   );
 }
