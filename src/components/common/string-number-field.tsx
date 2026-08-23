@@ -40,6 +40,17 @@ function parseIndonesianNumber(value: string): number {
   return Number(normalized);
 }
 
+function parsePlainNumber(value: string): number {
+  if (!value.trim()) return Number.NaN;
+
+  const normalized = value
+    .replace(/\s/g, "")
+    .replace(",", ".")
+    .replace(/[^\d.-]/g, "");
+
+  return Number(normalized);
+}
+
 type StringNumberFieldProps = Omit<NumberFieldProps, "children" | "onChange" | "value"> & {
   value: string;
   onChange: (value: string) => void;
@@ -64,7 +75,7 @@ export default function StringNumberField({
   ...props
 }: StringNumberFieldProps) {
   const numericValue = value.trim() === "" ? Number.NaN : Number(value);
-  const formatKey = prefix ? `${String(prefix)}:${JSON.stringify(formatOptions ?? {})}` : "";
+  const formatKey = `${prefix ? String(prefix) : "plain"}:${JSON.stringify(formatOptions ?? {})}`;
   const indonesianFormatter = getIndonesianFormatter(formatKey, formatOptions);
   const formatIndonesianValue = (nextValue: number): string =>
     Number.isNaN(nextValue) ? "" : (indonesianFormatter?.format(nextValue) ?? String(nextValue));
@@ -79,41 +90,51 @@ export default function StringNumberField({
       ? localizedInputState.displayValue
       : formatIndonesianValue(numericValue);
 
-  const localizedInputProps = prefix
-    ? {
-        value: localizedDisplayValue,
-        onChangeText: (nextValue: string) => {
-          setLocalizedInputState({
-            formatKey,
-            sourceValue: numericValue,
-            displayValue: nextValue,
-          });
-          inputProps?.onChangeText?.(nextValue);
-        },
-        onBlur: (event: NumberFieldBlurEvent) => {
-          const parsedValue = parseIndonesianNumber(localizedDisplayValue);
-          if (Number.isFinite(parsedValue)) {
-            const boundedValue = Math.min(
-              props.maxValue ?? Number.POSITIVE_INFINITY,
-              Math.max(props.minValue ?? Number.NEGATIVE_INFINITY, parsedValue)
-            );
-            onChange(String(boundedValue));
-            setLocalizedInputState({
-              formatKey,
-              sourceValue: boundedValue,
-              displayValue: formatIndonesianValue(boundedValue),
-            });
-          } else {
-            setLocalizedInputState({
-              formatKey,
-              sourceValue: numericValue,
-              displayValue: formatIndonesianValue(numericValue),
-            });
-          }
-          inputProps?.onBlur?.(event);
-        },
+  const localizedInputProps = {
+    value: localizedDisplayValue,
+    onChangeText: (nextValue: string) => {
+      setLocalizedInputState({
+        formatKey,
+        sourceValue: numericValue,
+        displayValue: nextValue,
+      });
+      const parsedValue = prefix ? parseIndonesianNumber(nextValue) : parsePlainNumber(nextValue);
+      if (Number.isFinite(parsedValue)) {
+        const boundedValue = Math.min(
+          props.maxValue ?? Number.POSITIVE_INFINITY,
+          Math.max(props.minValue ?? Number.NEGATIVE_INFINITY, parsedValue)
+        );
+        onChange(String(boundedValue));
+      } else if (!nextValue.trim()) {
+        onChange("");
       }
-    : undefined;
+      inputProps?.onChangeText?.(nextValue);
+    },
+    onBlur: (event: NumberFieldBlurEvent) => {
+      const parsedValue = prefix
+        ? parseIndonesianNumber(localizedDisplayValue)
+        : parsePlainNumber(localizedDisplayValue);
+      if (Number.isFinite(parsedValue)) {
+        const boundedValue = Math.min(
+          props.maxValue ?? Number.POSITIVE_INFINITY,
+          Math.max(props.minValue ?? Number.NEGATIVE_INFINITY, parsedValue)
+        );
+        onChange(String(boundedValue));
+        setLocalizedInputState({
+          formatKey,
+          sourceValue: boundedValue,
+          displayValue: formatIndonesianValue(boundedValue),
+        });
+      } else {
+        setLocalizedInputState({
+          formatKey,
+          sourceValue: numericValue,
+          displayValue: formatIndonesianValue(numericValue),
+        });
+      }
+      inputProps?.onBlur?.(event);
+    },
+  };
 
   return (
     <NumberField

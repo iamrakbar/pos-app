@@ -13,7 +13,87 @@ const discountKeys = {
   detail: (merchantId: string | null, id: string) => ["discount", merchantId, id] as const,
 };
 
-type DiscountListItem = App.Data.Merchant.Discount.DiscountData;
+export type DiscountListItem = App.Data.Merchant.Discount.DiscountData;
+
+export type ProductDiscountChange = {
+  current: DiscountListItem | null;
+  next: DiscountListItem | null;
+};
+
+type CachedProduct = {
+  id: string;
+  price: number;
+  discount: {
+    unit: string | null;
+    value: number | null;
+    price: number | null;
+  } | null;
+};
+
+function getDiscountProductIds(discount: DiscountListItem): string[] {
+  return Object.values(discount.product_ids ?? {});
+}
+
+function withDiscountProductIds(
+  discount: DiscountListItem,
+  productIds: string[]
+): DiscountListItem {
+  return {
+    ...discount,
+    products_count: productIds.length,
+    product_ids: productIds.reduce<Record<number, string>>((result, id, index) => {
+      result[index] = id;
+      return result;
+    }, {}),
+  };
+}
+
+function getProductDiscount(
+  discount: DiscountListItem | null,
+  productPrice: number
+): CachedProduct["discount"] {
+  if (!discount) return null;
+
+  const price =
+    discount.unit === "percentage"
+      ? productPrice * (1 - discount.value / 100)
+      : productPrice - discount.value;
+
+  return {
+    unit: discount.unit,
+    value: discount.value,
+    price: Math.max(0, price),
+  };
+}
+
+function updateCachedProductDiscount(
+  queryClient: ReturnType<typeof useQueryClient>,
+  merchantId: string | null,
+  productId: string,
+  discount: DiscountListItem | null
+) {
+  for (const queryName of ["management-products", "products-raw"] as const) {
+    for (const [queryKey, products] of queryClient.getQueriesData<CachedProduct[]>({
+      queryKey: [queryName, merchantId],
+    })) {
+      if (!products) continue;
+      queryClient.setQueryData(
+        queryKey,
+        products.map((product) =>
+          product.id === productId
+            ? { ...product, discount: getProductDiscount(discount, product.price) }
+            : product
+        )
+      );
+    }
+  }
+
+  queryClient.setQueryData<CachedProduct | undefined>(
+    ["product", merchantId, productId],
+    (product) =>
+      product ? { ...product, discount: getProductDiscount(discount, product.price) } : product
+  );
+}
 
 function matchesDiscountList(item: DiscountListItem, queryKey: readonly unknown[]): boolean {
   const search = typeof queryKey[2] === "string" ? queryKey[2].toLowerCase() : "";
@@ -40,12 +120,18 @@ function updateCachedDiscountLists(
 function useInvalidateDiscounts() {
   const merchantId = useAuth((state) => state.merchantId);
   const queryClient = useQueryClient();
-  return async (id?: string) => {
+  return async (ids?: string | string[], productId?: string) => {
+    const discountIds = ids ? (Array.isArray(ids) ? ids : [ids]) : [];
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: discountKeys.all(merchantId) }),
       queryClient.invalidateQueries({ queryKey: ["products-raw", merchantId] }),
       queryClient.invalidateQueries({ queryKey: ["management-products", merchantId] }),
-      id ? queryClient.invalidateQueries({ queryKey: discountKeys.detail(merchantId, id) }) : null,
+      productId
+        ? queryClient.invalidateQueries({ queryKey: ["product", merchantId, productId] })
+        : null,
+      ...discountIds.map((id) =>
+        queryClient.invalidateQueries({ queryKey: discountKeys.detail(merchantId, id) })
+      ),
     ]);
   };
 }
@@ -101,6 +187,65 @@ export function useUpdateDiscount(id: string) {
           : withoutCurrent;
       });
       await invalidate(id);
+    },
+  });
+}
+
+export function useSetProductDiscount(productId: string) {
+  const merchantId = useAuth((state) => state.merchantId);
+  const queryClient = useQueryClient();
+  const invalidate = useInvalidateDiscounts();
+  return useMutation({
+    mutationFn: async ({ current, next }: ProductDiscountChange) => {
+      if (current?.id === next?.id) return next;
+
+      if (current) {
+        const productIds = getDiscountProductIds(current).filter((id) => id !== productId);
+        if (productIds.length) {
+          await updateDiscount(merchantId!, current.id, { products: productIds });
+        } else {
+          await deleteDiscount(merchantId!, current.id);
+        }
+      }
+
+      if (!next) return null;
+
+      const productIds = getDiscountProductIds(next);
+      const nextProductIds = productIds.includes(productId)
+        ? productIds
+        : [...productIds, productId];
+      return (
+        await updateDiscount(merchantId!, next.id, {
+          products: nextProductIds,
+        })
+      ).data;
+    },
+    onSuccess: async (response, { current, next }) => {
+      const applyCacheUpdates = () => {
+        updateCachedDiscountLists(queryClient, merchantId, (items) => {
+          const remainingCurrentProductIds = current
+            ? getDiscountProductIds(current).filter((id) => id !== productId)
+            : [];
+
+          return items.flatMap((item) => {
+            if (item.id === current?.id && current?.id !== next?.id) {
+              return remainingCurrentProductIds.length
+                ? [withDiscountProductIds(item, remainingCurrentProductIds)]
+                : [];
+            }
+            if (item.id === next?.id && response) return [response];
+            return [item];
+          });
+        });
+        updateCachedProductDiscount(queryClient, merchantId, productId, next);
+      };
+
+      applyCacheUpdates();
+      await invalidate(
+        [current?.id, next?.id].filter((id): id is string => Boolean(id)),
+        productId
+      );
+      applyCacheUpdates();
     },
   });
 }

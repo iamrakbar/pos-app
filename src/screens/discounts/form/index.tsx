@@ -14,7 +14,7 @@ import {
   toDiscountRequest,
   type DiscountFormValues,
 } from "@/schemas/discount";
-import { getErrorMessage, isApiError } from "@/api/api-error";
+import { isApiError } from "@/api/api-error";
 import { getLocaleTag } from "@/locales";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
@@ -113,6 +113,7 @@ export default function DiscountFormScreen(): React.JSX.Element {
       });
       router.back();
     } catch (error) {
+      let hasFieldErrors = false;
       if (isApiError(error) && error.errors) {
         for (const [field, messages] of Object.entries(error.errors)) {
           if (
@@ -122,13 +123,16 @@ export default function DiscountFormScreen(): React.JSX.Element {
             messages[0]
           ) {
             setError(field as keyof DiscountFormValues, { type: "server", message: messages[0] });
+            hasFieldErrors = true;
           }
         }
       }
       toast.show({
         variant: "danger",
         label: t("discounts.saveFailed"),
-        description: getErrorMessage(error),
+        description: hasFieldErrors
+          ? t("discounts.checkFields")
+          : t("discounts.saveFailedDescription"),
       });
     }
   };
@@ -138,11 +142,11 @@ export default function DiscountFormScreen(): React.JSX.Element {
       await deleteMutation.mutateAsync(id);
       toast.show({ variant: "success", label: t("discounts.deleted") });
       router.back();
-    } catch (error) {
+    } catch {
       toast.show({
         variant: "danger",
         label: t("discounts.deleteFailed"),
-        description: getErrorMessage(error),
+        description: t("discounts.deleteFailedDescription"),
       });
     }
   };

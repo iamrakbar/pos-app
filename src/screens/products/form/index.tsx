@@ -34,6 +34,11 @@ import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { ProductImageAsset } from "@/api/endpoints/products";
 import { useCategories } from "@/hooks/db/use-categories";
 import {
+  useDiscounts,
+  useSetProductDiscount,
+  type DiscountListItem,
+} from "@/hooks/db/use-discounts";
+import {
   useCreateProduct,
   useDeleteProduct,
   useProduct,
@@ -43,7 +48,8 @@ import {
 import { createProductSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
 import QuickCategoryFormOverlay from "./quick-category-form-overlay";
-import { IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
+import QuickDiscountFormOverlay from "./quick-discount-form-overlay";
+import { formatRupiah, IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -513,8 +519,31 @@ function InventoryCard({
   );
 }
 
-function PricingCard({ control, error }: { control: Control<ProductFormValues>; error?: string }) {
+function PricingCard({
+  control,
+  error,
+  productId,
+  discount,
+  onAddDiscount,
+}: {
+  control: Control<ProductFormValues>;
+  error?: string;
+  productId?: string;
+  discount?: App.Data.Merchant.Product.ProductDiscountData | null;
+  onAddDiscount?: () => void;
+}) {
   const { t } = useTranslation();
+  const price = useWatch({ control, name: "price" });
+  const numericPrice = Number(price);
+  const discountedPrice =
+    discount && Number.isFinite(numericPrice)
+      ? Math.max(
+          0,
+          discount.unit === "percentage"
+            ? numericPrice * (1 - discount.value / 100)
+            : numericPrice - discount.value
+        )
+      : null;
 
   return (
     <Card className="gap-3 overflow-hidden">
@@ -523,25 +552,194 @@ function PricingCard({ control, error }: { control: Control<ProductFormValues>; 
         description={t("productForm.pricingDescription")}
       />
       <Card.Body className="gap-4">
-        <Controller
-          control={control}
-          name="price"
-          render={({ field: { value, onChange } }) => (
-            <ProductNumberField
-              label={t("productForm.price")}
-              placeholder="0"
-              required
-              value={value}
-              onChangeText={onChange}
-              error={error}
-              step={1000}
-              formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
-              prefix="Rp"
-            />
-          )}
-        />
+        <View className="flex-row flex-wrap gap-3">
+          <Controller
+            control={control}
+            name="price"
+            render={({ field: { value, onChange } }) => (
+              <ProductNumberField
+                label={t("productForm.price")}
+                placeholder="0"
+                required
+                value={value}
+                onChangeText={onChange}
+                error={error}
+                step={1000}
+                formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
+                prefix="Rp"
+              />
+            )}
+          />
+          {discountedPrice !== null ? (
+            <View className="flex-1 gap-1">
+              <Label>{t("productForm.discountPrice")}</Label>
+              <Typography type="body-sm" weight="medium">
+                {formatRupiah(discountedPrice)}
+              </Typography>
+            </View>
+          ) : null}
+        </View>
+        {productId && onAddDiscount ? (
+          <>
+            <Separator />
+            <ProductDiscountField productId={productId} onAdd={onAddDiscount} />
+          </>
+        ) : null}
       </Card.Body>
     </Card>
+  );
+}
+
+function formatDiscountOptionLabel(discount: DiscountListItem, t: Translate): string {
+  const value =
+    discount.unit === "percentage" ? `${discount.value}%` : formatRupiah(discount.value);
+  const name = discount.name.trim().endsWith(value)
+    ? discount.name.trim()
+    : `${discount.name.trim()} ${value}`;
+  return `${name} ${t("discounts.productCountSuffix", { count: discount.products_count })}`;
+}
+
+function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: () => void }) {
+  const { t } = useTranslation();
+  const { choicePresentation } = useOverlayPresentation();
+  const { toast } = useToast();
+  const [themeColorForeground, themeColorMuted] = useThemeColor(["foreground", "muted"]);
+  const discountsQuery = useDiscounts();
+  const setProductDiscount = useSetProductDiscount(productId);
+  const discounts = discountsQuery.data ?? [];
+  const discountByProductId = new Map<string, DiscountListItem>();
+  for (const discount of discounts) {
+    for (const assignedProductId of Object.values(discount.product_ids ?? {})) {
+      discountByProductId.set(assignedProductId, discount);
+    }
+  }
+  const currentDiscount = discountByProductId.get(productId);
+  const discountOptions: {
+    value: string;
+    label: string;
+    description: string;
+    discount: DiscountListItem;
+  }[] = [];
+  for (const discount of discounts) {
+    if (!discount.active && discount.id !== currentDiscount?.id) continue;
+    discountOptions.push({
+      value: discount.id,
+      label: formatDiscountOptionLabel(discount, t),
+      description: discount.active ? t("common.active") : t("common.inactive"),
+      discount,
+    });
+  }
+  const selectedOption = discountOptions.find(
+    (option) => option.discount.id === currentDiscount?.id
+  );
+
+  const handleChange = async (value?: string) => {
+    const nextDiscount = discounts.find((discount) => discount.id === value) ?? null;
+    if (!nextDiscount || nextDiscount.id === currentDiscount?.id) return;
+
+    try {
+      await setProductDiscount.mutateAsync({
+        current: currentDiscount ?? null,
+        next: nextDiscount,
+      });
+      toast.show({ variant: "success", label: t("productForm.discountUpdated") });
+    } catch {
+      toast.show({
+        variant: "danger",
+        label: t("productForm.discountUpdateFailed"),
+        description: t("productForm.discountUpdateFailedDescription"),
+      });
+    }
+  };
+
+  const handleRemove = async () => {
+    if (!currentDiscount) return;
+
+    try {
+      await setProductDiscount.mutateAsync({ current: currentDiscount, next: null });
+      toast.show({ variant: "success", label: t("productForm.discountRemoved") });
+    } catch {
+      toast.show({
+        variant: "danger",
+        label: t("productForm.discountUpdateFailed"),
+        description: t("productForm.discountUpdateFailedDescription"),
+      });
+    }
+  };
+
+  return (
+    <View className="gap-1.5">
+      <Label>{t("productForm.discountOptional")}</Label>
+      <View className="flex-row items-center gap-2">
+        <Select
+          presentation={choicePresentation}
+          value={selectedOption}
+          onValueChange={(option) => void handleChange(option?.value)}
+          isDisabled={
+            discountsQuery.isLoading ||
+            discountsQuery.isError ||
+            discountOptions.length === 0 ||
+            setProductDiscount.isPending
+          }
+          className="flex-1"
+        >
+          <Select.Trigger accessibilityLabel={t("productForm.discountOptional")} className="flex-1">
+            <Select.Value placeholder={t("productForm.selectDiscount")} numberOfLines={1} />
+            <Select.TriggerIndicator />
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Overlay />
+            <Select.Content
+              presentation={choicePresentation}
+              width={choicePresentation === "popover" ? "trigger" : undefined}
+            >
+              {discountOptions.length ? (
+                discountOptions.map((option) => (
+                  <Select.Item key={option.value} value={option.value} label={option.label}>
+                    {() => (
+                      <>
+                        <Select.ItemLabel />
+                        <Select.ItemDescription>{option.description}</Select.ItemDescription>
+                        <Select.ItemIndicator />
+                      </>
+                    )}
+                  </Select.Item>
+                ))
+              ) : (
+                <Select.ListLabel>{t("productForm.noDiscounts")}</Select.ListLabel>
+              )}
+            </Select.Content>
+          </Select.Portal>
+        </Select>
+        <Button
+          variant="ghost"
+          isIconOnly
+          accessibilityLabel={t("productForm.addDiscountAccessibility")}
+          onPress={onAdd}
+          isDisabled={setProductDiscount.isPending}
+        >
+          <AppIcon name="add" size={18} color={themeColorForeground} />
+        </Button>
+        {currentDiscount ? (
+          <Button
+            variant="ghost"
+            isIconOnly
+            accessibilityLabel={t("productForm.removeDiscountAccessibility")}
+            onPress={() => void handleRemove()}
+            isDisabled={setProductDiscount.isPending}
+          >
+            <AppIcon name="close-outline" size={18} color={themeColorMuted} />
+          </Button>
+        ) : null}
+      </View>
+      {discountsQuery.isLoading ? (
+        <Description>{t("productForm.discountLoading")}</Description>
+      ) : discountsQuery.isError ? (
+        <Description isInvalid>{t("productForm.discountUnavailable")}</Description>
+      ) : (
+        <Description>{t("productForm.discountHelp")}</Description>
+      )}
+    </View>
   );
 }
 
@@ -629,6 +827,7 @@ export default function ProductFormScreen(): React.JSX.Element {
     name: string;
   } | null>(null);
   const [isQuickCategoryOpen, setIsQuickCategoryOpen] = React.useState(false);
+  const [isQuickDiscountOpen, setIsQuickDiscountOpen] = React.useState(false);
   const categoryItems = [...(categoriesQuery.data ?? [])];
   if (createdCategory && !categoryItems.some((category) => category.id === createdCategory.id)) {
     categoryItems.push(createdCategory);
@@ -823,7 +1022,13 @@ export default function ProductFormScreen(): React.JSX.Element {
               onSelect={handleSelectImage}
             />
 
-            <PricingCard control={control} error={errors.price?.message} />
+            <PricingCard
+              control={control}
+              error={errors.price?.message}
+              productId={!isNew ? id : undefined}
+              discount={!isNew ? (productQuery.data?.discount ?? null) : null}
+              onAddDiscount={!isNew ? () => setIsQuickDiscountOpen(true) : undefined}
+            />
 
             <InventoryCard control={control} errors={errors} stockEnabled={stockEnabled} />
 
@@ -860,6 +1065,15 @@ export default function ProductFormScreen(): React.JSX.Element {
           });
         }}
       />
+
+      {!isNew ? (
+        <QuickDiscountFormOverlay
+          isOpen={isQuickDiscountOpen}
+          productId={id}
+          onOpenChange={setIsQuickDiscountOpen}
+          onCreated={() => void productQuery.refetch()}
+        />
+      ) : null}
 
       <DeleteProductDialog
         isOpen={isDeleteOpen}
