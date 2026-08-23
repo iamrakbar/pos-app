@@ -147,7 +147,7 @@ export default function ParkedOrdersPanel({
               <View className="mt-5 gap-3">
                 {merchantDrafts.length === 0 ? (
                   <Surface variant="secondary" className="items-center gap-1 p-5">
-                    <AppIcon name="time-outline" size={22} />
+                    <AppIcon name="time-outline" size={22} color={colorMuted} />
                     <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
                     <Typography type="body-sm" color="muted" className="text-center">
                       {t("pos.parkedOrdersEmptyDescription")}
