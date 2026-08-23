@@ -54,7 +54,7 @@ export default function ParkedOrdersPanel({
   const [label, setLabel] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<ParkedOrder | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<ParkedOrder | null>(null);
-  const [colorMuted] = useThemeColor(["accent", "muted"]);
+  const [colorAcent, colorMuted, colorDanger] = useThemeColor(["accent", "muted", "danger"]);
 
   const merchantDrafts = drafts
     .filter((draft) => draft.merchant_id === merchantId)
@@ -107,11 +107,12 @@ export default function ParkedOrdersPanel({
         accessibilityLabel={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
       >
         {mode === "list" ? (
-          <Button.Label>
-            {t("pos.parkedOrdersCount", { count: merchantDrafts.length })}
-          </Button.Label>
+          <>
+            <AppIcon name="archive-outline" size={18} color={colorAcent} />
+            <Button.Label>{merchantDrafts.length}</Button.Label>
+          </>
         ) : (
-          <AppIcon name="save-outline" size={18} color={colorMuted} />
+          <AppIcon name="save-outline" size={19} color={colorMuted} />
         )}
       </Button>
 
@@ -179,7 +180,7 @@ export default function ParkedOrdersPanel({
                         onPress={() => setDeleteTarget(draft)}
                         accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
                       >
-                        <AppIcon name="trash-outline" size={17} />
+                        <AppIcon name="trash-outline" size={17} color={colorDanger} />
                       </Button>
                     </Surface>
                   ))
