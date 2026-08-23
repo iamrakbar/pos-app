@@ -6,6 +6,7 @@ import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
 import { useTranslation } from "@/stores/use-locale";
+import { getProductSellingPrice } from "@/utils/product-price";
 
 type Props = {
   product: POSProduct;
@@ -18,7 +19,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
   const themeColorMuted = useThemeColor("muted");
   const isDiscounted = product.discount !== null;
   const isOutOfStock = product.stock?.enabled && (product.stock.qty ?? 0) <= 0;
-  const effectivePrice = product.discount?.price ?? product.price;
+  const effectivePrice = getProductSellingPrice(product);
   const handlePress = () => {
     onPress(product);
   };

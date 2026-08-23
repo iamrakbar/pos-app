@@ -3,6 +3,7 @@ import { usePOSAddOnSheet } from "@/hooks/use-pos-add-on-sheet";
 import type { CartItem } from "@/types/cart";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
+import { getCartItemSubtotal } from "@/utils/cart-pricing";
 import { Button, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
@@ -24,11 +25,8 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
   const updateQty = useCartStore((s) => s.updateQty);
   const openAddOnSheet = usePOSAddOnSheet();
 
-  const addOnUnitTotal = item.add_ons
-    .flatMap((ao) => ao.options)
-    .reduce((sum, o) => sum + o.price, 0);
-  const unitTotal = item.price + addOnUnitTotal;
-  const itemSubtotal = unitTotal * item.qty;
+  const itemSubtotal = getCartItemSubtotal(item);
+  const hasDiscount = (item.original_price ?? item.price) > item.price;
 
   const handleEdit = () => {
     if (product && product.add_ons.length > 0) {
@@ -61,9 +59,23 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
           </Typography>
         </View>
 
-        <Typography type="body-sm" color="muted" className="tabular-nums">
-          {item.qty} x {formatRupiah(item.price)}
-        </Typography>
+        <View className="flex-row items-center gap-1">
+          <Typography type="body-sm" color="muted" className="tabular-nums">
+            {item.qty} x
+          </Typography>
+          {hasDiscount ? (
+            <Typography type="body-xs" color="muted" className="tabular-nums line-through">
+              {formatRupiah(item.original_price ?? item.price)}
+            </Typography>
+          ) : null}
+          <Typography
+            type="body-sm"
+            color={hasDiscount ? undefined : "muted"}
+            className={`tabular-nums ${hasDiscount ? "text-accent" : ""}`}
+          >
+            {formatRupiah(item.price)}
+          </Typography>
+        </View>
 
         {item.add_ons.map((addOn) =>
           addOn.options.map((option) => (

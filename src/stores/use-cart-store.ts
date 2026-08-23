@@ -87,7 +87,11 @@ export const useCartStore = create<Cart & CartAction>()(
         if (existingIndex > -1) {
           const updated = [...products];
           const existing = updated[existingIndex];
-          const nextItem = { ...existing, qty: existing.qty + product.qty };
+          const nextItem = {
+            ...existing,
+            original_price: existing.original_price ?? product.original_price ?? existing.price,
+            qty: existing.qty + product.qty,
+          };
           updated[existingIndex] = {
             ...nextItem,
             subtotal: computeItemSubtotal(nextItem),
@@ -97,6 +101,7 @@ export const useCartStore = create<Cart & CartAction>()(
           const newProduct: CartItem = {
             id,
             ...product,
+            original_price: product.original_price ?? product.price,
             subtotal: computeItemSubtotal(product),
           };
           set({

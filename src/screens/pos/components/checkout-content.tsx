@@ -837,7 +837,7 @@ export function CheckoutContent({
     feeValue: selectedPayment?.fee_value,
     chargeAppPaymentFeeToCustomer: activeMerchant?.charge_app_payment_fee_to_customer,
   });
-  const { taxAmount, subtotalWithTax, paymentFeeAmount: paymentFee, total } = pricing;
+  const { taxAmount, paymentFeeAmount: paymentFee, total } = pricing;
   const isAmountTender = selectedPayment?.tender_input.type === "amount";
   const cashReceivedAmount = Number(tenderValue.replace(/\D/g, "")) || 0;
   const change = Math.max(0, cashReceivedAmount - total);

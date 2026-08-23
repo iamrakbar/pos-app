@@ -15,6 +15,7 @@ export type CartItem = {
   product_id: string;
   name: string;
   price: number;
+  original_price?: number;
   qty: number;
   notes?: string | null;
   add_ons: CartAddOn[];
@@ -41,6 +42,7 @@ export type CartAction = {
     product_id: string;
     name: string;
     price: number;
+    original_price?: number;
     qty: number;
     notes?: string | null;
     add_ons: CartAddOn[];

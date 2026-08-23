@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
+import { getProductSellingPrice } from "@/utils/product-price";
 
 export default function POSScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -49,7 +50,8 @@ export default function POSScreen(): JSX.Element {
       addItem({
         product_id: product.id,
         name: product.name,
-        price: product.price,
+        price: getProductSellingPrice(product),
+        original_price: product.price,
         qty: 1,
         notes: null,
         add_ons: [],

@@ -271,7 +271,7 @@ export default function CartContent(): JSX.Element {
                   count: itemCount,
                 })}
               </Typography>
-              <Typography weight="semibold" className="tabular-nums">
+              <Typography type="body-sm" weight="semibold" className="tabular-nums">
                 {formatRupiah(subtotal)}
               </Typography>
             </>

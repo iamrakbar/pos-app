@@ -26,6 +26,7 @@ import { FlatList, View, useWindowDimensions } from "react-native";
 import { useKeyboardState } from "react-native-keyboard-controller";
 import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
+import { getProductSellingPrice } from "@/utils/product-price";
 
 const EMPTY_FORM_VALUES: AddOnFormValues = {
   radioSelections: {},
@@ -42,10 +43,11 @@ function constraintLabel(group: AddOnGroup, t: Translate): string {
 }
 
 function selectedOptionIds(group: AddOnGroup, values: AddOnFormValues): Set<string> {
+  const radioSelection = values.radioSelections?.[group.id];
   const ids = group.multiple
     ? (values.checkboxSelections?.[group.id] ?? [])
-    : values.radioSelections?.[group.id]
-      ? [values.radioSelections[group.id]]
+    : radioSelection
+      ? [radioSelection]
       : [];
   return new Set(ids);
 }
@@ -63,7 +65,7 @@ type OptionRowProps = {
   isSelected: boolean;
   isDisabled?: boolean;
   type: "radio" | "checkbox";
-  onSelect: () => void;
+  onSelect: (isSelected: boolean) => void;
 };
 
 function OptionRow({
@@ -129,7 +131,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
                   option={option}
                   type="radio"
                   isSelected={field.value === option.id}
-                  onSelect={() => field.onChange(option.id)}
+                  onSelect={(isSelected) => field.onChange(isSelected ? option.id : undefined)}
                 />
               </React.Fragment>
             ))}
@@ -251,7 +253,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const addOnTotal = selectedAddOns
     .flatMap((group) => group.options)
     .reduce((total, option) => total + option.price, 0);
-  const configuredPrice = (product?.price ?? 0) + addOnTotal;
+  const configuredPrice = (product ? getProductSellingPrice(product) : 0) + addOnTotal;
 
   const scrollToNotes = () => {
     listRef.current?.scrollToOffset({ offset: 99_999, animated: true });
@@ -275,7 +277,8 @@ export default function POSAddOnSheet(): React.JSX.Element {
     addItem({
       product_id: product.id,
       name: product.name,
-      price: product.price,
+      price: getProductSellingPrice(product),
+      original_price: product.price,
       qty: editingCartItem?.qty ?? 1,
       notes: formValues.notes.trim() || null,
       add_ons: buildCartAddOns(product, formValues),
