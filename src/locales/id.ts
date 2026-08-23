@@ -138,6 +138,8 @@ export const id: TranslationSchema = {
     pricingDescription: "Tetapkan harga jual produk",
     price: "Harga (Rp)",
     discountPrice: "Harga Diskon",
+    decreaseAccessibility: "Kurangi {{field}}",
+    increaseAccessibility: "Tambah {{field}}",
     discountOptional: "Diskon (opsional)",
     selectDiscount: "Pilih diskon",
     discountHelp: "Pilih satu diskon untuk diterapkan pada produk ini.",

@@ -53,6 +53,7 @@ import { formatRupiah, IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { NumberStepper } from "heroui-native-pro";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -183,6 +184,51 @@ function ProductNumberField({
         <Description>{description}</Description>
       ) : null}
     </StringNumberField>
+  );
+}
+
+function ProductNumberStepper({
+  label,
+  description,
+  required,
+  value,
+  onChangeText,
+  error,
+}: {
+  label: string;
+  description?: string;
+  required?: boolean;
+  value: string;
+  onChangeText: (value: string) => void;
+  error?: string;
+}) {
+  const { t } = useTranslation();
+  const numericValue = value.trim() === "" ? 0 : Number(value);
+
+  return (
+    <View className="flex-1 gap-1">
+      <Label isRequired={required}>{label}</Label>
+      <NumberStepper
+        value={Number.isFinite(numericValue) ? numericValue : 0}
+        minValue={0}
+        step={1}
+        onValueChange={(nextValue) => onChangeText(String(nextValue))}
+        className="justify-between"
+      >
+        <NumberStepper.DecrementButton
+          accessibilityLabel={t("productForm.decreaseAccessibility", { field: label })}
+        />
+        <NumberStepper.Value />
+        <NumberStepper.IncrementButton
+          accessibilityLabel={t("productForm.increaseAccessibility", { field: label })}
+        />
+      </NumberStepper>
+      {error ? (
+        <Description className="text-danger">{error}</Description>
+      ) : description ? (
+        <Description>{description}</Description>
+      ) : null}
+    </View>
   );
 }
 
@@ -488,9 +534,8 @@ function InventoryCard({
               control={control}
               name="stock"
               render={({ field: { value, onChange } }) => (
-                <ProductNumberField
+                <ProductNumberStepper
                   label={t("productForm.availableStock")}
-                  placeholder="0"
                   required
                   value={value}
                   onChangeText={onChange}
@@ -502,9 +547,8 @@ function InventoryCard({
               control={control}
               name="stock_alert"
               render={({ field: { value, onChange } }) => (
-                <ProductNumberField
+                <ProductNumberStepper
                   label={t("productForm.lowStockAlert")}
-                  placeholder={t("checkout.optional")}
                   description={t("productForm.lowStockDescription")}
                   value={value}
                   onChangeText={onChange}

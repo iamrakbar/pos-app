@@ -136,6 +136,8 @@ export const en = {
     pricingDescription: "Set the product selling price",
     price: "Price (Rp)",
     discountPrice: "Discount price",
+    decreaseAccessibility: "Decrease {{field}}",
+    increaseAccessibility: "Increase {{field}}",
     discountOptional: "Discount (optional)",
     selectDiscount: "Select a discount",
     discountHelp: "Choose one discount to apply to this product.",
