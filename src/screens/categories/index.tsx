@@ -172,7 +172,7 @@ export default function CategoriesScreen(): React.JSX.Element {
                       accessibilityLabel={t("categories.editAccessibility", {
                         category: category.name,
                       })}
-                      onPress={() => router.push(`/categories/${category.id}`)}
+                      onPress={() => router.push(`/settings/categories/${category.id}`)}
                       className="flex-1 flex-row items-center gap-3 active:opacity-70"
                     >
                       <View className="size-11 items-center justify-center rounded-panel-inner bg-accent-soft">
@@ -248,7 +248,7 @@ export default function CategoriesScreen(): React.JSX.Element {
         )}
         <CreateFAB
           accessibilityLabel={t("categories.addAccessibility")}
-          onPress={() => router.push("/categories/new")}
+          onPress={() => router.push("/settings/categories/new")}
         />
       </View>
     </>

@@ -32,11 +32,6 @@ export default function ProductsLayout() {
         }}
       />
       <Stack.Screen name="[id]" options={{ title: t("navigation.product") }} />
-      <Stack.Screen name="[productId]/add-ons/index" options={{ title: t("navigation.addOns") }} />
-      <Stack.Screen
-        name="[productId]/add-ons/[addOnId]"
-        options={{ title: t("navigation.addOn") }}
-      />
     </Stack>
   );
 }

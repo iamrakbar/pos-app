@@ -1,5 +1,5 @@
 import CategoriesScreen from "@/screens/categories";
 
-export default function CategoriesRoute() {
+export default function SettingsCategoriesRoute() {
   return <CategoriesScreen />;
 }

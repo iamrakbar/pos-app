@@ -1,5 +1,5 @@
 import CategoryFormScreen from "@/screens/categories/form";
 
-export default function CategoryFormRoute(): React.JSX.Element {
+export default function SettingsCategoryFormRoute(): React.JSX.Element {
   return <CategoryFormScreen />;
 }

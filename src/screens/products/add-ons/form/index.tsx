@@ -25,8 +25,8 @@ const EMPTY_OPTION = { id: null, name: "", price: "0", destroyed: false };
 
 export default function AddOnFormScreen(): React.JSX.Element {
   const { locale, t } = useTranslation();
-  const { productId, addOnId } = useLocalSearchParams<{
-    productId: string;
+  const { id: productId, addOnId } = useLocalSearchParams<{
+    id: string;
     addOnId: string;
   }>();
   const router = useRouter();

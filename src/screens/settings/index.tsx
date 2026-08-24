@@ -74,7 +74,7 @@ export default function SettingsScreen(): JSX.Element {
     },
     {
       id: "categories",
-      href: "/categories",
+      href: "/settings/categories",
       icon: "albums-outline",
       label: t("settings.categories"),
       description: t("settings.categoriesDescription"),

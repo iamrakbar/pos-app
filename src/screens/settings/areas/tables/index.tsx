@@ -23,7 +23,7 @@ function getTableSeatCount(pax: number): TableSeatCount {
 
 export default function AreaTablesScreen(): React.JSX.Element {
   const { t } = useTranslation();
-  const { areaId } = useLocalSearchParams<{ areaId: string }>();
+  const { id: areaId } = useLocalSearchParams<{ id: string }>();
   const { width, isCompact, isMedium, isPortrait, horizontalPagePadding } =
     useResponsiveLayout();
   const [mutedColor, accentColor, accentSoft] = useThemeColor(["muted", "accent", "accent-soft"]);

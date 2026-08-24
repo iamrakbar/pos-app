@@ -73,13 +73,6 @@ export default function AppLayout() {
         }}
       />
       <Drawer.Screen
-        name="categories"
-        options={{
-          title: t("navigation.categories"),
-          headerShown: false,
-        }}
-      />
-      <Drawer.Screen
         name="orders"
         options={{
           title: t("navigation.orders"),

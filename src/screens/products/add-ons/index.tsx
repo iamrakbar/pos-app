@@ -13,7 +13,7 @@ import { useTranslation } from "@/stores/use-locale";
 
 export default function ProductAddOnsScreen(): React.JSX.Element {
   const { t } = useTranslation();
-  const { productId } = useLocalSearchParams<{ productId: string }>();
+  const { id: productId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
   const addOnsQuery = useAddOns(productId);
