@@ -34,8 +34,8 @@ function toProductAddOn(addOn: App.Data.Merchant.AddOn.AddOnData): ProductAddOn 
     name: addOn.name,
     min: addOn.min,
     max: addOn.max,
-    required: addOn.min > 0,
-    multiple: addOn.max > 1,
+    required: addOn.required,
+    multiple: addOn.multiple,
     options: addOn.options.map((option) => ({
       id: option.id,
       name: option.name,
@@ -53,6 +53,8 @@ function optimisticProductAddOn(
 ): ProductAddOn {
   const min = values.min ?? current?.min ?? 0;
   const max = values.max ?? current?.max ?? 1;
+  const required = values.required ?? current?.required ?? min > 0;
+  const multiple = values.multiple ?? current?.multiple ?? max > 1;
   const options =
     values.options?.flatMap((option, index) => {
       if ("_destroy" in option && option._destroy) return [];
@@ -72,8 +74,8 @@ function optimisticProductAddOn(
     name: values.name ?? current?.name ?? "",
     min,
     max,
-    required: min > 0,
-    multiple: max > 1,
+    required,
+    multiple,
     options,
   };
 }

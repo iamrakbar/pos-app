@@ -91,6 +91,8 @@ export type AddOnManagementValues = z.infer<ReturnType<typeof createAddOnManagem
 
 export type AddOnManagementRequest = {
   name: string;
+  required: boolean;
+  multiple: boolean;
   min: number;
   max: number;
   options: {
@@ -104,6 +106,8 @@ export type AddOnManagementRequest = {
 export function toAddOnRequest(values: AddOnManagementValues): AddOnManagementRequest {
   return {
     name: values.name.trim(),
+    required: values.required,
+    multiple: values.multiple,
     min: values.multiple && values.required ? Number(values.min) : values.required ? 1 : 0,
     max: values.multiple ? Number(values.max) : 1,
     options: values.options.map((option) => ({

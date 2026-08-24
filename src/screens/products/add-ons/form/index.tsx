@@ -71,8 +71,8 @@ export default function AddOnFormScreen(): React.JSX.Element {
     if (isNew || !addOn || hydratedId.current === addOn.id) return;
     reset({
       name: addOn.name,
-      required: addOn.min > 0,
-      multiple: addOn.max > 1,
+      required: addOn.required,
+      multiple: addOn.multiple,
       min: String(addOn.min),
       max: String(addOn.max),
       options: addOn.options.map((option) => ({

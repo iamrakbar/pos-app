@@ -174,6 +174,8 @@ export const en = {
     addOnsDescription: "Assign optional or required choices",
     noAddOns: "No add-on groups",
     noAddOnsDescription: "Add optional or required choices for this product.",
+    addAddOnGroup: "Add add-on group",
+    removeAddOnGroup: "Remove add-on group",
     add: "+ Add",
     required: "Required",
     optional: "Optional",

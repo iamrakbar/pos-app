@@ -48,13 +48,29 @@ async function appendProductImage(formData: FormData, image: ProductImageAsset):
   formData.append("image", new File(image.uri), image.name);
 }
 
+function appendFormDataValue(formData: FormData, key: string, value: unknown): void {
+  if (value === undefined || value === null) return;
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => appendFormDataValue(formData, `${key}[${index}]`, item));
+    return;
+  }
+
+  if (typeof value === "object") {
+    Object.entries(value).forEach(([nestedKey, nestedValue]) =>
+      appendFormDataValue(formData, `${key}[${nestedKey}]`, nestedValue)
+    );
+    return;
+  }
+
+  formData.append(key, String(value));
+}
+
 function appendProductFields(
   formData: FormData,
   body: App.Requests.Merchant.Product.StoreProductRequest
 ): void {
-  Object.entries(body).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) formData.append(key, String(value));
-  });
+  Object.entries(body).forEach(([key, value]) => appendFormDataValue(formData, key, value));
 }
 
 export function getPosProducts(

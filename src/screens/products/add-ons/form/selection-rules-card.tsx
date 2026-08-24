@@ -1,10 +1,10 @@
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
-import StringNumberField from "@/components/common/string-number-field";
 import { Card, Input, Label, Switch, TextField, Typography } from "heroui-native";
 import { Controller, useWatch } from "react-hook-form";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
 import { View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import SelectionRuleStepper from "./selection-rule-stepper";
 
 type SelectionRulesCardProps = {
   control: Control<AddOnManagementValues>;
@@ -16,6 +16,8 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
   const { t } = useTranslation();
   const required = useWatch({ control, name: "required" });
   const multiple = useWatch({ control, name: "multiple" });
+  const minimum = useWatch({ control, name: "min" });
+  const maximum = useWatch({ control, name: "max" });
 
   return (
     <Card className="gap-3">
@@ -62,12 +64,10 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
                 isSelected={value}
                 onSelectedChange={(selected) => {
                   onChange(selected);
-                  if (selected && multiple) {
-                    setValue("min", "1", {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    });
-                  }
+                  setValue("min", selected ? "1" : "0", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
                 }}
               />
             </View>
@@ -90,15 +90,14 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
                 isSelected={value}
                 onSelectedChange={(selected) => {
                   onChange(selected);
-                  if (selected) {
-                    setValue("max", "2", { shouldDirty: true, shouldValidate: true });
-                    if (required) {
-                      setValue("min", "1", {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      });
-                    }
-                  }
+                  setValue("max", selected ? "2" : "1", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  setValue("min", required ? "1" : "0", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
                 }}
               />
             </View>
@@ -111,21 +110,21 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
                 control={control}
                 name="min"
                 render={({ field: { value, onChange } }) => (
-                  <StringNumberField
-                    className="flex-1"
+                  <SelectionRuleStepper
                     label={t("addOnManagement.minimum")}
                     value={value}
                     onChange={onChange}
                     minValue={1}
+                    maxValue={Number(maximum) || undefined}
                     isRequired
-                    isInvalid={Boolean(errors.min)}
-                  >
-                    {errors.min?.message ? (
-                      <Typography type="body-xs" className="text-danger">
-                        {errors.min.message}
-                      </Typography>
-                    ) : null}
-                  </StringNumberField>
+                    error={errors.min?.message}
+                    decreaseAccessibilityLabel={t("productForm.decreaseAccessibility", {
+                      field: t("addOnManagement.minimum"),
+                    })}
+                    increaseAccessibilityLabel={t("productForm.increaseAccessibility", {
+                      field: t("addOnManagement.minimum"),
+                    })}
+                  />
                 )}
               />
             ) : null}
@@ -133,21 +132,19 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
               control={control}
               name="max"
               render={({ field: { value, onChange } }) => (
-                <StringNumberField
-                  className="flex-1"
+                <SelectionRuleStepper
                   label={t("addOnManagement.maximum")}
                   value={value}
                   onChange={onChange}
-                  minValue={2}
-                  isRequired
-                  isInvalid={Boolean(errors.max)}
-                >
-                  {errors.max?.message ? (
-                    <Typography type="body-xs" className="text-danger">
-                      {errors.max.message}
-                    </Typography>
-                  ) : null}
-                </StringNumberField>
+                  minValue={Math.max(2, Number(minimum) || 2)}
+                  error={errors.max?.message}
+                  decreaseAccessibilityLabel={t("productForm.decreaseAccessibility", {
+                    field: t("addOnManagement.maximum"),
+                  })}
+                  increaseAccessibilityLabel={t("productForm.increaseAccessibility", {
+                    field: t("addOnManagement.maximum"),
+                  })}
+                />
               )}
             />
           </View>

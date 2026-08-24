@@ -94,6 +94,14 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             </View>
           ))
         )}
+
+        {item.notes ? (
+          <View className="flex-row items-start gap-2 pl-2">
+            <Typography type="body-sm" color="muted" className="flex-1">
+              {t("addOns.notes")}: {item.notes}
+            </Typography>
+          </View>
+        ) : null}
       </Pressable>
 
       <View className="flex-row items-center justify-between gap-4">

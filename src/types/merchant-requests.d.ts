@@ -16,6 +16,8 @@ declare namespace App.Requests.Merchant {
 declare namespace App.Requests.Merchant.AddOn {
     export type StoreAddOnRequest = {
         name: string;
+        required: boolean;
+        multiple: boolean;
         min: number;
         max: number;
         options: {
@@ -25,6 +27,8 @@ declare namespace App.Requests.Merchant.AddOn {
     };
     export type UpdateAddOnRequest = {
         name?: string;
+        required?: boolean;
+        multiple?: boolean;
         min?: number;
         max?: number;
         options?: {
@@ -264,6 +268,17 @@ declare namespace App.Requests.Merchant.Product {
         stock_alert?: number | null;
         active?: boolean;
         image?: string | null;
+        add_ons?: {
+            name: string;
+            required: boolean;
+            multiple: boolean;
+            min: number;
+            max: number;
+            options: {
+                name: string;
+                price: number;
+            }[];
+        }[];
     };
     export type UpdateProductRequest = {
         name?: string;

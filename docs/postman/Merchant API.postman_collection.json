@@ -2756,7 +2756,7 @@
                 "products"
               ]
             },
-            "description": "**Purpose:** Create a new menu item, optionally with an image in the same request.\n\n**Auth required:** Yes.\n\n**Body (multipart/form-data):** `name` (required, max:255); `code` (required, regex `^[A-Z0-9-]+$`, unique per merchant); `category_id` (required uuid, exists within merchant); `description` (nullable); `price` (required int min:0, in smallest currency unit / IDR); `stock_enabled` (boolean); `stock` (required if `stock_enabled=true`); `stock_alert` (nullable int min:0); `active` (boolean); `image` (nullable, image, mimes jpeg/jpg/png/webp, max 4096 KB).\n\n**Error response (422):** duplicate `code`.",
+            "description": "**Purpose:** Create a new menu item, optionally with an image and nested add-ons in the same request.\n\n**Auth required:** Yes.\n\n**Body (multipart/form-data):** `name` (required, max:255); `code` (required, regex `^[A-Z0-9-]+$`, unique per merchant); `category_id` (required uuid, exists within merchant); `description` (nullable); `price` (required int min:0, in smallest currency unit / IDR); `stock_enabled` (boolean); `stock` (required if `stock_enabled=true`); `stock_alert` (nullable int min:0); `active` (boolean); `image` (nullable, image, mimes jpeg/jpg/png/webp, max 4096 KB). Add-ons use bracketed fields such as `add_ons[0][name]`, `add_ons[0][required]`, `add_ons[0][multiple]`, `add_ons[0][min]`, `add_ons[0][max]`, `add_ons[0][options][0][name]`, and `add_ons[0][options][0][price]`; each add-on requires at least one option and must satisfy its selection limits.\n\n**Error response (422):** duplicate `code` or invalid nested add-on configuration.",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -2813,6 +2813,48 @@
                   "value": "true",
                   "type": "text",
                   "description": ""
+                },
+                {
+                  "key": "add_ons[0][name]",
+                  "value": "Size",
+                  "type": "text",
+                  "description": "optional nested add-on"
+                },
+                {
+                  "key": "add_ons[0][required]",
+                  "value": "true",
+                  "type": "text",
+                  "description": "required boolean"
+                },
+                {
+                  "key": "add_ons[0][multiple]",
+                  "value": "false",
+                  "type": "text",
+                  "description": "multiple boolean"
+                },
+                {
+                  "key": "add_ons[0][min]",
+                  "value": "1",
+                  "type": "text",
+                  "description": "minimum selections"
+                },
+                {
+                  "key": "add_ons[0][max]",
+                  "value": "1",
+                  "type": "text",
+                  "description": "maximum selections"
+                },
+                {
+                  "key": "add_ons[0][options][0][name]",
+                  "value": "Regular",
+                  "type": "text",
+                  "description": "nested option name"
+                },
+                {
+                  "key": "add_ons[0][options][0][price]",
+                  "value": "0",
+                  "type": "text",
+                  "description": "nested option price"
                 },
                 {
                   "key": "image",
@@ -3168,7 +3210,7 @@
     },
     {
       "name": "Product Add-ons",
-      "description": "Nested add-on groups/options for a menu item (e.g. spice level, size, toppings).",
+      "description": "Nested add-on groups/options for a menu item (e.g. spice level, size, toppings). Add-on responses expose required, multiple, min, and max selection constraints.",
       "item": [
         {
           "name": "List Add-ons",
@@ -3199,7 +3241,7 @@
                 "add-ons"
               ]
             },
-            "description": "**Purpose:** List add-on groups for a menu item (e.g. spice level, toppings).\n\n**Auth required:** Yes."
+            "description": "**Purpose:** List add-on groups for a menu item (e.g. spice level, toppings).\n\n**Auth required:** Yes.\n\n**Success response fields:** Each add-on includes `required` (boolean), `multiple` (boolean), `min`, `max`, and `options`."
           },
           "response": [],
           "event": [
@@ -3263,10 +3305,10 @@
                 "add-ons"
               ]
             },
-            "description": "**Purpose:** Create an add-on group with selectable options.\n\n**Auth required:** Yes.\n\n**Body:** `name` (required, max:255); `min` (required int min:0); `max` (required int, must be `gt:min`); `options[]` (required, min 1) each `{name (required, max:255), price (required int min:0)}`.\n\n**Error response (422):** `max` not greater than `min`.",
+            "description": "**Purpose:** Create an add-on group with selectable options.\n\n**Auth required:** Yes.\n\n**Body:** `name` (required, max:255); `required` (required boolean); `multiple` (required boolean); `min` (required int min:0); `max` (required int min:0); `options[]` (required, min 1) each `{name (required, max:255), price (required int min:0)}`.\n\n**Selection rules:** Optional add-ons require `min: 0`; required add-ons require `min >= 1`; single-choice add-ons require `max: 1`; multiple-choice add-ons require `max >= 2`; `min` cannot exceed `max`; `max` cannot exceed the option count.\n\n**Error response (422):** Invalid or contradictory selection rules.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Level Pedas\",\n    \"min\": 1,\n    \"max\": 1,\n    \"options\": [\n        {\n            \"name\": \"Tidak Pedas\",\n            \"price\": 0\n        },\n        {\n            \"name\": \"Sedang\",\n            \"price\": 0\n        },\n        {\n            \"name\": \"Pedas\",\n            \"price\": 0\n        }\n    ]\n}",
+              "raw": "{\n    \"name\": \"Level Pedas\",\n    \"required\": true,\n    \"multiple\": false,\n    \"min\": 1,\n    \"max\": 1,\n    \"options\": [\n        {\n            \"name\": \"Tidak Pedas\",\n            \"price\": 0\n        },\n        {\n            \"name\": \"Sedang\",\n            \"price\": 0\n        },\n        {\n            \"name\": \"Pedas\",\n            \"price\": 0\n        }\n    ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3330,7 +3372,7 @@
                 "{{add_on_id}}"
               ]
             },
-            "description": "**Purpose:** Get a single add-on group with its options.\n\n**Auth required:** Yes."
+            "description": "**Purpose:** Get a single add-on group with its options.\n\n**Auth required:** Yes.\n\n**Success response fields:** The add-on includes `required` (boolean), `multiple` (boolean), `min`, `max`, and `options`."
           },
           "response": [],
           "event": [
@@ -3388,10 +3430,10 @@
                 "{{add_on_id}}"
               ]
             },
-            "description": "**Purpose:** Update an add-on group and its options in one request.\n\n**Auth required:** Yes.\n\n**Body (all `sometimes`):** same top-level fields as create; `options[].id` (nullable uuid, existing option to update); `options[]._destroy` (nullable boolean — set true to remove that option); options without `id` are created new.\n\n**Error response (422):** `max` not greater than resulting `min`.",
+            "description": "**Purpose:** Update an add-on group and its options in one request.\n\n**Auth required:** Yes.\n\n**Body (all `sometimes`):** `name`, `required`, `multiple`, `min`, `max`, and `options`; `options[].id` (nullable uuid, existing option to update); `options[]._destroy` (nullable boolean — set true to remove that option); options without `id` are created new. Partial updates are validated against persisted values.\n\n**Error response (422):** Invalid or contradictory selection rules.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Level Pedas\",\n    \"min\": 1,\n    \"max\": 1,\n    \"options\": [\n        {\n            \"id\": \"existing-option-uuid\",\n            \"name\": \"Tidak Pedas\",\n            \"price\": 0\n        },\n        {\n            \"name\": \"Extra Pedas\",\n            \"price\": 2000\n        },\n        {\n            \"id\": \"option-to-remove-uuid\",\n            \"_destroy\": true\n        }\n    ]\n}",
+              "raw": "{\n    \"name\": \"Pilihan Saus\",\n    \"required\": false,\n    \"multiple\": true,\n    \"min\": 0,\n    \"max\": 2,\n    \"options\": [\n        {\n            \"id\": \"existing-option-uuid\",\n            \"name\": \"Sambal\",\n            \"price\": 0\n        },\n        {\n            \"name\": \"Mayones\",\n            \"price\": 2000\n        },\n        {\n            \"id\": \"option-to-remove-uuid\",\n            \"_destroy\": true\n        }\n    ]\n}",
               "options": {
                 "raw": {
                   "language": "json"

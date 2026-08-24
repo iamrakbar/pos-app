@@ -47,6 +47,7 @@ import {
 } from "@/hooks/db/use-products";
 import { createProductSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
+import NewProductAddOnsCard from "./new-product-add-ons-card";
 import QuickCategoryFormOverlay from "./quick-category-form-overlay";
 import QuickDiscountFormOverlay from "./quick-discount-form-overlay";
 import { formatRupiah, IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
@@ -124,6 +125,20 @@ function toProductPayload(values: ProductFormValues): ProductFormPayload {
       stock: values.stock_enabled ? Number(values.stock) : null,
       stock_alert: values.stock_enabled && values.stock_alert ? Number(values.stock_alert) : null,
       active: values.active,
+      add_ons:
+        values.add_ons.length > 0
+          ? values.add_ons.map((addOn) => ({
+              name: addOn.name.trim(),
+              required: addOn.required,
+              multiple: addOn.multiple,
+              min: addOn.required && addOn.multiple ? Number(addOn.min) : addOn.required ? 1 : 0,
+              max: addOn.multiple ? Number(addOn.max) : 1,
+              options: addOn.options.map((option) => ({
+                name: option.name.trim(),
+                price: Number(option.price),
+              })),
+            }))
+          : undefined,
     },
     image: values.image,
   };
@@ -904,6 +919,7 @@ export default function ProductFormScreen(): React.JSX.Element {
       stock_alert: "",
       active: true,
       image: null,
+      add_ons: [],
     },
   });
   const stockEnabled = useWatch({ control, name: "stock_enabled" });
@@ -928,6 +944,7 @@ export default function ProductFormScreen(): React.JSX.Element {
       stock_alert: product.stock.alert === null ? "" : String(product.stock.alert),
       active: product.active,
       image: null,
+      add_ons: [],
     });
     hydratedProductId.current = product.id;
   }, [isNew, productQuery.data, reset]);
@@ -1078,13 +1095,15 @@ export default function ProductFormScreen(): React.JSX.Element {
 
             <AvailabilityCard control={control} />
 
-            {!isNew ? (
+            {isNew ? (
+              <NewProductAddOnsCard control={control} errors={errors} setValue={setValue} />
+            ) : (
               <ProductAddOnsCard
                 addOns={productQuery.data?.add_ons ?? []}
                 onAdd={() => router.push(`/products/${id}/add-ons/new`)}
                 onEdit={(addOnId) => router.push(`/products/${id}/add-ons/${addOnId}`)}
               />
-            ) : null}
+            )}
 
             <SaveProductCard
               isNew={isNew}

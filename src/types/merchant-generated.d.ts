@@ -3,6 +3,8 @@ export type AddOnData = {
 id: string;
 product_id: string;
 name: string;
+required: boolean;
+multiple: boolean;
 min: number;
 max: number;
 options: Array<App.Data.Merchant.AddOn.OptionData>;

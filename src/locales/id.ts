@@ -176,6 +176,8 @@ export const id: TranslationSchema = {
     addOnsDescription: "Tetapkan pilihan opsional atau wajib",
     noAddOns: "Tidak ada grup tambahan",
     noAddOnsDescription: "Tambahkan pilihan opsional atau wajib untuk produk ini.",
+    addAddOnGroup: "Tambah grup tambahan",
+    removeAddOnGroup: "Hapus grup tambahan",
     add: "+ Tambah",
     required: "Wajib",
     optional: "Opsional",
