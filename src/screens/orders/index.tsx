@@ -79,45 +79,45 @@ export default function OrdersScreen(): React.JSX.Element {
         </Stack.Toolbar.Menu>
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
-      {isLoading ? (
-        <LoadingState message={t("orders.loading")} />
-      ) : isError ? (
-        <ErrorState error={error} onRetry={refetch} />
-      ) : orders.length === 0 ? (
-        <EmptyState className="py-20">
-          <EmptyState.Header>
-            <EmptyState.Media variant="icon">
-              <AppIcon name="receipt-outline" size={20} color={themeColorMuted} />
-            </EmptyState.Media>
-            <EmptyState.Title>{t("orders.empty")}</EmptyState.Title>
-            <EmptyState.Description>{t("orders.emptyDescription")}</EmptyState.Description>
-          </EmptyState.Header>
-        </EmptyState>
-      ) : (
-        <FlatList
-          data={orders}
-          keyExtractor={(order) => order.id}
-          contentContainerClassName="py-2"
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-          onEndReachedThreshold={0.5}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-          }}
-          ItemSeparatorComponent={() => <Separator className="mx-4" />}
-          renderItem={({ item }) => (
-            <OrderRow
-              order={item}
-              areaName={
-                extractAreaName(item.orderable) ??
-                tables?.find((table) => table.id === extractTableId(item.orderable))?.area_name ??
-                null
-              }
-              onPress={() => router.push(`/orders/${item.id}` as never)}
-            />
-          )}
-          ListFooterComponent={isFetchingNextPage ? <LoadingState /> : null}
-        />
-      )}
+        {isLoading ? (
+          <LoadingState message={t("orders.loading")} />
+        ) : isError ? (
+          <ErrorState error={error} onRetry={refetch} />
+        ) : orders.length === 0 ? (
+          <EmptyState className="py-20">
+            <EmptyState.Header>
+              <EmptyState.Media variant="icon">
+                <AppIcon name="receipt-outline" size={20} color={themeColorMuted} />
+              </EmptyState.Media>
+              <EmptyState.Title>{t("orders.empty")}</EmptyState.Title>
+              <EmptyState.Description>{t("orders.emptyDescription")}</EmptyState.Description>
+            </EmptyState.Header>
+          </EmptyState>
+        ) : (
+          <FlatList
+            data={orders}
+            keyExtractor={(order) => order.id}
+            contentContainerClassName="py-2"
+            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+            onEndReachedThreshold={0.5}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            ItemSeparatorComponent={() => <Separator className="mx-4" />}
+            renderItem={({ item }) => (
+              <OrderRow
+                order={item}
+                areaName={
+                  extractAreaName(item.orderable) ??
+                  tables?.find((table) => table.id === extractTableId(item.orderable))?.area_name ??
+                  null
+                }
+                onPress={() => router.push(`/orders/${item.id}` as never)}
+              />
+            )}
+            ListFooterComponent={isFetchingNextPage ? <LoadingState /> : null}
+          />
+        )}
       </View>
     </>
   );
@@ -188,7 +188,7 @@ function OrderRow({
           <Typography type="body-sm" weight="bold" className="tabular-nums">
             {formatRupiah(order.total)}
           </Typography>
-          <Typography type="body-xs" color="muted">
+          <Typography type="body-xs" color="muted" className="tabular-nums">
             {formatTime(order.created_at)}
           </Typography>
         </View>
