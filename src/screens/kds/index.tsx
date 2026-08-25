@@ -158,6 +158,8 @@ export default function KdsScreen(): React.JSX.Element {
   const [activeLane, setActiveLane] = React.useState<Lane>(LANES[0]);
   const [orderTypeFilter, setOrderTypeFilter] = React.useState<KitchenTicketOrderType>("all");
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const isMountedRef = React.useRef(false);
+  const isFetchingNextPageRef = React.useRef(false);
   const ticketsQuery = useKitchenTickets(orderTypeFilter);
   const updateStatus = useUpdateKitchenTicketStatus(orderTypeFilter);
   const tickets = ticketsQuery.data?.pages.flatMap((page) => page.data) ?? [];
@@ -184,6 +186,28 @@ export default function KdsScreen(): React.JSX.Element {
       () => setIsRefreshing(false)
     );
   };
+  const handleEndReached = () => {
+    if (
+      !isMountedRef.current ||
+      !ticketsQuery.hasNextPage ||
+      ticketsQuery.isFetchingNextPage ||
+      isFetchingNextPageRef.current
+    ) {
+      return;
+    }
+
+    isFetchingNextPageRef.current = true;
+    void ticketsQuery.fetchNextPage().finally(() => {
+      isFetchingNextPageRef.current = false;
+    });
+  };
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   if (ticketsQuery.isLoading) return <LoadingState message={t("kds.loading")} />;
   if (ticketsQuery.isError) {
@@ -269,11 +293,7 @@ export default function KdsScreen(): React.JSX.Element {
             columnWrapperStyle={gridColumns > 1 ? { gap: gridGap } : undefined}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
             onEndReachedThreshold={0.5}
-            onEndReached={() => {
-              if (ticketsQuery.hasNextPage && !ticketsQuery.isFetchingNextPage) {
-                void ticketsQuery.fetchNextPage();
-              }
-            }}
+            onEndReached={handleEndReached}
             ListFooterComponent={ticketsQuery.isFetchingNextPage ? <LoadingState /> : null}
             ListEmptyComponent={
               <View className="w-full">
