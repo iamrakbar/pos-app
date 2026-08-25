@@ -15,6 +15,7 @@ import {
   extractTableName,
   getOrderStatus,
   getPaymentStatus,
+  normalizeStatusColor,
 } from "@/api/mappers/order";
 import LoadingState from "@/components/common/loading-state";
 import ErrorState from "@/components/common/error-state";
@@ -155,7 +156,6 @@ function OrderStatusActions({
 
   return (
     <View className="gap-2">
-      <SectionTitle>{t("orders.detail.updateStatus")}</SectionTitle>
       <View className="flex-row gap-3">
         <Button
           className="flex-1"
@@ -528,7 +528,8 @@ function OrderOverview({
             </Typography>
             {order.cancellation_reason_code ? (
               <Typography type="body-xs" color="muted">
-                {t("orders.detail.cancellationReason")}: {order.cancellation_reason_code}
+                {t("orders.detail.cancellationReason")}:{" "}
+                {t(`orders.cancellationReasons.${order.cancellation_reason_code}` as TranslationKey)}
               </Typography>
             ) : null}
           </View>
@@ -549,22 +550,34 @@ function OrderOverview({
           <View className="flex-row items-center gap-3">
             <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-secondary">
               <AppIcon
-                name={order.order_type === "dine-in" ? "restaurant-outline" : "bag-handle-outline"}
+                name={
+                  order.order_type === "dine-in"
+                    ? "restaurant-outline"
+                    : order.order_type === "delivery"
+                      ? "bicycle-outline"
+                      : "bag-handle-outline"
+                }
                 size={20}
                 color={foregroundColor}
               />
             </View>
             <View className="flex-1 gap-0.5">
               <Typography type="body" weight="semibold">
-                {order.order_type === "dine-in" ? t("orders.dineIn") : t("orders.takeaway")}
+                {order.order_type === "dine-in"
+                  ? t("orders.dineIn")
+                  : order.order_type === "delivery"
+                    ? t("orders.delivery")
+                    : t("orders.takeaway")}
               </Typography>
               <Typography type="body-xs" color="muted">
                 {order.order_type === "dine-in"
                   ? [areaName, tableName].filter(Boolean).join(" · ") ||
                     t("orders.detail.tableNotAssigned")
-                  : pickupTime
-                    ? t("orders.detail.pickupAt", { time: pickupTime })
-                    : t("orders.detail.pickupNotSpecified")}
+                  : order.order_type === "delivery"
+                    ? (order.orderable?.address?.address ?? t("orders.detail.deliveryAddressNotSet"))
+                    : pickupTime
+                      ? t("orders.detail.pickupAt", { time: pickupTime })
+                      : t("orders.detail.pickupNotSpecified")}
               </Typography>
             </View>
           </View>
@@ -575,6 +588,46 @@ function OrderOverview({
         </Surface>
       </View>
     </>
+  );
+}
+
+function DeliveryPanel({ orderable }: { orderable: App.Data.Merchant.Order.OrderOrderableData }) {
+  const { t } = useTranslation();
+  const tracking = orderable.tracking_status;
+  const courier = orderable.courier;
+  const address = orderable.address;
+  const courierLabel = courier
+    ? [courier.name, courier.service].filter(Boolean).join(" · ")
+    : null;
+  const addressLabel = address
+    ? [address.address, address.city].filter(Boolean).join(", ")
+    : null;
+
+  return (
+    <View className="gap-2">
+      <View className="flex-row items-center justify-between gap-3">
+        <SectionTitle>{t("orders.detail.delivery")}</SectionTitle>
+        {tracking ? (
+          <Chip color={normalizeStatusColor(tracking)} size="sm" variant="soft">
+            <Chip.Label>{tracking.label}</Chip.Label>
+          </Chip>
+        ) : null}
+      </View>
+      <Surface className="w-full p-4 gap-3">
+        {courierLabel ? <DetailRow label={t("orders.detail.courier")} value={courierLabel} /> : null}
+        {addressLabel ? (
+          <DetailRow label={t("orders.detail.deliveryAddress")} value={addressLabel} />
+        ) : null}
+        {orderable.waybill_id ? (
+          <DetailRow label={t("orders.detail.waybill")} value={orderable.waybill_id} />
+        ) : null}
+        {!tracking ? (
+          <Typography type="body-xs" color="muted">
+            {t("orders.detail.deliveryNotDispatched")}
+          </Typography>
+        ) : null}
+      </Surface>
+    </View>
   );
 }
 
@@ -668,8 +721,8 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
         }}
       />
       <View className="flex-1 bg-background">
-        <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-10 md:px-6">
-          <View className="w-full max-w-3xl self-center gap-5">
+        <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-6 md:px-6">
+          <View className={`w-full self-center gap-5 ${isCompact ? "max-w-3xl" : "max-w-5xl"}`}>
             <OrderOverview
               order={order}
               isCompact={isCompact}
@@ -680,7 +733,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
               customerName={customerName}
             />
 
-            <View className="gap-5">
+            <View className={isCompact ? "gap-5" : "flex-row items-start gap-5"}>
               <View className="flex-1 gap-4">
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between">
@@ -760,7 +813,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                 ) : null}
               </View>
 
-              <View className="gap-4">
+              <View className={isCompact ? "gap-4" : "w-full max-w-sm gap-4"}>
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between gap-3">
                     <SectionTitle>{t("orders.detail.payment")}</SectionTitle>
@@ -813,6 +866,10 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                   </Surface>
                 </View>
 
+                {order.order_type === "delivery" && order.orderable ? (
+                  <DeliveryPanel orderable={order.orderable} />
+                ) : null}
+
                 <View className="gap-2">
                   <SectionTitle>{t("orders.detail.summary")}</SectionTitle>
                   <Surface className="w-full p-4 gap-3">
@@ -830,15 +887,6 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                     <MoneyRow label={t("common.total")} value={order.total} emphasized />
                   </Surface>
                 </View>
-
-                <OrderStatusActions
-                  status={statusCode}
-                  orderId={order.id}
-                  isPending={updateStatus.isPending}
-                  error={updateStatus.isError ? updateStatus.error : null}
-                  isSuccess={updateStatus.isSuccess}
-                  onUpdate={updateStatus.mutate}
-                />
 
                 <Button
                   variant="outline"
@@ -860,6 +908,21 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
             </View>
           </View>
         </ScrollView>
+
+        {statusCode === "open" ? (
+          <View className="border-t border-border bg-surface px-4 pb-safe pt-3 md:px-6">
+            <View className={`w-full self-center ${isCompact ? "max-w-3xl" : "max-w-5xl"}`}>
+              <OrderStatusActions
+                status={statusCode}
+                orderId={order.id}
+                isPending={updateStatus.isPending}
+                error={updateStatus.isError ? updateStatus.error : null}
+                isSuccess={updateStatus.isSuccess}
+                onUpdate={updateStatus.mutate}
+              />
+            </View>
+          </View>
+        ) : null}
 
         <PaymentQrDialog
           isOpen={isQrOpen && canShowQr}

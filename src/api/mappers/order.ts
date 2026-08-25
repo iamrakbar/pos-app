@@ -61,7 +61,7 @@ export function extractStatusValue(status: unknown): string {
   return typeof status === "string" ? status.toLowerCase() : "unknown";
 }
 
-function extractApiStatusColor(status: unknown): StatusColor {
+export function normalizeStatusColor(status: unknown): StatusColor {
   const color = extractStatusRecord(status)?.color;
   if (typeof color !== "string") return "default";
 
@@ -92,7 +92,7 @@ function getStatusPresentation(
   const mapped = mapping[value];
   return mapped
     ? { value, ...mapped }
-    : { value, label: extractStatusLabel(status), color: extractApiStatusColor(status) };
+    : { value, label: extractStatusLabel(status), color: normalizeStatusColor(status) };
 }
 
 export function getOrderStatus(status: unknown): StatusPresentation {
