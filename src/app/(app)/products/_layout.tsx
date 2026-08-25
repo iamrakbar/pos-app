@@ -31,7 +31,7 @@ export default function ProductsLayout() {
           headerLeft: () => <DrawerMenuButton />,
         }}
       />
-      <Stack.Screen name="[id]" options={{ title: t("navigation.product") }} />
+      <Stack.Screen name="[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }
