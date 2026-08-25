@@ -156,6 +156,7 @@ function OrderStatusActions({
 
   return (
     <View className="gap-2">
+      <SectionTitle>{t("orders.detail.updateStatus")}</SectionTitle>
       <View className="flex-row gap-3">
         <Button
           className="flex-1"
@@ -721,8 +722,8 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
         }}
       />
       <View className="flex-1 bg-background">
-        <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-6 md:px-6">
-          <View className={`w-full self-center gap-5 ${isCompact ? "max-w-3xl" : "max-w-5xl"}`}>
+        <ScrollView className="flex-1" contentContainerClassName="px-4 py-6 pb-10 md:px-6">
+          <View className="w-full max-w-3xl self-center gap-5">
             <OrderOverview
               order={order}
               isCompact={isCompact}
@@ -733,7 +734,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
               customerName={customerName}
             />
 
-            <View className={isCompact ? "gap-5" : "flex-row items-start gap-5"}>
+            <View className="gap-5">
               <View className="flex-1 gap-4">
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between">
@@ -813,7 +814,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                 ) : null}
               </View>
 
-              <View className={isCompact ? "gap-4" : "w-full max-w-sm gap-4"}>
+              <View className="gap-4">
                 <View className="gap-2">
                   <View className="flex-row items-center justify-between gap-3">
                     <SectionTitle>{t("orders.detail.payment")}</SectionTitle>
@@ -888,6 +889,15 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                   </Surface>
                 </View>
 
+                <OrderStatusActions
+                  status={statusCode}
+                  orderId={order.id}
+                  isPending={updateStatus.isPending}
+                  error={updateStatus.isError ? updateStatus.error : null}
+                  isSuccess={updateStatus.isSuccess}
+                  onUpdate={updateStatus.mutate}
+                />
+
                 <Button
                   variant="outline"
                   isDisabled={isPrinting}
@@ -908,21 +918,6 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
             </View>
           </View>
         </ScrollView>
-
-        {statusCode === "open" ? (
-          <View className="border-t border-border bg-surface px-4 pb-safe pt-3 md:px-6">
-            <View className={`w-full self-center ${isCompact ? "max-w-3xl" : "max-w-5xl"}`}>
-              <OrderStatusActions
-                status={statusCode}
-                orderId={order.id}
-                isPending={updateStatus.isPending}
-                error={updateStatus.isError ? updateStatus.error : null}
-                isSuccess={updateStatus.isSuccess}
-                onUpdate={updateStatus.mutate}
-              />
-            </View>
-          </View>
-        ) : null}
 
         <PaymentQrDialog
           isOpen={isQrOpen && canShowQr}
