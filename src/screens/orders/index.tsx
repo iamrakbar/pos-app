@@ -142,7 +142,6 @@ function OrderRow({
   const pickupTime = formatPickupTime(extractPickupTime(order.orderable));
   const orderStatusLabel = t(`orders.status.${orderStatus.value}` as TranslationKey);
   const paymentStatusLabel = t(`orders.paymentStatus.${paymentStatus.value}` as TranslationKey);
-  const isTerminal = orderStatus.value !== "open";
   const isPaymentSettled = paymentStatus.color === "success";
   const cancellationReasonLabel = order.cancellation_reason_code
     ? t(`orders.cancellationReasons.${order.cancellation_reason_code}` as TranslationKey)
@@ -155,10 +154,7 @@ function OrderRow({
         : t("orders.takeaway");
 
   return (
-    <Pressable
-      onPress={onPress}
-      className={`px-4 py-3 active:bg-surface-secondary md:px-6 ${isTerminal ? "opacity-60" : ""}`}
-    >
+    <Pressable onPress={onPress} className="px-4 py-3 active:bg-surface-secondary md:px-6">
       {/* Top row */}
       <View className="flex-row items-start justify-between gap-3">
         <View className="gap-0.5 flex-1">
