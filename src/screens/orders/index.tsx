@@ -56,7 +56,15 @@ export default function OrdersScreen(): React.JSX.Element {
     isFetchingNextPage,
   } = useOrders(statusFilter === "all" ? undefined : statusFilter);
 
-  const orders = data?.pages.flatMap((page) => page.data) ?? [];
+  const orders = React.useMemo(() => {
+    const seen = new Set<string>();
+    const all = data?.pages.flatMap((page) => page.data) ?? [];
+    return all.filter((order) => {
+      if (seen.has(order.id)) return false;
+      seen.add(order.id);
+      return true;
+    });
+  }, [data]);
 
   return (
     <>
