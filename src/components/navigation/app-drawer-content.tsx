@@ -72,6 +72,7 @@ export default function AppDrawerContent({
   const { data: user } = useAccountProfile();
   const logout = useAuth((s) => s.logout);
   const activeMerchant = useAuth((s) => s.activeMerchant);
+  const kdsEnabled = activeMerchant?.features?.kds === true;
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
   const { t } = useTranslation();
@@ -104,6 +105,8 @@ export default function AppDrawerContent({
       <ScrollShadow size={16} LinearGradientComponent={LinearGradient} className="flex-1">
         <ScrollView contentContainerClassName="gap-0.5 px-3" showsVerticalScrollIndicator={false}>
           {DRAWER_ROUTE_ORDER.map((routeName) => {
+            if (routeName === "kds" && !kdsEnabled) return null;
+
             const routeIndex = state.routes.findIndex((route) => route.name === routeName);
             if (routeIndex < 0) return null;
 

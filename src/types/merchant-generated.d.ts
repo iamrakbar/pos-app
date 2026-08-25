@@ -67,7 +67,7 @@ tax_is_enable: boolean;
 tax_name: string | null;
 tax_value: number | null;
 charge_app_payment_fee_to_customer: boolean;
-features: Array<string>;
+features: Record<string, boolean>;
 };
 export type MerchantUserProfileData = {
 id: string;
@@ -727,7 +727,7 @@ cover_url: string | null;
 address: App.Data.Merchant.Profile.MerchantAddressData | null;
 has_schedule: boolean;
 schedule: Record<string, Array<{ open: string; close: string }>>;
-features: Array<string>;
+features: Record<string, boolean>;
 created_at: string;
 updated_at: string;
 };

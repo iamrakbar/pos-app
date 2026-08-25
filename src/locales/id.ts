@@ -841,11 +841,32 @@ export const id: TranslationSchema = {
   },
   kds: {
     loading: "Memuat tiket dapur…",
+    filterAccessibility: "Filter tiket dapur",
+    filters: {
+      all: "Semua tipe pesanan",
+      dineIn: "Dine-in",
+      takeaway: "Takeaway",
+      delivery: "Pengantaran",
+    },
     empty: "Tidak ada tiket aktif",
     emptyDescription: "Tiket dapur baru akan muncul di sini setelah pesanan dibayar.",
-    laneEmpty: "Belum ada",
+    laneEmpty: {
+      queued: {
+        title: "Belum ada tiket menunggu",
+        description: "Pesanan yang sudah dibayar akan muncul di sini.",
+      },
+      preparing: {
+        title: "Belum ada yang diproses",
+        description: "Mulai tiket yang menunggu untuk melihatnya di sini.",
+      },
+      ready: {
+        title: "Belum ada tiket siap",
+        description: "Tiket dapur yang selesai akan muncul di sini.",
+      },
+    },
     queued: "Menunggu",
     preparing: "Diproses",
+    ready: "Siap",
     start: "Mulai Masak",
     markReady: "Tandai Siap",
     status: {

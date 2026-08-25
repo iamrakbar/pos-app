@@ -7,12 +7,18 @@ import AppIcon from "@/components/common/app-icon";
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import { useTranslation } from "@/stores/use-locale";
+import { useAuth } from "@/stores/use-auth";
+import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
 
 export default function AppLayout() {
+  useMerchantProfile();
+
   const theme = useNavigationTheme();
   const accentForeground = useThemeColor("accent-foreground");
   const { t } = useTranslation();
   const router = useRouter();
+  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const kdsEnabled = activeMerchant?.features?.kds === true;
   const { width, isCompact } = useResponsiveLayout();
   const drawerWidth = Math.min(isCompact ? width - 48 : 320, 320);
 
@@ -86,6 +92,7 @@ export default function AppLayout() {
           title: t("navigation.kds"),
           drawerLabel: t("navigation.kds"),
           headerShown: false,
+          drawerItemStyle: kdsEnabled ? undefined : { display: "none" },
         }}
       />
       <Drawer.Screen

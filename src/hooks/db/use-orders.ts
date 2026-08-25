@@ -110,7 +110,11 @@ export function useOrders(orderStatus?: string) {
   return useInfiniteQuery({
     queryKey: ["orders", merchantId, orderStatus],
     queryFn: ({ pageParam }) =>
-      getOrders(merchantId!, { order_status: orderStatus, per_page: ORDERS_PER_PAGE, page: pageParam }),
+      getOrders(merchantId!, {
+        order_status: orderStatus,
+        per_page: ORDERS_PER_PAGE,
+        page: pageParam,
+      }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const meta = lastPage.meta;

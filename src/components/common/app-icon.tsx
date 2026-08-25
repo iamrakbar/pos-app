@@ -33,6 +33,7 @@ const AINICON: Partial<Record<AppIconName, string>> = {
   "chevron-up": "chevron-up",
   "eye-off-outline": "eye-off",
   "eye-outline": "eye",
+  "flame-outline": "kitchen",
   "fast-food-outline": "eat",
   "heart-outline": "love",
   "home-outline": "home",

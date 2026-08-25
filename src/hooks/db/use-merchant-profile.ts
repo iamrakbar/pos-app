@@ -7,6 +7,7 @@ import {
 } from "@/api/endpoints/merchant";
 import { useAuth } from "@/stores/use-auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 const MERCHANT_PROFILE_STALE_TIME_MS = 5 * 60 * 1000;
 
@@ -16,8 +17,9 @@ function merchantProfileKey(merchantId: string | null | undefined) {
 
 export function useMerchantProfile() {
   const merchantId = useAuth((state) => state.merchantId);
+  const updateActiveMerchant = useAuth((state) => state.updateActiveMerchant);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: merchantProfileKey(merchantId),
     queryFn: async () => {
       const response = await getMerchantProfile(merchantId!);
@@ -26,6 +28,14 @@ export function useMerchantProfile() {
     enabled: !!merchantId,
     staleTime: MERCHANT_PROFILE_STALE_TIME_MS,
   });
+
+  useEffect(() => {
+    if (query.data?.features) {
+      updateActiveMerchant({ features: query.data.features });
+    }
+  }, [query.data, updateActiveMerchant]);
+
+  return query;
 }
 
 export function useUpdateMerchantProfile() {

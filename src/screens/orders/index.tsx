@@ -31,7 +31,12 @@ function formatPickupTime(value: string | null): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isFinite(date.getTime())) {
-    return formatDateTime(date, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    return formatDateTime(date, {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
   const time = /^(\d{2}):(\d{2})/.exec(value);
   return time ? `${time[1]}:${time[2]}` : value;
@@ -56,15 +61,12 @@ export default function OrdersScreen(): React.JSX.Element {
     isFetchingNextPage,
   } = useOrders(statusFilter === "all" ? undefined : statusFilter);
 
-  const orders = React.useMemo(() => {
-    const seen = new Set<string>();
-    const all = data?.pages.flatMap((page) => page.data) ?? [];
-    return all.filter((order) => {
-      if (seen.has(order.id)) return false;
-      seen.add(order.id);
-      return true;
-    });
-  }, [data]);
+  const seenOrderIds = new Set<string>();
+  const orders = (data?.pages.flatMap((page) => page.data) ?? []).filter((order) => {
+    if (seenOrderIds.has(order.id)) return false;
+    seenOrderIds.add(order.id);
+    return true;
+  });
 
   return (
     <>

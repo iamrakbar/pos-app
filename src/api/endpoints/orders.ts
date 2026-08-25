@@ -1,53 +1,57 @@
-import { apiRequest } from '../client';
+import { apiRequest } from "../client";
 
 export type MerchantOrderData = App.Data.Merchant.Order.OrderData;
 
 type OrderResponse = { data: MerchantOrderData };
 type OrdersResponse = {
-    data: App.Data.Merchant.Order.OrderListData[];
-    meta?: { current_page: number; last_page: number; per_page: number; total: number };
-    links?: unknown;
+  data: App.Data.Merchant.Order.OrderListData[];
+  meta?: { current_page: number; last_page: number; per_page: number; total: number };
+  links?: unknown;
 };
 type PaymentStatusResponse = { data: App.Data.Merchant.Order.PaymentStatusData };
 type UpdateOrderStatusResponse = { data: App.Data.Merchant.Order.OrderStatusData };
 
 export function getOrder(merchantId: string, orderId: string): Promise<OrderResponse> {
-    return apiRequest<OrderResponse>(`/${merchantId}/orders/${orderId}`);
+  return apiRequest<OrderResponse>(`/${merchantId}/orders/${orderId}`);
 }
 
-export function getOrders(merchantId: string, params?: {
+export function getOrders(
+  merchantId: string,
+  params?: {
     order_status?: string;
-    search?: string;
     date_from?: string;
     date_to?: string;
     sort?: string;
     per_page?: number;
     page?: number;
-}): Promise<OrdersResponse> {
-    return apiRequest<OrdersResponse>(`/${merchantId}/orders`, {
-        query: {
-            'filter[order_status]': params?.order_status,
-            'filter[search]': params?.search,
-            'filter[date_from]': params?.date_from,
-            'filter[date_to]': params?.date_to,
-            sort: params?.sort ?? '-created_at',
-            per_page: params?.per_page,
-            page: params?.page,
-        },
-    });
+  }
+): Promise<OrdersResponse> {
+  return apiRequest<OrdersResponse>(`/${merchantId}/orders`, {
+    query: {
+      "filter[order_status]": params?.order_status,
+      "filter[date_from]": params?.date_from,
+      "filter[date_to]": params?.date_to,
+      sort: params?.sort ?? "-created_at",
+      per_page: params?.per_page,
+      page: params?.page,
+    },
+  });
 }
 
-export function getPaymentStatus(merchantId: string, orderId: string): Promise<PaymentStatusResponse> {
-    return apiRequest<PaymentStatusResponse>(`/${merchantId}/orders/${orderId}/payment-status`);
+export function getPaymentStatus(
+  merchantId: string,
+  orderId: string
+): Promise<PaymentStatusResponse> {
+  return apiRequest<PaymentStatusResponse>(`/${merchantId}/orders/${orderId}/payment-status`);
 }
 
 export function updateOrderStatus(
-    merchantId: string,
-    orderId: string,
-    body: App.Requests.Merchant.Order.UpdateOrderStatusRequest
+  merchantId: string,
+  orderId: string,
+  body: App.Requests.Merchant.Order.UpdateOrderStatusRequest
 ): Promise<UpdateOrderStatusResponse> {
-    return apiRequest<UpdateOrderStatusResponse>(`/${merchantId}/orders/${orderId}/status`, {
-        method: 'PATCH',
-        body,
-    });
+  return apiRequest<UpdateOrderStatusResponse>(`/${merchantId}/orders/${orderId}/status`, {
+    method: "PATCH",
+    body,
+  });
 }

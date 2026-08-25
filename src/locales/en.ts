@@ -836,11 +836,32 @@ export const en = {
   },
   kds: {
     loading: "Loading kitchen tickets…",
+    filterAccessibility: "Filter kitchen tickets",
+    filters: {
+      all: "All order types",
+      dineIn: "Dine-in",
+      takeaway: "Takeaway",
+      delivery: "Delivery",
+    },
     empty: "No active tickets",
     emptyDescription: "New kitchen tickets will appear here once orders are paid.",
-    laneEmpty: "Nothing here",
+    laneEmpty: {
+      queued: {
+        title: "No queued tickets",
+        description: "New paid orders will appear here.",
+      },
+      preparing: {
+        title: "Nothing is being prepared",
+        description: "Start a queued ticket to see it here.",
+      },
+      ready: {
+        title: "No ready tickets yet",
+        description: "Completed kitchen tickets will appear here.",
+      },
+    },
     queued: "Queued",
     preparing: "Preparing",
+    ready: "Ready",
     start: "Start Preparing",
     markReady: "Mark Ready",
     status: {
