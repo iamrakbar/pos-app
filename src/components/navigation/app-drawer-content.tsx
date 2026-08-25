@@ -22,12 +22,13 @@ import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
-type DrawerRouteName = "index" | "pos" | "products" | "orders" | "earnings" | "settings";
+type DrawerRouteName = "index" | "pos" | "products" | "orders" | "kds" | "earnings" | "settings";
 
 const DRAWER_ROUTE_ORDER: DrawerRouteName[] = [
   "index",
   "pos",
   "orders",
+  "kds",
   "products",
   "earnings",
   "settings",
@@ -38,6 +39,7 @@ const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof AppIcon>["name
   pos: "calculator-outline",
   products: "fast-food-outline",
   orders: "receipt-outline",
+  kds: "flame-outline",
   earnings: "wallet-outline",
   settings: "settings-outline",
 };
@@ -47,6 +49,7 @@ function getRouteLabel(routeName: string, translate: Translate): string {
   if (routeName === "pos") return translate("navigation.pos");
   if (routeName === "products") return translate("navigation.products");
   if (routeName === "orders") return translate("navigation.orders");
+  if (routeName === "kds") return translate("navigation.kds");
   if (routeName === "earnings") return translate("navigation.earnings");
   if (routeName === "settings") return translate("navigation.settings");
   return routeName;
@@ -78,6 +81,7 @@ export default function AppDrawerContent({
     pos: t("navigation.descriptions.pos"),
     products: t("navigation.descriptions.products"),
     orders: t("navigation.descriptions.orders"),
+    kds: t("navigation.descriptions.kds"),
     earnings: t("navigation.descriptions.earnings"),
     settings: t("navigation.descriptions.settings"),
   };

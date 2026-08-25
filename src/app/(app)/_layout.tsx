@@ -81,6 +81,14 @@ export default function AppLayout() {
         }}
       />
       <Drawer.Screen
+        name="kds"
+        options={{
+          title: t("navigation.kds"),
+          drawerLabel: t("navigation.kds"),
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
         name="earnings"
         options={{
           title: t("navigation.earnings"),

@@ -839,6 +839,22 @@ export const id: TranslationSchema = {
       paymentFee: "Biaya pembayaran",
     },
   },
+  kds: {
+    loading: "Memuat tiket dapur…",
+    empty: "Tidak ada tiket aktif",
+    emptyDescription: "Tiket dapur baru akan muncul di sini setelah pesanan dibayar.",
+    laneEmpty: "Belum ada",
+    queued: "Menunggu",
+    preparing: "Diproses",
+    start: "Mulai Masak",
+    markReady: "Tandai Siap",
+    status: {
+      queued: "Menunggu",
+      preparing: "Diproses",
+      ready: "Siap",
+      cancelled: "Dibatalkan",
+    },
+  },
   dashboard: {
     performance: "Kinerja pesanan dan penjualan untuk {{period}}",
     periods: {
@@ -908,6 +924,7 @@ export const id: TranslationSchema = {
     categories: "Kategori",
     category: "Kategori",
     orders: "Pesanan",
+    kds: "Tampilan Dapur",
     earnings: "Pendapatan",
     settings: "Pengaturan",
     account: "Akun",
@@ -936,6 +953,7 @@ export const id: TranslationSchema = {
       products: "Katalog dan tambahan",
       discounts: "Promosi produk otomatis",
       orders: "Transaksi dan status",
+      kds: "Antrean persiapan dapur",
       earnings: "Pendapatan dan penjualan",
       settings: "Preferensi dan penyiapan",
     },

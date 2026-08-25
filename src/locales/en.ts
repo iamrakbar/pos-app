@@ -834,6 +834,22 @@ export const en = {
       paymentFee: "Payment fee",
     },
   },
+  kds: {
+    loading: "Loading kitchen tickets…",
+    empty: "No active tickets",
+    emptyDescription: "New kitchen tickets will appear here once orders are paid.",
+    laneEmpty: "Nothing here",
+    queued: "Queued",
+    preparing: "Preparing",
+    start: "Start Preparing",
+    markReady: "Mark Ready",
+    status: {
+      queued: "Queued",
+      preparing: "Preparing",
+      ready: "Ready",
+      cancelled: "Cancelled",
+    },
+  },
   dashboard: {
     performance: "Order and sales performance for {{period}}",
     periods: {
@@ -903,6 +919,7 @@ export const en = {
     categories: "Categories",
     category: "Category",
     orders: "Orders",
+    kds: "Kitchen Display",
     earnings: "Earnings",
     settings: "Settings",
     account: "Account",
@@ -931,6 +948,7 @@ export const en = {
       products: "Catalog and add-ons",
       discounts: "Automatic product promotions",
       orders: "Transactions and status",
+      kds: "Kitchen preparation queue",
       earnings: "Revenue and sales summary",
       settings: "Preferences and setup",
     },
