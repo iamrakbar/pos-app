@@ -738,6 +738,7 @@ export const en = {
     loading: "Loading orders…",
     empty: "No orders found",
     emptyDescription: "Orders matching the selected status will appear here.",
+    filterAccessibility: "Filter orders",
     dineIn: "Dine-in",
     takeaway: "Takeaway",
     takeawayPickup: "Takeaway · Pickup {{time}}",

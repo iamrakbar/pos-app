@@ -743,6 +743,7 @@ export const id: TranslationSchema = {
     loading: "Memuat pesanan…",
     empty: "Pesanan tidak ditemukan",
     emptyDescription: "Pesanan dengan status yang dipilih akan muncul di sini.",
+    filterAccessibility: "Filter pesanan",
     dineIn: "Dine-in",
     takeaway: "Takeaway",
     takeawayPickup: "Takeaway · Ambil {{time}}",

@@ -13,12 +13,11 @@ import LoadingState from "@/components/common/loading-state";
 import ErrorState from "@/components/common/error-state";
 import { formatDateTime, formatRupiah, formatTime } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
-import { LinearGradient } from "expo-linear-gradient";
-import { Chip, ScrollShadow, Separator, Typography, useThemeColor } from "heroui-native";
+import { getToolbarIcon } from "@/utils/toolbar-icons";
+import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useTables } from "@/hooks/db/use-tables";
 import { EmptyState } from "heroui-native-pro";
 import type { TranslationKey } from "@/locales";
@@ -60,29 +59,26 @@ export default function OrdersScreen(): React.JSX.Element {
   const orders = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <View className="flex-1 bg-background">
-      <View className="py-3">
-        <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="gap-2 px-4 md:px-6"
-          >
-            {STATUS_FILTERS.map((filter) => {
-              return (
-                <Chip
-                  key={filter}
-                  onPress={() => setStatusFilter(filter)}
-                  variant={statusFilter === filter ? "primary" : "secondary"}
-                >
-                  <Chip.Label>{t(`orders.filters.${filter}`)}</Chip.Label>
-                </Chip>
-              );
-            })}
-          </ScrollView>
-        </ScrollShadow>
-      </View>
-
+    <>
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Menu
+          {...getToolbarIcon("filter")}
+          tintColor={themeColorMuted}
+          accessibilityLabel={t("orders.filterAccessibility")}
+        >
+          <Stack.Toolbar.Label>{t("common.filter")}</Stack.Toolbar.Label>
+          {STATUS_FILTERS.map((filter) => (
+            <Stack.Toolbar.MenuAction
+              key={filter}
+              onPress={() => setStatusFilter(filter)}
+              isOn={statusFilter === filter}
+            >
+              {t(`orders.filters.${filter}`)}
+            </Stack.Toolbar.MenuAction>
+          ))}
+        </Stack.Toolbar.Menu>
+      </Stack.Toolbar>
+      <View className="flex-1 bg-background">
       {isLoading ? (
         <LoadingState message={t("orders.loading")} />
       ) : isError ? (
@@ -122,7 +118,8 @@ export default function OrdersScreen(): React.JSX.Element {
           ListFooterComponent={isFetchingNextPage ? <LoadingState /> : null}
         />
       )}
-    </View>
+      </View>
+    </>
   );
 }
 
