@@ -9,12 +9,9 @@ export type StatusPresentation = {
 };
 
 const ORDER_STATUSES: Record<string, Omit<StatusPresentation, "value">> = {
-  new: { label: "New", color: "warning" },
-  process: { label: "Processing", color: "accent" },
+  open: { label: "Open", color: "warning" },
   completed: { label: "Completed", color: "success" },
   cancelled: { label: "Cancelled", color: "danger" },
-  canceled: { label: "Cancelled", color: "danger" },
-  rejected: { label: "Rejected", color: "danger" },
 };
 
 const PAYMENT_STATUSES: Record<string, Omit<StatusPresentation, "value">> = {

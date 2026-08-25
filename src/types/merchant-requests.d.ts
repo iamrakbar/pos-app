@@ -8,7 +8,10 @@
 declare namespace App.Requests.Merchant {
     export type CancellationRequestStatusEnum = "pending" | "approved" | "rejected";
     export type GalleryCategoryEnum = "Food" | "Ambiance";
+    export type OrderStatusEnum = "open" | "completed" | "cancelled";
+    export type OrderTypeEnum = "dine-in" | "takeaway" | "delivery";
     export type PaymentGroupEnum = "cash" | "card" | "bank_transfer" | "qris" | "e_wallet" | "food_delivery" | "marketplace" | "over_the_counter";
+    export type PaymentStatusEnum = "capture" | "settlement" | "pending" | "deny" | "expire" | "cancel" | "failure";
     export type ReviewStatusEnum = "approved" | "unapproved";
     export type UnitTypeEnum = "percentage" | "fixed";
     export type UserRoleEnum = "owner" | "manager" | "cashier" | "waiter" | "chef";
@@ -245,7 +248,7 @@ declare namespace App.Requests.Merchant.Guest {
 }
 declare namespace App.Requests.Merchant.Order {
     export type UpdateOrderStatusRequest = {
-        status: "new" | "process" | "completed" | "rejected";
+        status: "completed" | "cancelled";
         reason?: string | null;
     };
 }
@@ -306,7 +309,6 @@ declare namespace App.Requests.Merchant.Profile {
         dine_in?: boolean;
         takeaway?: boolean;
         delivery?: boolean;
-        auto_process_on_payment_settlement?: boolean;
         tax_is_enable?: boolean;
         tax_name?: string | null;
         tax_value?: number | null;

@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import type { InfiniteData, QueryKey } from "@tanstack/react-query";
 import { getOrder, getOrders, updateOrderStatus } from "@/api/endpoints/orders";
 import { getOrderStatus } from "@/api/mappers/order";
+import { useAuth } from "@/stores/use-auth";
 
 const ORDERS_PER_PAGE = 20;
 const ORDER_DETAIL_STALE_TIME_MS = 30 * 1000;
@@ -18,9 +19,9 @@ function getOptimisticStatus(
     value: status,
     label: presentation.label,
     color: presentation.color,
-    is_final: status === "completed" || status === "rejected",
-    can_be_cancelled: status !== "completed" && status !== "rejected",
-    next_status: status === "process" ? "completed" : null,
+    is_final: true,
+    can_be_cancelled: false,
+    next_status: null,
   };
 }
 
@@ -78,54 +79,61 @@ function patchOrderListPages(
 
 function patchCachedOrderStatus(
   queryClient: ReturnType<typeof useQueryClient>,
+  merchantId: string,
   id: string,
   status: unknown
 ) {
-  queryClient.setQueryData(["order", id], (old: App.Data.Merchant.Order.OrderData | undefined) =>
-    old
-      ? {
-          ...old,
-          order_status: status as App.Data.Merchant.Order.OrderStatusDetailData,
-        }
-      : old
+  queryClient.setQueryData(
+    ["order", merchantId, id],
+    (old: App.Data.Merchant.Order.OrderData | undefined) =>
+      old
+        ? {
+            ...old,
+            order_status: status as App.Data.Merchant.Order.OrderStatusDetailData,
+          }
+        : old
   );
 
   const cachedOrderLists = queryClient.getQueriesData<InfiniteData<OrdersResponse>>({
-    queryKey: ["orders"],
+    queryKey: ["orders", merchantId],
   });
   for (const [queryKey, data] of cachedOrderLists) {
     queryClient.setQueryData(
       queryKey,
-      patchOrderListPages(data, id, status, Array.isArray(queryKey) ? queryKey[1] : undefined)
+      patchOrderListPages(data, id, status, Array.isArray(queryKey) ? queryKey[2] : undefined)
     );
   }
 }
 
 export function useOrders(orderStatus?: string) {
+  const merchantId = useAuth((s) => s.merchantId);
   return useInfiniteQuery({
-    queryKey: ["orders", orderStatus],
+    queryKey: ["orders", merchantId, orderStatus],
     queryFn: ({ pageParam }) =>
-      getOrders({ order_status: orderStatus, per_page: ORDERS_PER_PAGE, page: pageParam }),
+      getOrders(merchantId!, { order_status: orderStatus, per_page: ORDERS_PER_PAGE, page: pageParam }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const meta = lastPage.meta;
       if (meta && meta.current_page < meta.last_page) return meta.current_page + 1;
       return undefined;
     },
+    enabled: !!merchantId,
   });
 }
 
 export function useOrder(id: string | undefined) {
+  const merchantId = useAuth((s) => s.merchantId);
   return useQuery({
-    queryKey: ["order", id],
-    queryFn: () => getOrder(id!).then((res) => res.data),
-    enabled: !!id,
+    queryKey: ["order", merchantId, id],
+    queryFn: () => getOrder(merchantId!, id!).then((res) => res.data),
+    enabled: !!merchantId && !!id,
     staleTime: ORDER_DETAIL_STALE_TIME_MS,
   });
 }
 
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
+  const merchantId = useAuth((s) => s.merchantId);
   return useMutation({
     mutationFn: ({
       id,
@@ -135,36 +143,37 @@ export function useUpdateOrderStatus() {
       id: string;
       status: App.Requests.Merchant.Order.UpdateOrderStatusRequest["status"];
       reason?: string | null;
-    }) => updateOrderStatus(id, { status, reason }),
+    }) => updateOrderStatus(merchantId!, id, { status, reason }),
     onMutate: async ({ id, status }) => {
       await Promise.all([
-        queryClient.cancelQueries({ queryKey: ["orders"] }),
-        queryClient.cancelQueries({ queryKey: ["order", id] }),
+        queryClient.cancelQueries({ queryKey: ["orders", merchantId] }),
+        queryClient.cancelQueries({ queryKey: ["order", merchantId, id] }),
       ]);
 
       const previousOrder = queryClient.getQueryData<App.Data.Merchant.Order.OrderData>([
         "order",
+        merchantId,
         id,
       ]);
       const previousOrderLists = queryClient.getQueriesData<InfiniteData<OrdersResponse>>({
-        queryKey: ["orders"],
+        queryKey: ["orders", merchantId],
       }) as [QueryKey, InfiniteData<OrdersResponse> | undefined][];
 
-      patchCachedOrderStatus(queryClient, id, getOptimisticStatus(status));
+      patchCachedOrderStatus(queryClient, merchantId!, id, getOptimisticStatus(status));
 
       return { previousOrder, previousOrderLists };
     },
     onError: (_error, { id }, context) => {
-      queryClient.setQueryData(["order", id], context?.previousOrder);
+      queryClient.setQueryData(["order", merchantId, id], context?.previousOrder);
       for (const [queryKey, data] of context?.previousOrderLists ?? []) {
         queryClient.setQueryData(queryKey, data);
       }
     },
     onSuccess: (data, { id }) => {
-      patchCachedOrderStatus(queryClient, id, data.data.order_status);
+      patchCachedOrderStatus(queryClient, merchantId!, id, data.data.order_status);
     },
     onSettled: (_data, _error, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["order", id] });
+      queryClient.invalidateQueries({ queryKey: ["order", merchantId, id] });
     },
   });
 }

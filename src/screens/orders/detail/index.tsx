@@ -44,6 +44,8 @@ import {
   Chip,
   Separator,
   Surface,
+  TextArea,
+  TextField,
   Typography,
   useThemeColor,
   useToast,
@@ -138,10 +140,18 @@ function OrderStatusActions({
   isPending: boolean;
   error: unknown;
   isSuccess: boolean;
-  onUpdate: (input: { id: string; status: "process" | "completed" }) => void;
+  onUpdate: (input: { id: string; status: "completed" | "cancelled"; reason?: string | null }) => void;
 }) {
   const { t } = useTranslation();
-  if (status !== "new" && status !== "process") return null;
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  if (status !== "open") return null;
+
+  const handleCancel = () => {
+    onUpdate({ id: orderId, status: "cancelled", reason: cancelReason.trim() || null });
+    setIsCancelOpen(false);
+    setCancelReason("");
+  };
 
   return (
     <View className="gap-2">
@@ -149,15 +159,20 @@ function OrderStatusActions({
       <View className="flex-row gap-3">
         <Button
           className="flex-1"
-          onPress={() =>
-            onUpdate({ id: orderId, status: status === "new" ? "process" : "completed" })
-          }
+          onPress={() => onUpdate({ id: orderId, status: "completed" })}
           isDisabled={isPending}
         >
           <AppIcon name="checkmark-circle-outline" size={16} color="white" />
-          <Button.Label className="ml-1.5">
-            {status === "new" ? t("orders.detail.accept") : t("orders.detail.markCompleted")}
-          </Button.Label>
+          <Button.Label className="ml-1.5">{t("orders.detail.markCompleted")}</Button.Label>
+        </Button>
+        <Button
+          variant="danger"
+          className="flex-1"
+          onPress={() => setIsCancelOpen(true)}
+          isDisabled={isPending}
+        >
+          <AppIcon name="close-circle-outline" size={16} color="white" />
+          <Button.Label className="ml-1.5">{t("orders.detail.cancelOrder")}</Button.Label>
         </Button>
       </View>
       {error ? (
@@ -166,6 +181,24 @@ function OrderStatusActions({
       {isSuccess ? (
         <Typography className="text-xs text-success">{t("orders.detail.statusUpdated")}</Typography>
       ) : null}
+      <ActionDialog
+        isOpen={isCancelOpen}
+        onOpenChange={setIsCancelOpen}
+        title={t("orders.detail.cancelOrder")}
+        actionLabel={t("orders.detail.cancelOrder")}
+        actionVariant="danger"
+        onAction={handleCancel}
+        description={
+          <TextField className="mt-3">
+            <TextArea
+              value={cancelReason}
+              onChangeText={setCancelReason}
+              placeholder={t("orders.detail.cancelReasonPrompt")}
+              numberOfLines={3}
+            />
+          </TextField>
+        }
+      />
     </View>
   );
 }
@@ -493,6 +526,11 @@ function OrderOverview({
             <Typography type="body-sm" color="muted">
               {formatDateTime(order.created_at)}
             </Typography>
+            {order.cancellation_reason_code ? (
+              <Typography type="body-xs" color="muted">
+                {t("orders.detail.cancellationReason")}: {order.cancellation_reason_code}
+              </Typography>
+            ) : null}
           </View>
           <View className={`${isCompact ? "items-start" : "items-end"} gap-1`}>
             <Typography type="body-xs" color="muted">

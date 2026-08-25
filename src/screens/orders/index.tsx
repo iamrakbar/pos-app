@@ -24,10 +24,9 @@ import { EmptyState } from "heroui-native-pro";
 import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
-// type StatusFilter = "all" | "new" | "process" | "completed" | "cancelled" | "rejected";
-type StatusFilter = "all" | "new" | "process" | "completed";
+type StatusFilter = "all" | "open" | "completed" | "cancelled";
 
-const STATUS_FILTERS: StatusFilter[] = ["all", "new", "process", "completed"];
+const STATUS_FILTERS: StatusFilter[] = ["all", "open", "completed", "cancelled"];
 
 function formatPickupTime(value: string | null): string | null {
   if (!value) return null;

@@ -63,7 +63,6 @@ logo_url: string | null;
 dine_in: boolean;
 takeaway: boolean;
 delivery: boolean;
-auto_process_on_payment_settlement: boolean;
 tax_is_enable: boolean;
 tax_name: string | null;
 tax_value: number | null;
@@ -330,6 +329,54 @@ updated_at: string;
 };
 }
 declare namespace App.Data.Merchant.Order {
+export type KitchenTicketAddOnData = {
+id: string;
+name: string;
+options: Array<App.Data.Merchant.Order.KitchenTicketOptionData>;
+};
+export type KitchenTicketData = {
+id: string;
+order: App.Data.Merchant.Order.KitchenTicketOrderData;
+status: App.Data.Merchant.Order.KitchenTicketStatusData;
+preparation_started_at: string | null;
+ready_at: string | null;
+cancelled_at: string | null;
+created_at: string;
+};
+export type KitchenTicketOptionData = {
+id: string;
+name: string;
+};
+export type KitchenTicketOrderData = {
+id: string;
+code: string;
+payment_status: App.Data.Merchant.Order.KitchenTicketPaymentStatusData;
+total: number;
+products_count: number;
+order_type: string;
+order_status: App.Data.Merchant.Order.KitchenTicketOrderStatusData;
+products: Array<App.Data.Merchant.Order.KitchenTicketProductData>;
+created_at: string;
+};
+export type KitchenTicketOrderStatusData = {
+value: string;
+label: string;
+};
+export type KitchenTicketPaymentStatusData = {
+value: string;
+label: string;
+};
+export type KitchenTicketProductData = {
+product_id: string;
+name: string;
+qty: number;
+notes: string | null;
+add_ons: Array<App.Data.Merchant.Order.KitchenTicketAddOnData>;
+};
+export type KitchenTicketStatusData = {
+value: string;
+label: string;
+};
 export type OrderCustomerData = {
 name: string | null;
 email: string | null;
@@ -344,6 +391,8 @@ customer: App.Data.Merchant.Order.OrderCustomerData;
 payment: App.Data.Merchant.Order.OrderPaymentData;
 order_type: string;
 order_status: App.Data.Merchant.Order.OrderStatusDetailData;
+cancellation_reason_code: string | null;
+kitchen_ticket: App.Data.Merchant.Order.KitchenTicketData | null;
 payment_status: App.Data.Merchant.Order.OrderPaymentStatusDetailData;
 notes: string | null;
 products: Array<App.Data.Merchant.Order.OrderProductData>;
@@ -370,6 +419,8 @@ customer: Array<any>;
 payment: Array<any>;
 order_type: string;
 order_status: Array<any>;
+cancellation_reason_code: string | null;
+kitchen_ticket: App.Data.Merchant.Order.KitchenTicketData | null;
 payment_status: Array<any>;
 total: number;
 products_count: number;
@@ -474,6 +525,7 @@ export type OrderStatusData = {
 id: string;
 code: string;
 order_status: Array<any>;
+cancellation_reason_code: string | null;
 cancelled_at: string | null;
 updated_at: string;
 };
@@ -666,7 +718,6 @@ terms: string | null;
 dine_in: boolean;
 takeaway: boolean;
 delivery: boolean;
-auto_process_on_payment_settlement: boolean;
 tax_is_enable: boolean;
 tax_name: string | null;
 tax_value: number | null;

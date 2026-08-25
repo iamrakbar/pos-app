@@ -60,6 +60,8 @@ function toOrderListData(checkoutData: CheckoutData): App.Data.Merchant.Order.Or
     products_count: checkoutData.products.reduce((total, product) => total + product.qty, 0),
     orderable: checkoutData.table ? ([checkoutData.table] as any[]) : null,
     created_at: checkoutData.created_at,
+    cancellation_reason_code: null,
+    kitchen_ticket: null,
   };
 }
 
@@ -139,14 +141,14 @@ export function useCheckout() {
       attemptRef.current = null;
       const order = toOrderListData(data);
       const cachedOrderLists = queryClient.getQueriesData<InfiniteData<OrdersResponse>>({
-        queryKey: ["orders"],
+        queryKey: ["orders", merchantId],
       });
       for (const [queryKey, cached] of cachedOrderLists) {
-        const filterStatus = Array.isArray(queryKey) ? queryKey[1] : undefined;
+        const filterStatus = Array.isArray(queryKey) ? queryKey[2] : undefined;
         if (typeof filterStatus === "string" && filterStatus !== data.order_status.value) continue;
         queryClient.setQueryData(queryKey, prependOrderToCachedPages(cached, order));
       }
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders", merchantId] });
       queryClient.invalidateQueries({ queryKey: ["products-raw", merchantId] });
     },
     onSettled: () => {

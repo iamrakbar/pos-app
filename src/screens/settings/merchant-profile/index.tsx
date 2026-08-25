@@ -318,24 +318,6 @@ function GeneralTab({
             </TextField>
           )}
         />
-
-        <Controller
-          control={control}
-          name="auto_process_on_payment_settlement"
-          render={({ field: { value, onChange } }) => (
-            <View className="flex-row items-center justify-between gap-3">
-              <View className="flex-1 gap-1">
-                <Typography type="body-sm" weight="semibold">
-                  {t("merchantProfile.autoProcessTitle")}
-                </Typography>
-                <Typography type="body-xs" color="muted">
-                  {t("merchantProfile.autoProcessDescription")}
-                </Typography>
-              </View>
-              <Switch isSelected={value} onSelectedChange={onChange} />
-            </View>
-          )}
-        />
       </Card.Body>
     </Card>
   );
@@ -534,7 +516,6 @@ export default function MerchantProfileScreen(): React.JSX.Element {
         email: profile.email ?? "",
         website: profile.website ?? "",
         terms: profile.terms ?? "",
-        auto_process_on_payment_settlement: profile.auto_process_on_payment_settlement,
         dine_in: profile.dine_in,
         takeaway: profile.takeaway,
         delivery: profile.delivery,
@@ -560,7 +541,6 @@ export default function MerchantProfileScreen(): React.JSX.Element {
       email: "",
       website: "",
       terms: "",
-      auto_process_on_payment_settlement: false,
       dine_in: true,
       takeaway: true,
       delivery: false,
@@ -621,7 +601,6 @@ export default function MerchantProfileScreen(): React.JSX.Element {
         email: values.email.trim() || null,
         website: values.website.trim() || null,
         terms: values.terms.trim() || null,
-        auto_process_on_payment_settlement: values.auto_process_on_payment_settlement,
         dine_in: values.dine_in,
         takeaway: values.takeaway,
         delivery: values.delivery,
@@ -637,7 +616,6 @@ export default function MerchantProfileScreen(): React.JSX.Element {
         email: updated.email ?? "",
         website: updated.website ?? "",
         terms: updated.terms ?? "",
-        auto_process_on_payment_settlement: updated.auto_process_on_payment_settlement,
         dine_in: updated.dine_in,
         takeaway: updated.takeaway,
         delivery: updated.delivery,

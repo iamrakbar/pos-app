@@ -20,7 +20,6 @@ export function createMerchantProfileSchema(t: Translate) {
         }),
       website: z.string().trim().max(255, t("validation.merchantWebsiteTooLong")),
       terms: z.string().trim().max(2000, t("validation.merchantTermsTooLong")),
-      auto_process_on_payment_settlement: z.boolean(),
       dine_in: z.boolean(),
       takeaway: z.boolean(),
       delivery: z.boolean(),
