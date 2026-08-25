@@ -11,14 +11,15 @@ import { useAuth } from "@/stores/use-auth";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
 
 export default function AppLayout() {
-  useMerchantProfile();
+  const { data: merchantProfile } = useMerchantProfile();
 
   const theme = useNavigationTheme();
   const accentForeground = useThemeColor("accent-foreground");
   const { t } = useTranslation();
   const router = useRouter();
   const activeMerchant = useAuth((state) => state.activeMerchant);
-  const kdsEnabled = activeMerchant?.features?.kds === true;
+  const kdsEnabled =
+    merchantProfile?.features?.includes("kds") || activeMerchant?.features?.includes("kds");
   const { width, isCompact } = useResponsiveLayout();
   const drawerWidth = Math.min(isCompact ? width - 48 : 320, 320);
 
