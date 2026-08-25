@@ -760,6 +760,14 @@ export const id: TranslationSchema = {
       completed: "Selesai",
       cancelled: "Dibatalkan",
     },
+    cancellationReasons: {
+      customer_requested: "Dibatalkan oleh pelanggan",
+      merchant_rejected: "Ditolak oleh merchant",
+      payment_expired: "Pembayaran kedaluwarsa",
+      payment_cancelled: "Pembayaran dibatalkan",
+      delivery_failed: "Pengiriman gagal",
+      system_cancelled: "Dibatalkan oleh sistem",
+    },
     paymentStatus: {
       pending: "Menunggu",
       unpaid: "Belum dibayar",

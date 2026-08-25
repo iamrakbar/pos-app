@@ -142,6 +142,11 @@ function OrderRow({
   const pickupTime = formatPickupTime(extractPickupTime(order.orderable));
   const orderStatusLabel = t(`orders.status.${orderStatus.value}` as TranslationKey);
   const paymentStatusLabel = t(`orders.paymentStatus.${paymentStatus.value}` as TranslationKey);
+  const isTerminal = orderStatus.value !== "open";
+  const isPaymentSettled = paymentStatus.color === "success";
+  const cancellationReasonLabel = order.cancellation_reason_code
+    ? t(`orders.cancellationReasons.${order.cancellation_reason_code}` as TranslationKey)
+    : null;
   const orderContext =
     order.order_type === "dine-in"
       ? [t("orders.dineIn"), areaName, tableName].filter(Boolean).join(" · ")
@@ -150,7 +155,10 @@ function OrderRow({
         : t("orders.takeaway");
 
   return (
-    <Pressable onPress={onPress} className="px-4 py-3 active:bg-surface-secondary md:px-6">
+    <Pressable
+      onPress={onPress}
+      className={`px-4 py-3 active:bg-surface-secondary md:px-6 ${isTerminal ? "opacity-60" : ""}`}
+    >
       {/* Top row */}
       <View className="flex-row items-start justify-between gap-3">
         <View className="gap-0.5 flex-1">
@@ -169,19 +177,14 @@ function OrderRow({
               color={themeColorMuted}
             />
             <Typography type="body-xs" color="muted">
-              {orderContext}
+              {customerName ? `${orderContext} · ${customerName}` : orderContext}
             </Typography>
-            {customerName && (
-              <>
-                <Typography type="body-xs" color="muted">
-                  ·
-                </Typography>
-                <Typography type="body-xs" color="muted">
-                  {customerName}
-                </Typography>
-              </>
-            )}
           </View>
+          {cancellationReasonLabel ? (
+            <Typography type="body-xs" color="muted">
+              {cancellationReasonLabel}
+            </Typography>
+          ) : null}
         </View>
 
         <View className="items-end gap-0.5">
@@ -197,13 +200,14 @@ function OrderRow({
       {/* Bottom row */}
       <View className="flex-row items-center justify-between mt-1.5">
         <View className="flex-row items-center gap-1.5">
-          <AppIcon name="card-outline" size={12} color={themeColorMuted} />
           <Typography type="body-xs" color="muted">
             {paymentName}
           </Typography>
-          <Chip color={paymentStatus.color} size="sm" variant="soft">
-            <Chip.Label>{paymentStatusLabel}</Chip.Label>
-          </Chip>
+          {isPaymentSettled ? null : (
+            <Chip color={paymentStatus.color} size="sm" variant="soft">
+              <Chip.Label>{paymentStatusLabel}</Chip.Label>
+            </Chip>
+          )}
           <Typography type="body-xs" color="muted">
             ·
           </Typography>

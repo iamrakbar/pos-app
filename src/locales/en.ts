@@ -755,6 +755,14 @@ export const en = {
       completed: "Completed",
       cancelled: "Cancelled",
     },
+    cancellationReasons: {
+      customer_requested: "Cancelled by customer",
+      merchant_rejected: "Rejected by merchant",
+      payment_expired: "Payment expired",
+      payment_cancelled: "Payment cancelled",
+      delivery_failed: "Delivery failed",
+      system_cancelled: "Cancelled by system",
+    },
     paymentStatus: {
       pending: "Pending",
       unpaid: "Pending",
