@@ -151,6 +151,8 @@ function OrderRow({
   const tableName = extractTableName(order.orderable);
   const pickupTime = formatPickupTime(extractPickupTime(order.orderable));
   const orderStatusLabel = t(`orders.status.${orderStatus.value}` as TranslationKey);
+  const showOrderStatusBadge =
+    orderStatus.value === "completed" || orderStatus.value === "cancelled";
   const paymentStatusLabel = t(`orders.paymentStatus.${paymentStatus.value}` as TranslationKey);
   const isPaymentSettled = paymentStatus.color === "success";
   const cancellationReasonLabel = order.cancellation_reason_code
@@ -172,9 +174,11 @@ function OrderRow({
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            <Chip color={orderStatus.color} size="sm" variant="soft">
-              <Chip.Label>{orderStatusLabel}</Chip.Label>
-            </Chip>
+            {showOrderStatusBadge ? (
+              <Chip color={orderStatus.color} size="sm" variant="soft">
+                <Chip.Label>{orderStatusLabel}</Chip.Label>
+              </Chip>
+            ) : null}
           </View>
           <View className="flex-row items-center gap-1.5">
             <AppIcon

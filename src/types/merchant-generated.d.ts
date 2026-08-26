@@ -145,7 +145,6 @@ thumbnail: string | null;
 export type CheckoutOrderStatusData = {
 value: string;
 label: string;
-color: string;
 };
 export type CheckoutPricingData = {
 subtotal: number;
@@ -459,7 +458,6 @@ waybill_id: string | null;
 export type OrderOrderableTrackingStatusData = {
 value: string;
 label: string;
-color: string;
 is_delivered: boolean;
 };
 export type OrderPaymentData = {
@@ -493,7 +491,6 @@ id: string | null;
 export type OrderPaymentStatusDetailData = {
 value: string;
 label: string;
-color: string;
 is_successful: boolean;
 };
 export type OrderProductAddOnData = {
@@ -532,7 +529,6 @@ updated_at: string;
 export type OrderStatusDetailData = {
 value: string;
 label: string;
-color: string;
 is_final: boolean;
 can_be_cancelled: boolean;
 next_status: string | null;
@@ -548,7 +544,6 @@ order_code: string;
 payment: Array<any>;
 payment_status: string;
 payment_status_label: string;
-payment_status_color: string;
 is_successful: boolean;
 };
 }

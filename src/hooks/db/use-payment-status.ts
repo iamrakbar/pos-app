@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { InfiniteData } from "@tanstack/react-query";
 import { getPaymentStatus } from "@/api/endpoints/orders";
-import { getPaymentStatus as getPaymentStatusPresentation } from "@/api/mappers/order";
 import { useAuth } from "@/stores/use-auth";
 
 type OrdersResponse = {
@@ -16,7 +15,6 @@ function toPaymentStatusDetail(
   return {
     value: data.payment_status,
     label: data.payment_status_label,
-    color: getPaymentStatusPresentation(data.payment_status).color,
     is_successful: data.is_successful,
   };
 }

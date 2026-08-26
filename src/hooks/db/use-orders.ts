@@ -18,7 +18,6 @@ function getOptimisticStatus(
   return {
     value: status,
     label: presentation.label,
-    color: presentation.color,
     is_final: true,
     can_be_cancelled: false,
     next_status: null,
