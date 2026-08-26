@@ -151,10 +151,7 @@ function OrderRow({
   const tableName = extractTableName(order.orderable);
   const pickupTime = formatPickupTime(extractPickupTime(order.orderable));
   const orderStatusLabel = t(`orders.status.${orderStatus.value}` as TranslationKey);
-  const showOrderStatusBadge =
-    orderStatus.value === "completed" || orderStatus.value === "cancelled";
   const paymentStatusLabel = t(`orders.paymentStatus.${paymentStatus.value}` as TranslationKey);
-  const isPaymentSettled = paymentStatus.color === "success";
   const cancellationReasonLabel = order.cancellation_reason_code
     ? t(`orders.cancellationReasons.${order.cancellation_reason_code}` as TranslationKey)
     : null;
@@ -174,11 +171,9 @@ function OrderRow({
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            {showOrderStatusBadge ? (
-              <Chip color={orderStatus.color} size="sm" variant="soft">
-                <Chip.Label>{orderStatusLabel}</Chip.Label>
-              </Chip>
-            ) : null}
+            <Chip color={orderStatus.color} size="sm" variant="soft">
+              <Chip.Label>{orderStatusLabel}</Chip.Label>
+            </Chip>
           </View>
           <View className="flex-row items-center gap-1.5">
             <AppIcon
@@ -213,11 +208,9 @@ function OrderRow({
           <Typography type="body-xs" color="muted">
             {paymentName}
           </Typography>
-          {isPaymentSettled ? null : (
-            <Chip color={paymentStatus.color} size="sm" variant="soft">
-              <Chip.Label>{paymentStatusLabel}</Chip.Label>
-            </Chip>
-          )}
+          <Chip color={paymentStatus.color} size="sm" variant="soft">
+            <Chip.Label>{paymentStatusLabel}</Chip.Label>
+          </Chip>
           <Typography type="body-xs" color="muted">
             ·
           </Typography>
