@@ -19,9 +19,10 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ScrollView } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 
-type Lane = "queued" | "preparing" | "ready";
-const LANES: Lane[] = ["queued", "preparing", "ready"];
-const LANE_ACTION: Partial<Record<Lane, "start" | "ready">> = {
+type Lane = "all" | "queued" | "preparing" | "ready";
+type ActionLane = Exclude<Lane, "all">;
+const LANES: Lane[] = ["all", "queued", "preparing", "ready"];
+const LANE_ACTION: Partial<Record<ActionLane, "start" | "ready">> = {
   queued: "start",
   preparing: "ready",
 };
@@ -34,7 +35,7 @@ const ORDER_TYPE_FILTERS: readonly KitchenTicketOrderType[] = [
 const KDS_STATUS_HEADER_BACKGROUNDS: Record<string, string> = {
   queued: "bg-warning-soft",
   preparing: "bg-accent-soft",
-  ready: "bg-success-soft",
+  ready: "bg-surface",
   cancelled: "bg-danger-soft",
 };
 
@@ -62,9 +63,13 @@ function TicketCard({
   error: unknown;
 }) {
   const { t } = useTranslation();
-  const mutedColor = useThemeColor("muted");
+  const [mutedColor] = useThemeColor(["muted"]);
   const order = ticket.order;
+  const statusColor = normalizeStatusColor(ticket.status);
   const statusBackground = KDS_STATUS_HEADER_BACKGROUNDS[ticketStatus(ticket)] ?? "bg-default";
+  const actionLane = lane === "all" ? ticketStatus(ticket) : lane;
+  const action = LANE_ACTION[actionLane as ActionLane];
+  const isQueuedAction = action === "start";
 
   return (
     <Surface className="w-full h-full gap-0 p-0">
@@ -74,7 +79,7 @@ function TicketCard({
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            <Chip color={normalizeStatusColor(ticket.status)} size="sm">
+            <Chip color={statusColor} size="sm">
               <Chip.Label className="text-white">
                 {t(`kds.status.${ticketStatus(ticket)}` as TranslationKey)}
               </Chip.Label>
@@ -138,17 +143,20 @@ function TicketCard({
         </Typography>
       ) : null}
 
-      {lane !== "ready" ? (
+      {action ? (
         <View className="p-4">
-          <Button onPress={onAction} isDisabled={isPending}>
+          <Button
+            size="sm"
+            onPress={onAction}
+            isDisabled={isPending}
+            className={isQueuedAction ? "bg-warning" : ""}
+          >
             <AppIcon
-              name={lane === "queued" ? "play-outline" : "checkmark-circle-outline"}
+              name={action === "start" ? "play-outline" : "checkmark-circle-outline"}
               size={16}
-              color="white"
+              color={"white"}
             />
-            <Button.Label className="ml-1.5">
-              {t(lane === "queued" ? "kds.start" : "kds.markReady")}
-            </Button.Label>
+            <Button.Label>{t(action === "start" ? "kds.start" : "kds.markReady")}</Button.Label>
           </Button>
         </View>
       ) : null}
@@ -175,6 +183,7 @@ export default function KdsScreen(): React.JSX.Element {
   const updateStatus = useUpdateKitchenTicketStatus(orderTypeFilter);
   const tickets = ticketsQuery.data?.pages.flatMap((page) => page.data) ?? [];
   const ticketsByLane: Record<Lane, KitchenTicketData[]> = {
+    all: [...tickets].sort((a, b) => b.created_at.localeCompare(a.created_at)),
     queued: tickets
       .filter((ticket) => ticketStatus(ticket) === "queued")
       .sort((a, b) => b.created_at.localeCompare(a.created_at)),
@@ -187,7 +196,7 @@ export default function KdsScreen(): React.JSX.Element {
   };
   const activeTickets = ticketsByLane[activeLane];
   const handleAction = (ticketId: string, lane: Lane) => {
-    const action = LANE_ACTION[lane];
+    const action = lane === "all" ? undefined : LANE_ACTION[lane];
     if (action) updateStatus.mutate({ id: ticketId, action });
   };
   const handleRefresh = () => {
@@ -267,7 +276,9 @@ export default function KdsScreen(): React.JSX.Element {
                     accessibilityState={{ selected: isActive }}
                     accessibilityLabel={t(`kds.${lane}` as TranslationKey)}
                   >
-                    <Chip.Label>{t(`kds.${lane}` as TranslationKey)}</Chip.Label>
+                    <Chip.Label>
+                      {lane === "all" ? t("common.all") : t(`kds.${lane}` as TranslationKey)}
+                    </Chip.Label>
                   </Chip>
                 );
               })}
@@ -288,7 +299,12 @@ export default function KdsScreen(): React.JSX.Element {
                 <TicketCard
                   ticket={ticket}
                   lane={activeLane}
-                  onAction={() => handleAction(ticket.id, activeLane)}
+                  onAction={() =>
+                    handleAction(
+                      ticket.id,
+                      activeLane === "all" ? (ticketStatus(ticket) as Lane) : activeLane
+                    )
+                  }
                   isPending={updateStatus.isPending && updateStatus.variables?.id === ticket.id}
                   error={
                     updateStatus.isError && updateStatus.variables?.id === ticket.id
@@ -308,7 +324,7 @@ export default function KdsScreen(): React.JSX.Element {
             ListFooterComponent={ticketsQuery.isFetchingNextPage ? <LoadingState /> : null}
             ListEmptyComponent={
               <View className="w-full">
-                {tickets.length === 0 ? (
+                {tickets.length === 0 || activeLane === "all" ? (
                   <EmptyState className="self-center w-full max-w-sm py-20">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
