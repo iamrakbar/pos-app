@@ -22,6 +22,7 @@ import type { ComponentProps, JSX } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
+import { hasMerchantFeature } from "@/utils/merchant-features";
 
 type DrawerRouteName = "index" | "pos" | "products" | "orders" | "kds" | "earnings" | "settings";
 
@@ -74,8 +75,10 @@ export default function AppDrawerContent({
   const { data: merchantProfile } = useMerchantProfile();
   const logout = useAuth((s) => s.logout);
   const activeMerchant = useAuth((s) => s.activeMerchant);
-  const kdsEnabled =
-    merchantProfile?.features?.includes("kds") || activeMerchant?.features?.includes("kds");
+  const kdsEnabled = hasMerchantFeature(
+    merchantProfile?.features ?? activeMerchant?.features,
+    "kds"
+  );
   const themeMode = useThemeStore((s) => s.mode);
   const setThemeMode = useThemeStore((s) => s.setMode);
   const { t } = useTranslation();

@@ -31,6 +31,12 @@ const ORDER_TYPE_FILTERS: readonly KitchenTicketOrderType[] = [
   "takeaway",
   "delivery",
 ];
+const KDS_STATUS_HEADER_BACKGROUNDS: Record<string, string> = {
+  queued: "bg-warning-soft",
+  preparing: "bg-accent-soft",
+  ready: "bg-success-soft",
+  cancelled: "bg-danger-soft",
+};
 
 function ticketStatus(ticket: KitchenTicketData): string {
   return extractStatusValue(ticket.status);
@@ -58,31 +64,36 @@ function TicketCard({
   const { t } = useTranslation();
   const mutedColor = useThemeColor("muted");
   const order = ticket.order;
+  const statusBackground = KDS_STATUS_HEADER_BACKGROUNDS[ticketStatus(ticket)] ?? "bg-default";
 
   return (
-    <Surface className="w-full h-full gap-3 p-0">
-      <View className="flex-row items-start justify-between gap-3 px-4 pt-4">
+    <Surface className="w-full h-full gap-0 p-0">
+      <View className={`flex-row items-start justify-between gap-3 p-4 ${statusBackground}`}>
         <View className="flex-1 gap-1">
-          <View className="flex-row items-center gap-2">
+          <View className="flex-row items-center justify-between">
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            <Chip color={normalizeStatusColor(ticket.status)} size="sm" variant="soft">
-              <Chip.Label>{t(`kds.status.${ticketStatus(ticket)}` as TranslationKey)}</Chip.Label>
+            <Chip color={normalizeStatusColor(ticket.status)} size="sm">
+              <Chip.Label className="text-white">
+                {t(`kds.status.${ticketStatus(ticket)}` as TranslationKey)}
+              </Chip.Label>
             </Chip>
           </View>
-          <View className="flex-row items-center gap-1.5">
-            <AppIcon name={orderTypeIcon(order.order_type)} size={12} color={mutedColor} />
-            <Typography type="body-xs" color="muted">
-              {t(order.products_count === 1 ? "orders.itemOne" : "orders.itemOther", {
-                count: order.products_count,
-              })}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-1.5">
+              <AppIcon name={orderTypeIcon(order.order_type)} size={12} color={mutedColor} />
+              <Typography type="body-xs" color="muted">
+                {t(order.products_count === 1 ? "orders.itemOne" : "orders.itemOther", {
+                  count: order.products_count,
+                })}
+              </Typography>
+            </View>
+            <Typography type="body-xs" color="muted" className="tabular-nums">
+              {formatTime(ticket.created_at)}
             </Typography>
           </View>
         </View>
-        <Typography type="body-xs" color="muted" className="tabular-nums">
-          {formatTime(ticket.created_at)}
-        </Typography>
       </View>
 
       <ScrollShadow LinearGradientComponent={LinearGradient} className="flex-1">

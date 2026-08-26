@@ -173,11 +173,11 @@ export function useUpdateOrderStatus() {
         queryClient.setQueryData(queryKey, data);
       }
     },
-    onSuccess: (data, { id }) => {
-      patchCachedOrderStatus(queryClient, merchantId!, id, data.data.order_status);
-    },
     onSettled: (_data, _error, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["order", merchantId, id] });
+      void Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["order", merchantId, id] }),
+        queryClient.invalidateQueries({ queryKey: ["orders", merchantId] }),
+      ]);
     },
   });
 }

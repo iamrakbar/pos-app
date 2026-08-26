@@ -9,6 +9,7 @@ import { Button, useThemeColor } from "heroui-native";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
+import { hasMerchantFeature } from "@/utils/merchant-features";
 
 export default function AppLayout() {
   const { data: merchantProfile } = useMerchantProfile();
@@ -18,8 +19,10 @@ export default function AppLayout() {
   const { t } = useTranslation();
   const router = useRouter();
   const activeMerchant = useAuth((state) => state.activeMerchant);
-  const kdsEnabled =
-    merchantProfile?.features?.includes("kds") || activeMerchant?.features?.includes("kds");
+  const kdsEnabled = hasMerchantFeature(
+    merchantProfile?.features ?? activeMerchant?.features,
+    "kds"
+  );
   const { width, isCompact } = useResponsiveLayout();
   const drawerWidth = Math.min(isCompact ? width - 48 : 320, 320);
 

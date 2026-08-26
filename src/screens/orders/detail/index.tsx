@@ -43,6 +43,7 @@ import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
   Chip,
+  Label,
   Separator,
   Surface,
   TextArea,
@@ -61,6 +62,8 @@ import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
+import { useAuth } from "@/stores/use-auth";
+import { hasMerchantFeature } from "@/utils/merchant-features";
 
 function formatPickupTime(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -128,59 +131,58 @@ function MoneyRow({
   );
 }
 
-function OrderStatusActions({
+function OrderCancelAction({
   status,
   orderId,
   isPending,
   error,
-  isSuccess,
+  canCancel,
   onUpdate,
 }: {
   status: string;
   orderId: string;
   isPending: boolean;
   error: unknown;
-  isSuccess: boolean;
-  onUpdate: (input: { id: string; status: "completed" | "cancelled"; reason?: string | null }) => void;
+  canCancel: boolean;
+  onUpdate: (input: {
+    id: string;
+    status: "completed" | "cancelled";
+    reason?: string | null;
+  }) => void;
 }) {
   const { t } = useTranslation();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  if (status !== "open") return null;
+  const [isCancelReasonInvalid, setIsCancelReasonInvalid] = useState(false);
+  const themeColorDanger = useThemeColor("danger");
+  if (status !== "open" || !canCancel) return null;
 
   const handleCancel = () => {
-    onUpdate({ id: orderId, status: "cancelled", reason: cancelReason.trim() || null });
+    const reason = cancelReason.trim();
+    if (!reason) {
+      setIsCancelReasonInvalid(true);
+      return;
+    }
+
+    onUpdate({ id: orderId, status: "cancelled", reason });
     setIsCancelOpen(false);
     setCancelReason("");
+    setIsCancelReasonInvalid(false);
   };
 
   return (
-    <View className="gap-2">
-      <SectionTitle>{t("orders.detail.updateStatus")}</SectionTitle>
-      <View className="flex-row gap-3">
-        <Button
-          className="flex-1"
-          onPress={() => onUpdate({ id: orderId, status: "completed" })}
-          isDisabled={isPending}
-        >
-          <AppIcon name="checkmark-circle-outline" size={16} color="white" />
-          <Button.Label className="ml-1.5">{t("orders.detail.markCompleted")}</Button.Label>
-        </Button>
-        <Button
-          variant="danger"
-          className="flex-1"
-          onPress={() => setIsCancelOpen(true)}
-          isDisabled={isPending}
-        >
-          <AppIcon name="close-circle-outline" size={16} color="white" />
-          <Button.Label className="ml-1.5">{t("orders.detail.cancelOrder")}</Button.Label>
-        </Button>
-      </View>
+    <View className="flex-1 gap-2">
+      <Button
+        variant="danger-soft"
+        className="w-full"
+        onPress={() => setIsCancelOpen(true)}
+        isDisabled={isPending}
+      >
+        <AppIcon name="close-circle-outline" size={16} color={themeColorDanger} />
+        <Button.Label className="ml-1.5">{t("orders.detail.cancelOrder")}</Button.Label>
+      </Button>
       {error ? (
         <Typography className="text-xs text-danger">{getErrorMessage(error)}</Typography>
-      ) : null}
-      {isSuccess ? (
-        <Typography className="text-xs text-success">{t("orders.detail.statusUpdated")}</Typography>
       ) : null}
       <ActionDialog
         isOpen={isCancelOpen}
@@ -190,14 +192,29 @@ function OrderStatusActions({
         actionVariant="danger"
         onAction={handleCancel}
         description={
-          <TextField className="mt-3">
-            <TextArea
-              value={cancelReason}
-              onChangeText={setCancelReason}
-              placeholder={t("orders.detail.cancelReasonPrompt")}
-              numberOfLines={3}
-            />
-          </TextField>
+          <View className="w-full gap-3">
+            <Typography type="body-sm" color="muted">
+              {t("orders.detail.cancelOrderDescription")}
+            </Typography>
+            <TextField className="w-full" isRequired isInvalid={isCancelReasonInvalid}>
+              <Label>{t("orders.detail.cancellationReason")}</Label>
+              <TextArea
+                className="w-full"
+                value={cancelReason}
+                onChangeText={(value) => {
+                  setCancelReason(value);
+                  if (value.trim()) setIsCancelReasonInvalid(false);
+                }}
+                placeholder={t("orders.detail.cancelReasonPrompt")}
+                numberOfLines={3}
+              />
+              {isCancelReasonInvalid ? (
+                <Typography type="body-xs" className="text-danger">
+                  {t("orders.detail.cancelReasonRequired")}
+                </Typography>
+              ) : null}
+            </TextField>
+          </View>
         }
       />
     </View>
@@ -530,7 +547,9 @@ function OrderOverview({
             {order.cancellation_reason_code ? (
               <Typography type="body-xs" color="muted">
                 {t("orders.detail.cancellationReason")}:{" "}
-                {t(`orders.cancellationReasons.${order.cancellation_reason_code}` as TranslationKey)}
+                {t(
+                  `orders.cancellationReasons.${order.cancellation_reason_code}` as TranslationKey
+                )}
               </Typography>
             ) : null}
           </View>
@@ -575,7 +594,8 @@ function OrderOverview({
                   ? [areaName, tableName].filter(Boolean).join(" · ") ||
                     t("orders.detail.tableNotAssigned")
                   : order.order_type === "delivery"
-                    ? (order.orderable?.address?.address ?? t("orders.detail.deliveryAddressNotSet"))
+                    ? (order.orderable?.address?.address ??
+                      t("orders.detail.deliveryAddressNotSet"))
                     : pickupTime
                       ? t("orders.detail.pickupAt", { time: pickupTime })
                       : t("orders.detail.pickupNotSpecified")}
@@ -597,12 +617,8 @@ function DeliveryPanel({ orderable }: { orderable: App.Data.Merchant.Order.Order
   const tracking = orderable.tracking_status;
   const courier = orderable.courier;
   const address = orderable.address;
-  const courierLabel = courier
-    ? [courier.name, courier.service].filter(Boolean).join(" · ")
-    : null;
-  const addressLabel = address
-    ? [address.address, address.city].filter(Boolean).join(", ")
-    : null;
+  const courierLabel = courier ? [courier.name, courier.service].filter(Boolean).join(" · ") : null;
+  const addressLabel = address ? [address.address, address.city].filter(Boolean).join(", ") : null;
 
   return (
     <View className="gap-2">
@@ -615,7 +631,9 @@ function DeliveryPanel({ orderable }: { orderable: App.Data.Merchant.Order.Order
         ) : null}
       </View>
       <Surface className="w-full p-4 gap-3">
-        {courierLabel ? <DetailRow label={t("orders.detail.courier")} value={courierLabel} /> : null}
+        {courierLabel ? (
+          <DetailRow label={t("orders.detail.courier")} value={courierLabel} />
+        ) : null}
         {addressLabel ? (
           <DetailRow label={t("orders.detail.deliveryAddress")} value={addressLabel} />
         ) : null}
@@ -659,6 +677,8 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
   const { data: tables } = useTables();
   const paymentStatus = usePaymentStatus(order.id);
   const updateStatus = useUpdateOrderStatus();
+  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const canCancel = hasMerchantFeature(activeMerchant?.features, "cancellation");
 
   const orderStatus = getOrderStatus(order.order_status);
   const paymentStatusPresentation = getPaymentStatus(order.payment_status);
@@ -889,31 +909,33 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                   </Surface>
                 </View>
 
-                <OrderStatusActions
-                  status={statusCode}
-                  orderId={order.id}
-                  isPending={updateStatus.isPending}
-                  error={updateStatus.isError ? updateStatus.error : null}
-                  isSuccess={updateStatus.isSuccess}
-                  onUpdate={updateStatus.mutate}
-                />
-
-                <Button
-                  variant="outline"
-                  isDisabled={isPrinting}
-                  onPress={() => void printReceipt(order, "reprint")}
-                >
-                  {isPrinting ? (
-                    <ActivityIndicator />
-                  ) : (
-                    <AppIcon name="print-outline" size={18} color={themeColorForeground} />
-                  )}
-                  <Button.Label>
-                    {isPrinting
-                      ? t("orders.detail.printingReceipt")
-                      : t("orders.detail.printReceipt")}
-                  </Button.Label>
-                </Button>
+                <View className="flex-row gap-3">
+                  <OrderCancelAction
+                    status={statusCode}
+                    orderId={order.id}
+                    isPending={updateStatus.isPending}
+                    error={updateStatus.isError ? updateStatus.error : null}
+                    canCancel={canCancel}
+                    onUpdate={updateStatus.mutate}
+                  />
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    isDisabled={isPrinting}
+                    onPress={() => void printReceipt(order, "reprint")}
+                  >
+                    {isPrinting ? (
+                      <ActivityIndicator />
+                    ) : (
+                      <AppIcon name="print-outline" size={18} color={themeColorForeground} />
+                    )}
+                    <Button.Label>
+                      {isPrinting
+                        ? t("orders.detail.printingReceipt")
+                        : t("orders.detail.printReceipt")}
+                    </Button.Label>
+                  </Button>
+                </View>
               </View>
             </View>
           </View>

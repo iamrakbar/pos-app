@@ -41,8 +41,10 @@ export default function ActionDialog({
         <Dialog.Overlay />
         <Dialog.Content isSwipeable={false} className="w-full max-w-md self-center">
           <DialogCloseButton />
-          <View className="mb-5 gap-1.5 pr-10">
-            <Dialog.Title>{title}</Dialog.Title>
+          <View className="mb-5 gap-1.5">
+            <View className="pr-10">
+              <Dialog.Title>{title}</Dialog.Title>
+            </View>
             {description ? <Dialog.Description>{description}</Dialog.Description> : null}
           </View>
           <View className="flex-row items-center gap-3">

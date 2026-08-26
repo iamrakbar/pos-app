@@ -37,6 +37,23 @@ const PAYMENT_STATUSES: Record<string, Omit<StatusPresentation, "value">> = {
   failed: { label: "Failed", color: "danger" },
 };
 
+const STATUS_COLORS: Record<string, StatusColor> = {
+  ...Object.fromEntries(
+    Object.entries(ORDER_STATUSES).map(([value, presentation]) => [value, presentation.color])
+  ),
+  ...Object.fromEntries(
+    Object.entries(PAYMENT_STATUSES).map(([value, presentation]) => [value, presentation.color])
+  ),
+  queued: "warning",
+  preparing: "accent",
+  ready: "success",
+  delivered: "success",
+  dispatched: "accent",
+  picked_up: "accent",
+  out_for_delivery: "accent",
+  in_transit: "accent",
+};
+
 function extractStatusRecord(status: unknown): Record<string, unknown> | null {
   if (Array.isArray(status)) {
     return status.length > 0 ? extractStatusRecord(status[0]) : null;
@@ -62,15 +79,7 @@ export function extractStatusValue(status: unknown): string {
 }
 
 export function normalizeStatusColor(status: unknown): StatusColor {
-  const color = extractStatusRecord(status)?.color;
-  if (typeof color !== "string") return "default";
-
-  const normalized = color.toLowerCase();
-  if (["success", "green"].includes(normalized)) return "success";
-  if (["warning", "yellow", "orange"].includes(normalized)) return "warning";
-  if (["danger", "error", "red"].includes(normalized)) return "danger";
-  if (["accent", "primary", "blue"].includes(normalized)) return "accent";
-  return "default";
+  return STATUS_COLORS[extractStatusValue(status)] ?? "default";
 }
 
 export function extractStatusLabel(status: unknown): string {
