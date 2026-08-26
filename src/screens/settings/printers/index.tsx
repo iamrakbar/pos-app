@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import CreateFAB from "@/components/common/create-fab";
 import { usePrinterStore, type SavedPrinter } from "@/stores/use-printer-store";
 import { EmptyState } from "heroui-native-pro";
@@ -32,7 +32,7 @@ export default function PrintersScreen(): React.JSX.Element {
   return (
     <View className="flex-1 bg-background">
       {!hasHydrated ? (
-        <LoadingState message={t("printerManagement.loading")} />
+        <ListSkeleton />
       ) : printers.length === 0 ? (
         <EmptyState className="py-20">
           <EmptyState.Header>

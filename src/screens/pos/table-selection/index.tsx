@@ -3,13 +3,14 @@ import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
 import type { POSTable } from "@/types/pos";
 import AppIcon from "@/components/common/app-icon";
+import { GridSkeleton } from "@/components/common/list-skeleton";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
 import { Button, Card, Chip, ScrollShadow, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useState } from "react";
-import { FlatList, Pressable, View } from "react-native";
+import { FlatList, Pressable, View, useWindowDimensions } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 
 function groupTablesByArea(tables: POSTable[]) {
@@ -38,6 +39,7 @@ function getTableSeatCount(pax: number): TableSeatCount {
 export default function TableSelectionScreen(): JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const [activeAreaId, setActiveAreaId] = useState("");
   const [gridWidth, setGridWidth] = useState(0);
   const [accent, muted, accentSoft] = useThemeColor([
@@ -46,7 +48,7 @@ export default function TableSelectionScreen(): JSX.Element {
     "accent-soft",
     "foreground",
   ]);
-  const { data: tables = [] } = useTables();
+  const { data: tables = [], isLoading } = useTables();
   const selectedTableId = usePOSStore((state) => state.checkoutForm.table_id);
   const updateCheckoutForm = usePOSStore((state) => state.updateCheckoutForm);
   const groups = groupTablesByArea(tables);
@@ -57,6 +59,20 @@ export default function TableSelectionScreen(): JSX.Element {
   const filteredTables = groups.find((group) => group.id === resolvedAreaId)?.tables ?? [];
   const columnCount = gridWidth >= 520 ? 3 : 2;
   const cardWidth = gridWidth > 0 ? gridWidth / columnCount - 12 : "48%";
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-background">
+        <GridSkeleton
+          columns={width >= 520 ? 3 : 2}
+          width={width}
+          horizontalPadding={16}
+          gap={12}
+          aspectRatio={0.9}
+        />
+      </View>
+    );
+  }
 
   const handleSelect = (tableId: string | null) => {
     updateCheckoutForm({ table_id: tableId });

@@ -1,6 +1,6 @@
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import { useAddOns } from "@/hooks/db/use-add-ons";
 import { formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
@@ -18,7 +18,7 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
   const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
   const addOnsQuery = useAddOns(productId);
 
-  if (addOnsQuery.isLoading) return <LoadingState message={t("addOnManagement.loading")} />;
+  if (addOnsQuery.isLoading) return <ListSkeleton />;
   if (addOnsQuery.isError) {
     return <ErrorState error={addOnsQuery.error} onRetry={addOnsQuery.refetch} />;
   }

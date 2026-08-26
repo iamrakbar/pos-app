@@ -9,7 +9,7 @@ import {
   getOrderStatus,
   getPaymentStatus,
 } from "@/api/mappers/order";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import ErrorState from "@/components/common/error-state";
 import { formatDateTime, formatRupiah, formatTime } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
@@ -90,7 +90,7 @@ export default function OrdersScreen(): React.JSX.Element {
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
         {isLoading ? (
-          <LoadingState message={t("orders.loading")} />
+          <ListSkeleton />
         ) : isError ? (
           <ErrorState error={error} onRetry={refetch} />
         ) : orders.length === 0 ? (
@@ -125,7 +125,7 @@ export default function OrdersScreen(): React.JSX.Element {
                 onPress={() => router.push(`/orders/${item.id}` as never)}
               />
             )}
-            ListFooterComponent={isFetchingNextPage ? <LoadingState /> : null}
+            ListFooterComponent={isFetchingNextPage ? <ListSkeleton rows={1} fill={false} /> : null}
           />
         )}
       </View>

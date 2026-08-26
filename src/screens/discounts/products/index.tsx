@@ -1,5 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import ErrorState from "@/components/common/error-state";
 import { useManagementProducts } from "@/hooks/db/use-products";
 import { useDiscountProductDraft } from "@/stores/use-discount-product-draft-store";
@@ -100,7 +100,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
             </View>
 
             {productsQuery.isLoading ? (
-              <LoadingState message={t("products.loading")} />
+              <ListSkeleton rows={5} />
             ) : productsQuery.isError ? (
               <ErrorState error={productsQuery.error} onRetry={productsQuery.refetch} />
             ) : products.length === 0 ? (

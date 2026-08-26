@@ -1,6 +1,6 @@
 import { useManagementProducts } from "@/hooks/db/use-products";
 import { useCategories } from "@/hooks/db/use-categories";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import ErrorState from "@/components/common/error-state";
 import CreateFAB from "@/components/common/create-fab";
 import { formatRupiah } from "@/utils/format";
@@ -110,7 +110,7 @@ export default function ProductsScreen(): React.JSX.Element {
       <View className="flex-1 bg-background">
         {/* Product list */}
         {isLoading ? (
-          <LoadingState message={t("products.loading")} />
+          <ListSkeleton />
         ) : isError ? (
           <ErrorState error={error} onRetry={refetch} />
         ) : (

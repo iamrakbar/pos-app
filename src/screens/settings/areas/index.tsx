@@ -1,6 +1,6 @@
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
+import { GridSkeleton } from "@/components/common/list-skeleton";
 import { useAreas } from "@/hooks/db/use-areas";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
@@ -33,13 +33,25 @@ export default function AreasScreen(): React.JSX.Element {
     setIsFormOpen(true);
   };
 
-  if (areasQuery.isLoading) return <LoadingState message={t("areasManagement.loadingAreas")} />;
+  const columnCount = isCompact ? 1 : isMedium ? 2 : 3;
+  if (areasQuery.isLoading) {
+    return (
+      <View className="flex-1 bg-background">
+        <GridSkeleton
+          columns={columnCount}
+          width={width}
+          horizontalPadding={horizontalPagePadding}
+          gap={16}
+          aspectRatio={1.2}
+        />
+      </View>
+    );
+  }
   if (areasQuery.isError) {
     return <ErrorState error={areasQuery.error} onRetry={areasQuery.refetch} />;
   }
 
   const areas = areasQuery.data ?? [];
-  const columnCount = isCompact ? 1 : isMedium ? 2 : 3;
   const cardWidth = (width - horizontalPagePadding * 2 - (columnCount - 1) * 16) / columnCount;
 
   return (

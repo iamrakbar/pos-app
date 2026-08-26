@@ -1,6 +1,6 @@
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import { useManagementCategories, useReorderCategories } from "@/hooks/db/use-categories";
 import { getErrorMessage } from "@/api/api-error";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
@@ -144,7 +144,7 @@ export default function CategoriesScreen(): React.JSX.Element {
         ) : null}
 
         {categoryQuery.isLoading ? (
-          <LoadingState message={t("categories.loading")} />
+          <ListSkeleton />
         ) : categoryQuery.isError ? (
           <ErrorState error={categoryQuery.error} onRetry={categoryQuery.refetch} />
         ) : (

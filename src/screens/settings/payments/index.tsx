@@ -1,6 +1,6 @@
 import { getErrorMessage } from "@/api/api-error";
 import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import AppIcon from "@/components/common/app-icon";
 import { useMerchantPayments, useReorderMerchantPayments } from "@/hooks/db/use-payments";
 import { useTranslation } from "@/stores/use-locale";
@@ -195,7 +195,7 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
     }
   };
 
-  if (payments.isLoading) return <LoadingState message={t("paymentSettings.loading")} />;
+  if (payments.isLoading) return <ListSkeleton />;
   if (payments.isError) return <ErrorState error={payments.error} onRetry={payments.refetch} />;
 
   return (

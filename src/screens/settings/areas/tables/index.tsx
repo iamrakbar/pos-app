@@ -1,6 +1,6 @@
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
+import { GridSkeleton } from "@/components/common/list-skeleton";
 import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
 import { useArea } from "@/hooks/db/use-areas";
 import { useAreaTables } from "@/hooks/db/use-tables";
@@ -24,8 +24,7 @@ function getTableSeatCount(pax: number): TableSeatCount {
 export default function AreaTablesScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { id: areaId } = useLocalSearchParams<{ id: string }>();
-  const { width, isCompact, isMedium, isPortrait, horizontalPagePadding } =
-    useResponsiveLayout();
+  const { width, isCompact, isMedium, isPortrait, horizontalPagePadding } = useResponsiveLayout();
   const [mutedColor, accentColor, accentSoft] = useThemeColor(["muted", "accent", "accent-soft"]);
   const areaQuery = useArea(areaId);
   const tablesQuery = useAreaTables(areaId);
@@ -49,13 +48,25 @@ export default function AreaTablesScreen(): React.JSX.Element {
     requestAnimationFrame(() => setIsQrOpen(true));
   };
 
-  if (tablesQuery.isLoading) return <LoadingState message={t("areasManagement.loadingTables")} />;
+  const columnCount = isCompact ? 1 : isMedium && isPortrait ? 2 : isMedium ? 3 : 4;
+  if (tablesQuery.isLoading) {
+    return (
+      <View className="flex-1 bg-background">
+        <GridSkeleton
+          columns={columnCount}
+          width={width}
+          horizontalPadding={horizontalPagePadding - 6}
+          gap={12}
+          aspectRatio={0.82}
+        />
+      </View>
+    );
+  }
   if (tablesQuery.isError) {
     return <ErrorState error={tablesQuery.error} onRetry={tablesQuery.refetch} />;
   }
 
   const tables = tablesQuery.data ?? [];
-  const columnCount = isCompact ? 1 : isMedium && isPortrait ? 2 : isMedium ? 3 : 4;
   const listHorizontalPadding = horizontalPagePadding - 6;
   const cardWidth = (width - listHorizontalPadding * 2) / columnCount - 16;
 
@@ -164,11 +175,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
         isOpen={isFormOpen}
         onOpenChange={setIsFormOpen}
       />
-      <TableQrOverlay
-        table={qrTable}
-        isOpen={isQrOpen}
-        onOpenChange={setIsQrOpen}
-      />
+      <TableQrOverlay table={qrTable} isOpen={isQrOpen} onOpenChange={setIsQrOpen} />
     </>
   );
 }

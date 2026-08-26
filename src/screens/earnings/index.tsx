@@ -1,6 +1,6 @@
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
+import { ListSkeleton } from "@/components/common/list-skeleton";
 import { useEarnings } from "@/hooks/db/use-earnings";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
@@ -589,7 +589,7 @@ export default function EarningsScreen(): React.JSX.Element {
           </View>
 
           {isLoading ? (
-            <LoadingState message={t("earnings.loading")} />
+            <ListSkeleton rows={5} fill={false} />
           ) : isError ? (
             <ErrorState error={error} onRetry={refetch} />
           ) : (

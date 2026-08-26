@@ -4,7 +4,7 @@ import { extractStatusValue, normalizeStatusColor } from "@/api/mappers/order";
 import { getErrorMessage } from "@/api/api-error";
 import AppIcon from "@/components/common/app-icon";
 import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
+import { GridSkeleton, ListSkeleton } from "@/components/common/list-skeleton";
 import { formatTime } from "@/utils/format";
 import { EmptyState } from "heroui-native-pro";
 import { Button, Chip, ScrollShadow, Surface, Typography, useThemeColor } from "heroui-native";
@@ -229,7 +229,19 @@ export default function KdsScreen(): React.JSX.Element {
     };
   }, []);
 
-  if (ticketsQuery.isLoading) return <LoadingState message={t("kds.loading")} />;
+  if (ticketsQuery.isLoading) {
+    return (
+      <View className="flex-1 bg-background">
+        <GridSkeleton
+          columns={gridColumns}
+          width={width}
+          horizontalPadding={horizontalPagePadding}
+          gap={gridGap}
+          aspectRatio={3 / 4}
+        />
+      </View>
+    );
+  }
   if (ticketsQuery.isError) {
     return <ErrorState error={ticketsQuery.error} onRetry={ticketsQuery.refetch} />;
   }
@@ -321,7 +333,9 @@ export default function KdsScreen(): React.JSX.Element {
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
             onEndReachedThreshold={0.5}
             onEndReached={handleEndReached}
-            ListFooterComponent={ticketsQuery.isFetchingNextPage ? <LoadingState /> : null}
+            ListFooterComponent={
+              ticketsQuery.isFetchingNextPage ? <ListSkeleton rows={1} fill={false} /> : null
+            }
             ListEmptyComponent={
               <View className="w-full">
                 {tickets.length === 0 || activeLane === "all" ? (
