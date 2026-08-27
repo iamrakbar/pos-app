@@ -1,4 +1,5 @@
 import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 import type { ChannelAuthorizationCallback, ChannelAuthorizationHandler } from "pusher-js";
 import { z } from "zod";
 import { apiRequest } from "@/api/client";
@@ -93,6 +94,7 @@ export function createMerchantEcho(token: string): Echo<"reverb"> {
 
   return new Echo({
     broadcaster: "reverb",
+    Pusher,
     key: reverbAppKey,
     wsHost: reverbHost,
     wsPort: reverbPort,
