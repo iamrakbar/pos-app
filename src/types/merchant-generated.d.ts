@@ -476,6 +476,8 @@ export type OrderPaymentDetailsData = {
 code: string | null;
 extra: string | null;
 expiry_time: string | null;
+qr_image_url: string | null;
+total: number | null;
 };
 export type OrderPaymentFeeData = {
 name: string;

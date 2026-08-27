@@ -171,6 +171,77 @@
           ]
         },
         {
+          "name": "Authorize Merchant WebSocket Channel",
+          "id": "req-merchant-broadcasting-auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "socket_id",
+                  "value": "123456.789012",
+                  "type": "text"
+                },
+                {
+                  "key": "channel_name",
+                  "value": "private-merchants.{{merchant_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/broadcasting/auth",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "broadcasting",
+                "auth"
+              ]
+            },
+            "description": "**Purpose:** Authorize the authenticated merchant user to subscribe to the private WebSocket channel for the selected merchant.\n\n**Auth required:** Yes. Send the merchant JWT as a Bearer token.\n\n**Method / URL:** `POST /api/v0/merchant/broadcasting/auth`\n\n**Body:** `socket_id` (required WebSocket connection ID), `channel_name` (required; use `private-merchants.{{merchant_id}}`).\n\n**Success response (200):** Pusher/Reverb channel authorization JSON containing an `auth` string.\n\n**Error responses:** `401` when unauthenticated; `403` when the authenticated user is not assigned to the requested merchant.\n\nThis endpoint is shared broadcasting infrastructure and is intentionally excluded from the REST operation inventory validator."
+          },
+          "auth": {
+            "type": "noauth"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains channel authorization\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.auth).to.be.a(\"string\").and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Get Authenticated User (Me)",
           "id": "req-3",
           "request": {

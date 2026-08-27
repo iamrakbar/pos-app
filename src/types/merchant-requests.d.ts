@@ -8,6 +8,8 @@
 declare namespace App.Requests.Merchant {
     export type CancellationRequestStatusEnum = "pending" | "approved" | "rejected";
     export type GalleryCategoryEnum = "Food" | "Ambiance";
+    export type KitchenTicketStatusActionEnum = "start" | "ready" | "cancel";
+    export type KitchenTicketStatusEnum = "queued" | "preparing" | "ready" | "cancelled";
     export type OrderStatusEnum = "open" | "completed" | "cancelled";
     export type OrderTypeEnum = "dine-in" | "takeaway" | "delivery";
     export type PaymentGroupEnum = "cash" | "card" | "bank_transfer" | "qris" | "e_wallet" | "food_delivery" | "marketplace" | "over_the_counter";
@@ -247,6 +249,9 @@ declare namespace App.Requests.Merchant.Guest {
     };
 }
 declare namespace App.Requests.Merchant.Order {
+    export type UpdateKitchenTicketStatusRequest = {
+        status: App.Requests.Merchant.KitchenTicketStatusActionEnum;
+    };
     export type UpdateOrderStatusRequest = {
         status: "completed" | "cancelled";
         reason?: string | null;
