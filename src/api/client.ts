@@ -72,7 +72,14 @@ export async function apiRequest<T>(
   const url = buildUrl(path, opts.query);
   const headers: Record<string, string> = { Accept: "application/json", ...opts.headers };
   const isFormData = typeof FormData !== "undefined" && opts.body instanceof FormData;
-  if (opts.body !== undefined && !isFormData) headers["Content-Type"] = "application/json";
+  const isUrlSearchParams =
+    typeof URLSearchParams !== "undefined" && opts.body instanceof URLSearchParams;
+  if (opts.body !== undefined && !isFormData && !isUrlSearchParams) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (isUrlSearchParams && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+  }
   if (opts.auth !== false) {
     const token = useAuth.getState().token;
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -86,7 +93,9 @@ export async function apiRequest<T>(
         opts.body !== undefined
           ? isFormData
             ? (opts.body as FormData)
-            : JSON.stringify(opts.body)
+            : isUrlSearchParams
+              ? (opts.body as URLSearchParams).toString()
+              : JSON.stringify(opts.body)
           : undefined,
       signal: controller.signal,
     });

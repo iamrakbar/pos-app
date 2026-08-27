@@ -19,6 +19,7 @@ import AppUpdateManager from "@/components/common/app-update-manager";
 import POSAddOnSheet from "@/screens/pos/add-ons";
 import { TrueSheetProvider } from "@lodev09/react-native-true-sheet";
 import NotificationManager from "@/components/common/notification-manager";
+import MerchantOrderNotificationManager from "@/components/common/merchant-order-notification-manager";
 
 import "../global.css";
 
@@ -89,6 +90,7 @@ function RootLayout(): JSX.Element {
                     </Stack>
                     {session ? <POSAddOnSheet /> : null}
                     <NotificationManager />
+                    <MerchantOrderNotificationManager />
                   </View>
                 )}
                 <OfflineBanner />

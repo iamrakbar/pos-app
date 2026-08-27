@@ -1041,6 +1041,11 @@ export const en = {
     testNotificationBody: "This device can display order and application alerts.",
     testScheduled: "Test notification sent",
     testFailed: "Could not send test notification",
+    newPaidOrder: "New paid order",
+    newPaidOrderDescription: "Order {{code}} has been paid.",
+    viewOrder: "View order",
+    orderConnectionFailed: "Order notifications unavailable",
+    orderConnectionFailedDescription: "Check your connection or sign in again to reconnect.",
     localOnlyNotice:
       "This basic setup supports local notifications. Remote order alerts require server-side push-token registration.",
   },

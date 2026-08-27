@@ -70,6 +70,8 @@
     "expo-updates": "~57.0.17",
     "heroui-native": "^1.0.8",
     "heroui-native-pro": "file:vendor/heroui-native-pro",
+    "laravel-echo": "^2.4.0",
+    "pusher-js": "^8.6.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.81.0",

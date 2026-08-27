@@ -1045,6 +1045,12 @@ export const id: TranslationSchema = {
     testNotificationBody: "Perangkat ini dapat menampilkan pemberitahuan pesanan dan aplikasi.",
     testScheduled: "Notifikasi uji dikirim",
     testFailed: "Notifikasi uji tidak dapat dikirim",
+    newPaidOrder: "Pesanan berbayar baru",
+    newPaidOrderDescription: "Pesanan {{code}} telah dibayar.",
+    viewOrder: "Lihat pesanan",
+    orderConnectionFailed: "Notifikasi pesanan tidak tersedia",
+    orderConnectionFailedDescription:
+      "Periksa koneksi atau masuk kembali untuk menyambungkan ulang.",
     localOnlyNotice:
       "Pengaturan dasar ini mendukung notifikasi lokal. Pemberitahuan pesanan jarak jauh memerlukan pendaftaran push token di server.",
   },
