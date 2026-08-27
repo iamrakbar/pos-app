@@ -92,8 +92,21 @@ export default function MerchantOrderNotificationManager(): null {
     const removeConnectionListener = echo.connector.onConnectionChange((status) => {
       setRealtimeStatus(status);
     });
-    const handleChannelError = () => {
+    const handleChannelError = (error: unknown) => {
       setRealtimeStatus("failed");
+      if (__DEV__) {
+        const details =
+          error && typeof error === "object"
+            ? Object.fromEntries(
+                Object.entries(error as Record<string, unknown>).filter(
+                  ([key, value]) =>
+                    ["type", "status", "code", "message"].includes(key) &&
+                    (typeof value === "string" || typeof value === "number")
+                )
+              )
+            : { message: "Unknown channel error" };
+        console.warn("[reverb] merchant channel error", details);
+      }
       if (hasShownConnectionError || !isSessionActive) return;
       hasShownConnectionError = true;
       toast.show({
@@ -101,7 +114,6 @@ export default function MerchantOrderNotificationManager(): null {
         label: t("notifications.orderConnectionFailed"),
         description: t("notifications.orderConnectionFailedDescription"),
       });
-      if (__DEV__) console.warn("Merchant Reverb channel authorization failed");
     };
     channel.error(handleChannelError);
 

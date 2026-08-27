@@ -2,6 +2,7 @@ import Echo from "laravel-echo";
 import type { ChannelAuthorizationCallback, ChannelAuthorizationHandler } from "pusher-js";
 import { z } from "zod";
 import { apiRequest } from "@/api/client";
+import { isApiError } from "@/api/api-error";
 import { API_BASE_URL } from "@/api/config";
 
 const reverbAppKey = process.env.EXPO_PUBLIC_REVERB_APP_KEY;
@@ -22,6 +23,17 @@ const merchantOrderPaidEventSchema = z.object({
 export type MerchantOrderPaidEvent = z.infer<typeof merchantOrderPaidEventSchema>;
 
 type EchoAuthResponse = { auth: string; channel_data?: string; shared_secret?: string };
+
+function getSafeErrorDetails(error: unknown): Record<string, string | number> {
+  if (isApiError(error)) {
+    return {
+      status: error.status,
+      ...(error.code ? { code: error.code } : {}),
+      message: error.message,
+    };
+  }
+  return { message: error instanceof Error ? error.message : "Unknown authorization error" };
+}
 
 function parseEventPayload(payload: unknown): unknown {
   if (typeof payload === "string") {
@@ -62,9 +74,15 @@ function authorizeChannel(token: string): ChannelAuthorizationHandler {
       },
     })
       .then((response) => callback(null, response))
-      .catch((error: unknown) =>
-        callback(error instanceof Error ? error : new Error("Channel authorization failed"), null)
-      );
+      .catch((error: unknown) => {
+        if (__DEV__) {
+          console.warn(
+            "[reverb] merchant channel authorization failed",
+            getSafeErrorDetails(error)
+          );
+        }
+        callback(error instanceof Error ? error : new Error("Channel authorization failed"), null);
+      });
   };
 }
 
