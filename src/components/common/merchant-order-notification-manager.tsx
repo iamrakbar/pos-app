@@ -5,6 +5,7 @@ import {
 } from "@/services/merchant-order-notifications";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
+import { useOrderRealtimeStatus } from "@/stores/use-order-realtime-status";
 import { useToast } from "heroui-native";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,9 +26,13 @@ export default function MerchantOrderNotificationManager(): null {
   const { toast } = useToast();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const setRealtimeStatus = useOrderRealtimeStatus((state) => state.setStatus);
 
   useEffect(() => {
-    if (!token || !merchantId) return;
+    if (!token || !merchantId) {
+      setRealtimeStatus("disconnected");
+      return () => undefined;
+    }
 
     let isSessionActive = true;
     const processedOrders = new Map<string, number>();
@@ -74,15 +79,21 @@ export default function MerchantOrderNotificationManager(): null {
     };
 
     try {
+      setRealtimeStatus("connecting");
       echo = createMerchantEcho(token);
     } catch (error) {
+      setRealtimeStatus("failed");
       if (__DEV__) console.warn("Merchant Reverb configuration is unavailable", error);
       return () => undefined;
     }
 
     const channel = echo.private(`merchants.${merchantId}`);
     channel.listen(".order.paid", processEvent);
-    channel.error(() => {
+    const removeConnectionListener = echo.connector.onConnectionChange((status) => {
+      setRealtimeStatus(status);
+    });
+    const handleChannelError = () => {
+      setRealtimeStatus("failed");
       if (hasShownConnectionError || !isSessionActive) return;
       hasShownConnectionError = true;
       toast.show({
@@ -91,7 +102,8 @@ export default function MerchantOrderNotificationManager(): null {
         description: t("notifications.orderConnectionFailedDescription"),
       });
       if (__DEV__) console.warn("Merchant Reverb channel authorization failed");
-    });
+    };
+    channel.error(handleChannelError);
 
     const appStateSubscription = AppState.addEventListener("change", (nextState) => {
       if (nextState !== "active" || !isSessionActive) return;
@@ -107,10 +119,13 @@ export default function MerchantOrderNotificationManager(): null {
     return () => {
       isSessionActive = false;
       appStateSubscription.remove();
+      removeConnectionListener();
+      channel.stopListening(".order.paid", processEvent);
       echo.leave(`merchants.${merchantId}`);
       echo.disconnect();
+      setRealtimeStatus("disconnected");
     };
-  }, [merchantId, queryClient, router, t, toast, token]);
+  }, [merchantId, queryClient, router, setRealtimeStatus, t, toast, token]);
 
   return null;
 }

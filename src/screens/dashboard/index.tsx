@@ -9,6 +9,10 @@ import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import {
+  useOrderRealtimeStatus,
+  type OrderRealtimeStatus,
+} from "@/stores/use-order-realtime-status";
 
 const SUMMARY_ICON_BACKGROUNDS = {
   accent: "bg-accent-soft",
@@ -95,6 +99,28 @@ function getPeriodRange(period: Period): AppliedDateRange {
   return { startDate: toDateKey(start), endDate: toDateKey(end) };
 }
 
+function RealtimeStatusChip({ status }: { status: OrderRealtimeStatus }) {
+  const { t } = useTranslation();
+  const statusConfig = {
+    connected: { color: "success" as const, label: t("dashboard.liveOrders.connected") },
+    connecting: { color: "warning" as const, label: t("dashboard.liveOrders.connecting") },
+    reconnecting: { color: "warning" as const, label: t("dashboard.liveOrders.reconnecting") },
+    disconnected: { color: "default" as const, label: t("dashboard.liveOrders.disconnected") },
+    failed: { color: "danger" as const, label: t("dashboard.liveOrders.failed") },
+  }[status];
+
+  return (
+    <Chip
+      size="sm"
+      color={statusConfig.color}
+      variant="soft"
+      accessibilityLabel={t("dashboard.liveOrders.accessibilityLabel")}
+    >
+      <Chip.Label>{statusConfig.label}</Chip.Label>
+    </Chip>
+  );
+}
+
 function normalizeChartRange(
   points: ChartPoint[],
   startDate: string,
@@ -120,13 +146,7 @@ function normalizeChartRange(
   return normalized;
 }
 
-function OrdersChart({
-  data,
-  isCompact,
-}: {
-  data: ChartPoint[];
-  isCompact: boolean;
-}) {
+function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boolean }) {
   const [width, setWidth] = React.useState(0);
   const height = isCompact ? 192 : 224;
   const max = Math.max(1, ...data.map((point) => point.count));
@@ -174,6 +194,7 @@ export default function DashboardScreen(): React.JSX.Element {
   const [period, setPeriod] = React.useState<Period>("today");
   const appliedRange = getPeriodRange(period);
   const dashboard = useDashboard(appliedRange.startDate, appliedRange.endDate);
+  const realtimeStatus = useOrderRealtimeStatus((state) => state.status);
   const themeColorMuted = useThemeColor("muted");
 
   const chart = normalizeChartRange(
@@ -209,6 +230,7 @@ export default function DashboardScreen(): React.JSX.Element {
             {t("dashboard.performance", { period: dateRangeLabel })}
           </Typography>
           <View className="flex-row flex-wrap justify-center gap-2">
+            <RealtimeStatusChip status={realtimeStatus} />
             {PERIODS.map((item) => (
               <Chip
                 key={item.value}
