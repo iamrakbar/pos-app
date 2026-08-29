@@ -160,7 +160,15 @@ module.exports = {
         },
       ],
       "expo-image",
-      ["expo-notifications", { defaultChannel: "default" }],
+      [
+        "expo-notifications",
+        {
+          defaultChannel: "general",
+          icon: "./assets/images/notification_icon.png",
+          color: "#0bb7cc",
+          sounds: ["./assets/sounds/new_order.wav"],
+        },
+      ],
       "expo-sharing",
       [
         "expo-media-library",
