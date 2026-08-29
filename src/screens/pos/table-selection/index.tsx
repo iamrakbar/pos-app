@@ -68,7 +68,7 @@ export default function TableSelectionScreen(): JSX.Element {
           width={width}
           horizontalPadding={16}
           gap={12}
-          aspectRatio={0.9}
+          aspectRatio={1.15}
         />
       </View>
     );

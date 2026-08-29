@@ -16,7 +16,16 @@
     ]
   },
   "event": [],
-  "variable": [],
+  "variable": [
+    {
+      "key": "fcm_device_token",
+      "value": "FCM_DEVICE_TOKEN"
+    },
+    {
+      "key": "device_token_id",
+      "value": ""
+    }
+  ],
   "item": [
     {
       "name": "Authentication",
@@ -165,6 +174,77 @@
                   "    const data = json.data || {};",
                   "    if (data.access_token) { pm.environment.set(\"access_token\", data.access_token); }",
                   "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Authorize Merchant WebSocket Channel",
+          "id": "req-merchant-broadcasting-auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "socket_id",
+                  "value": "123456.789012",
+                  "type": "text"
+                },
+                {
+                  "key": "channel_name",
+                  "value": "private-merchants.{{merchant_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/broadcasting/auth",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "broadcasting",
+                "auth"
+              ]
+            },
+            "description": "**Purpose:** Authorize the authenticated merchant user to subscribe to the private WebSocket channel for the selected merchant.\n\n**Auth required:** Yes. Send the merchant JWT as a Bearer token.\n\n**Method / URL:** `POST /api/v0/merchant/broadcasting/auth`\n\n**Body:** `socket_id` (required WebSocket connection ID), `channel_name` (required; use `private-merchants.{{merchant_id}}`).\n\n**Success response (200):** Pusher/Reverb channel authorization JSON containing an `auth` string.\n\n**Error responses:** `401` when unauthenticated; `403` when the authenticated user is not assigned to the requested merchant.\n\nThis endpoint is shared broadcasting infrastructure and is intentionally excluded from the REST operation inventory validator."
+          },
+          "auth": {
+            "type": "noauth"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains channel authorization\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.auth).to.be.a(\"string\").and.not.empty;",
+                  "});"
                 ]
               }
             }
@@ -335,6 +415,128 @@
                   "        const json = pm.response.json();",
                   "        pm.expect(json.success).to.eql(true);",
                   "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+        ,{
+          "name": "Register FCM Device Token",
+          "id": "req-merchant-device-token-register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/device-tokens",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "device-tokens"
+              ]
+            },
+            "description": "**Purpose:** Register or refresh the authenticated merchant user's FCM device token. The token is encrypted at rest and deduplicated by hash.\n\n**Auth required:** Yes.\n\n**Method / URL:** `POST /api/v0/merchant/device-tokens`\n\n**Body:** `token` (required FCM registration token), `platform` (`android`, `ios`, or `web`), `app_version` (optional).\n\nRun this after merchant login and before testing settlement notifications.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{fcm_device_token}}\",\n    \"platform\": \"android\",\n    \"app_version\": \"1.0.0\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+              }
+            ]
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code < 300) {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set(\"device_token_id\", json.data.id);",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unregister FCM Device Token",
+          "id": "req-merchant-device-token-delete",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/device-tokens/{{device_token_id}}",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "device-tokens",
+                "{{device_token_id}}"
+              ]
+            },
+            "description": "**Purpose:** Remove one FCM token from the authenticated merchant user.\n\n**Auth required:** Yes.\n\n**Method / URL:** `DELETE /api/v0/merchant/device-tokens/{{device_token_id}}`",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code < 300) {",
+                  "    pm.expect(pm.response.json().success).to.eql(true);",
                   "}"
                 ]
               }

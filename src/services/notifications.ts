@@ -1,7 +1,12 @@
 import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { registerDeviceToken } from "@/api/endpoints/device-tokens";
 
-export const DEFAULT_NOTIFICATION_CHANNEL_ID = "default";
+export const ORDER_NOTIFICATION_CHANNEL_ID = "orders";
+export const GENERAL_NOTIFICATION_CHANNEL_ID = "general";
+export const DEFAULT_NOTIFICATION_CHANNEL_ID = GENERAL_NOTIFICATION_CHANNEL_ID;
+export const NEW_ORDER_SOUND = "new_order.wav";
 
 export type NotificationPermissionState = {
   status: "granted" | "denied" | "undetermined" | "unavailable";
@@ -22,14 +27,24 @@ if (Platform.OS !== "web") {
 export async function configureNotifications(): Promise<void> {
   if (Platform.OS !== "android") return;
 
-  await Notifications.setNotificationChannelAsync(DEFAULT_NOTIFICATION_CHANNEL_ID, {
-    name: "General",
-    description: "Order and application notifications",
-    importance: Notifications.AndroidImportance.HIGH,
-    enableVibrate: true,
-    vibrationPattern: [0, 250, 150, 250],
-    showBadge: true,
-  });
+  await Promise.all([
+    Notifications.setNotificationChannelAsync(ORDER_NOTIFICATION_CHANNEL_ID, {
+      name: "Orders",
+      description: "New order notifications",
+      importance: Notifications.AndroidImportance.HIGH,
+      enableVibrate: true,
+      vibrationPattern: [0, 250, 150, 250],
+      showBadge: true,
+      sound: NEW_ORDER_SOUND,
+    }),
+    Notifications.setNotificationChannelAsync(GENERAL_NOTIFICATION_CHANNEL_ID, {
+      name: "General",
+      description: "Application notifications",
+      importance: Notifications.AndroidImportance.DEFAULT,
+      enableVibrate: true,
+      showBadge: true,
+    }),
+  ]);
 }
 
 export async function getNotificationPermissionState(): Promise<NotificationPermissionState> {
@@ -70,6 +85,44 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return getNotificationPermissionState();
 }
 
+export async function getDevicePushToken(): Promise<string> {
+  if (Platform.OS === "web") {
+    throw new Error("Push tokens are not available on web.");
+  }
+
+  await configureNotifications();
+  const permission = await Notifications.getPermissionsAsync();
+  if (!permission.granted) {
+    throw new Error("Notification permission was not granted.");
+  }
+
+  return (await Notifications.getDevicePushTokenAsync()).data;
+}
+
+export async function registerCurrentDevicePushToken(): Promise<string> {
+  if (Platform.OS === "web") {
+    throw new Error("Push tokens are not available on web.");
+  }
+
+  const token = await getDevicePushToken();
+  return registerDevicePushTokenValue({ data: token });
+}
+
+export async function registerDevicePushTokenValue(deviceToken: { data: string }): Promise<string> {
+  if (Platform.OS === "web") {
+    throw new Error("Push tokens are not available on web.");
+  }
+
+  const platform = Platform.OS === "ios" ? "ios" : "android";
+  const response = await registerDeviceToken({
+    token: deviceToken.data,
+    platform,
+    app_version: Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? null,
+  });
+
+  return response.data.id;
+}
+
 export async function scheduleTestNotification(title: string, body: string): Promise<string> {
   await configureNotifications();
   return Notifications.scheduleNotificationAsync({
@@ -79,6 +132,40 @@ export async function scheduleTestNotification(title: string, body: string): Pro
       sound: true,
       data: { type: "test" },
     },
-    trigger: Platform.OS === "android" ? { channelId: DEFAULT_NOTIFICATION_CHANNEL_ID } : null,
+    trigger: Platform.OS === "android" ? { channelId: GENERAL_NOTIFICATION_CHANNEL_ID } : null,
+  });
+}
+
+export async function scheduleGeneralNotification(
+  title: string,
+  body: string,
+  data: Record<string, unknown> = {}
+): Promise<string> {
+  await configureNotifications();
+  return Notifications.scheduleNotificationAsync({
+    content: { title, body, sound: true, data },
+    trigger: Platform.OS === "android" ? { channelId: GENERAL_NOTIFICATION_CHANNEL_ID } : null,
+  });
+}
+
+export async function notifyNewOrder(
+  order: {
+    id: string;
+    code: string;
+    total?: string | number | null;
+    merchantId: string;
+  },
+  title: string,
+  body: string
+): Promise<string> {
+  await configureNotifications();
+  return Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      sound: NEW_ORDER_SOUND,
+      data: { type: "order.created", orderId: order.id, merchantId: order.merchantId },
+    },
+    trigger: Platform.OS === "android" ? { channelId: ORDER_NOTIFICATION_CHANNEL_ID } : null,
   });
 }

@@ -144,10 +144,10 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
   }
 
   return (
-    <Card className="p-0 overflow-hidden">
-      <View className="gap-4 px-4 py-4">
+    <Card>
+      <Card.Body className="gap-5 p-5">
         <View className="flex-row items-center gap-4">
-          <View className="w-10 h-10 rounded-panel-inner bg-accent-soft items-center justify-center">
+          <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
             {isBusy ? (
               <Spinner size="sm" color={themeColorAccent} />
             ) : (
@@ -173,7 +173,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
           </View>
         ) : null}
 
-        <View className="gap-2 rounded-panel-inner bg-surface-secondary px-3 py-3">
+        <View className="gap-3 rounded-panel-inner bg-surface-secondary p-4">
           <UpdateMetaRow
             label={t("updates.channel")}
             value={updates.currentlyRunning.channel ?? notAvailable}
@@ -212,7 +212,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
             <Button.Label>{t("updates.restart")}</Button.Label>
           </Button>
         </View>
-      </View>
+      </Card.Body>
     </Card>
   );
 }

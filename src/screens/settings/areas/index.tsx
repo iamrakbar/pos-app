@@ -42,7 +42,7 @@ export default function AreasScreen(): React.JSX.Element {
           width={width}
           horizontalPadding={horizontalPagePadding}
           gap={16}
-          aspectRatio={1.2}
+          aspectRatio={1.8}
         />
       </View>
     );

@@ -57,7 +57,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
           width={width}
           horizontalPadding={horizontalPagePadding - 6}
           gap={12}
-          aspectRatio={0.82}
+          aspectRatio={0.68}
         />
       </View>
     );

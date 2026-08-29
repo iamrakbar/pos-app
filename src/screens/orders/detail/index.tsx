@@ -4,6 +4,8 @@ import { useTables } from "@/hooks/db/use-tables";
 import {
   extractPaymentDetailsRows,
   extractPaymentExpiry,
+  extractPaymentInstruction,
+  extractPaymentLink,
   extractPaymentQrUrl,
   isExpired,
 } from "@/api/mappers/checkout";
@@ -54,7 +56,7 @@ import {
 } from "heroui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Linking, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useEffect, useRef, useState } from "react";
 import type { View as ViewType } from "react-native";
@@ -667,7 +669,7 @@ export default function OrderDetailScreen() {
 }
 
 function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderData }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [isReceiptPreviewOpen, setIsReceiptPreviewOpen] = useState(false);
@@ -702,9 +704,15 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
     payment_details: order.payment_details,
     payment: order.payment,
   });
+  const paymentLink =
+    extractPaymentLink({ payment_details: order.payment_details, payment: order.payment }) ??
+    paymentQrUrl;
+  const paymentInstruction = extractPaymentInstruction(order.payment_instruction, locale);
+  const isPaymentPaid = order.payment_status.is_successful;
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
   const hasQrImageUrl = !!paymentQrUrl && /^https?:\/\//i.test(paymentQrUrl);
   const showQrUrl =
+    !isPaymentPaid &&
     (buildVariant === "development" || buildVariant === "preview") &&
     hasQrImageUrl &&
     isQrisPayment;
@@ -712,7 +720,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
     (row) => !hasQrImageUrl || row.value !== paymentQrUrl
   );
   const paymentExpired = isExpired(paymentExpiresAt);
-  const canShowQr = !!paymentQrUrl && !paymentExpired && isQrisPayment;
+  const canShowQr = !isPaymentPaid && !!paymentQrUrl && !paymentExpired && isQrisPayment;
   const tableName = extractTableName(order.orderable);
   const orderAreaName =
     order.orderable && "area_name" in order.orderable
@@ -852,6 +860,49 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
                       <DetailRow key={row.label} label={row.label} value={row.value} />
                     ))}
                     {showQrUrl ? <QrUrlDisclosure url={paymentQrUrl} /> : null}
+                    {!isPaymentPaid &&
+                    isQrisPayment &&
+                    (paymentQrUrl || paymentLink || paymentInstruction) ? (
+                      <View className="gap-3 rounded-2xl bg-surface-secondary p-3">
+                        {paymentQrUrl && hasQrImageUrl ? (
+                          <View className="items-center gap-2">
+                            <Typography type="body-sm" weight="semibold" className="self-start">
+                              {t("orders.detail.qrisCode")}
+                            </Typography>
+                            <View className="rounded-xl bg-white p-3">
+                              <Image
+                                source={{ uri: paymentQrUrl }}
+                                style={{ width: 220, height: 220 }}
+                                contentFit="contain"
+                                accessibilityLabel={t("orders.detail.qrisCode")}
+                              />
+                            </View>
+                          </View>
+                        ) : null}
+                        {paymentInstruction ? (
+                          <View className="gap-1">
+                            <Typography type="body-sm" weight="semibold">
+                              {t("orders.detail.paymentInstructions")}
+                            </Typography>
+                            <Typography type="body-sm" color="muted">
+                              {paymentInstruction}
+                            </Typography>
+                          </View>
+                        ) : null}
+                        {paymentLink && /^https?:\/\//i.test(paymentLink) ? (
+                          <Button
+                            variant="outline"
+                            onPress={() => void Linking.openURL(paymentLink)}
+                          >
+                            <AppIcon name="open-outline" size={16} color={themeColorForeground} />
+                            <Button.Label>{t("orders.detail.openPaymentLink")}</Button.Label>
+                          </Button>
+                        ) : null}
+                        {paymentLink && !hasQrImageUrl ? (
+                          <QrUrlDisclosure url={paymentLink} />
+                        ) : null}
+                      </View>
+                    ) : null}
                     {canRefreshPayment ? (
                       <Countdown
                         expiresAt={paymentExpiresAt}

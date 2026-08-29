@@ -1,9 +1,14 @@
 import AppIcon from "@/components/common/app-icon";
 import { useNotificationPermission } from "@/hooks/use-notification-permission";
 import type { Translate } from "@/locales";
-import { scheduleTestNotification } from "@/services/notifications";
+import {
+  getDevicePushToken,
+  registerCurrentDevicePushToken,
+  scheduleTestNotification,
+} from "@/services/notifications";
 import { useTranslation } from "@/stores/use-locale";
-import { Button, Card, Chip, Typography, useThemeColor, useToast } from "heroui-native";
+import { Alert, Button, Card, Chip, Typography, useThemeColor, useToast } from "heroui-native";
+import Constants from "expo-constants";
 import React from "react";
 import { Linking, ScrollView, View } from "react-native";
 
@@ -29,13 +34,12 @@ async function sendTestNotification(
 export default function NotificationsSettingsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [mutedColor, accentColor, accentForegroundColor] = useThemeColor([
-    "muted",
-    "accent",
-    "accent-foreground",
-  ]);
+  const [accentColor] = useThemeColor(["accent"]);
   const permission = useNotificationPermission();
+  const isProduction = Constants.expoConfig?.extra?.buildVariant === "production";
   const [isSendingTest, setIsSendingTest] = React.useState(false);
+  const [pushToken, setPushToken] = React.useState<string | null>(null);
+  const [isGettingToken, setIsGettingToken] = React.useState(false);
 
   const statusLabel = t(`notifications.permission.${permission.status}`);
   const statusColor =
@@ -55,6 +59,9 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
             ? t("notifications.permissionGranted")
             : t("notifications.permissionNotGranted"),
       });
+      if (nextPermission.status === "granted") {
+        void registerCurrentDevicePushToken().catch(() => undefined);
+      }
     } catch (error) {
       toast.show({
         variant: "danger",
@@ -81,6 +88,22 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
     }
   };
 
+  const handleGetToken = async () => {
+    setIsGettingToken(true);
+    try {
+      setPushToken(await getDevicePushToken());
+      toast.show({ variant: "success", label: t("notifications.tokenReady") });
+    } catch (error) {
+      toast.show({
+        variant: "danger",
+        label: t("notifications.tokenFailed"),
+        description: error instanceof Error ? error.message : undefined,
+      });
+    } finally {
+      setIsGettingToken(false);
+    }
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-background"
@@ -88,73 +111,98 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
     >
       <View className="mx-auto w-full max-w-3xl gap-5">
         <Card>
-          <Card.Body className="gap-5 p-5">
-            <View className="flex-row items-start gap-4">
-              <View className="size-12 items-center justify-center rounded-panel-inner bg-accent-soft">
-                <AppIcon name="notifications-outline" size={22} color={accentColor} />
-              </View>
-              <View className="flex-1 gap-2">
-                <View className="flex-row flex-wrap items-center justify-between gap-2">
-                  <Card.Title>{t("notifications.title")}</Card.Title>
-                  <Chip size="sm" variant="soft" color={statusColor}>
-                    <Chip.Label>
-                      {permission.isLoading ? t("notifications.loading") : statusLabel}
-                    </Chip.Label>
-                  </Chip>
+          <Card.Body className="gap-4 p-5">
+            <View className="flex-row items-center justify-between gap-3">
+              <View className="flex-1 flex-row items-center gap-3">
+                <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
+                  <AppIcon name="notifications-outline" size={20} color={accentColor} />
                 </View>
-                <Card.Description>{t("notifications.description")}</Card.Description>
+                <View className="flex-1 gap-1">
+                  <Card.Title>{t("notifications.title")}</Card.Title>
+                  {permission.status !== "granted" ? (
+                    <Card.Description>{t("notifications.description")}</Card.Description>
+                  ) : null}
+                </View>
               </View>
+              <Chip size="sm" variant="soft" color={statusColor}>
+                <Chip.Label>
+                  {permission.isLoading ? t("notifications.loading") : statusLabel}
+                </Chip.Label>
+              </Chip>
             </View>
 
-            <View className="rounded-panel bg-surface-secondary p-4">
-              <Typography type="body-sm" weight="semibold">
-                {t("notifications.permissionTitle")}
-              </Typography>
-              <Typography type="body-xs" color="muted" className="mt-1">
-                {t(`notifications.descriptionByStatus.${permission.status}`)}
-              </Typography>
-            </View>
-          </Card.Body>
-
-          <Card.Footer className="flex-row flex-wrap gap-3 px-5 pb-5">
-            {permission.status === "undetermined" ||
-            (permission.status === "denied" && permission.canAskAgain) ? (
-              <Button
-                className="flex-1"
-                isDisabled={permission.isLoading || permission.isRequesting}
-                onPress={handleRequest}
-              >
-                <AppIcon name="notifications-outline" size={18} color={accentForegroundColor} />
-                <Button.Label>
-                  {permission.isRequesting
-                    ? t("notifications.requesting")
-                    : t("notifications.allow")}
-                </Button.Label>
-              </Button>
+            {permission.status !== "granted" ? (
+              <Alert status={permission.status === "denied" ? "warning" : "accent"}>
+                <Alert.Indicator />
+                <Alert.Content>
+                  <Alert.Title>{t("notifications.permissionTitle")}</Alert.Title>
+                  <Alert.Description>
+                    {t(`notifications.descriptionByStatus.${permission.status}`)}
+                  </Alert.Description>
+                </Alert.Content>
+              </Alert>
             ) : null}
 
-            {permission.status === "denied" && !permission.canAskAgain ? (
-              <Button className="flex-1" onPress={handleOpenSettings}>
-                <AppIcon name="settings-outline" size={18} color={accentForegroundColor} />
-                <Button.Label>{t("notifications.openSettings")}</Button.Label>
-              </Button>
-            ) : null}
-
-            {permission.status === "granted" ? (
-              <>
-                <Button className="flex-1" isDisabled={isSendingTest} onPress={handleSendTest}>
-                  <AppIcon name="paper-plane-outline" size={18} color={accentForegroundColor} />
+            <View className="gap-3 pt-1">
+              {permission.status === "undetermined" ||
+              (permission.status === "denied" && permission.canAskAgain) ? (
+                <Button
+                  className="w-full"
+                  isDisabled={permission.isLoading || permission.isRequesting}
+                  onPress={handleRequest}
+                >
                   <Button.Label>
-                    {isSendingTest ? t("notifications.sendingTest") : t("notifications.sendTest")}
+                    {permission.isRequesting
+                      ? t("notifications.requesting")
+                      : t("notifications.allow")}
                   </Button.Label>
                 </Button>
-                <Button variant="outline" className="flex-1" onPress={handleOpenSettings}>
-                  <AppIcon name="settings-outline" size={18} color={mutedColor} />
-                  <Button.Label>{t("notifications.manageSettings")}</Button.Label>
+              ) : null}
+
+              {permission.status === "denied" && !permission.canAskAgain ? (
+                <Button className="w-full" onPress={handleOpenSettings}>
+                  <Button.Label>{t("notifications.openSettings")}</Button.Label>
                 </Button>
-              </>
+              ) : null}
+
+              {permission.status === "granted" ? (
+                !isProduction ? (
+                  <>
+                    <Button className="w-full" isDisabled={isSendingTest} onPress={handleSendTest}>
+                      <Button.Label>
+                        {isSendingTest
+                          ? t("notifications.sendingTest")
+                          : t("notifications.sendTest")}
+                      </Button.Label>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      isDisabled={isGettingToken}
+                      onPress={handleGetToken}
+                    >
+                      <Button.Label>
+                        {isGettingToken
+                          ? t("notifications.gettingToken")
+                          : t("notifications.getToken")}
+                      </Button.Label>
+                    </Button>
+                  </>
+                ) : null
+              ) : null}
+            </View>
+
+            {pushToken ? (
+              <View className="rounded-panel bg-surface-secondary p-3">
+                <Typography type="body-xs" weight="semibold">
+                  {t("notifications.tokenLabel")}
+                </Typography>
+                <Typography selectable type="body-xs" color="muted" className="mt-1">
+                  {pushToken}
+                </Typography>
+              </View>
             ) : null}
-          </Card.Footer>
+          </Card.Body>
         </Card>
 
         <Typography type="body-xs" color="muted" className="px-1">

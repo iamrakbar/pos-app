@@ -29,8 +29,8 @@ function ProductCardSkeleton({ width }: { width: number }): JSX.Element {
       className="m-1.5"
       accessibilityLabel={t("pos.loadingProduct")}
     >
-      <Card className="overflow-hidden p-0">
-        <Skeleton className="aspect-square w-full rounded-none" />
+      <Card className="overflow-hidden rounded-3xl p-0">
+        <Skeleton className="aspect-square w-full rounded-t-3xl" />
         <Card.Body className="min-h-20 justify-between gap-3 px-3.5 py-3">
           <Skeleton className="h-4 w-3/4 rounded-md" />
           <View className="gap-1.5">
