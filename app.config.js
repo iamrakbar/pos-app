@@ -64,6 +64,8 @@ function loadEnvFile(fileName) {
 loadEnvFile(".env");
 loadEnvFile(`.env.${variantName}`);
 
+const googleServicesFile = process.env.GOOGLE_SERVICES_JSON || "./google-services.json";
+
 module.exports = {
   expo: {
     name: variant.appName,
@@ -90,6 +92,7 @@ module.exports = {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: variant.backgroundColor,
       },
+      googleServicesFile,
       permissions: [
         "android.permission.INTERNET",
         "android.permission.BLUETOOTH_SCAN",
