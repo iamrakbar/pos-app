@@ -4,6 +4,7 @@ import {
   deleteProduct,
   getPosProducts,
   getProduct,
+  getProductRecipe,
   getProducts,
   updateProduct,
   uploadProductImage,
@@ -138,6 +139,16 @@ export function useProduct(id: string) {
     queryFn: async () => (await getProduct(merchantId!, id)).data,
     enabled: !!merchantId && id !== "new",
     staleTime: PRODUCTS_STALE_TIME_MS,
+  });
+}
+
+export function useProductRecipe(productId: string, enabled = true) {
+  const merchantId = useAuth((state) => state.merchantId);
+
+  return useQuery({
+    queryKey: ["product-recipe", merchantId, productId],
+    queryFn: async () => (await getProductRecipe(merchantId!, productId)).data,
+    enabled: !!merchantId && productId !== "new" && enabled,
   });
 }
 

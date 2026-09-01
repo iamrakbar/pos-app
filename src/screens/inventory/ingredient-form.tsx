@@ -1,8 +1,10 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
+import AppIcon from "@/components/common/app-icon";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import LoadingState from "@/components/common/loading-state";
+import IngredientRelationshipSheets from "@/screens/inventory/ingredient-relationship-sheets";
 import {
   useCreateIngredient,
   useDeleteIngredient,
@@ -21,6 +23,7 @@ import { useTranslation } from "@/stores/use-locale";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
   Card,
@@ -83,19 +86,22 @@ function IngredientFormCard({
   control,
   errors,
   t,
+  onShowSupplierOffers,
+  onShowMovements,
 }: {
   isNew: boolean;
   control: Control<IngredientFormValues>;
   errors: FieldErrors<IngredientFormValues>;
   t: Translate;
+  onShowSupplierOffers?: () => void;
+  onShowMovements?: () => void;
 }): React.JSX.Element {
   const { choicePresentation } = useOverlayPresentation();
+  const [themeColorForeground] = useThemeColor(["foreground"]);
   const unitOptions = INGREDIENT_UNITS.map((unit) => ({
     value: unit,
     label: t(`ingredients.units.${unit}` as TranslationKey),
   }));
-
-  console.log("errors", errors);
 
   return (
     <Card className="gap-4 w-full max-w-3xl overflow-hidden">
@@ -256,6 +262,28 @@ function IngredientFormCard({
           </Typography>
         ) : null}
       </Card.Body>
+      {!isNew && onShowSupplierOffers && onShowMovements ? (
+        <Card.Footer className="flex-row gap-2 pt-0">
+          <Button
+            variant="outline"
+            className="min-w-0 flex-1 px-1"
+            accessibilityLabel={t("ingredients.showSupplierOffersAccessibility")}
+            onPress={onShowSupplierOffers}
+          >
+            <AppIcon name="people-outline" size={16} color={themeColorForeground} />
+            <Button.Label numberOfLines={1}>{t("ingredients.supplierOffers")}</Button.Label>
+          </Button>
+          <Button
+            variant="outline"
+            className="min-w-0 flex-1 px-1"
+            accessibilityLabel={t("ingredients.showInventoryMovementsAccessibility")}
+            onPress={onShowMovements}
+          >
+            <AppIcon name="swap-vertical-outline" size={16} color={themeColorForeground} />
+            <Button.Label numberOfLines={1}>{t("ingredients.inventoryMovements")}</Button.Label>
+          </Button>
+        </Card.Footer>
+      ) : null}
     </Card>
   );
 }
@@ -273,6 +301,8 @@ export default function IngredientFormScreen(): React.JSX.Element {
   const updateMutation = useUpdateIngredient(id);
   const deleteMutation = useDeleteIngredient();
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
+  const supplierOffersSheetRef = React.useRef<TrueSheet | null>(null);
+  const movementsSheetRef = React.useRef<TrueSheet | null>(null);
   const operationIdRef = React.useRef<string | null>(null);
   const hydratedIngredientId = React.useRef<string | null>(null);
   const ingredientSchema = createIngredientSchema(t);
@@ -380,6 +410,12 @@ export default function IngredientFormScreen(): React.JSX.Element {
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
+  const showSupplierOffers = () => {
+    void supplierOffersSheetRef.current?.present(0).catch(() => undefined);
+  };
+  const showMovements = () => {
+    void movementsSheetRef.current?.present(0).catch(() => undefined);
+  };
 
   return (
     <>
@@ -404,7 +440,14 @@ export default function IngredientFormScreen(): React.JSX.Element {
         contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6 gap-3"
         keyboardShouldPersistTaps="handled"
       >
-        <IngredientFormCard isNew={isNew} control={control} errors={errors} t={t} />
+        <IngredientFormCard
+          isNew={isNew}
+          control={control}
+          errors={errors}
+          t={t}
+          onShowSupplierOffers={!isNew ? showSupplierOffers : undefined}
+          onShowMovements={!isNew ? showMovements : undefined}
+        />
 
         <View className="flex-row gap-3 pt-2 w-full max-w-3xl">
           <Button variant="ghost" onPress={() => router.back()} isDisabled={isSaving}>
@@ -419,6 +462,15 @@ export default function IngredientFormScreen(): React.JSX.Element {
           </Button>
         </View>
       </KeyboardAwareScrollView>
+
+      {!isNew && ingredient ? (
+        <IngredientRelationshipSheets
+          ingredientId={ingredient.id}
+          ingredientName={ingredient.name}
+          supplierOffersSheetRef={supplierOffersSheetRef}
+          movementsSheetRef={movementsSheetRef}
+        />
+      ) : null}
 
       <ActionDialog
         isOpen={isConfirmingDelete}

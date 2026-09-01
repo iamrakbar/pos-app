@@ -48,11 +48,13 @@ import {
 import { createProductSchema, type ProductFormValues } from "@/schemas/product";
 import ProductAddOnsCard from "./product-add-ons-card";
 import NewProductAddOnsCard from "./new-product-add-ons-card";
+import ProductRelationshipSheets from "./product-relationship-sheets";
 import QuickCategoryFormOverlay from "./quick-category-form-overlay";
 import QuickDiscountFormOverlay from "./quick-discount-form-overlay";
 import { formatRupiah } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
@@ -484,12 +486,21 @@ function InventoryCard({
   control,
   errors,
   stockEnabled,
+  showMovements,
+  showRecipe,
+  onShowMovements,
+  onShowRecipe,
 }: {
   control: Control<ProductFormValues>;
   errors: FieldErrors<ProductFormValues>;
   stockEnabled: boolean;
+  showMovements: boolean;
+  showRecipe: boolean;
+  onShowMovements?: () => void;
+  onShowRecipe?: () => void;
 }) {
   const { t } = useTranslation();
+  const [themeColorForeground] = useThemeColor(["foreground"]);
 
   return (
     <Card className="gap-3 overflow-hidden">
@@ -561,6 +572,34 @@ function InventoryCard({
           </View>
         ) : null}
       </Card.Body>
+      {showMovements || showRecipe ? (
+        <Card.Footer className="flex-row gap-2 pt-0">
+          {showMovements && onShowMovements ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className={showRecipe ? "min-w-0 flex-1 px-1" : "w-full"}
+              accessibilityLabel={t("productForm.showInventoryMovementsAccessibility")}
+              onPress={onShowMovements}
+            >
+              <AppIcon name="swap-vertical-outline" size={16} color={themeColorForeground} />
+              <Button.Label numberOfLines={1}>{t("productForm.inventoryMovements")}</Button.Label>
+            </Button>
+          ) : null}
+          {showRecipe && onShowRecipe ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className={showMovements ? "min-w-0 flex-1 px-1" : "w-full"}
+              accessibilityLabel={t("productForm.showRecipeAccessibility")}
+              onPress={onShowRecipe}
+            >
+              <AppIcon name="restaurant-outline" size={16} color={themeColorForeground} />
+              <Button.Label numberOfLines={1}>{t("productForm.recipe")}</Button.Label>
+            </Button>
+          ) : null}
+        </Card.Footer>
+      ) : null}
     </Card>
   );
 }
@@ -872,6 +911,8 @@ export default function ProductFormScreen(): React.JSX.Element {
   } | null>(null);
   const [isQuickCategoryOpen, setIsQuickCategoryOpen] = React.useState(false);
   const [isQuickDiscountOpen, setIsQuickDiscountOpen] = React.useState(false);
+  const movementsSheetRef = React.useRef<TrueSheet | null>(null);
+  const recipeSheetRef = React.useRef<TrueSheet | null>(null);
   const categoryItems = [...(categoriesQuery.data ?? [])];
   if (createdCategory && !categoryItems.some((category) => category.id === createdCategory.id)) {
     categoryItems.push(createdCategory);
@@ -944,6 +985,18 @@ export default function ProductFormScreen(): React.JSX.Element {
 
   const isSaving = createProductMutation.isPending || updateProductMutation.isPending;
   const imageUri = imageAsset?.uri ?? (!isNew ? productQuery.data?.image.default : null);
+  const product = productQuery.data;
+  const showMovements =
+    !isNew && (product?.inventory_mode === "manual" || product?.inventory_mode === "recipe");
+  const showRecipe = !isNew && product?.inventory_mode === "recipe";
+
+  const showProductMovements = () => {
+    void movementsSheetRef.current?.present(0).catch(() => undefined);
+  };
+
+  const showProductRecipe = () => {
+    void recipeSheetRef.current?.present(0).catch(() => undefined);
+  };
 
   const applyServerErrors = (error: unknown) => {
     if (!isApiError(error) || !error.errors) return false;
@@ -1076,7 +1129,15 @@ export default function ProductFormScreen(): React.JSX.Element {
               onAddDiscount={!isNew ? () => setIsQuickDiscountOpen(true) : undefined}
             />
 
-            <InventoryCard control={control} errors={errors} stockEnabled={stockEnabled} />
+            <InventoryCard
+              control={control}
+              errors={errors}
+              stockEnabled={stockEnabled}
+              showMovements={showMovements}
+              showRecipe={showRecipe}
+              onShowMovements={showMovements ? showProductMovements : undefined}
+              onShowRecipe={showRecipe ? showProductRecipe : undefined}
+            />
 
             <AvailabilityCard control={control} />
 
@@ -1101,6 +1162,17 @@ export default function ProductFormScreen(): React.JSX.Element {
           </View>
         </KeyboardAwareScrollView>
       </View>
+
+      {!isNew && product && (showMovements || showRecipe) ? (
+        <ProductRelationshipSheets
+          productId={product.id}
+          productName={product.name}
+          showMovements={showMovements}
+          showRecipe={showRecipe}
+          movementsSheetRef={movementsSheetRef}
+          recipeSheetRef={recipeSheetRef}
+        />
+      ) : null}
 
       <QuickCategoryFormOverlay
         isOpen={isQuickCategoryOpen}

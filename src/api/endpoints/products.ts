@@ -12,6 +12,11 @@ type ProductResponse = {
   data: App.Data.Merchant.Product.ProductData;
 };
 
+type ProductRecipeResponse = {
+  success: boolean;
+  data: App.Data.Merchant.Inventory.RecipeData;
+};
+
 type ProductsResponse = {
   success: boolean;
   data: App.Data.Merchant.Product.ProductData[];
@@ -88,6 +93,13 @@ export function getPosProducts(
 
 export function getProduct(merchantId: string, productId: string): Promise<ProductResponse> {
   return apiRequest<ProductResponse>(`/${merchantId}/products/${productId}`);
+}
+
+export function getProductRecipe(
+  merchantId: string,
+  productId: string
+): Promise<ProductRecipeResponse> {
+  return apiRequest<ProductRecipeResponse>(`/${merchantId}/products/${productId}/recipe`);
 }
 
 export function getProducts(

@@ -10,7 +10,8 @@ import { useAuth } from "@/stores/use-auth";
 const AUDIT_PER_PAGE = 25;
 
 export function useInventoryMovements(
-  params: Omit<InventoryMovementListParams, "page" | "perPage"> = {}
+  params: Omit<InventoryMovementListParams, "page" | "perPage"> = {},
+  options: { enabled?: boolean } = {}
 ) {
   const merchantId = useAuth((state) => state.merchantId);
 
@@ -29,7 +30,7 @@ export function useInventoryMovements(
       }
       return undefined;
     },
-    enabled: !!merchantId,
+    enabled: !!merchantId && (options.enabled ?? true),
   });
 }
 
