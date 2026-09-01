@@ -1,8 +1,8 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
+import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import LoadingState from "@/components/common/loading-state";
-import StringNumberField from "@/components/common/string-number-field";
 import {
   useCreateIngredient,
   useDeleteIngredient,
@@ -95,6 +95,8 @@ function IngredientFormCard({
     label: t(`ingredients.units.${unit}` as TranslationKey),
   }));
 
+  console.log("errors", errors);
+
   return (
     <Card className="gap-4 w-full max-w-3xl overflow-hidden">
       <Card.Header>
@@ -120,6 +122,26 @@ function IngredientFormCard({
               />
               <FieldMessage message={errors.name?.message} />
             </TextField>
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="cost_per_unit"
+          render={({ field: { value, onChange } }) => (
+            <RupiahField
+              label={t("ingredients.costPerUnit")}
+              value={value}
+              onChange={onChange}
+              placeholder={t("ingredients.costPerUnitPlaceholder")}
+              minValue={0}
+              isInvalid={Boolean(errors.cost_per_unit)}
+            >
+              <FieldMessage
+                message={errors.cost_per_unit?.message}
+                fallback={t("ingredients.costPerUnitDescription")}
+              />
+            </RupiahField>
           )}
         />
 
@@ -161,63 +183,38 @@ function IngredientFormCard({
           )}
         />
 
-        <View className="gap-5 md:flex-row">
-          <Controller
-            control={control}
-            name="reorder_point"
-            render={({ field: { value, onChange } }) => (
-              <StringNumberField
-                className="flex-1"
-                label={t("ingredients.reorderPoint")}
-                value={value}
-                onChange={onChange}
-                placeholder={t("ingredients.reorderPointPlaceholder")}
-                minValue={0}
-                formatOptions={QUANTITY_FORMAT_OPTIONS}
-                isInvalid={Boolean(errors.reorder_point)}
-              >
-                <FieldMessage
-                  message={errors.reorder_point?.message}
-                  fallback={t("ingredients.reorderPointDescription")}
-                />
-              </StringNumberField>
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="cost_per_unit"
-            render={({ field: { value, onChange } }) => (
-              <StringNumberField
-                className="flex-1"
-                label={t("ingredients.costPerUnit")}
-                value={value}
-                onChange={onChange}
-                placeholder={t("ingredients.costPerUnitPlaceholder")}
-                prefix="Rp "
-                minValue={0}
-                isInvalid={Boolean(errors.cost_per_unit)}
-              >
-                <FieldMessage
-                  message={errors.cost_per_unit?.message}
-                  fallback={t("ingredients.costPerUnitDescription")}
-                />
-              </StringNumberField>
-            )}
-          />
-        </View>
+        <Controller
+          control={control}
+          name="reorder_point"
+          render={({ field: { value, onChange } }) => (
+            <FormNumberField
+              label={t("ingredients.reorderPoint")}
+              minValue={0}
+              showStepper
+              value={value}
+              onChange={onChange}
+              formatOptions={QUANTITY_FORMAT_OPTIONS}
+              isInvalid={Boolean(errors.reorder_point)}
+            >
+              <FieldMessage
+                message={errors.reorder_point?.message}
+                fallback={t("ingredients.reorderPointDescription")}
+              />
+            </FormNumberField>
+          )}
+        />
 
         {isNew ? (
           <Controller
             control={control}
             name="initial_quantity"
             render={({ field: { value, onChange } }) => (
-              <StringNumberField
+              <FormNumberField
                 label={t("ingredients.initialQuantity")}
+                minValue={0}
+                showStepper
                 value={value}
                 onChange={onChange}
-                placeholder={t("ingredients.initialQuantityPlaceholder")}
-                minValue={0}
                 formatOptions={QUANTITY_FORMAT_OPTIONS}
                 isInvalid={Boolean(errors.initial_quantity)}
               >
@@ -225,7 +222,7 @@ function IngredientFormCard({
                   message={errors.initial_quantity?.message}
                   fallback={t("ingredients.initialQuantityDescription")}
                 />
-              </StringNumberField>
+              </FormNumberField>
             )}
           />
         ) : null}
@@ -291,7 +288,7 @@ export default function IngredientFormScreen(): React.JSX.Element {
     defaultValues: {
       name: "",
       base_unit: "gram",
-      reorder_point: "",
+      reorder_point: "0",
       cost_per_unit: "",
       initial_quantity: "",
       active: true,

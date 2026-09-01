@@ -3,7 +3,7 @@ import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
 } from "@/components/common/adaptive-form-overlay";
-import StringNumberField from "@/components/common/string-number-field";
+import { FormNumberField } from "@/components/common/form-number-field";
 import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-tables";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { createTableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
@@ -189,7 +189,7 @@ export default function TableFormDialog({
                         color={accentColor}
                       />
                     </Animated.View>
-                    <StringNumberField
+                    <FormNumberField
                       label={t("areasManagement.capacity")}
                       value={value}
                       onChange={onChange}
@@ -204,7 +204,7 @@ export default function TableFormDialog({
                           {errors.pax.message}
                         </Typography>
                       ) : null}
-                    </StringNumberField>
+                    </FormNumberField>
                   </View>
                 )}
               </AdaptiveFormKeyboardHandlers>

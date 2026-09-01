@@ -1,6 +1,5 @@
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
-import StringNumberField from "@/components/common/string-number-field";
-import { IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
+import { RupiahField } from "@/components/common/form-number-field";
 import AppIcon from "@/components/common/app-icon";
 import { Button, Input, Label, Surface, TextField, Typography, useThemeColor } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
@@ -77,15 +76,13 @@ export default function OptionRow({
           control={control}
           name={`options.${index}.price`}
           render={({ field: { value, onChange } }) => (
-            <StringNumberField
+            <RupiahField
               className="flex-1 w-full"
               label={t("addOnManagement.price")}
               value={value}
               onChange={onChange}
               minValue={0}
               step={1000}
-              formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
-              prefix="Rp"
               isRequired
               isInvalid={Boolean(errors.options?.[index]?.price)}
               inputVariant="secondary"
@@ -95,7 +92,7 @@ export default function OptionRow({
                   {errors.options[index]?.price?.message}
                 </Typography>
               ) : null}
-            </StringNumberField>
+            </RupiahField>
           )}
         />
       </View>

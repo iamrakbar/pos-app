@@ -6,7 +6,7 @@ import { useCustomerSearch } from "@/hooks/db/use-customers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/use-cart";
 import { useCheckout } from "@/hooks/db/use-checkout";
 import { createCheckoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
-import { formatRupiah, IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
+import { formatRupiah } from "@/utils/format";
 import { computePricing } from "@/utils/pricing";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import {
@@ -57,7 +57,7 @@ import {
 } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import StringNumberField from "@/components/common/string-number-field";
+import { RupiahField } from "@/components/common/form-number-field";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
 
@@ -443,7 +443,7 @@ function PaymentFields({
             </View>
           </View>
           <View className="flex-row items-end gap-4">
-            <StringNumberField
+            <RupiahField
               className="flex-1"
               label={t("checkout.otherAmount")}
               value={tenderValue}
@@ -451,8 +451,6 @@ function PaymentFields({
               placeholder={selectedPayment.tender_input.placeholder ?? "Rp0"}
               minValue={0}
               step={1000}
-              formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
-              prefix="Rp"
             />
             <View className="min-w-32 gap-1">
               <Typography type="body-xs" color="muted">

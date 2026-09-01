@@ -2,7 +2,7 @@ import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
-import StringNumberField from "@/components/common/string-number-field";
+import { FormNumberField } from "@/components/common/form-number-field";
 import {
   useCreateSupplier,
   useDeleteSupplier,
@@ -158,7 +158,7 @@ function SupplierFormCard({
             control={control}
             name="lead_time_days"
             render={({ field: { value, onChange } }) => (
-              <StringNumberField
+              <FormNumberField
                 className="flex-1"
                 label={t("suppliers.leadTime")}
                 value={value}
@@ -172,7 +172,7 @@ function SupplierFormCard({
                   message={errors.lead_time_days?.message}
                   fallback={t("suppliers.leadTimeDescription")}
                 />
-              </StringNumberField>
+              </FormNumberField>
             )}
           />
 

@@ -2,7 +2,7 @@ import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
-import StringNumberField from "@/components/common/string-number-field";
+import { FormNumberField } from "@/components/common/form-number-field";
 import {
   useCategory,
   useCreateCategory,
@@ -233,7 +233,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
               control={control}
               name="position"
               render={({ field: { value, onChange } }) => (
-                <StringNumberField
+                <FormNumberField
                   label={t("categories.position")}
                   value={value}
                   onChange={onChange}
@@ -245,7 +245,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
                     message={errors.position?.message}
                     fallback={t("categories.positionDescription")}
                   />
-                </StringNumberField>
+                </FormNumberField>
               )}
             />
 

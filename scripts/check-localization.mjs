@@ -87,7 +87,7 @@ for (const relativePath of sourceFiles("src")) {
   if (
     relativePath !== "src/locales/index.ts" &&
     relativePath !== "src/utils/format.ts" &&
-    relativePath !== "src/components/common/string-number-field.tsx" &&
+    relativePath !== "src/components/common/form-number-field.tsx" &&
     relativePath !== "src/components/common/app-update-manager.tsx" &&
     /["'](?:en-US|id-ID)["']/.test(contents)
   ) {

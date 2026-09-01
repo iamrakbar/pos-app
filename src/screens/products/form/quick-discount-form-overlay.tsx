@@ -1,10 +1,9 @@
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
 } from "@/components/common/adaptive-form-overlay";
-import StringNumberField from "@/components/common/string-number-field";
+import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import { isApiError } from "@/api/api-error";
 import { useCreateDiscount } from "@/hooks/db/use-discounts";
-import { IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
 import {
   createDiscountSchema,
   toDiscountRequest,
@@ -189,29 +188,41 @@ export default function QuickDiscountFormOverlay({
           name="value"
           render={({ field: { value, onChange } }) => (
             <AdaptiveFormKeyboardHandlers>
-              {(keyboardHandlers) => (
-                <StringNumberField
-                  label={t("discounts.value")}
-                  value={value}
-                  onChange={onChange}
-                  placeholder="0"
-                  minValue={0}
-                  maxValue={unit === "percentage" ? 100 : undefined}
-                  step={unit === "fixed" ? 1000 : 1}
-                  formatOptions={
-                    unit === "fixed"
-                      ? IDR_NUMBER_FIELD_FORMAT_OPTIONS
-                      : { maximumFractionDigits: 2 }
-                  }
-                  prefix={unit === "fixed" ? "Rp" : undefined}
-                  inputVariant="secondary"
-                  inputProps={keyboardHandlers}
-                  isRequired
-                  isInvalid={Boolean(errors.value)}
-                >
-                  <FieldMessage message={errors.value?.message} />
-                </StringNumberField>
-              )}
+              {(keyboardHandlers) =>
+                unit === "fixed" ? (
+                  <RupiahField
+                    label={t("discounts.value")}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="0"
+                    minValue={0}
+                    step={1000}
+                    inputVariant="secondary"
+                    inputProps={keyboardHandlers}
+                    isRequired
+                    isInvalid={Boolean(errors.value)}
+                  >
+                    <FieldMessage message={errors.value?.message} />
+                  </RupiahField>
+                ) : (
+                  <FormNumberField
+                    label={t("discounts.value")}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="0"
+                    minValue={0}
+                    maxValue={100}
+                    step={1}
+                    formatOptions={{ maximumFractionDigits: 2 }}
+                    inputVariant="secondary"
+                    inputProps={keyboardHandlers}
+                    isRequired
+                    isInvalid={Boolean(errors.value)}
+                  >
+                    <FieldMessage message={errors.value?.message} />
+                  </FormNumberField>
+                )
+              }
             </AdaptiveFormKeyboardHandlers>
           )}
         />

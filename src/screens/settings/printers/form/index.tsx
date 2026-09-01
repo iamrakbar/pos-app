@@ -42,7 +42,7 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { printCalibrationReceipt } from "@/services/printer/print-service";
 import ActionDialog from "@/components/common/action-dialog";
-import StringNumberField from "@/components/common/string-number-field";
+import { FormNumberField } from "@/components/common/form-number-field";
 import { EmptyState } from "heroui-native-pro";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
@@ -339,7 +339,7 @@ function PrinterConnectionCard({
                 control={control}
                 name="port"
                 render={({ field: { value, onChange } }) => (
-                  <StringNumberField
+                  <FormNumberField
                     label={t("printerForm.port")}
                     value={value}
                     onChange={onChange}
@@ -430,7 +430,7 @@ function ReceiptSetupCard({
             control={control}
             name="charactersPerLine"
             render={({ field: { value, onChange } }) => (
-              <StringNumberField
+              <FormNumberField
                 label={t("printerForm.charactersPerLine")}
                 value={value}
                 onChange={onChange}
@@ -454,7 +454,7 @@ function ReceiptSetupCard({
             control={control}
             name="logoWidthDots"
             render={({ field: { value, onChange } }) => (
-              <StringNumberField
+              <FormNumberField
                 label={t("printerForm.logoWidth")}
                 value={value}
                 onChange={onChange}

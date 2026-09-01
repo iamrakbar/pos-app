@@ -29,7 +29,7 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import ActionDialog from "@/components/common/action-dialog";
-import StringNumberField from "@/components/common/string-number-field";
+import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { ProductImageAsset } from "@/api/endpoints/products";
 import { useCategories } from "@/hooks/db/use-categories";
@@ -50,11 +50,10 @@ import ProductAddOnsCard from "./product-add-ons-card";
 import NewProductAddOnsCard from "./new-product-add-ons-card";
 import QuickCategoryFormOverlay from "./quick-category-form-overlay";
 import QuickDiscountFormOverlay from "./quick-discount-form-overlay";
-import { formatRupiah, IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
+import { formatRupiah } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { NumberStepper } from "heroui-native-pro";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
@@ -164,8 +163,6 @@ function ProductNumberField({
   onChangeText,
   error,
   step = 1,
-  formatOptions,
-  prefix,
 }: {
   label: string;
   placeholder: string;
@@ -175,11 +172,9 @@ function ProductNumberField({
   onChangeText: (value: string) => void;
   error?: string;
   step?: number;
-  formatOptions?: Intl.NumberFormatOptions;
-  prefix?: string;
 }) {
   return (
-    <StringNumberField
+    <RupiahField
       className="flex-1"
       label={label}
       placeholder={placeholder}
@@ -188,8 +183,6 @@ function ProductNumberField({
       onChange={onChangeText}
       minValue={0}
       step={step}
-      formatOptions={formatOptions}
-      prefix={prefix}
       isRequired={required}
       isInvalid={!!error}
     >
@@ -198,7 +191,7 @@ function ProductNumberField({
       ) : description ? (
         <Description>{description}</Description>
       ) : null}
-    </StringNumberField>
+    </RupiahField>
   );
 }
 
@@ -218,32 +211,26 @@ function ProductNumberStepper({
   error?: string;
 }) {
   const { t } = useTranslation();
-  const numericValue = value.trim() === "" ? 0 : Number(value);
-
   return (
-    <View className="flex-1 gap-1">
-      <Label isRequired={required}>{label}</Label>
-      <NumberStepper
-        value={Number.isFinite(numericValue) ? numericValue : 0}
-        minValue={0}
-        step={1}
-        onValueChange={(nextValue) => onChangeText(String(nextValue))}
-        className="justify-between"
-      >
-        <NumberStepper.DecrementButton
-          accessibilityLabel={t("productForm.decreaseAccessibility", { field: label })}
-        />
-        <NumberStepper.Value />
-        <NumberStepper.IncrementButton
-          accessibilityLabel={t("productForm.increaseAccessibility", { field: label })}
-        />
-      </NumberStepper>
+    <FormNumberField
+      className="flex-1"
+      label={label}
+      value={value}
+      onChange={onChangeText}
+      minValue={0}
+      step={1}
+      showStepper
+      decreaseAccessibilityLabel={t("productForm.decreaseAccessibility", { field: label })}
+      increaseAccessibilityLabel={t("productForm.increaseAccessibility", { field: label })}
+      isRequired={required}
+      isInvalid={!!error}
+    >
       {error ? (
         <Description className="text-danger">{error}</Description>
       ) : description ? (
         <Description>{description}</Description>
       ) : null}
-    </View>
+    </FormNumberField>
   );
 }
 
@@ -624,8 +611,6 @@ function PricingCard({
                 onChangeText={onChange}
                 error={error}
                 step={1000}
-                formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
-                prefix="Rp"
               />
             )}
           />

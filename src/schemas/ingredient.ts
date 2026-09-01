@@ -49,6 +49,10 @@ export function createIngredientSchema(t: Translate) {
 
 export type IngredientFormValues = z.infer<ReturnType<typeof createIngredientSchema>>;
 
+function toReorderPoint(value: string): number {
+  return value === "" ? 0 : Number(value);
+}
+
 export function toIngredientCreateRequest(
   values: IngredientFormValues,
   operationId: string
@@ -57,7 +61,7 @@ export function toIngredientCreateRequest(
   const request: App.Requests.Merchant.Ingredient.StoreIngredientRequest = {
     name: values.name.trim(),
     base_unit: values.base_unit,
-    reorder_point: values.reorder_point === "" ? null : Number(values.reorder_point),
+    reorder_point: toReorderPoint(values.reorder_point),
     cost_per_unit: values.cost_per_unit === "" ? null : Number(values.cost_per_unit),
     active: values.active,
   };
@@ -76,7 +80,7 @@ export function toIngredientUpdateRequest(
   return {
     name: values.name.trim(),
     base_unit: values.base_unit,
-    reorder_point: values.reorder_point === "" ? null : Number(values.reorder_point),
+    reorder_point: toReorderPoint(values.reorder_point),
     cost_per_unit: values.cost_per_unit === "" ? null : Number(values.cost_per_unit),
     active: values.active,
   };

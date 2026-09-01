@@ -1,7 +1,6 @@
 import AppIcon from "@/components/common/app-icon";
-import StringNumberField from "@/components/common/string-number-field";
+import { RupiahField } from "@/components/common/form-number-field";
 import type { ProductFormValues } from "@/schemas/product";
-import { IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
 import { Button, Card, Input, Label, Surface, Switch, TextField, Typography } from "heroui-native";
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
@@ -221,15 +220,13 @@ function NewProductAddOnGroup({
               control={control}
               name={`add_ons.${index}.options.${optionIndex}.price`}
               render={({ field: { value, onChange } }) => (
-                <StringNumberField
+                <RupiahField
                   className="flex-1"
                   label={t("addOnManagement.price")}
                   value={value}
                   onChange={onChange}
                   minValue={0}
                   step={1000}
-                  formatOptions={IDR_NUMBER_FIELD_FORMAT_OPTIONS}
-                  prefix="Rp"
                   isRequired
                   isInvalid={Boolean(groupErrors?.options?.[optionIndex]?.price)}
                   inputVariant="secondary"
@@ -239,7 +236,7 @@ function NewProductAddOnGroup({
                       {groupErrors.options[optionIndex]?.price?.message}
                     </Typography>
                   ) : null}
-                </StringNumberField>
+                </RupiahField>
               )}
             />
             <Button

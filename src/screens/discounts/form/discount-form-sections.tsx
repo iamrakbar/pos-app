@@ -1,9 +1,9 @@
 import AppIcon from "@/components/common/app-icon";
-import StringNumberField from "@/components/common/string-number-field";
+import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import type { Translate } from "@/locales";
 import type { POSProduct } from "@/types/pos";
 import type { DiscountFormValues } from "@/schemas/discount";
-import { formatDate, IDR_NUMBER_FIELD_FORMAT_OPTIONS } from "@/utils/format";
+import { formatDate } from "@/utils/format";
 import { Calendar, DatePicker, type DatePickerOption } from "heroui-native-pro";
 import { Button, Card, Input, Label, Switch, TextField, Typography } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
@@ -151,26 +151,39 @@ export function DiscountDetailsCard({
         <Controller
           control={control}
           name="value"
-          render={({ field: { value, onChange } }) => (
-            <StringNumberField
-              label={t("discounts.value")}
-              value={value}
-              onChange={onChange}
-              placeholder="0"
-              minValue={0}
-              maxValue={unit === "percentage" ? 100 : undefined}
-              step={unit === "fixed" ? 1000 : 1}
-              formatOptions={
-                unit === "fixed" ? IDR_NUMBER_FIELD_FORMAT_OPTIONS : { maximumFractionDigits: 2 }
-              }
-              prefix={unit === "fixed" ? "Rp" : undefined}
-              inputVariant="secondary"
-              isRequired
-              isInvalid={!!errors.value}
-            >
-              <FieldMessage message={errors.value?.message} />
-            </StringNumberField>
-          )}
+          render={({ field: { value, onChange } }) =>
+            unit === "fixed" ? (
+              <RupiahField
+                label={t("discounts.value")}
+                value={value}
+                onChange={onChange}
+                placeholder="0"
+                minValue={0}
+                step={1000}
+                inputVariant="secondary"
+                isRequired
+                isInvalid={!!errors.value}
+              >
+                <FieldMessage message={errors.value?.message} />
+              </RupiahField>
+            ) : (
+              <FormNumberField
+                label={t("discounts.value")}
+                value={value}
+                onChange={onChange}
+                placeholder="0"
+                minValue={0}
+                maxValue={100}
+                step={1}
+                formatOptions={{ maximumFractionDigits: 2 }}
+                inputVariant="secondary"
+                isRequired
+                isInvalid={!!errors.value}
+              >
+                <FieldMessage message={errors.value?.message} />
+              </FormNumberField>
+            )
+          }
         />
         <View className="gap-1">
           <Typography type="body-xs" color="muted">

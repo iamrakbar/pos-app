@@ -2,6 +2,7 @@ import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { MerchantImageAsset } from "@/api/endpoints/merchant";
 import AppIcon from "@/components/common/app-icon";
 import ErrorState from "@/components/common/error-state";
+import { FormNumberField } from "@/components/common/form-number-field";
 import LoadingState from "@/components/common/loading-state";
 import {
   useMerchantProfile,
@@ -452,20 +453,23 @@ function TaxTab({
                 control={control}
                 name="tax_value"
                 render={({ field: { value, onChange, onBlur } }) => (
-                  <TextField className="flex-1" isRequired isInvalid={Boolean(errors.tax_value)}>
-                    <Label>{t("merchantProfile.taxValue")}</Label>
-                    <Input
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      keyboardType="decimal-pad"
-                    />
+                  <FormNumberField
+                    className="flex-1"
+                    label={t("merchantProfile.taxValue")}
+                    value={value}
+                    onChange={onChange}
+                    minValue={0}
+                    formatOptions={{ maximumFractionDigits: 2 }}
+                    inputProps={{ onBlur }}
+                    isRequired
+                    isInvalid={Boolean(errors.tax_value)}
+                  >
                     {errors.tax_value?.message ? (
                       <Typography type="body-xs" className="text-danger">
                         {errors.tax_value.message}
                       </Typography>
                     ) : null}
-                  </TextField>
+                  </FormNumberField>
                 )}
               />
             </View>
