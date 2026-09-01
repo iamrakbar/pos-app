@@ -165,6 +165,13 @@ function SupplierFormCard({
                 onChange={onChange}
                 placeholder={t("suppliers.leadTimePlaceholder")}
                 minValue={0}
+                showStepper
+                decreaseAccessibilityLabel={t("productForm.decreaseAccessibility", {
+                  field: t("suppliers.leadTime"),
+                })}
+                increaseAccessibilityLabel={t("productForm.increaseAccessibility", {
+                  field: t("suppliers.leadTime"),
+                })}
                 formatOptions={{ maximumFractionDigits: 0 }}
                 isInvalid={Boolean(errors.lead_time_days)}
               >

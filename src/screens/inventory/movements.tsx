@@ -156,7 +156,7 @@ function sortMovements(items: Movement[], descriptor: TableSortDescriptor): Move
 function MovementTypeChip({ type }: { type: InventoryMovementType }): React.JSX.Element {
   const { t } = useTranslation();
   return (
-    <Chip color={MOVEMENT_TYPE_COLORS[type]} size="sm">
+    <Chip color={MOVEMENT_TYPE_COLORS[type]} size="sm" variant="soft">
       <Chip.Label>{t(`movements.types.${type}` as TranslationKey)}</Chip.Label>
     </Chip>
   );
@@ -169,7 +169,7 @@ function MovementSourceChip({ source }: { source: string }): React.JSX.Element {
   const label = translationKey ? t(translationKey) : normalizeInventorySource(source);
 
   return (
-    <Chip color="default" size="sm">
+    <Chip color="default" size="sm" variant="soft">
       <Chip.Label numberOfLines={1} ellipsizeMode="tail">
         {label}
       </Chip.Label>
@@ -300,7 +300,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                                 {formatSignedQuantity(movement.quantity)}
                               </Typography>
                               {movement.ingredient?.base_unit ? (
-                                <Chip size="sm" color="default">
+                                <Chip size="sm" color="default" variant="soft">
                                   <Chip.Label>{movement.ingredient.base_unit}</Chip.Label>
                                 </Chip>
                               ) : null}

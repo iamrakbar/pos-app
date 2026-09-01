@@ -1,4 +1,3 @@
-import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
 import { useTranslation } from "@/stores/use-locale";
@@ -22,7 +21,6 @@ export default function InventoryLayout(): React.JSX.Element {
         name="index"
         options={{
           title: t("navigation.inventoryOverview"),
-          headerLeft: () => <DrawerMenuButton />,
         }}
       />
       <Stack.Screen name="ingredients" options={{ title: t("navigation.ingredients") }} />

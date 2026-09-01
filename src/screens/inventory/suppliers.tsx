@@ -107,7 +107,7 @@ function sortSuppliers(items: Supplier[], descriptor: TableSortDescriptor): Supp
 function SupplierStatus({ active }: { active: boolean }): React.JSX.Element {
   const { t } = useTranslation();
   return (
-    <Chip color={active ? "success" : "danger"} size="sm">
+    <Chip color={active ? "success" : "danger"} size="sm" variant="soft">
       <Chip.Label>{active ? t("common.active") : t("common.inactive")}</Chip.Label>
     </Chip>
   );

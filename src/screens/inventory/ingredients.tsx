@@ -137,7 +137,7 @@ function IngredientStatus({ ingredient }: { ingredient: Ingredient }): React.JSX
   )[status];
 
   return (
-    <Chip color={statusPresentation} size="sm">
+    <Chip color={statusPresentation} size="sm" variant="soft">
       <Chip.Label>
         {status === "inactive"
           ? t("common.inactive")

@@ -122,7 +122,7 @@ function sortOperations(items: Operation[], descriptor: TableSortDescriptor): Op
 function OperationStatusChip({ status }: { status: InventoryOperationStatus }): React.JSX.Element {
   const { t } = useTranslation();
   return (
-    <Chip color={OPERATION_STATUS_COLORS[status]} size="sm">
+    <Chip color={OPERATION_STATUS_COLORS[status]} size="sm" variant="soft">
       <Chip.Label>{t(`operations.statuses.${status}` as TranslationKey)}</Chip.Label>
     </Chip>
   );
@@ -238,7 +238,7 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
                         <Table.Row id={operation.id}>
                           <Table.Cell textProps={{ numberOfLines: 1 }}>
                             {operation.source ? (
-                              <Chip color="default" size="sm">
+                              <Chip color="default" size="sm" variant="soft">
                                 <Chip.Label numberOfLines={1} ellipsizeMode="tail">
                                   {normalizeInventorySource(operation.source)}
                                 </Chip.Label>
