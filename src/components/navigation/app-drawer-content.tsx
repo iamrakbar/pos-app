@@ -19,7 +19,7 @@ import {
   useThemeColor,
 } from "heroui-native";
 import type { ComponentProps, JSX } from "react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { hasMerchantFeature } from "@/utils/merchant-features";
@@ -127,50 +127,51 @@ export default function AppDrawerContent({
             const iconName = DRAWER_ICONS[routeName] ?? "ellipse-outline";
 
             return (
-              <Pressable
-                key={routeName}
-                accessibilityRole="button"
-                accessibilityState={focused ? { selected: true } : undefined}
-                accessibilityLabel={t("navigation.openRouteAccessibility", { route: label })}
-                onPress={() => {
-                  const event = navigation.emit({
-                    type: "drawerItemPress",
-                    target: route.key,
-                    canPreventDefault: true,
-                  });
+              <Fragment key={routeName}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={focused ? { selected: true } : undefined}
+                  accessibilityLabel={t("navigation.openRouteAccessibility", { route: label })}
+                  onPress={() => {
+                    const event = navigation.emit({
+                      type: "drawerItemPress",
+                      target: route.key,
+                      canPreventDefault: true,
+                    });
 
-                  if (event.defaultPrevented) return;
+                    if (event.defaultPrevented) return;
 
-                  navigation.closeDrawer();
-                  if (routeName === "pos" || routeName === "settings") {
-                    navigation.navigate(route.name, { screen: "index" });
-                  } else if (!focused) {
-                    navigation.navigate(route.name, route.params);
-                  }
-                }}
-              >
-                <Surface
-                  variant={focused ? "default" : "transparent"}
-                  className="min-h-13 flex-row items-center gap-3 px-3 py-2"
+                    navigation.closeDrawer();
+                    if (routeName === "pos" || routeName === "settings") {
+                      navigation.navigate(route.name, { screen: "index" });
+                    } else if (!focused) {
+                      navigation.navigate(route.name, route.params);
+                    }
+                  }}
                 >
                   <Surface
-                    variant="transparent"
-                    className={`h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0 ${focused ? "bg-accent-soft" : "bg-transparent"}`}
+                    variant={focused ? "default" : "transparent"}
+                    className="min-h-13 flex-row items-center gap-3 px-3 py-2"
                   >
-                    <AppIcon
-                      name={iconName}
-                      size={20}
-                      color={focused ? themeColorAccentSoftForeground : themeColorMuted}
-                    />
+                    <Surface
+                      variant="transparent"
+                      className={`h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0 ${focused ? "bg-accent-soft" : "bg-transparent"}`}
+                    >
+                      <AppIcon
+                        name={iconName}
+                        size={20}
+                        color={focused ? themeColorAccentSoftForeground : themeColorMuted}
+                      />
+                    </Surface>
+                    <View className="flex-1">
+                      <Typography weight={focused ? "semibold" : "medium"}>{label}</Typography>
+                      <Typography type="body-sm" color="muted" numberOfLines={1}>
+                        {drawerDescriptions[routeName] ?? ""}
+                      </Typography>
+                    </View>
                   </Surface>
-                  <View className="flex-1">
-                    <Typography weight={focused ? "semibold" : "medium"}>{label}</Typography>
-                    <Typography type="body-sm" color="muted" numberOfLines={1}>
-                      {drawerDescriptions[routeName] ?? ""}
-                    </Typography>
-                  </View>
-                </Surface>
-              </Pressable>
+                </Pressable>
+              </Fragment>
             );
           })}
         </ScrollView>

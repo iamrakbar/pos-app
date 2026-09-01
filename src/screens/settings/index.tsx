@@ -7,6 +7,8 @@ import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { useState } from "react";
+import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
+import { hasMerchantFeature } from "@/utils/merchant-features";
 
 type SettingsItem = {
   id: string;
@@ -47,6 +49,12 @@ export default function SettingsScreen(): JSX.Element {
     "danger-soft-foreground",
   ]);
   const logout = useAuth((s) => s.logout);
+  const activeMerchant = useAuth((s) => s.activeMerchant);
+  const { data: merchantProfile } = useMerchantProfile();
+  const inventoryEnabled = hasMerchantFeature(
+    merchantProfile?.features ?? activeMerchant?.features,
+    "inventory"
+  );
   const { t } = useTranslation();
   const accountItems: SettingsItem[] = [
     {
@@ -94,6 +102,15 @@ export default function SettingsScreen(): JSX.Element {
       description: t("settings.areasDescription"),
     },
   ];
+  if (inventoryEnabled) {
+    storeItems.push({
+      id: "inventory",
+      href: "/settings/inventory",
+      icon: "cube-outline",
+      label: t("navigation.inventory"),
+      description: t("navigation.descriptions.inventory"),
+    });
+  }
   const printingItems: SettingsItem[] = [
     {
       id: "printer",

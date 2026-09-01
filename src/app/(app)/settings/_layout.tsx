@@ -45,6 +45,7 @@ export default function SettingsLayout() {
         options={{ title: t("navigation.discounts"), headerShown: false }}
       />
       <Stack.Screen name="areas" options={{ headerShown: false }} />
+      <Stack.Screen name="inventory" options={{ headerShown: false }} />
     </Stack>
   );
 }

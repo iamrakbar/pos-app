@@ -14,13 +14,28 @@ export const IDR_NUMBER_FIELD_FORMAT_OPTIONS = {
   maximumFractionDigits: 0,
 } satisfies Intl.NumberFormatOptions;
 
+const ID_LOCALE = "id-ID";
 const rupiahFormatter = new Intl.NumberFormat("id-ID", IDR_CURRENCY_FORMAT_OPTIONS);
+const inventoryQuantityFormatter = new Intl.NumberFormat(ID_LOCALE, {
+  useGrouping: true,
+  maximumFractionDigits: 6,
+});
 
 export function formatRupiah(amount: number): string {
   return rupiahFormatter.format(amount);
 }
 
-const ID_LOCALE = "id-ID";
+export function formatInventoryQuantity(value: number): string {
+  return inventoryQuantityFormatter.format(value);
+}
+
+export function normalizeInventorySource(source: string): string {
+  return source
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
 
 function toDate(value: string | Date): Date {
   return typeof value === "string" ? new Date(value) : value;
