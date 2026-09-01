@@ -15,9 +15,3 @@ export function registerDeviceToken(
     body,
   });
 }
-
-export function unregisterDeviceToken(id: string): Promise<{ success: boolean }> {
-  return apiRequest<{ success: boolean }>(`/device-tokens/${id}`, {
-    method: "DELETE",
-  });
-}

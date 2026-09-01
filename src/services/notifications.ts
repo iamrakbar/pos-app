@@ -5,7 +5,6 @@ import { registerDeviceToken } from "@/api/endpoints/device-tokens";
 
 export const ORDER_NOTIFICATION_CHANNEL_ID = "orders";
 export const GENERAL_NOTIFICATION_CHANNEL_ID = "general";
-export const DEFAULT_NOTIFICATION_CHANNEL_ID = GENERAL_NOTIFICATION_CHANNEL_ID;
 export const NEW_ORDER_SOUND = "new_order.wav";
 
 export type NotificationPermissionState = {
@@ -132,18 +131,6 @@ export async function scheduleTestNotification(title: string, body: string): Pro
       sound: true,
       data: { type: "test" },
     },
-    trigger: Platform.OS === "android" ? { channelId: GENERAL_NOTIFICATION_CHANNEL_ID } : null,
-  });
-}
-
-export async function scheduleGeneralNotification(
-  title: string,
-  body: string,
-  data: Record<string, unknown> = {}
-): Promise<string> {
-  await configureNotifications();
-  return Notifications.scheduleNotificationAsync({
-    content: { title, body, sound: true, data },
     trigger: Platform.OS === "android" ? { channelId: GENERAL_NOTIFICATION_CHANNEL_ID } : null,
   });
 }
