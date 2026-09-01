@@ -1,11 +1,12 @@
 import AppIcon from "@/components/common/app-icon";
+import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import TableSkeleton from "@/components/common/table-skeleton";
 import { useIngredients } from "@/hooks/db/use-ingredients";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { formatDateTime, formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Button, Chip, Typography, useThemeColor } from "heroui-native";
 import { EmptyState, Table, type TableSortDescriptor } from "heroui-native-pro";
 import React from "react";
@@ -150,6 +151,7 @@ function IngredientStatus({ ingredient }: { ingredient: Ingredient }): React.JSX
 
 export default function InventoryIngredientsScreen(): React.JSX.Element {
   const { t } = useTranslation();
+  const router = useRouter();
   const theme = useNavigationTheme();
   const [themeColorMuted] = useThemeColor(["muted"]);
   const [search, setSearch] = React.useState("");
@@ -270,7 +272,16 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
                       )}
                     >
                       {(ingredient) => (
-                        <Table.Row id={ingredient.id}>
+                        <Table.Row
+                          id={ingredient.id}
+                          accessibilityRole="button"
+                          accessibilityLabel={t("ingredients.editAccessibility", {
+                            ingredient: ingredient.name,
+                          })}
+                          onPress={() =>
+                            router.push(`/settings/inventory/ingredients/${ingredient.id}`)
+                          }
+                        >
                           <Table.Cell textProps={{ numberOfLines: 1 }}>
                             <Typography weight="semibold" numberOfLines={1}>
                               {ingredient.name}
@@ -340,6 +351,10 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
             </View>
           </ScrollView>
         )}
+        <CreateFAB
+          accessibilityLabel={t("ingredients.addAccessibility")}
+          onPress={() => router.push("/settings/inventory/ingredients/new")}
+        />
       </View>
     </>
   );

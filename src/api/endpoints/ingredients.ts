@@ -11,6 +11,16 @@ type IngredientListResponse = {
   };
 };
 
+type IngredientResponse = {
+  success: boolean;
+  data: App.Data.Merchant.Inventory.IngredientData;
+};
+
+type DeleteIngredientResponse = {
+  success: boolean;
+  message?: string;
+};
+
 export type IngredientSort =
   | "name"
   | "-name"
@@ -45,5 +55,42 @@ export function getIngredients(
       page: params.page,
       per_page: params.perPage ?? 50,
     },
+  });
+}
+
+export function getIngredient(
+  merchantId: string,
+  ingredientId: string
+): Promise<IngredientResponse> {
+  return apiRequest<IngredientResponse>(`/${merchantId}/ingredients/${ingredientId}`);
+}
+
+export function createIngredient(
+  merchantId: string,
+  body: App.Requests.Merchant.Ingredient.StoreIngredientRequest
+): Promise<IngredientResponse> {
+  return apiRequest<IngredientResponse>(`/${merchantId}/ingredients`, {
+    method: "POST",
+    body,
+  });
+}
+
+export function updateIngredient(
+  merchantId: string,
+  ingredientId: string,
+  body: App.Requests.Merchant.Ingredient.UpdateIngredientRequest
+): Promise<IngredientResponse> {
+  return apiRequest<IngredientResponse>(`/${merchantId}/ingredients/${ingredientId}`, {
+    method: "PUT",
+    body,
+  });
+}
+
+export function deleteIngredient(
+  merchantId: string,
+  ingredientId: string
+): Promise<DeleteIngredientResponse> {
+  return apiRequest<DeleteIngredientResponse>(`/${merchantId}/ingredients/${ingredientId}`, {
+    method: "DELETE",
   });
 }
