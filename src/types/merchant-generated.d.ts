@@ -327,6 +327,115 @@ created_at: string;
 updated_at: string;
 };
 }
+declare namespace App.Data.Merchant.Inventory {
+export type IngredientData = {
+id: string;
+merchant_id: string;
+name: string;
+base_unit: 'gram' | 'kilogram' | 'milliliter' | 'liter' | 'piece' | 'serving';
+current_stock: number;
+reorder_point: number;
+cost_per_unit: number | null;
+active: boolean;
+preferred_supplier: { id: string; name: string; offer_id: number } | null;
+supplier_offer_count: number;
+created_at: string;
+updated_at: string;
+};
+export type InventoryMovementData = {
+id: string;
+ingredient_id: string | null;
+product_id: string | null;
+order_id: string | null;
+operation_id: string | null;
+supplier_ingredient_id: number | null;
+ingredient: { id: string; name: string; base_unit: 'gram' | 'kilogram' | 'milliliter' | 'liter' | 'piece' | 'serving' } | null;
+product: { id: string; name: string } | null;
+order: { id: string; code: string; status: 'open' | 'completed' | 'cancelled' } | null;
+supplier_offer_id: number | null;
+supplier_offer: { id: number; supplier_id: string; supplier_name: string | null; supplier_sku: string | null } | null;
+actor: { id: string; name: string } | null;
+created_by: string | null;
+operation: { id: string; status: 'processing' | 'posted' | 'reversed' | 'failed'; source: string } | null;
+type: 'opening' | 'purchase' | 'sale' | 'reversal' | 'adjustment' | 'waste' | 'damage' | 'return';
+source: string;
+source_id: string | null;
+quantity: number;
+balance_after: number;
+cost_per_unit: number | null;
+total_cost: number | null;
+reason: string | null;
+moved_at: string;
+};
+export type InventoryOperationData = {
+id: string;
+source: string;
+source_id: string | null;
+status: 'processing' | 'posted' | 'reversed' | 'failed';
+movement_count: number;
+attempts: number;
+actor: { id: string; name: string } | null;
+failure_reason: string | null;
+created_at: string;
+processed_at: string | null;
+failed_at: string | null;
+movements: Array<App.Data.Merchant.Inventory.InventoryMovementData> | null;
+};
+export type InventoryOverviewData = {
+low_stock_ingredient_count: number;
+low_stock_manual_product_count: number;
+unavailable_recipe_count: number;
+lowest_recipe_capacity: number;
+recognized_cogs: number;
+inventory_losses: number;
+gross_profit: number;
+failed_operation_count: number;
+};
+export type RecipeData = {
+product_id: string;
+inventory_mode: 'unlimited' | 'manual' | 'recipe';
+has_recipe: boolean;
+estimated_unit_cogs: number;
+ingredients: Array<App.Data.Merchant.Inventory.RecipeIngredientData>;
+};
+export type RecipeIngredientData = {
+ingredient_id: string;
+name: string;
+base_unit: 'gram' | 'kilogram' | 'milliliter' | 'liter' | 'piece' | 'serving';
+quantity: number;
+unit: 'gram' | 'kilogram' | 'milliliter' | 'liter' | 'piece' | 'serving';
+cost_per_unit: number | null;
+cost_contribution: number | null;
+};
+export type SupplierData = {
+id: string;
+merchant_id: string;
+name: string;
+contact_name: string | null;
+email: string | null;
+phone: string | null;
+lead_time_days: number | null;
+payment_terms: string | null;
+active: boolean;
+active_offer_count: number;
+created_at: string;
+updated_at: string;
+};
+export type SupplierOfferData = {
+id: number;
+supplier_id: string;
+supplier_name: string | null;
+ingredient_id: string;
+supplier_sku: string | null;
+purchase_unit: string;
+pack_quantity: number;
+minimum_order_quantity: number | null;
+last_purchase_price: number | null;
+lead_time_days: number | null;
+is_preferred: boolean;
+active: boolean;
+};
+}
 declare namespace App.Data.Merchant.Order {
 export type KitchenTicketAddOnData = {
 id: string;
@@ -476,6 +585,8 @@ export type OrderPaymentDetailsData = {
 code: string | null;
 extra: string | null;
 expiry_time: string | null;
+qr_image_url: string | null;
+total: number | null;
 };
 export type OrderPaymentFeeData = {
 name: string;
@@ -609,6 +720,7 @@ description: string | null;
 price: number;
 discount: App.Data.Merchant.Pos.ProductDiscountData | null;
 stock: App.Data.Merchant.Pos.ProductStockData;
+inventory_mode: 'unlimited' | 'manual' | 'recipe';
 image: App.Data.Merchant.Pos.ProductImageData;
 category: App.Data.Merchant.Pos.ProductCategoryData | null;
 add_ons: Array<any>;
@@ -662,6 +774,9 @@ description: string | null;
 price: number;
 cost: number | null;
 stock: App.Data.Merchant.Product.ProductStockData;
+inventory_mode: 'unlimited' | 'manual' | 'recipe';
+estimated_unit_cogs: number;
+has_recipe: boolean;
 active: boolean;
 image: App.Data.Merchant.Product.ProductImageData;
 category: App.Data.Merchant.Product.ProductCategoryData | null;

@@ -6,8 +6,17 @@
  * Do not edit manually.
  */
 declare namespace App.Requests.Merchant {
+    export type StoreDeviceTokenRequest = {
+        token: string;
+        platform: "android" | "ios" | "web";
+        app_version?: string | null;
+    };
     export type CancellationRequestStatusEnum = "pending" | "approved" | "rejected";
     export type GalleryCategoryEnum = "Food" | "Ambiance";
+    export type InventoryModeEnum = "unlimited" | "manual" | "recipe";
+    export type InventoryMovementTypeEnum = "opening" | "purchase" | "sale" | "reversal" | "adjustment" | "waste" | "damage" | "return";
+    export type InventoryOperationStatusEnum = "processing" | "posted" | "reversed" | "failed";
+    export type InventoryUnitEnum = "gram" | "kilogram" | "milliliter" | "liter" | "piece" | "serving";
     export type KitchenTicketStatusActionEnum = "start" | "ready" | "cancel";
     export type KitchenTicketStatusEnum = "queued" | "preparing" | "ready" | "cancelled";
     export type OrderStatusEnum = "open" | "completed" | "cancelled";
@@ -17,11 +26,6 @@ declare namespace App.Requests.Merchant {
     export type ReviewStatusEnum = "approved" | "unapproved";
     export type UnitTypeEnum = "percentage" | "fixed";
     export type UserRoleEnum = "owner" | "manager" | "cashier" | "waiter" | "chef";
-    export type StoreDeviceTokenRequest = {
-        token: string;
-        platform: "android" | "ios" | "web";
-        app_version?: string | null;
-    };
 }
 declare namespace App.Requests.Merchant.AddOn {
     export type StoreAddOnRequest = {
@@ -253,6 +257,44 @@ declare namespace App.Requests.Merchant.Guest {
         phone?: string | null;
     };
 }
+declare namespace App.Requests.Merchant.Ingredient {
+    export type MovementRequest = {
+        type: "purchase" | "return" | "waste" | "damage";
+        quantity: number;
+        reason: string;
+        cost_per_unit?: number | null;
+        supplier_offer_id?: number | null;
+        operation_id: string;
+    };
+    export type StoreIngredientRequest = {
+        name: string;
+        base_unit: App.Requests.Merchant.InventoryUnitEnum;
+        reorder_point?: number | null;
+        cost_per_unit?: number | null;
+        active?: boolean;
+        initial_quantity?: number | null;
+        operation_id?: string;
+    };
+    export type UpdateIngredientRequest = {
+        name?: string;
+        base_unit?: App.Requests.Merchant.InventoryUnitEnum;
+        reorder_point?: number | null;
+        cost_per_unit?: number | null;
+        active?: boolean;
+    };
+}
+declare namespace App.Requests.Merchant.Inventory {
+    export type AdjustmentRequest = {
+        target_balance: number;
+        reason: string;
+        operation_id: string;
+    };
+    export type OpeningBalanceRequest = {
+        quantity: number;
+        cost_per_unit?: number | null;
+        operation_id: string;
+    };
+}
 declare namespace App.Requests.Merchant.Order {
     export type UpdateKitchenTicketStatusRequest = {
         status: App.Requests.Merchant.KitchenTicketStatusActionEnum;
@@ -293,6 +335,11 @@ declare namespace App.Requests.Merchant.Product {
             }[];
         }[];
     };
+    export type UpdateInventoryRequest = {
+        inventory_mode?: App.Requests.Merchant.InventoryModeEnum;
+        cost?: number | null;
+        stock_alert?: number | null;
+    };
     export type UpdateProductRequest = {
         name?: string;
         code?: string | null;
@@ -303,6 +350,13 @@ declare namespace App.Requests.Merchant.Product {
         stock?: number | null;
         stock_alert?: number | null;
         active?: boolean;
+    };
+    export type UpdateRecipeRequest = {
+        ingredients: {
+            ingredient_id: string;
+            quantity: number;
+            unit: App.Requests.Merchant.InventoryUnitEnum;
+        }[];
     };
     export type UploadProductImageRequest = {
         image: string;
@@ -367,5 +421,36 @@ declare namespace App.Requests.Merchant.Staff {
 declare namespace App.Requests.Merchant.Subscription {
     export type SubscribeRequest = {
         plan_key: "trial" | "monthly" | "semesterly" | "yearly";
+    };
+}
+declare namespace App.Requests.Merchant.Supplier {
+    export type OfferRequest = {
+        supplier_id: string;
+        supplier_sku?: string | null;
+        purchase_unit: string;
+        pack_quantity: number;
+        minimum_order_quantity?: number | null;
+        last_purchase_price?: number | null;
+        lead_time_days?: number | null;
+        is_preferred?: boolean;
+        active?: boolean;
+    };
+    export type StoreSupplierRequest = {
+        name: string;
+        contact_name?: string | null;
+        email?: string | null;
+        phone?: string | null;
+        lead_time_days?: number | null;
+        payment_terms?: string | null;
+        active?: boolean;
+    };
+    export type UpdateSupplierRequest = {
+        name?: string;
+        contact_name?: string | null;
+        email?: string | null;
+        phone?: string | null;
+        lead_time_days?: number | null;
+        payment_terms?: string | null;
+        active?: boolean;
     };
 }
