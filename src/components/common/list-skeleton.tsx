@@ -18,6 +18,10 @@ type GridSkeletonProps = {
   aspectRatio?: number;
 };
 
+function getDefaultGridSkeletonItems(columns: number): number {
+  return columns * 2;
+}
+
 function SkeletonRow(): JSX.Element {
   return (
     <View className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6">
@@ -51,12 +55,13 @@ export function ListSkeleton({
 
 export function GridSkeleton({
   columns,
-  items = columns * 2,
+  items,
   width,
   horizontalPadding = 16,
   gap = 16,
   aspectRatio = 1,
 }: GridSkeletonProps): JSX.Element {
+  const itemCount = items ?? getDefaultGridSkeletonItems(columns);
   const cardWidth = Math.max(0, (width - horizontalPadding * 2 - gap * (columns - 1)) / columns);
   const cardStyle: StyleProp<ViewStyle> = { width: cardWidth, aspectRatio };
 
@@ -66,7 +71,7 @@ export function GridSkeleton({
       style={{ paddingHorizontal: horizontalPadding, columnGap: gap }}
       accessibilityRole="progressbar"
     >
-      {Array.from({ length: items }, (_, index) => (
+      {Array.from({ length: itemCount }, (_, index) => (
         <View
           key={`grid-skeleton-${index}`}
           style={cardStyle}

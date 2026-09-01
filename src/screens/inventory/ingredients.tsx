@@ -165,14 +165,8 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
     lowStock: filter === "low-stock" ? true : undefined,
     sort: getIngredientSort(sortDescriptor),
   });
-  const ingredients = React.useMemo(
-    () => query.data?.pages.flatMap((page) => page.data) ?? [],
-    [query.data]
-  );
-  const sortedIngredients = React.useMemo(
-    () => sortIngredients(ingredients, sortDescriptor),
-    [ingredients, sortDescriptor]
-  );
+  const ingredients = query.data?.pages.flatMap((page) => page.data) ?? [];
+  const sortedIngredients = sortIngredients(ingredients, sortDescriptor);
 
   return (
     <>

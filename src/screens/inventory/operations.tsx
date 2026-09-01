@@ -145,14 +145,8 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
     status: status === "all" ? undefined : status,
     sort: getOperationSort(sortDescriptor),
   });
-  const operations = React.useMemo(
-    () => query.data?.pages.flatMap((page) => page.data) ?? [],
-    [query.data]
-  );
-  const sortedOperations = React.useMemo(
-    () => sortOperations(operations, sortDescriptor),
-    [operations, sortDescriptor]
-  );
+  const operations = query.data?.pages.flatMap((page) => page.data) ?? [];
+  const sortedOperations = sortOperations(operations, sortDescriptor);
 
   return (
     <>

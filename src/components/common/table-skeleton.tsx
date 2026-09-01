@@ -20,7 +20,19 @@ const CELL_SKELETON_WIDTHS = [
   "w-28",
 ] as const;
 
+const getSkeletonColumns = (columnWidths: readonly number[]) => {
+  const occurrences = new Map<number, number>();
+
+  return columnWidths.map((width) => {
+    const occurrence = occurrences.get(width) ?? 0;
+    occurrences.set(width, occurrence + 1);
+    return { id: `skeleton-column-${width}-${occurrence}`, width };
+  });
+};
+
 export default function TableSkeleton({ columnWidths, rows = 6 }: TableSkeletonProps): JSX.Element {
+  const skeletonColumns = getSkeletonColumns(columnWidths);
+
   return (
     <ScrollView className="flex-1" contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6">
       <View className="flex-1 items-center w-full">
@@ -28,8 +40,8 @@ export default function TableSkeleton({ columnWidths, rows = 6 }: TableSkeletonP
           <Table.ScrollContainer className="w-full self-center">
             <Table.Content className="w-full">
               <Table.Header>
-                {columnWidths.map((width, index) => (
-                  <Table.Column key={`skeleton-column-${index}`} width={width}>
+                {skeletonColumns.map((column) => (
+                  <Table.Column key={column.id} width={column.width}>
                     <Skeleton
                       variant="shimmer"
                       animation={{ state: "disabled", shimmer: { duration: 1800, speed: 0.75 } }}

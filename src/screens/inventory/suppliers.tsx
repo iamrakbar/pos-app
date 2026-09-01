@@ -1,11 +1,12 @@
 import AppIcon from "@/components/common/app-icon";
+import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import TableSkeleton from "@/components/common/table-skeleton";
 import { useSuppliers } from "@/hooks/db/use-suppliers";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { formatDateTime, formatInventoryQuantity } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Button, Chip, Typography, useThemeColor } from "heroui-native";
 import { EmptyState, Table, type TableSortDescriptor } from "heroui-native-pro";
 import React from "react";
@@ -114,6 +115,7 @@ function SupplierStatus({ active }: { active: boolean }): React.JSX.Element {
 
 export default function InventorySuppliersScreen(): React.JSX.Element {
   const { t } = useTranslation();
+  const router = useRouter();
   const theme = useNavigationTheme();
   const [themeColorMuted] = useThemeColor(["muted"]);
   const [search, setSearch] = React.useState("");
@@ -128,14 +130,8 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
     active: filter === "all" ? undefined : filter === "active",
     sort: getSupplierSort(sortDescriptor),
   });
-  const suppliers = React.useMemo(
-    () => query.data?.pages.flatMap((page) => page.data) ?? [],
-    [query.data]
-  );
-  const sortedSuppliers = React.useMemo(
-    () => sortSuppliers(suppliers, sortDescriptor),
-    [suppliers, sortDescriptor]
-  );
+  const suppliers = query.data?.pages.flatMap((page) => page.data) ?? [];
+  const sortedSuppliers = sortSuppliers(suppliers, sortDescriptor);
 
   return (
     <>
@@ -175,7 +171,7 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {query.isLoading ? (
-          <TableSkeleton columnWidths={[180, 170, 240, 160, 140, 180, 130, 130, 180, 180]} />
+          <TableSkeleton columnWidths={[180, 170, 240, 160, 140, 180, 130, 130, 180, 180, 140]} />
         ) : query.isError ? (
           <ErrorState error={query.error} onRetry={query.refetch} />
         ) : (
@@ -244,7 +240,16 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                       )}
                     >
                       {(supplier) => (
-                        <Table.Row id={supplier.id}>
+                        <Table.Row
+                          id={supplier.id}
+                          accessibilityRole="button"
+                          accessibilityLabel={t("suppliers.editAccessibility", {
+                            supplier: supplier.name,
+                          })}
+                          onPress={() =>
+                            router.push(`/settings/inventory/suppliers/${supplier.id}`)
+                          }
+                        >
                           <Table.Cell textProps={{ numberOfLines: 1 }}>
                             <Typography weight="semibold" numberOfLines={1}>
                               {supplier.name}
@@ -313,6 +318,10 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
             </View>
           </ScrollView>
         )}
+        <CreateFAB
+          accessibilityLabel={t("suppliers.addAccessibility")}
+          onPress={() => router.push("/settings/inventory/suppliers/new")}
+        />
       </View>
     </>
   );

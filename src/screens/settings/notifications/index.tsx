@@ -99,9 +99,8 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
         label: t("notifications.tokenFailed"),
         description: error instanceof Error ? error.message : undefined,
       });
-    } finally {
-      setIsGettingToken(false);
     }
+    setIsGettingToken(false);
   };
 
   return (

@@ -190,14 +190,8 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
     type: movementType === "all" ? undefined : movementType,
     sort: getMovementSort(sortDescriptor),
   });
-  const movements = React.useMemo(
-    () => query.data?.pages.flatMap((page) => page.data) ?? [],
-    [query.data]
-  );
-  const sortedMovements = React.useMemo(
-    () => sortMovements(movements, sortDescriptor),
-    [movements, sortDescriptor]
-  );
+  const movements = query.data?.pages.flatMap((page) => page.data) ?? [];
+  const sortedMovements = sortMovements(movements, sortDescriptor);
 
   return (
     <>

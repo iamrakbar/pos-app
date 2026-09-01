@@ -27,6 +27,7 @@ export default function InventoryLayout(): React.JSX.Element {
       />
       <Stack.Screen name="ingredients" options={{ title: t("navigation.ingredients") }} />
       <Stack.Screen name="suppliers" options={{ title: t("navigation.suppliers") }} />
+      <Stack.Screen name="suppliers/[id]" options={{ title: t("suppliers.editTitle") }} />
       <Stack.Screen name="movements" options={{ title: t("navigation.movements") }} />
       <Stack.Screen name="operations" options={{ title: t("navigation.operations") }} />
     </Stack>
