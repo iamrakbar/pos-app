@@ -21,6 +21,12 @@ type DeleteIngredientResponse = {
   message?: string;
 };
 
+type InventoryOperationResponse = {
+  success: boolean;
+  data: App.Data.Merchant.Inventory.InventoryOperationData;
+  message?: string;
+};
+
 export type IngredientSort =
   | "name"
   | "-name"
@@ -84,6 +90,38 @@ export function updateIngredient(
     method: "PUT",
     body,
   });
+}
+
+export async function adjustIngredientStock(
+  merchantId: string,
+  ingredientId: string,
+  body: App.Requests.Merchant.Inventory.AdjustmentRequest
+): Promise<InventoryOperationResponse> {
+  const response = await apiRequest<InventoryOperationResponse>(
+    `/${merchantId}/ingredients/${ingredientId}/adjustments`,
+    {
+      method: "POST",
+      body,
+    }
+  );
+  if (!response.success) throw new Error(response.message ?? "Inventory operation failed.");
+  return response;
+}
+
+export async function recordIngredientMovement(
+  merchantId: string,
+  ingredientId: string,
+  body: App.Requests.Merchant.Ingredient.MovementRequest
+): Promise<InventoryOperationResponse> {
+  const response = await apiRequest<InventoryOperationResponse>(
+    `/${merchantId}/ingredients/${ingredientId}/movements`,
+    {
+      method: "POST",
+      body,
+    }
+  );
+  if (!response.success) throw new Error(response.message ?? "Inventory operation failed.");
+  return response;
 }
 
 export function deleteIngredient(

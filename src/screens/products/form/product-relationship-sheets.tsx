@@ -265,7 +265,6 @@ export default function ProductRelationshipSheets({
   movementsSheetRef,
   recipeSheetRef,
 }: ProductRelationshipSheetsProps): React.JSX.Element {
-  const { t } = useTranslation();
   const movementsQuery = useInventoryMovements({ productId }, { enabled: showMovements });
   const recipeQuery = useProductRecipe(productId, showRecipe);
   const movements = movementsQuery.data?.pages.flatMap((page) => page.data) ?? [];
@@ -274,96 +273,140 @@ export default function ProductRelationshipSheets({
   return (
     <>
       {showMovements ? (
-        <TrueSheet
-          ref={movementsSheetRef}
-          detents={[0.65, 1]}
-          scrollable
-          grabber
-          cornerRadius={24}
-          maxContentWidth={1100}
-          header={
-            <SheetHeader
-              title={t("productForm.inventoryMovements")}
-              description={`${productName} · ${t("productForm.inventoryMovementsDescription")}`}
-              onClose={() => void movementsSheetRef.current?.dismiss()}
-            />
-          }
-        >
-          <ScrollView
-            className="flex-1 bg-surface-secondary"
-            contentContainerClassName="px-4 py-4"
-            showsVerticalScrollIndicator={false}
-          >
-            {movementsQuery.isLoading ? (
-              <SheetLoading />
-            ) : movementsQuery.isError ? (
-              <ErrorState error={movementsQuery.error} onRetry={movementsQuery.refetch} />
-            ) : (
-              <MovementsTable movements={movements} />
-            )}
-            {movementsQuery.hasNextPage ? (
-              <View className="flex-row items-center justify-end pt-3">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onPress={() => void movementsQuery.fetchNextPage()}
-                  isDisabled={movementsQuery.isFetchingNextPage}
-                >
-                  <Button.Label>
-                    {movementsQuery.isFetchingNextPage
-                      ? t("movements.loadingMore")
-                      : t("movements.loadMore")}
-                  </Button.Label>
-                </Button>
-              </View>
-            ) : null}
-          </ScrollView>
-        </TrueSheet>
+        <ProductMovementsSheet
+          productName={productName}
+          sheetRef={movementsSheetRef}
+          query={movementsQuery}
+          movements={movements}
+        />
       ) : null}
 
       {showRecipe ? (
-        <TrueSheet
-          ref={recipeSheetRef}
-          detents={[0.65, 1]}
-          scrollable
-          grabber
-          cornerRadius={24}
-          maxContentWidth={900}
-          header={
-            <SheetHeader
-              title={t("productForm.recipe")}
-              description={`${productName} · ${t("productForm.recipeDescription")}`}
-              onClose={() => void recipeSheetRef.current?.dismiss()}
-            />
-          }
-        >
-          <ScrollView
-            className="flex-1 bg-surface-secondary"
-            contentContainerClassName="gap-4 px-4 py-4"
-            showsVerticalScrollIndicator={false}
-          >
-            {recipeQuery.isLoading ? (
-              <SheetLoading />
-            ) : recipeQuery.isError ? (
-              <ErrorState error={recipeQuery.error} onRetry={recipeQuery.refetch} />
-            ) : (
-              <>
-                {recipe ? (
-                  <View className="flex-row items-center justify-between gap-3 rounded-panel-inner bg-surface px-4 py-3">
-                    <Typography type="body-sm" color="muted">
-                      {t("productForm.recipeEstimatedUnitCogs")}
-                    </Typography>
-                    <Typography weight="semibold" className="tabular-nums">
-                      {formatRupiah(recipe.estimated_unit_cogs)}
-                    </Typography>
-                  </View>
-                ) : null}
-                <RecipeTable ingredients={recipe?.ingredients ?? []} />
-              </>
-            )}
-          </ScrollView>
-        </TrueSheet>
+        <ProductRecipeSheet
+          productName={productName}
+          sheetRef={recipeSheetRef}
+          query={recipeQuery}
+          recipe={recipe}
+        />
       ) : null}
     </>
+  );
+}
+
+function ProductMovementsSheet({
+  productName,
+  sheetRef,
+  query,
+  movements,
+}: {
+  productName: string;
+  sheetRef: React.RefObject<TrueSheet | null>;
+  query: ReturnType<typeof useInventoryMovements>;
+  movements: Movement[];
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <TrueSheet
+      ref={sheetRef}
+      detents={[0.65, 1]}
+      scrollable
+      grabber
+      cornerRadius={24}
+      maxContentWidth={1100}
+      header={
+        <SheetHeader
+          title={t("productForm.inventoryMovements")}
+          description={`${productName} · ${t("productForm.inventoryMovementsDescription")}`}
+          onClose={() => void sheetRef.current?.dismiss()}
+        />
+      }
+    >
+      <ScrollView
+        className="flex-1 bg-surface-secondary"
+        contentContainerClassName="px-4 py-4"
+        showsVerticalScrollIndicator={false}
+      >
+        {query.isLoading ? (
+          <SheetLoading />
+        ) : query.isError ? (
+          <ErrorState error={query.error} onRetry={query.refetch} />
+        ) : (
+          <MovementsTable movements={movements} />
+        )}
+        {query.hasNextPage ? (
+          <View className="flex-row items-center justify-end pt-3">
+            <Button
+              size="sm"
+              variant="ghost"
+              onPress={() => void query.fetchNextPage()}
+              isDisabled={query.isFetchingNextPage}
+            >
+              <Button.Label>
+                {query.isFetchingNextPage ? t("movements.loadingMore") : t("movements.loadMore")}
+              </Button.Label>
+            </Button>
+          </View>
+        ) : null}
+      </ScrollView>
+    </TrueSheet>
+  );
+}
+
+function ProductRecipeSheet({
+  productName,
+  sheetRef,
+  query,
+  recipe,
+}: {
+  productName: string;
+  sheetRef: React.RefObject<TrueSheet | null>;
+  query: ReturnType<typeof useProductRecipe>;
+  recipe: ReturnType<typeof useProductRecipe>["data"];
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <TrueSheet
+      ref={sheetRef}
+      detents={[0.65, 1]}
+      scrollable
+      grabber
+      cornerRadius={24}
+      maxContentWidth={900}
+      header={
+        <SheetHeader
+          title={t("productForm.recipe")}
+          description={`${productName} · ${t("productForm.recipeDescription")}`}
+          onClose={() => void sheetRef.current?.dismiss()}
+        />
+      }
+    >
+      <ScrollView
+        className="flex-1 bg-surface-secondary"
+        contentContainerClassName="gap-4 px-4 py-4"
+        showsVerticalScrollIndicator={false}
+      >
+        {query.isLoading ? (
+          <SheetLoading />
+        ) : query.isError ? (
+          <ErrorState error={query.error} onRetry={query.refetch} />
+        ) : (
+          <>
+            {recipe ? (
+              <View className="flex-row items-center justify-between gap-3 rounded-panel-inner bg-surface px-4 py-3">
+                <Typography type="body-sm" color="muted">
+                  {t("productForm.recipeEstimatedUnitCogs")}
+                </Typography>
+                <Typography weight="semibold" className="tabular-nums">
+                  {formatRupiah(recipe.estimated_unit_cogs)}
+                </Typography>
+              </View>
+            ) : null}
+            <RecipeTable ingredients={recipe?.ingredients ?? []} />
+          </>
+        )}
+      </ScrollView>
+    </TrueSheet>
   );
 }
