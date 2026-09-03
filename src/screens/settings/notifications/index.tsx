@@ -109,105 +109,179 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
       contentContainerClassName="px-4 py-6 pb-10 md:px-6"
     >
       <View className="mx-auto w-full max-w-3xl gap-5">
-        <Card>
-          <Card.Body className="gap-4 p-5">
-            <View className="flex-row items-center justify-between gap-3">
-              <View className="flex-1 flex-row items-center gap-3">
-                <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
-                  <AppIcon name="notifications-outline" size={20} color={accentColor} />
-                </View>
-                <View className="flex-1 gap-1">
-                  <Card.Title>{t("notifications.title")}</Card.Title>
-                  {permission.status !== "granted" ? (
-                    <Card.Description>{t("notifications.description")}</Card.Description>
-                  ) : null}
-                </View>
-              </View>
-              <Chip size="sm" variant="soft" color={statusColor}>
-                <Chip.Label>
-                  {permission.isLoading ? t("notifications.loading") : statusLabel}
-                </Chip.Label>
-              </Chip>
-            </View>
-
-            {permission.status !== "granted" ? (
-              <Alert status={permission.status === "denied" ? "warning" : "accent"}>
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Title>{t("notifications.permissionTitle")}</Alert.Title>
-                  <Alert.Description>
-                    {t(`notifications.descriptionByStatus.${permission.status}`)}
-                  </Alert.Description>
-                </Alert.Content>
-              </Alert>
-            ) : null}
-
-            <View className="gap-3 pt-1">
-              {permission.status === "undetermined" ||
-              (permission.status === "denied" && permission.canAskAgain) ? (
-                <Button
-                  className="w-full"
-                  isDisabled={permission.isLoading || permission.isRequesting}
-                  onPress={handleRequest}
-                >
-                  <Button.Label>
-                    {permission.isRequesting
-                      ? t("notifications.requesting")
-                      : t("notifications.allow")}
-                  </Button.Label>
-                </Button>
-              ) : null}
-
-              {permission.status === "denied" && !permission.canAskAgain ? (
-                <Button className="w-full" onPress={handleOpenSettings}>
-                  <Button.Label>{t("notifications.openSettings")}</Button.Label>
-                </Button>
-              ) : null}
-
-              {permission.status === "granted" ? (
-                !isProduction ? (
-                  <>
-                    <Button className="w-full" isDisabled={isSendingTest} onPress={handleSendTest}>
-                      <Button.Label>
-                        {isSendingTest
-                          ? t("notifications.sendingTest")
-                          : t("notifications.sendTest")}
-                      </Button.Label>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      isDisabled={isGettingToken}
-                      onPress={handleGetToken}
-                    >
-                      <Button.Label>
-                        {isGettingToken
-                          ? t("notifications.gettingToken")
-                          : t("notifications.getToken")}
-                      </Button.Label>
-                    </Button>
-                  </>
-                ) : null
-              ) : null}
-            </View>
-
-            {pushToken ? (
-              <View className="rounded-panel bg-surface-secondary p-3">
-                <Typography type="body-xs" weight="semibold">
-                  {t("notifications.tokenLabel")}
-                </Typography>
-                <Typography selectable type="body-xs" color="muted" className="mt-1">
-                  {pushToken}
-                </Typography>
-              </View>
-            ) : null}
-          </Card.Body>
-        </Card>
+        <NotificationsCard
+          permission={permission}
+          isProduction={isProduction}
+          isSendingTest={isSendingTest}
+          isGettingToken={isGettingToken}
+          pushToken={pushToken}
+          statusLabel={statusLabel}
+          statusColor={statusColor}
+          accentColor={accentColor}
+          onRequest={handleRequest}
+          onOpenSettings={handleOpenSettings}
+          onSendTest={handleSendTest}
+          onGetToken={handleGetToken}
+        />
 
         <Typography type="body-xs" color="muted" className="px-1">
           {t("notifications.localOnlyNotice")}
         </Typography>
       </View>
     </ScrollView>
+  );
+}
+
+function NotificationsCard({
+  permission,
+  isProduction,
+  isSendingTest,
+  isGettingToken,
+  pushToken,
+  statusLabel,
+  statusColor,
+  accentColor,
+  onRequest,
+  onOpenSettings,
+  onSendTest,
+  onGetToken,
+}: {
+  permission: ReturnType<typeof useNotificationPermission>;
+  isProduction: boolean;
+  isSendingTest: boolean;
+  isGettingToken: boolean;
+  pushToken: string | null;
+  statusLabel: string;
+  statusColor: "success" | "danger" | "default";
+  accentColor: string;
+  onRequest: () => void;
+  onOpenSettings: () => void;
+  onSendTest: () => void;
+  onGetToken: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <Card>
+      <Card.Body className="gap-4 p-5">
+        <View className="flex-row items-center justify-between gap-3">
+          <View className="flex-1 flex-row items-center gap-3">
+            <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
+              <AppIcon name="notifications-outline" size={20} color={accentColor} />
+            </View>
+            <View className="flex-1 gap-1">
+              <Card.Title>{t("notifications.title")}</Card.Title>
+              {permission.status !== "granted" ? (
+                <Card.Description>{t("notifications.description")}</Card.Description>
+              ) : null}
+            </View>
+          </View>
+          <Chip size="sm" variant="soft" color={statusColor}>
+            <Chip.Label>
+              {permission.isLoading ? t("notifications.loading") : statusLabel}
+            </Chip.Label>
+          </Chip>
+        </View>
+
+        {permission.status !== "granted" ? (
+          <Alert status={permission.status === "denied" ? "warning" : "accent"}>
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>{t("notifications.permissionTitle")}</Alert.Title>
+              <Alert.Description>
+                {t(`notifications.descriptionByStatus.${permission.status}`)}
+              </Alert.Description>
+            </Alert.Content>
+          </Alert>
+        ) : null}
+
+        <NotificationActions
+          permission={permission}
+          isProduction={isProduction}
+          isSendingTest={isSendingTest}
+          isGettingToken={isGettingToken}
+          onRequest={onRequest}
+          onOpenSettings={onOpenSettings}
+          onSendTest={onSendTest}
+          onGetToken={onGetToken}
+        />
+
+        {pushToken ? (
+          <View className="rounded-panel bg-surface-secondary p-3">
+            <Typography type="body-xs" weight="semibold">
+              {t("notifications.tokenLabel")}
+            </Typography>
+            <Typography selectable type="body-xs" color="muted" className="mt-1">
+              {pushToken}
+            </Typography>
+          </View>
+        ) : null}
+      </Card.Body>
+    </Card>
+  );
+}
+
+function NotificationActions({
+  permission,
+  isProduction,
+  isSendingTest,
+  isGettingToken,
+  onRequest,
+  onOpenSettings,
+  onSendTest,
+  onGetToken,
+}: {
+  permission: ReturnType<typeof useNotificationPermission>;
+  isProduction: boolean;
+  isSendingTest: boolean;
+  isGettingToken: boolean;
+  onRequest: () => void;
+  onOpenSettings: () => void;
+  onSendTest: () => void;
+  onGetToken: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <View className="gap-3 pt-1">
+      {permission.status === "undetermined" ||
+      (permission.status === "denied" && permission.canAskAgain) ? (
+        <Button
+          className="w-full"
+          isDisabled={permission.isLoading || permission.isRequesting}
+          onPress={onRequest}
+        >
+          <Button.Label>
+            {permission.isRequesting ? t("notifications.requesting") : t("notifications.allow")}
+          </Button.Label>
+        </Button>
+      ) : null}
+
+      {permission.status === "denied" && !permission.canAskAgain ? (
+        <Button className="w-full" onPress={onOpenSettings}>
+          <Button.Label>{t("notifications.openSettings")}</Button.Label>
+        </Button>
+      ) : null}
+
+      {permission.status === "granted" && !isProduction ? (
+        <>
+          <Button className="w-full" isDisabled={isSendingTest} onPress={onSendTest}>
+            <Button.Label>
+              {isSendingTest ? t("notifications.sendingTest") : t("notifications.sendTest")}
+            </Button.Label>
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            isDisabled={isGettingToken}
+            onPress={onGetToken}
+          >
+            <Button.Label>
+              {isGettingToken ? t("notifications.gettingToken") : t("notifications.getToken")}
+            </Button.Label>
+          </Button>
+        </>
+      ) : null}
+    </View>
   );
 }

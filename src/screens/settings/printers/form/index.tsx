@@ -11,7 +11,6 @@ import {
   Button,
   Card,
   Input,
-  Select,
   Separator,
   Spinner,
   Switch,
@@ -43,6 +42,7 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { printCalibrationReceipt } from "@/services/printer/print-service";
 import ActionDialog from "@/components/common/action-dialog";
 import { FormNumberField } from "@/components/common/form-number-field";
+import PrinterSelectField from "@/components/common/printer-select-field";
 import { EmptyState } from "heroui-native-pro";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
@@ -147,45 +147,19 @@ function PrinterDetailsCard({
 
         <View>
           <FieldLabel label={t("printerForm.connection")} required />
-          <Controller
+          <PrinterSelectField
             control={control}
             name="connection"
-            render={({ field: { value, onChange } }) => (
-              <Select
-                presentation={choicePresentation}
-                value={CONNECTION_TYPES.find((item) => item.value === value)}
-                onValueChange={(option) => {
-                  if (!option) return;
-                  const nextConnection = option.value as ConnectionType;
-                  onChange(nextConnection);
-                  setValue("selectedDeviceId", "", { shouldDirty: true });
-                  setValue("macAddress", "", { shouldDirty: true, shouldValidate: true });
-                  onConnectionChange(nextConnection);
-                }}
-              >
-                <Select.Trigger>
-                  <Select.Value placeholder={t("printerForm.selectConnection")} numberOfLines={1} />
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content
-                    presentation={choicePresentation}
-                    width={choicePresentation === "popover" ? "trigger" : undefined}
-                  >
-                    <Select.ListLabel className="mb-2">
-                      {t("printerForm.connectionType")}
-                    </Select.ListLabel>
-                    {CONNECTION_TYPES.map((item, index, arr) => (
-                      <React.Fragment key={item.value}>
-                        <Select.Item value={item.value} label={item.label} />
-                        {index < arr.length - 1 ? <Separator /> : null}
-                      </React.Fragment>
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-            )}
+            options={CONNECTION_TYPES}
+            presentation={choicePresentation}
+            placeholder={t("printerForm.selectConnection")}
+            listLabel={t("printerForm.connectionType")}
+            onChange={(value) => {
+              const nextConnection = value as ConnectionType;
+              setValue("selectedDeviceId", "", { shouldDirty: true });
+              setValue("macAddress", "", { shouldDirty: true, shouldValidate: true });
+              onConnectionChange(nextConnection);
+            }}
           />
         </View>
       </Card.Body>
@@ -379,49 +353,23 @@ function ReceiptSetupCard({
       <Card.Body className="gap-4">
         <View>
           <FieldLabel label={t("printerForm.receiptSize")} required />
-          <Controller
+          <PrinterSelectField
             control={control}
             name="paperWidth"
-            render={({ field: { value, onChange } }) => (
-              <Select
-                presentation={choicePresentation}
-                value={PAPER_WIDTHS.find((item) => item.value === value)}
-                onValueChange={(option) => {
-                  if (!option) return;
-                  onChange(option.value);
-                  setValue("charactersPerLine", option.value === "80mm" ? "46" : "32", {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                  setValue("logoWidthDots", option.value === "80mm" ? "280" : "200", {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }}
-              >
-                <Select.Trigger>
-                  <Select.Value placeholder={t("printerForm.selectSize")} numberOfLines={1} />
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content
-                    presentation={choicePresentation}
-                    width={choicePresentation === "popover" ? "trigger" : undefined}
-                  >
-                    <Select.ListLabel className="mb-2">
-                      {t("printerForm.receiptSize")}
-                    </Select.ListLabel>
-                    {PAPER_WIDTHS.map((item, index, arr) => (
-                      <React.Fragment key={item.value}>
-                        <Select.Item value={item.value} label={item.label} />
-                        {index < arr.length - 1 ? <Separator /> : null}
-                      </React.Fragment>
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-            )}
+            options={PAPER_WIDTHS}
+            presentation={choicePresentation}
+            placeholder={t("printerForm.selectSize")}
+            listLabel={t("printerForm.receiptSize")}
+            onChange={(value) => {
+              setValue("charactersPerLine", value === "80mm" ? "46" : "32", {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+              setValue("logoWidthDots", value === "80mm" ? "280" : "200", {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+            }}
           />
         </View>
 

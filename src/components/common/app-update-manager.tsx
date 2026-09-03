@@ -53,17 +53,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
         })
       : notAvailable;
 
-  const statusText = (() => {
-    if (!Updates.isEnabled) return t("updates.disabled");
-    if (__DEV__) return t("updates.releaseOnly");
-    if (updates.isRestarting || actionStatus === "restarting") return t("updates.restarting");
-    if (updates.isDownloading || actionStatus === "downloading") return t("updates.downloading");
-    if (updates.isChecking || actionStatus === "checking") return t("updates.checking");
-    if (updates.isUpdatePending) return t("updates.pending");
-    if (updates.isUpdateAvailable) return t("updates.available");
-    if (message) return message;
-    return t("updates.current");
-  })();
+  const statusText = getUpdateStatusText({ updates, actionStatus, message, t });
 
   const restartApp = async () => {
     if (!isSupported) {
@@ -119,29 +109,99 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
     }
 
     return (
-      <View className="absolute left-4 right-4 bottom-4">
-        <HeroAlert status="accent" className="items-center shadow-lg">
-          <HeroAlert.Indicator />
-          <HeroAlert.Content>
-            <HeroAlert.Title>{t("updates.ready")}</HeroAlert.Title>
-            <HeroAlert.Description>{t("updates.readyDescription")}</HeroAlert.Description>
-          </HeroAlert.Content>
-          <View className="flex-row gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onPress={() => setDismissedUpdateId(downloadedUpdateId)}
-            >
-              <Button.Label>{t("updates.later")}</Button.Label>
-            </Button>
-            <Button size="sm" variant="primary" onPress={restartApp}>
-              <Button.Label>{t("updates.restart")}</Button.Label>
-            </Button>
-          </View>
-        </HeroAlert>
-      </View>
+      <UpdateBanner
+        onDismiss={() => setDismissedUpdateId(downloadedUpdateId)}
+        onRestart={restartApp}
+      />
     );
   }
+
+  return (
+    <UpdateSettingsCard
+      updates={updates}
+      isBusy={isBusy}
+      statusText={statusText}
+      notAvailable={notAvailable}
+      themeColorAccent={themeColorAccent}
+      onCheck={checkForUpdates}
+      onRestart={restartApp}
+      formatDate={formatDate}
+    />
+  );
+}
+
+function getUpdateStatusText({
+  updates,
+  actionStatus,
+  message,
+  t,
+}: {
+  updates: ReturnType<typeof Updates.useUpdates>;
+  actionStatus: UpdateActionStatus;
+  message: string | null;
+  t: ReturnType<typeof useTranslation>["t"];
+}): string {
+  if (!Updates.isEnabled) return t("updates.disabled");
+  if (__DEV__) return t("updates.releaseOnly");
+  if (updates.isRestarting || actionStatus === "restarting") return t("updates.restarting");
+  if (updates.isDownloading || actionStatus === "downloading") return t("updates.downloading");
+  if (updates.isChecking || actionStatus === "checking") return t("updates.checking");
+  if (updates.isUpdatePending) return t("updates.pending");
+  if (updates.isUpdateAvailable) return t("updates.available");
+  if (message) return message;
+  return t("updates.current");
+}
+
+function UpdateBanner({
+  onDismiss,
+  onRestart,
+}: {
+  onDismiss: () => void;
+  onRestart: () => void;
+}): JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <View className="absolute left-4 right-4 bottom-4">
+      <HeroAlert status="accent" className="items-center shadow-lg">
+        <HeroAlert.Indicator />
+        <HeroAlert.Content>
+          <HeroAlert.Title>{t("updates.ready")}</HeroAlert.Title>
+          <HeroAlert.Description>{t("updates.readyDescription")}</HeroAlert.Description>
+        </HeroAlert.Content>
+        <View className="flex-row gap-2">
+          <Button size="sm" variant="ghost" onPress={onDismiss}>
+            <Button.Label>{t("updates.later")}</Button.Label>
+          </Button>
+          <Button size="sm" variant="primary" onPress={onRestart}>
+            <Button.Label>{t("updates.restart")}</Button.Label>
+          </Button>
+        </View>
+      </HeroAlert>
+    </View>
+  );
+}
+
+function UpdateSettingsCard({
+  updates,
+  isBusy,
+  statusText,
+  notAvailable,
+  themeColorAccent,
+  onCheck,
+  onRestart,
+  formatDate,
+}: {
+  updates: ReturnType<typeof Updates.useUpdates>;
+  isBusy: boolean;
+  statusText: string;
+  notAvailable: string;
+  themeColorAccent: string;
+  onCheck: () => void;
+  onRestart: () => void;
+  formatDate: (value?: Date | null) => string;
+}): JSX.Element {
+  const { t } = useTranslation();
 
   return (
     <Card>
@@ -195,7 +255,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
         <View className="flex-row gap-3">
           <Button
             variant="secondary"
-            onPress={checkForUpdates}
+            onPress={onCheck}
             isDisabled={isBusy || updates.isUpdatePending}
             className="flex-1"
           >
@@ -204,7 +264,7 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
           </Button>
           <Button
             variant="primary"
-            onPress={restartApp}
+            onPress={onRestart}
             isDisabled={!updates.isUpdatePending || isBusy}
             className="flex-1"
           >

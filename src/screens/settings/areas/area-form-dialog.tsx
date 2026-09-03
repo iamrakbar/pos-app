@@ -1,14 +1,13 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
-import AdaptiveFormOverlay, {
-  AdaptiveFormKeyboardHandlers,
-} from "@/components/common/adaptive-form-overlay";
+import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
+import AdaptiveTextFieldController from "@/components/common/adaptive-text-field-controller";
 import { useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
 import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Label, TextField, Typography, useToast } from "heroui-native";
+import { Button, Typography, useToast } from "heroui-native";
 import React from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
@@ -123,30 +122,12 @@ export default function AreaFormDialog({
         }
       >
         <View className="gap-4 px-5">
-          <Controller
+          <AdaptiveTextFieldController
             control={control}
             name="name"
-            render={({ field: { value, onChange } }) => (
-              <TextField isRequired isInvalid={Boolean(errors.name)}>
-                <Label>{t("areasManagement.name")}</Label>
-                <AdaptiveFormKeyboardHandlers>
-                  {(keyboardHandlers) => (
-                    <Input
-                      value={value}
-                      onChangeText={onChange}
-                      placeholder={t("areasManagement.areaNamePlaceholder")}
-                      variant="secondary"
-                      {...keyboardHandlers}
-                    />
-                  )}
-                </AdaptiveFormKeyboardHandlers>
-                {errors.name?.message ? (
-                  <Typography type="body-xs" className="text-danger">
-                    {errors.name.message}
-                  </Typography>
-                ) : null}
-              </TextField>
-            )}
+            label={t("areasManagement.name")}
+            placeholder={t("areasManagement.areaNamePlaceholder")}
+            error={errors.name?.message}
           />
           {errors.root?.server?.message ? (
             <Typography type="body-sm" className="text-danger">

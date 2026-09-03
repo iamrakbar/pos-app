@@ -3,6 +3,7 @@ import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { FormNumberField } from "@/components/common/form-number-field";
+import FormActiveField from "@/components/common/form-active-field";
 import {
   useCategory,
   useCreateCategory,
@@ -22,7 +23,6 @@ import {
   Card,
   Input,
   Label,
-  Switch,
   TextArea,
   TextField,
   Typography,
@@ -31,7 +31,7 @@ import {
 } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
@@ -249,27 +249,11 @@ export default function CategoryFormScreen(): React.JSX.Element {
               )}
             />
 
-            <Controller
+            <FormActiveField
               control={control}
               name="active"
-              render={({ field: { value, onChange } }) => (
-                <Pressable
-                  accessibilityRole="switch"
-                  accessibilityState={{ checked: value }}
-                  onPress={() => onChange(!value)}
-                  className="flex-row items-center justify-between gap-4 py-1"
-                >
-                  <View className="flex-1">
-                    <Typography type="body-sm" weight="semibold">
-                      {t("common.active")}
-                    </Typography>
-                    <Typography type="body-xs" color="muted">
-                      {t("categories.activeDescription")}
-                    </Typography>
-                  </View>
-                  <Switch isSelected={value} onSelectedChange={onChange} />
-                </Pressable>
-              )}
+              label={t("common.active")}
+              description={t("categories.activeDescription")}
             />
 
             {errors.root?.server?.message ? (

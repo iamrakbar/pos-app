@@ -3,6 +3,7 @@ import AdaptiveFormOverlay, {
 } from "@/components/common/adaptive-form-overlay";
 import { getErrorMessage } from "@/api/api-error";
 import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
+import AdaptiveTextAreaController from "@/components/common/adaptive-text-area-controller";
 import { useRecordIngredientMovement } from "@/hooks/db/use-ingredients";
 import {
   createIngredientMovementSchema,
@@ -14,18 +15,17 @@ import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 import { createOperationId } from "@/utils/operation-id";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Label, Select, TextArea, TextField, Typography, useToast } from "heroui-native";
+import { Label, Select, Typography, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
+import { FieldMessage, OverlayFooter } from "@/screens/inventory/ingredient-stock-overlay-shared";
 import {
-  FieldMessage,
   mapServerErrors,
-  OverlayFooter,
   QUANTITY_FORMAT_OPTIONS,
   type Ingredient,
-} from "@/screens/inventory/ingredient-stock-overlay-shared";
+} from "@/screens/inventory/ingredient-stock-overlay-utils";
 
 export default function RecordMovementOverlay({
   ingredient,
@@ -198,27 +198,12 @@ export default function RecordMovementOverlay({
           )}
         />
 
-        <Controller
+        <AdaptiveTextAreaController
           control={control}
           name="reason"
-          render={({ field: { value, onChange } }) => (
-            <TextField isRequired isInvalid={Boolean(errors.reason)}>
-              <Label>{t("ingredients.reason")}</Label>
-              <AdaptiveFormKeyboardHandlers>
-                {(keyboardHandlers) => (
-                  <TextArea
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={t("ingredients.reasonPlaceholder")}
-                    variant="secondary"
-                    className="min-h-20"
-                    {...keyboardHandlers}
-                  />
-                )}
-              </AdaptiveFormKeyboardHandlers>
-              <FieldMessage message={errors.reason?.message} />
-            </TextField>
-          )}
+          label={t("ingredients.reason")}
+          placeholder={t("ingredients.reasonPlaceholder")}
+          error={errors.reason?.message}
         />
 
         {errors.root?.server?.message ? (

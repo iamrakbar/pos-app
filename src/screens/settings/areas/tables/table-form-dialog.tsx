@@ -3,24 +3,17 @@ import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
 } from "@/components/common/adaptive-form-overlay";
+import AdaptiveTextFieldController from "@/components/common/adaptive-text-field-controller";
 import { FormNumberField } from "@/components/common/form-number-field";
+import FormActiveField from "@/components/common/form-active-field";
 import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-tables";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { createTableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Button,
-  Input,
-  Label,
-  Switch,
-  TextField,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Typography, useThemeColor, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import TableSymbol, { TableSeatCount } from "@/components/table-symbol";
 import Animated from "react-native-reanimated";
@@ -149,30 +142,12 @@ export default function TableFormDialog({
         }
       >
         <View className="gap-4 px-5">
-          <Controller
+          <AdaptiveTextFieldController
             control={control}
             name="name"
-            render={({ field: { value, onChange } }) => (
-              <TextField isRequired isInvalid={Boolean(errors.name)}>
-                <Label>{t("areasManagement.name")}</Label>
-                <AdaptiveFormKeyboardHandlers>
-                  {(keyboardHandlers) => (
-                    <Input
-                      value={value}
-                      onChangeText={onChange}
-                      placeholder={t("areasManagement.tableNamePlaceholder")}
-                      variant="secondary"
-                      {...keyboardHandlers}
-                    />
-                  )}
-                </AdaptiveFormKeyboardHandlers>
-                {errors.name?.message ? (
-                  <Typography type="body-xs" className="text-danger">
-                    {errors.name.message}
-                  </Typography>
-                ) : null}
-              </TextField>
-            )}
+            label={t("areasManagement.name")}
+            placeholder={t("areasManagement.tableNamePlaceholder")}
+            error={errors.name?.message}
           />
 
           <Controller
@@ -210,27 +185,11 @@ export default function TableFormDialog({
               </AdaptiveFormKeyboardHandlers>
             )}
           />
-          <Controller
+          <FormActiveField
             control={control}
             name="active"
-            render={({ field: { value, onChange } }) => (
-              <Pressable
-                accessibilityRole="switch"
-                accessibilityState={{ checked: value }}
-                onPress={() => onChange(!value)}
-                className="flex-row items-center justify-between gap-4 py-1"
-              >
-                <View className="flex-1">
-                  <Typography type="body-sm" weight="semibold">
-                    {t("common.active")}
-                  </Typography>
-                  <Typography type="body-xs" color="muted">
-                    {t("areasManagement.tableActiveDescription")}
-                  </Typography>
-                </View>
-                <Switch isSelected={value} onSelectedChange={onChange} />
-              </Pressable>
-            )}
+            label={t("common.active")}
+            description={t("areasManagement.tableActiveDescription")}
           />
         </View>
       </AdaptiveFormOverlay>

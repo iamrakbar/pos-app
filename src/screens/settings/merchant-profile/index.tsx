@@ -129,6 +129,113 @@ async function uploadMerchantImage({
   }
 }
 
+async function pickMerchantImage({
+  kind,
+  t,
+  toast,
+  uploadLogo,
+  uploadCover,
+  onStart,
+  onSettled,
+}: {
+  kind: ImageKind;
+  t: Translate;
+  toast: ReturnType<typeof useToast>["toast"];
+  uploadLogo: ReturnType<typeof useUploadMerchantLogo>;
+  uploadCover: ReturnType<typeof useUploadMerchantCover>;
+  onStart: () => void;
+  onSettled: () => void;
+}): Promise<void> {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) {
+    toast.show({
+      variant: "warning",
+      label: t("productForm.photoPermission"),
+      description: t("productForm.photoPermissionDescription"),
+    });
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: "images",
+    allowsEditing: true,
+    aspect: kind === "logo" ? [1, 1] : [16, 9],
+    quality: 1,
+  });
+  if (result.canceled) return;
+
+  onStart();
+  await uploadMerchantImage({
+    asset: result.assets[0],
+    kind,
+    t,
+    toast,
+    uploadLogo,
+    uploadCover,
+    onSettled,
+  });
+}
+
+async function saveMerchantProfile({
+  values,
+  updateProfile,
+  reset,
+  t,
+  toast,
+  setError,
+}: {
+  values: MerchantProfileFormValues;
+  updateProfile: ReturnType<typeof useUpdateMerchantProfile>;
+  reset: (values: MerchantProfileFormValues) => void;
+  t: Translate;
+  toast: ReturnType<typeof useToast>["toast"];
+  setError: (field: "name" | "root.server", error: { type: string; message: string }) => void;
+}): Promise<void> {
+  try {
+    const updated = await updateProfile.mutateAsync({
+      name: values.name.trim(),
+      description: values.description.trim() || null,
+      phone: values.phone.trim() || null,
+      email: values.email.trim() || null,
+      website: values.website.trim() || null,
+      terms: values.terms.trim() || null,
+      dine_in: values.dine_in,
+      takeaway: values.takeaway,
+      delivery: values.delivery,
+      tax_is_enable: values.tax_is_enable,
+      tax_name: values.tax_name.trim(),
+      tax_value: values.tax_is_enable ? Number(values.tax_value) : 0,
+      charge_app_payment_fee_to_customer: values.charge_app_payment_fee_to_customer,
+    });
+    reset({
+      name: updated.name,
+      description: updated.description ?? "",
+      phone: updated.phone ?? "",
+      email: updated.email ?? "",
+      website: updated.website ?? "",
+      terms: updated.terms ?? "",
+      dine_in: updated.dine_in,
+      takeaway: updated.takeaway,
+      delivery: updated.delivery,
+      tax_is_enable: updated.tax_is_enable,
+      tax_name: updated.tax_name ?? "",
+      tax_value: updated.tax_value !== null ? String(updated.tax_value) : "",
+      charge_app_payment_fee_to_customer: updated.charge_app_payment_fee_to_customer,
+    });
+    toast.show({ variant: "success", label: t("merchantProfile.updated") });
+  } catch (error) {
+    const fieldMessage = isApiError(error) ? error.errors?.name?.[0] : undefined;
+    if (fieldMessage) setError("name", { type: "server", message: fieldMessage });
+    const message = fieldMessage ?? getErrorMessage(error);
+    setError("root.server", { type: "server", message });
+    toast.show({
+      variant: "danger",
+      label: t("merchantProfile.updateFailed"),
+      description: message,
+    });
+  }
+}
+
 function SectionHeading({ title, description }: { title: string; description?: string }) {
   return (
     <Card.Header className="pb-2">
@@ -498,6 +605,133 @@ function TaxTab({
   );
 }
 
+function MerchantProfileContent({
+  t,
+  profile,
+  control,
+  errors,
+  activeTab,
+  onTabChange,
+  accentColor,
+  foregroundColor,
+  uploadingKind,
+  onSelectLogo,
+  onSelectCover,
+  isQrOpen,
+  onQrChange,
+  isDirty,
+  isSaving,
+  onCancel,
+  onSubmit,
+}: {
+  t: Translate;
+  profile: App.Data.Merchant.Profile.MerchantProfileData;
+  control: Control<MerchantProfileFormValues>;
+  errors: FieldErrors<MerchantProfileFormValues>;
+  activeTab: string;
+  onTabChange: (value: string) => void;
+  accentColor: string;
+  foregroundColor: string;
+  uploadingKind: ImageKind | null;
+  onSelectLogo: () => void;
+  onSelectCover: () => void;
+  isQrOpen: boolean;
+  onQrChange: (isOpen: boolean) => void;
+  isDirty: boolean;
+  isSaving: boolean;
+  onCancel: () => void;
+  onSubmit: () => void;
+}): React.JSX.Element {
+  return (
+    <KeyboardAwareScrollView
+      className="flex-1 bg-background"
+      contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
+      keyboardShouldPersistTaps="handled"
+      bottomOffset={24}
+    >
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Button
+              variant="ghost"
+              isIconOnly
+              onPress={() => onQrChange(true)}
+              accessibilityLabel={t("merchantProfile.qrTitle")}
+            >
+              <AppIcon name="qr-code-outline" size={20} color={foregroundColor} />
+            </Button>
+          ),
+        }}
+      />
+      <MerchantQrOverlay slug={profile.slug} isOpen={isQrOpen} onOpenChange={onQrChange} />
+      <View className="w-full max-w-3xl gap-6">
+        <View className="flex-1 gap-6">
+          <Tabs value={activeTab} onValueChange={onTabChange}>
+            <Tabs.List>
+              <Tabs.ScrollView>
+                <Tabs.Indicator />
+                <Tabs.Trigger value="general">
+                  <Tabs.Label>{t("merchantProfile.tabGeneral")}</Tabs.Label>
+                </Tabs.Trigger>
+                <Tabs.Trigger value="images">
+                  <Tabs.Label>{t("merchantProfile.tabImages")}</Tabs.Label>
+                </Tabs.Trigger>
+                <Tabs.Trigger value="type">
+                  <Tabs.Label>{t("merchantProfile.tabType")}</Tabs.Label>
+                </Tabs.Trigger>
+                <Tabs.Trigger value="tax">
+                  <Tabs.Label>{t("merchantProfile.tabTax")}</Tabs.Label>
+                </Tabs.Trigger>
+              </Tabs.ScrollView>
+            </Tabs.List>
+
+            <Tabs.Content value="general" className="pt-4">
+              <GeneralTab control={control} errors={errors} />
+            </Tabs.Content>
+            <Tabs.Content value="images" className="pt-4">
+              <ImagesTab
+                logoUri={profile.logo_url}
+                coverUri={profile.cover_url}
+                uploadingKind={uploadingKind}
+                accentColor={accentColor}
+                onSelectLogo={onSelectLogo}
+                onSelectCover={onSelectCover}
+              />
+            </Tabs.Content>
+            <Tabs.Content value="type" className="pt-4">
+              <TypeTab control={control} />
+            </Tabs.Content>
+            <Tabs.Content value="tax" className="pt-4">
+              <TaxTab control={control} errors={errors} />
+            </Tabs.Content>
+          </Tabs>
+
+          {activeTab !== "images" ? (
+            <View className="gap-3">
+              {errors.root?.server?.message ? (
+                <Typography type="body-sm" className="text-danger">
+                  {errors.root.server.message}
+                </Typography>
+              ) : null}
+
+              <View className="flex-col gap-3 md:flex-row">
+                <Button variant="ghost" onPress={onCancel} isDisabled={isSaving}>
+                  <Button.Label>{t("common.cancel")}</Button.Label>
+                </Button>
+                <Button className="flex-1" onPress={onSubmit} isDisabled={!isDirty || isSaving}>
+                  <Button.Label>
+                    {isSaving ? t("common.saving") : t("merchantProfile.saveChanges")}
+                  </Button.Label>
+                </Button>
+              </View>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </KeyboardAwareScrollView>
+  );
+}
+
 export default function MerchantProfileScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -566,178 +800,40 @@ export default function MerchantProfileScreen(): React.JSX.Element {
   }
 
   const pickImage = async (kind: ImageKind) => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      toast.show({
-        variant: "warning",
-        label: t("productForm.photoPermission"),
-        description: t("productForm.photoPermissionDescription"),
-      });
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images",
-      allowsEditing: true,
-      aspect: kind === "logo" ? [1, 1] : [16, 9],
-      quality: 1,
-    });
-    if (result.canceled) return;
-
-    setUploadingKind(kind);
-    await uploadMerchantImage({
-      asset: result.assets[0],
+    await pickMerchantImage({
       kind,
       t,
       toast,
       uploadLogo,
       uploadCover,
+      onStart: () => setUploadingKind(kind),
       onSettled: () => setUploadingKind(null),
     });
   };
 
   const submitProfile = async (values: MerchantProfileFormValues) => {
-    try {
-      const updated = await updateProfile.mutateAsync({
-        name: values.name.trim(),
-        description: values.description.trim() || null,
-        phone: values.phone.trim() || null,
-        email: values.email.trim() || null,
-        website: values.website.trim() || null,
-        terms: values.terms.trim() || null,
-        dine_in: values.dine_in,
-        takeaway: values.takeaway,
-        delivery: values.delivery,
-        tax_is_enable: values.tax_is_enable,
-        tax_name: values.tax_name.trim(),
-        tax_value: values.tax_is_enable ? Number(values.tax_value) : 0,
-        charge_app_payment_fee_to_customer: values.charge_app_payment_fee_to_customer,
-      });
-      reset({
-        name: updated.name,
-        description: updated.description ?? "",
-        phone: updated.phone ?? "",
-        email: updated.email ?? "",
-        website: updated.website ?? "",
-        terms: updated.terms ?? "",
-        dine_in: updated.dine_in,
-        takeaway: updated.takeaway,
-        delivery: updated.delivery,
-        tax_is_enable: updated.tax_is_enable,
-        tax_name: updated.tax_name ?? "",
-        tax_value: updated.tax_value !== null ? String(updated.tax_value) : "",
-        charge_app_payment_fee_to_customer: updated.charge_app_payment_fee_to_customer,
-      });
-      toast.show({ variant: "success", label: t("merchantProfile.updated") });
-    } catch (error) {
-      const fieldMessage = isApiError(error) ? error.errors?.name?.[0] : undefined;
-      if (fieldMessage) setError("name", { type: "server", message: fieldMessage });
-      const message = fieldMessage ?? getErrorMessage(error);
-      setError("root.server", { type: "server", message });
-      toast.show({
-        variant: "danger",
-        label: t("merchantProfile.updateFailed"),
-        description: message,
-      });
-    }
+    await saveMerchantProfile({ values, updateProfile, reset, t, toast, setError });
   };
 
   return (
-    <KeyboardAwareScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
-      keyboardShouldPersistTaps="handled"
-      bottomOffset={24}
-    >
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <Button
-              variant="ghost"
-              isIconOnly
-              onPress={() => setIsQrOpen(true)}
-              accessibilityLabel={t("merchantProfile.qrTitle")}
-            >
-              <AppIcon name="qr-code-outline" size={20} color={foregroundColor} />
-            </Button>
-          ),
-        }}
-      />
-      <MerchantQrOverlay slug={profile.slug} isOpen={isQrOpen} onOpenChange={setIsQrOpen} />
-      <View className="w-full max-w-3xl gap-6">
-        <View className="flex-1 gap-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <Tabs.List>
-              <Tabs.ScrollView>
-                <Tabs.Indicator />
-                <Tabs.Trigger value="general">
-                  <Tabs.Label>{t("merchantProfile.tabGeneral")}</Tabs.Label>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="images">
-                  <Tabs.Label>{t("merchantProfile.tabImages")}</Tabs.Label>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="type">
-                  <Tabs.Label>{t("merchantProfile.tabType")}</Tabs.Label>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="tax">
-                  <Tabs.Label>{t("merchantProfile.tabTax")}</Tabs.Label>
-                </Tabs.Trigger>
-              </Tabs.ScrollView>
-            </Tabs.List>
-
-            <Tabs.Content value="general" className="pt-4">
-              <GeneralTab control={control} errors={errors} />
-            </Tabs.Content>
-            <Tabs.Content value="images" className="pt-4">
-              <ImagesTab
-                logoUri={profile.logo_url}
-                coverUri={profile.cover_url}
-                uploadingKind={uploadingKind}
-                accentColor={accentColor}
-                onSelectLogo={() => pickImage("logo")}
-                onSelectCover={() => pickImage("cover")}
-              />
-            </Tabs.Content>
-            <Tabs.Content value="type" className="pt-4">
-              <TypeTab control={control} />
-            </Tabs.Content>
-            <Tabs.Content value="tax" className="pt-4">
-              <TaxTab control={control} errors={errors} />
-            </Tabs.Content>
-          </Tabs>
-
-          {activeTab !== "images" ? (
-            <View className="gap-3">
-              {errors.root?.server?.message ? (
-                <Typography type="body-sm" className="text-danger">
-                  {errors.root.server.message}
-                </Typography>
-              ) : null}
-
-              <View className="flex-col gap-3 md:flex-row">
-                <Button
-                  variant="ghost"
-                  onPress={() => router.back()}
-                  isDisabled={updateProfile.isPending}
-                >
-                  <Button.Label>{t("common.cancel")}</Button.Label>
-                </Button>
-                <Button
-                  className="flex-1"
-                  onPress={handleSubmit(submitProfile)}
-                  isDisabled={!isDirty || updateProfile.isPending}
-                >
-                  <Button.Label>
-                    {updateProfile.isPending
-                      ? t("common.saving")
-                      : t("merchantProfile.saveChanges")}
-                  </Button.Label>
-                </Button>
-              </View>
-            </View>
-          ) : null}
-        </View>
-      </View>
-    </KeyboardAwareScrollView>
+    <MerchantProfileContent
+      t={t}
+      profile={profile}
+      control={control}
+      errors={errors}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      accentColor={accentColor}
+      foregroundColor={foregroundColor}
+      uploadingKind={uploadingKind}
+      onSelectLogo={() => void pickImage("logo")}
+      onSelectCover={() => void pickImage("cover")}
+      isQrOpen={isQrOpen}
+      onQrChange={setIsQrOpen}
+      isDirty={isDirty}
+      isSaving={updateProfile.isPending}
+      onCancel={() => router.back()}
+      onSubmit={() => void handleSubmit(submitProfile)()}
+    />
   );
 }

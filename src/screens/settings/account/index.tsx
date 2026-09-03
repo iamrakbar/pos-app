@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Button, Card, Input, Label, Select, TextField, Typography, useToast } from "heroui-native";
 import React from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
 import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
@@ -101,6 +101,41 @@ export default function AccountScreen(): React.JSX.Element {
       });
     }
   };
+
+  return (
+    <AccountForm
+      control={control}
+      errors={errors}
+      roleOption={roleOption}
+      merchantOptions={merchantOptions}
+      isDirty={isDirty}
+      isPending={updateProfile.isPending}
+      onCancel={() => router.back()}
+      onSubmit={() => void handleSubmit(submitAccount)()}
+    />
+  );
+}
+
+function AccountForm({
+  control,
+  errors,
+  roleOption,
+  merchantOptions,
+  isDirty,
+  isPending,
+  onCancel,
+  onSubmit,
+}: {
+  control: Control<AccountFormValues>;
+  errors: FieldErrors<AccountFormValues>;
+  roleOption?: { value: string; label: string };
+  merchantOptions: { value: string; label: string }[];
+  isDirty: boolean;
+  isPending: boolean;
+  onCancel: () => void;
+  onSubmit: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
 
   return (
     <KeyboardAwareScrollView
@@ -216,20 +251,12 @@ export default function AccountScreen(): React.JSX.Element {
             </Typography>
           ) : null}
           <View className="flex-col gap-3 md:flex-row">
-            <Button
-              variant="ghost"
-              onPress={() => router.back()}
-              isDisabled={updateProfile.isPending}
-            >
+            <Button variant="ghost" onPress={onCancel} isDisabled={isPending}>
               <Button.Label>{t("common.cancel")}</Button.Label>
             </Button>
-            <Button
-              className="flex-1"
-              onPress={handleSubmit(submitAccount)}
-              isDisabled={!isDirty || updateProfile.isPending}
-            >
+            <Button className="flex-1" onPress={onSubmit} isDisabled={!isDirty || isPending}>
               <Button.Label>
-                {updateProfile.isPending ? t("common.saving") : t("profile.saveChanges")}
+                {isPending ? t("common.saving") : t("profile.saveChanges")}
               </Button.Label>
             </Button>
           </View>

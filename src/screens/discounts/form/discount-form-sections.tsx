@@ -1,10 +1,11 @@
 import AppIcon from "@/components/common/app-icon";
+import DatePickerField from "@/components/common/date-picker-field";
 import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import type { Translate } from "@/locales";
 import type { POSProduct } from "@/types/pos";
 import type { DiscountFormValues } from "@/schemas/discount";
 import { formatDate } from "@/utils/format";
-import { Calendar, DatePicker, type DatePickerOption } from "heroui-native-pro";
+import { type DatePickerOption } from "heroui-native-pro";
 import { Button, Card, Input, Label, Switch, TextField, Typography } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller, useWatch } from "react-hook-form";
@@ -45,42 +46,14 @@ function DiscountDatePicker({
 }) {
   return (
     <View className="flex-1 gap-1">
-      <DatePicker
+      <DatePickerField
+        label={label}
         value={toDateOption(value)}
         onValueChange={(next) => onChange(next?.value ?? "")}
         locale={localeTag}
-        dateDisplayFormat="medium"
+        presentation={presentation}
         isInvalid={isInvalid}
-      >
-        <Label>{label}</Label>
-        <DatePicker.Select presentation={presentation}>
-          <DatePicker.Trigger>
-            <DatePicker.Value />
-            <DatePicker.TriggerIndicator />
-          </DatePicker.Trigger>
-          <DatePicker.Portal>
-            <DatePicker.Overlay />
-            <DatePicker.Content
-              presentation={presentation}
-              width={presentation === "popover" ? "trigger" : undefined}
-            >
-              <DatePicker.Calendar>
-                <Calendar.Header>
-                  <Calendar.Heading />
-                  <Calendar.NavButton slot="previous" />
-                  <Calendar.NavButton slot="next" />
-                </Calendar.Header>
-                <Calendar.Grid>
-                  <Calendar.GridHeader>
-                    {(day) => <Calendar.HeaderCell day={day} />}
-                  </Calendar.GridHeader>
-                  <Calendar.GridBody>{(date) => <Calendar.Cell date={date} />}</Calendar.GridBody>
-                </Calendar.Grid>
-              </DatePicker.Calendar>
-            </DatePicker.Content>
-          </DatePicker.Portal>
-        </DatePicker.Select>
-      </DatePicker>
+      />
       <FieldMessage message={message} />
     </View>
   );

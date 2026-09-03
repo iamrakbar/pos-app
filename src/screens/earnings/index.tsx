@@ -6,18 +6,18 @@ import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatDateTime, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
+import DatePickerField from "@/components/common/date-picker-field";
 import {
   Button,
   Chip,
   Description,
-  Label,
   Select,
   Separator,
   Typography,
   useThemeColor,
   useToast,
 } from "heroui-native";
-import { Calendar, DatePicker, EmptyState, Widget, type DatePickerOption } from "heroui-native-pro";
+import { EmptyState, Widget, type DatePickerOption } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { getLocaleTag, type Translate } from "@/locales";
@@ -159,44 +159,16 @@ function EarningsDatePicker({
   localeTag: string;
 }) {
   return (
-    <DatePicker
+    <DatePickerField
       className="min-w-55 flex-1"
+      label={label}
       value={value}
       onValueChange={onValueChange}
       isRequired
       isInvalid={isInvalid}
       locale={localeTag}
-      dateDisplayFormat="medium"
-    >
-      <Label>{label}</Label>
-      <DatePicker.Select presentation={presentation}>
-        <DatePicker.Trigger>
-          <DatePicker.Value />
-          <DatePicker.TriggerIndicator />
-        </DatePicker.Trigger>
-        <DatePicker.Portal>
-          <DatePicker.Overlay />
-          <DatePicker.Content
-            presentation={presentation}
-            width={presentation === "popover" ? "trigger" : undefined}
-          >
-            <DatePicker.Calendar>
-              <Calendar.Header>
-                <Calendar.Heading />
-                <Calendar.NavButton slot="previous" />
-                <Calendar.NavButton slot="next" />
-              </Calendar.Header>
-              <Calendar.Grid>
-                <Calendar.GridHeader>
-                  {(day) => <Calendar.HeaderCell day={day} />}
-                </Calendar.GridHeader>
-                <Calendar.GridBody>{(date) => <Calendar.Cell date={date} />}</Calendar.GridBody>
-              </Calendar.Grid>
-            </DatePicker.Calendar>
-          </DatePicker.Content>
-        </DatePicker.Portal>
-      </DatePicker.Select>
-    </DatePicker>
+      presentation={presentation}
+    />
   );
 }
 

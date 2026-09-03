@@ -2,6 +2,7 @@ import { getErrorMessage, isApiError } from "@/api/api-error";
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
 } from "@/components/common/adaptive-form-overlay";
+import AdaptiveTextFieldController from "@/components/common/adaptive-text-field-controller";
 import { useCreateCategory } from "@/hooks/db/use-categories";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
@@ -11,7 +12,7 @@ import {
 } from "@/schemas/category";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Label, TextArea, TextField, Typography, useToast } from "heroui-native";
+import { Button, Label, TextArea, TextField, Typography, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -108,30 +109,12 @@ export default function QuickCategoryFormOverlay({
       }
     >
       <View className="gap-4 px-5">
-        <Controller
+        <AdaptiveTextFieldController
           control={control}
           name="name"
-          render={({ field: { value, onChange } }) => (
-            <TextField isRequired isInvalid={Boolean(errors.name)}>
-              <Label>{t("categories.name")}</Label>
-              <AdaptiveFormKeyboardHandlers>
-                {(keyboardHandlers) => (
-                  <Input
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={t("categories.namePlaceholder")}
-                    variant="secondary"
-                    {...keyboardHandlers}
-                  />
-                )}
-              </AdaptiveFormKeyboardHandlers>
-              {errors.name?.message ? (
-                <Typography type="body-xs" className="text-danger">
-                  {errors.name.message}
-                </Typography>
-              ) : null}
-            </TextField>
-          )}
+          label={t("categories.name")}
+          placeholder={t("categories.namePlaceholder")}
+          error={errors.name?.message}
         />
 
         <Controller

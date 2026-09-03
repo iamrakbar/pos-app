@@ -46,13 +46,15 @@ import {
 } from "react-native";
 import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView, useKeyboardState } from "react-native-keyboard-controller";
-import type { PaymentSession, POSPayment, POSPaymentGroup } from "@/types/pos";
+import type { CheckoutFormState, PaymentSession, POSPayment, POSPaymentGroup } from "@/types/pos";
+import type { Translate } from "@/locales";
 import {
   useForm,
   Controller,
   useWatch,
   type Control,
   type FieldErrors,
+  type UseFormSetError,
   type UseFormSetValue,
 } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
@@ -85,6 +87,153 @@ function getCashPresets(total: number): number[] {
   const nextRoundedAmount = Math.ceil(total / roundingStep) * roundingStep;
 
   return nextRoundedAmount === total ? [total] : [total, nextRoundedAmount];
+}
+
+async function submitCheckout({
+  values,
+  isAmountTender,
+  cashReceivedAmount,
+  total,
+  selectedPayment,
+  allPayments,
+  t,
+  setCheckoutError,
+  setError,
+  validateCart,
+  checkout,
+  setIsCompleting,
+  onPaymentReady,
+}: {
+  values: CheckoutFormValues;
+  isAmountTender: boolean;
+  cashReceivedAmount: number;
+  total: number;
+  selectedPayment: POSPayment | undefined;
+  allPayments: POSPayment[];
+  t: Translate;
+  setCheckoutError: React.Dispatch<React.SetStateAction<CheckoutError | null>>;
+  setError: UseFormSetError<CheckoutFormValues>;
+  validateCart: ReturnType<typeof useValidateCart>;
+  checkout: ReturnType<typeof useCheckout>;
+  setIsCompleting: React.Dispatch<React.SetStateAction<boolean>>;
+  onPaymentReady: CheckoutContentProps["onPaymentReady"];
+}): Promise<void> {
+  setCheckoutError(null);
+
+  if (isAmountTender && cashReceivedAmount < total) {
+    setCheckoutError({ key: "checkout.cashInsufficient" });
+    return;
+  }
+
+  if (selectedPayment?.tender_input.required && !values.tender_value?.trim()) {
+    setError("tender_value", {
+      type: "required",
+      message: selectedPayment.tender_input.label ?? t("checkout.completeRequired"),
+    });
+    return;
+  }
+
+  try {
+    await validateCart.mutateAsync();
+  } catch (error) {
+    if (isApiError(error) && error.code === "PRICE_CHANGES_DETECTED") {
+      setCheckoutError({ key: "checkout.priceChanged" });
+    } else {
+      setCheckoutError({ message: getErrorMessage(error) });
+    }
+    return;
+  }
+
+  try {
+    const result = await checkout.mutateAsync(values);
+    const payment = allPayments.find((p) => p.id === values.payment_id);
+    const paymentSnapshot = result.payment;
+    const session: PaymentSession = {
+      order_id: result.id,
+      transaction_id: result.code,
+      payment_type: payment?.name ?? t("checkout.unknownPayment"),
+      qr_url: extractPaymentQrUrl(result),
+      expires_at: extractPaymentExpiry(result.payment_details),
+      amount: extractCheckoutTotal(result, total),
+      cash_received: paymentSnapshot.amount_received ?? undefined,
+      change: paymentSnapshot.change_due,
+      reference: paymentSnapshot.reference ?? undefined,
+      processing_mode: paymentSnapshot.processing_mode,
+    };
+    setIsCompleting(true);
+    onPaymentReady(session, result, { processingMode: paymentSnapshot.processing_mode });
+  } catch (error) {
+    if (isApiError(error) && error.errors?.tender_value?.[0]) {
+      setError("tender_value", { type: "server", message: error.errors.tender_value[0] });
+    } else if (isApiError(error) && error.code === "PAYMENT_METHOD_UNAVAILABLE") {
+      setCheckoutError({ message: error.message });
+    } else {
+      setCheckoutError({ message: getErrorMessage(error) });
+    }
+  }
+}
+
+function useCheckoutFormSynchronization({
+  locale,
+  clearErrors,
+  presentation,
+  sheetName,
+  isKeyboardVisible,
+  resize,
+  paymentGroups,
+  paymentGroup,
+  paymentId,
+  setValue,
+  checkoutForm,
+}: {
+  locale: string;
+  clearErrors: () => void;
+  presentation: CheckoutContentProps["presentation"];
+  sheetName?: string;
+  isKeyboardVisible: boolean;
+  resize: (name: string, detent: number) => Promise<void>;
+  paymentGroups: POSPaymentGroup[];
+  paymentGroup: string;
+  paymentId: string;
+  setValue: UseFormSetValue<CheckoutFormValues>;
+  checkoutForm: CheckoutFormState;
+}): void {
+  useEffect(() => {
+    clearErrors();
+  }, [clearErrors, locale]);
+
+  useEffect(() => {
+    if (presentation === "sheet" && sheetName && isKeyboardVisible) {
+      void resize(sheetName, 1);
+    }
+  }, [isKeyboardVisible, presentation, resize, sheetName]);
+
+  useEffect(() => {
+    if (paymentGroups.length === 0) return;
+
+    const selectedGroup = paymentGroups.find((g) => g.group_type === paymentGroup);
+    const fallbackGroup = selectedGroup ?? paymentGroups[0];
+    const firstPayment = fallbackGroup.payments[0];
+
+    if (!selectedGroup) {
+      setValue("payment_group", fallbackGroup.group_type, {
+        shouldValidate: true,
+      });
+    }
+
+    if (!fallbackGroup.payments.some((payment) => payment.id === paymentId)) {
+      setValue("payment_id", firstPayment?.id ?? "", { shouldValidate: true });
+      setValue("tender_value", firstPayment?.tender_input.type === "amount" ? "0" : null, {
+        shouldValidate: true,
+      });
+    }
+  }, [paymentGroups, paymentGroup, paymentId, setValue]);
+
+  useEffect(() => {
+    setValue("order_type", checkoutForm.order_type, { shouldValidate: true });
+    setValue("table_id", checkoutForm.table_id, { shouldValidate: true });
+    setValue("pickup_time", checkoutForm.pickup_time, { shouldValidate: true });
+  }, [checkoutForm.order_type, checkoutForm.pickup_time, checkoutForm.table_id, setValue]);
 }
 
 function PaymentButtonSkeleton({ widths }: { widths: number[] }) {
@@ -704,270 +853,73 @@ function CheckoutFormScrollContent({
   );
 }
 
-export function CheckoutContent({
+function CheckoutContentLayout({
   presentation,
   sheetName,
   header,
-  onPaymentReady,
-}: CheckoutContentProps): JSX.Element {
-  const { locale, t } = useTranslation();
-  const { resize } = useTrueSheet();
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const [backgroundColor, borderColor, accentColor] = useThemeColor([
-    "background",
-    "border",
-    "accent",
-  ]);
-  const checkoutForm = usePOSStore((s) => s.checkoutForm);
-
-  const cartProducts = useCartStore((s) => s.products);
-  const totalPrice = useCartStore((s) => s.totalPrice);
-  const activeMerchant = useAuth((s) => s.activeMerchant);
-  const { data: paymentGroups = [], isPending: arePaymentGroupsPending } = usePaymentGroups();
-  const { data: guests = [] } = useGuests();
-  const validateCart = useValidateCart();
-  const checkout = useCheckout();
-  const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
-  const shouldHideSheetFooter =
-    presentation === "sheet" && isKeyboardVisible && windowWidth > windowHeight;
-
-  const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [sheetFooterHeight, setSheetFooterHeight] = useState(0);
-  const checkoutSchema = createCheckoutSchema(t);
-
-  const defaultPaymentGroup = paymentGroups[0];
-  const defaultPaymentId = defaultPaymentGroup?.payments[0]?.id ?? "";
-
-  const DEFAULT_VALUES: CheckoutFormValues = {
-    order_type: checkoutForm.order_type,
-    table_id: checkoutForm.table_id,
-    pickup_time: checkoutForm.pickup_time,
-    payment_group: defaultPaymentGroup?.group_type ?? "",
-    payment_id: defaultPaymentId,
-    tender_value: null,
-    customer_type: "anonymous",
-    guest_id: null,
-    customer_id: null,
-    customer_search: "",
-    notes: "",
-    products: buildCartProducts(cartProducts),
+  backgroundColor,
+  borderColor,
+  accentColor,
+  isCheckoutPending,
+  shouldHideSheetFooter,
+  contentProps,
+  footerProps,
+}: {
+  presentation: CheckoutContentProps["presentation"];
+  sheetName?: string;
+  header?: ReactElement;
+  backgroundColor: string;
+  borderColor: string;
+  accentColor: string;
+  isCheckoutPending: boolean;
+  shouldHideSheetFooter: boolean;
+  contentProps: {
+    cartError: string | null;
+    paymentFields: ComponentProps<typeof PaymentFields>;
+    customerFields: ComponentProps<typeof CustomerFields>;
+    control: Control<CheckoutFormValues>;
+    presentation: CheckoutContentProps["presentation"];
+    isSheetFooterHidden: boolean;
+    sheetFooterHeight: number;
   };
-
-  const {
-    control,
-    clearErrors,
-    handleSubmit,
-    setError,
-    setValue,
-    formState: { errors },
-  } = useForm<CheckoutFormValues>({
-    resolver: zodResolver(checkoutSchema),
-    defaultValues: DEFAULT_VALUES,
-  });
-
-  const paymentGroup = useWatch({ control, name: "payment_group" });
-  const paymentId = useWatch({ control, name: "payment_id" });
-  const tenderValue = useWatch({ control, name: "tender_value" }) ?? "";
-  const customerType = useWatch({ control, name: "customer_type" });
-  const guestId = useWatch({ control, name: "guest_id" });
-  const customerId = useWatch({ control, name: "customer_id" });
-  const customerSearch = useWatch({ control, name: "customer_search" });
-
-  const { data: customerResults = [] } = useCustomerSearch(customerSearch);
-  const cartError =
-    checkoutError && "key" in checkoutError
-      ? t(checkoutError.key)
-      : (checkoutError?.message ?? null);
-
-  useEffect(() => {
-    clearErrors();
-  }, [clearErrors, locale]);
-
-  useEffect(() => {
-    if (presentation === "sheet" && sheetName && isKeyboardVisible) {
-      void resize(sheetName, 1);
-    }
-  }, [isKeyboardVisible, presentation, resize, sheetName]);
-
-  useEffect(() => {
-    if (paymentGroups.length === 0) return;
-
-    const selectedGroup = paymentGroups.find((g) => g.group_type === paymentGroup);
-    const fallbackGroup = selectedGroup ?? paymentGroups[0];
-    const firstPayment = fallbackGroup.payments[0];
-
-    if (!selectedGroup) {
-      setValue("payment_group", fallbackGroup.group_type, {
-        shouldValidate: true,
-      });
-    }
-
-    if (!fallbackGroup.payments.some((payment) => payment.id === paymentId)) {
-      setValue("payment_id", firstPayment?.id ?? "", { shouldValidate: true });
-      setValue("tender_value", firstPayment?.tender_input.type === "amount" ? "0" : null, {
-        shouldValidate: true,
-      });
-    }
-  }, [paymentGroups, paymentGroup, paymentId, setValue]);
-
-  useEffect(() => {
-    setValue("products", buildCartProducts(cartProducts), {
-      shouldValidate: true,
-    });
-  }, [cartProducts, setValue]);
-
-  useEffect(() => {
-    setValue("order_type", checkoutForm.order_type, { shouldValidate: true });
-    setValue("table_id", checkoutForm.table_id, { shouldValidate: true });
-    setValue("pickup_time", checkoutForm.pickup_time, { shouldValidate: true });
-  }, [checkoutForm.order_type, checkoutForm.pickup_time, checkoutForm.table_id, setValue]);
-
-  const subtotal = totalPrice();
-  const allPayments = paymentGroups.flatMap((g) => g.payments);
-  const selectedPayment = allPayments.find((p) => p.id === paymentId);
-  const pricing = computePricing({
-    subtotal,
-    taxIsEnabled: activeMerchant?.tax_is_enable,
-    taxValue: activeMerchant?.tax_value,
-    taxName: activeMerchant?.tax_name,
-    feeUnit: selectedPayment?.fee_unit,
-    feeValue: selectedPayment?.fee_value,
-    chargeAppPaymentFeeToCustomer: activeMerchant?.charge_app_payment_fee_to_customer,
-  });
-  const { taxAmount, paymentFeeAmount: paymentFee, total } = pricing;
-  const isAmountTender = selectedPayment?.tender_input.type === "amount";
-  const cashReceivedAmount = Number(tenderValue.replace(/\D/g, "")) || 0;
-  const change = Math.max(0, cashReceivedAmount - total);
-  const cashPresets = getCashPresets(total);
-
-  const onSubmit = async (values: CheckoutFormValues) => {
-    setCheckoutError(null);
-
-    if (isAmountTender && cashReceivedAmount < total) {
-      setCheckoutError({ key: "checkout.cashInsufficient" });
-      return;
-    }
-
-    if (selectedPayment?.tender_input.required && !values.tender_value?.trim()) {
-      setError("tender_value", {
-        type: "required",
-        message: selectedPayment.tender_input.label ?? t("checkout.completeRequired"),
-      });
-      return;
-    }
-
-    try {
-      await validateCart.mutateAsync();
-    } catch (error) {
-      if (isApiError(error) && error.code === "PRICE_CHANGES_DETECTED") {
-        setCheckoutError({ key: "checkout.priceChanged" });
-      } else {
-        setCheckoutError({ message: getErrorMessage(error) });
-      }
-      return;
-    }
-
-    try {
-      const result = await checkout.mutateAsync(values);
-      const payment = allPayments.find((p) => p.id === values.payment_id);
-      const paymentSnapshot = result.payment;
-      const session: PaymentSession = {
-        order_id: result.id,
-        transaction_id: result.code,
-        payment_type: payment?.name ?? t("checkout.unknownPayment"),
-        qr_url: extractPaymentQrUrl(result),
-        expires_at: extractPaymentExpiry(result.payment_details),
-        amount: extractCheckoutTotal(result, total),
-        cash_received: paymentSnapshot.amount_received ?? undefined,
-        change: paymentSnapshot.change_due,
-        reference: paymentSnapshot.reference ?? undefined,
-        processing_mode: paymentSnapshot.processing_mode,
-      };
-      setIsCompleting(true);
-      onPaymentReady(session, result, { processingMode: paymentSnapshot.processing_mode });
-    } catch (error) {
-      if (isApiError(error) && error.errors?.tender_value?.[0]) {
-        setError("tender_value", { type: "server", message: error.errors.tender_value[0] });
-      } else if (isApiError(error) && error.code === "PAYMENT_METHOD_UNAVAILABLE") {
-        setCheckoutError({ message: error.message });
-      } else {
-        setCheckoutError({ message: getErrorMessage(error) });
-      }
-    }
+  footerProps: {
+    subtotal: number;
+    paymentFee: number;
+    feeUnit?: POSPayment["fee_unit"];
+    feeValue?: POSPayment["fee_value"];
+    taxIsEnabled: boolean | undefined;
+    taxName: string;
+    taxAmount: number;
+    total: number;
+    isDisabled: boolean;
+    onComplete: () => void;
+    onHeightChange?: (height: number) => void;
   };
-
-  const onInvalid = () => {
-    setCheckoutError({ key: "checkout.completeRequired" });
-  };
-
-  const isCheckoutPending = validateCart.isPending || checkout.isPending || isCompleting;
-  const isCheckoutDisabled =
-    isCheckoutPending ||
-    arePaymentGroupsPending ||
-    paymentGroups.length === 0 ||
-    cartProducts.length === 0 ||
-    (isAmountTender && cashReceivedAmount < total) ||
-    Boolean(selectedPayment?.tender_input.required && !tenderValue.trim());
-
+}): JSX.Element {
   const footer =
     isCheckoutPending || shouldHideSheetFooter ? undefined : (
       <CheckoutActions
-        subtotal={subtotal}
-        paymentFee={paymentFee}
-        feeUnit={selectedPayment?.fee_unit}
-        feeValue={selectedPayment?.fee_value}
-        taxIsEnabled={activeMerchant?.tax_is_enable}
-        taxName={activeMerchant?.tax_name ?? "Tax"}
-        taxAmount={taxAmount ?? 0}
-        total={total}
+        subtotal={footerProps.subtotal}
+        paymentFee={footerProps.paymentFee}
+        feeUnit={footerProps.feeUnit}
+        feeValue={footerProps.feeValue}
+        taxIsEnabled={footerProps.taxIsEnabled}
+        taxName={footerProps.taxName}
+        taxAmount={footerProps.taxAmount}
+        total={footerProps.total}
         isPending={isCheckoutPending}
-        isDisabled={isCheckoutDisabled}
-        onComplete={handleSubmit(onSubmit, onInvalid)}
+        isDisabled={footerProps.isDisabled}
+        onComplete={footerProps.onComplete}
         shouldGrow={presentation === "sheet"}
-        onHeightChange={presentation === "sheet" ? setSheetFooterHeight : undefined}
+        onHeightChange={presentation === "sheet" ? footerProps.onHeightChange : undefined}
       />
     );
-
   const content = (
     <GestureHandlerRootView style={{ flexGrow: 1, backgroundColor }}>
       {isCheckoutPending ? (
         <CheckoutProcessingState accentColor={accentColor} />
       ) : (
-        <CheckoutFormScrollContent
-          cartError={cartError}
-          paymentFields={{
-            paymentGroups,
-            paymentGroup,
-            paymentId,
-            isPending: arePaymentGroupsPending,
-            selectedPayment,
-            cashPresets,
-            tenderValue,
-            cashReceivedAmount,
-            subtotal,
-            change,
-            errors,
-            setValue,
-            taxIsEnabled: activeMerchant?.tax_is_enable,
-            taxValue: activeMerchant?.tax_value,
-            chargeAppPaymentFeeToCustomer: activeMerchant?.charge_app_payment_fee_to_customer,
-          }}
-          customerFields={{
-            control,
-            customerType,
-            guestId,
-            customerId,
-            guests,
-            customerResults,
-            errors,
-            setValue,
-          }}
-          control={control}
-          presentation={presentation}
-          isSheetFooterHidden={shouldHideSheetFooter}
-          sheetFooterHeight={sheetFooterHeight}
-        />
+        <CheckoutFormScrollContent {...contentProps} />
       )}
     </GestureHandlerRootView>
   );
@@ -1002,5 +954,365 @@ export function CheckoutContent({
     >
       {content}
     </TrueSheet>
+  );
+}
+
+function getCheckoutViewData({
+  checkoutError,
+  t,
+  totalPrice,
+  paymentGroups,
+  paymentId,
+  tenderValue,
+  activeMerchant,
+  validateCart,
+  checkout,
+  isCompleting,
+  arePaymentGroupsPending,
+  cartProducts,
+}: {
+  checkoutError: CheckoutError | null;
+  t: Translate;
+  totalPrice: () => number;
+  paymentGroups: POSPaymentGroup[];
+  paymentId: string;
+  tenderValue: string;
+  activeMerchant: App.Data.Merchant.Auth.MerchantSummaryData | null;
+  validateCart: ReturnType<typeof useValidateCart>;
+  checkout: ReturnType<typeof useCheckout>;
+  isCompleting: boolean;
+  arePaymentGroupsPending: boolean;
+  cartProducts: ReturnType<typeof useCartStore.getState>["products"];
+}) {
+  const cartError =
+    checkoutError && "key" in checkoutError
+      ? t(checkoutError.key)
+      : (checkoutError?.message ?? null);
+  const subtotal = totalPrice();
+  const allPayments = paymentGroups.flatMap((g) => g.payments);
+  const selectedPayment = allPayments.find((p) => p.id === paymentId);
+  const pricing = computePricing({
+    subtotal,
+    taxIsEnabled: activeMerchant?.tax_is_enable,
+    taxValue: activeMerchant?.tax_value,
+    taxName: activeMerchant?.tax_name,
+    feeUnit: selectedPayment?.fee_unit,
+    feeValue: selectedPayment?.fee_value,
+    chargeAppPaymentFeeToCustomer: activeMerchant?.charge_app_payment_fee_to_customer,
+  });
+  const { taxAmount, paymentFeeAmount: paymentFee, total } = pricing;
+  const isAmountTender = selectedPayment?.tender_input.type === "amount";
+  const cashReceivedAmount = Number(tenderValue.replace(/\D/g, "")) || 0;
+  const change = Math.max(0, cashReceivedAmount - total);
+  const cashPresets = getCashPresets(total);
+  const isCheckoutPending = validateCart.isPending || checkout.isPending || isCompleting;
+  const isCheckoutDisabled =
+    isCheckoutPending ||
+    arePaymentGroupsPending ||
+    paymentGroups.length === 0 ||
+    cartProducts.length === 0 ||
+    (isAmountTender && cashReceivedAmount < total) ||
+    Boolean(selectedPayment?.tender_input.required && !tenderValue.trim());
+
+  return {
+    cartError,
+    subtotal,
+    allPayments,
+    selectedPayment,
+    taxAmount,
+    paymentFee,
+    total,
+    isAmountTender,
+    cashReceivedAmount,
+    change,
+    cashPresets,
+    isCheckoutPending,
+    isCheckoutDisabled,
+  };
+}
+
+function CheckoutContentBody({
+  presentation,
+  sheetName,
+  header,
+  locale,
+  resize,
+  isKeyboardVisible,
+  shouldHideSheetFooter,
+  backgroundColor,
+  borderColor,
+  accentColor,
+  checkoutForm,
+  cartProducts,
+  totalPrice,
+  activeMerchant,
+  paymentGroups,
+  arePaymentGroupsPending,
+  guests,
+  validateCart,
+  checkout,
+  control,
+  clearErrors,
+  handleSubmit,
+  setError,
+  setValue,
+  errors,
+  onPaymentReady,
+}: {
+  presentation: CheckoutContentProps["presentation"];
+  sheetName?: string;
+  header?: ReactElement;
+  locale: string;
+  resize: (name: string, detent: number) => Promise<void>;
+  isKeyboardVisible: boolean;
+  shouldHideSheetFooter: boolean;
+  backgroundColor: string;
+  borderColor: string;
+  accentColor: string;
+  checkoutForm: CheckoutFormState;
+  cartProducts: ReturnType<typeof useCartStore.getState>["products"];
+  totalPrice: () => number;
+  activeMerchant: App.Data.Merchant.Auth.MerchantSummaryData | null;
+  paymentGroups: POSPaymentGroup[];
+  arePaymentGroupsPending: boolean;
+  guests: ComponentProps<typeof CustomerFields>["guests"];
+  validateCart: ReturnType<typeof useValidateCart>;
+  checkout: ReturnType<typeof useCheckout>;
+  control: Control<CheckoutFormValues>;
+  clearErrors: () => void;
+  handleSubmit: ReturnType<typeof useForm<CheckoutFormValues>>["handleSubmit"];
+  setError: UseFormSetError<CheckoutFormValues>;
+  setValue: UseFormSetValue<CheckoutFormValues>;
+  errors: FieldErrors<CheckoutFormValues>;
+  onPaymentReady: CheckoutContentProps["onPaymentReady"];
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [sheetFooterHeight, setSheetFooterHeight] = useState(0);
+  const paymentGroup = useWatch({ control, name: "payment_group" });
+  const paymentId = useWatch({ control, name: "payment_id" });
+  const tenderValue = useWatch({ control, name: "tender_value" }) ?? "";
+  const customerType = useWatch({ control, name: "customer_type" });
+  const guestId = useWatch({ control, name: "guest_id" });
+  const customerId = useWatch({ control, name: "customer_id" });
+  const customerSearch = useWatch({ control, name: "customer_search" });
+  const { data: customerResults = [] } = useCustomerSearch(customerSearch);
+
+  useCheckoutFormSynchronization({
+    locale,
+    clearErrors,
+    presentation,
+    sheetName,
+    isKeyboardVisible,
+    resize,
+    paymentGroups,
+    paymentGroup,
+    paymentId,
+    setValue,
+    checkoutForm,
+  });
+
+  const {
+    cartError,
+    subtotal,
+    allPayments,
+    selectedPayment,
+    taxAmount,
+    paymentFee,
+    total,
+    isAmountTender,
+    cashReceivedAmount,
+    change,
+    cashPresets,
+    isCheckoutPending,
+    isCheckoutDisabled,
+  } = getCheckoutViewData({
+    checkoutError,
+    t,
+    totalPrice,
+    paymentGroups,
+    paymentId,
+    tenderValue,
+    activeMerchant,
+    validateCart,
+    checkout,
+    isCompleting,
+    arePaymentGroupsPending,
+    cartProducts,
+  });
+
+  const onSubmit = async (values: CheckoutFormValues) => {
+    await submitCheckout({
+      values,
+      isAmountTender,
+      cashReceivedAmount,
+      total,
+      selectedPayment,
+      allPayments,
+      t,
+      setCheckoutError,
+      setError,
+      validateCart,
+      checkout,
+      setIsCompleting,
+      onPaymentReady,
+    });
+  };
+  const onInvalid = () => setCheckoutError({ key: "checkout.completeRequired" });
+  return (
+    <CheckoutContentLayout
+      presentation={presentation}
+      sheetName={sheetName}
+      header={header}
+      backgroundColor={backgroundColor}
+      borderColor={borderColor}
+      accentColor={accentColor}
+      isCheckoutPending={isCheckoutPending}
+      shouldHideSheetFooter={shouldHideSheetFooter}
+      contentProps={{
+        cartError,
+        paymentFields: {
+          paymentGroups,
+          paymentGroup,
+          paymentId,
+          isPending: arePaymentGroupsPending,
+          selectedPayment,
+          cashPresets,
+          tenderValue,
+          cashReceivedAmount,
+          subtotal,
+          change,
+          errors,
+          setValue,
+          taxIsEnabled: activeMerchant?.tax_is_enable,
+          taxValue: activeMerchant?.tax_value,
+          chargeAppPaymentFeeToCustomer: activeMerchant?.charge_app_payment_fee_to_customer,
+        },
+        customerFields: {
+          control,
+          customerType,
+          guestId,
+          customerId,
+          guests,
+          customerResults,
+          errors,
+          setValue,
+        },
+        control,
+        presentation,
+        isSheetFooterHidden: shouldHideSheetFooter,
+        sheetFooterHeight,
+      }}
+      footerProps={{
+        subtotal,
+        paymentFee,
+        feeUnit: selectedPayment?.fee_unit,
+        feeValue: selectedPayment?.fee_value,
+        taxIsEnabled: activeMerchant?.tax_is_enable ?? undefined,
+        taxName: activeMerchant?.tax_name ?? "Tax",
+        taxAmount: taxAmount ?? 0,
+        total,
+        isDisabled: isCheckoutDisabled,
+        onComplete: handleSubmit(onSubmit, onInvalid),
+        onHeightChange: setSheetFooterHeight,
+      }}
+    />
+  );
+}
+
+export function CheckoutContent({
+  presentation,
+  sheetName,
+  header,
+  onPaymentReady,
+}: CheckoutContentProps): JSX.Element {
+  const { locale, t } = useTranslation();
+  const { resize } = useTrueSheet();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const [backgroundColor, borderColor, accentColor] = useThemeColor([
+    "background",
+    "border",
+    "accent",
+  ]);
+  const checkoutForm = usePOSStore((s) => s.checkoutForm);
+
+  const cartProducts = useCartStore((s) => s.products);
+  const totalPrice = useCartStore((s) => s.totalPrice);
+  const activeMerchant = useAuth((s) => s.activeMerchant);
+  const { data: paymentGroups = [], isPending: arePaymentGroupsPending } = usePaymentGroups();
+  const { data: guests = [] } = useGuests();
+  const validateCart = useValidateCart();
+  const checkout = useCheckout();
+  const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
+  const shouldHideSheetFooter =
+    presentation === "sheet" && isKeyboardVisible && windowWidth > windowHeight;
+
+  const checkoutSchema = createCheckoutSchema(t);
+
+  const defaultPaymentGroup = paymentGroups[0];
+  const defaultPaymentId = defaultPaymentGroup?.payments[0]?.id ?? "";
+
+  const DEFAULT_VALUES: CheckoutFormValues = {
+    order_type: checkoutForm.order_type,
+    table_id: checkoutForm.table_id,
+    pickup_time: checkoutForm.pickup_time,
+    payment_group: defaultPaymentGroup?.group_type ?? "",
+    payment_id: defaultPaymentId,
+    tender_value: null,
+    customer_type: "anonymous",
+    guest_id: null,
+    customer_id: null,
+    customer_search: "",
+    notes: "",
+    products: buildCartProducts(cartProducts),
+  };
+
+  const {
+    control,
+    clearErrors,
+    handleSubmit,
+    setError,
+    setValue,
+    formState: { errors },
+  } = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: DEFAULT_VALUES,
+    values: {
+      ...DEFAULT_VALUES,
+      products: buildCartProducts(cartProducts),
+    },
+    resetOptions: { keepDirtyValues: true, keepErrors: true },
+  });
+
+  return (
+    <CheckoutContentBody
+      presentation={presentation}
+      sheetName={sheetName}
+      header={header}
+      locale={locale}
+      resize={resize}
+      isKeyboardVisible={isKeyboardVisible}
+      shouldHideSheetFooter={shouldHideSheetFooter}
+      backgroundColor={backgroundColor}
+      borderColor={borderColor}
+      accentColor={accentColor}
+      checkoutForm={checkoutForm}
+      cartProducts={cartProducts}
+      totalPrice={totalPrice}
+      activeMerchant={activeMerchant}
+      paymentGroups={paymentGroups}
+      arePaymentGroupsPending={arePaymentGroupsPending}
+      guests={guests}
+      validateCart={validateCart}
+      checkout={checkout}
+      control={control}
+      clearErrors={clearErrors}
+      handleSubmit={handleSubmit}
+      setError={setError}
+      setValue={setValue}
+      errors={errors}
+      onPaymentReady={onPaymentReady}
+    />
   );
 }

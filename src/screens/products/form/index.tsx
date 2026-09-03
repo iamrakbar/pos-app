@@ -21,8 +21,19 @@ import {
 } from "heroui-native";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
+import {
+  useOverlayPresentation,
+  type OverlayChoicePresentation,
+} from "@/hooks/use-overlay-presentation";
+import {
+  Controller,
+  useForm,
+  useWatch,
+  type Control,
+  type FieldErrors,
+  type UseFormSetError,
+  type UseFormSetValue,
+} from "react-hook-form";
 import { Image } from "expo-image";
 import { Platform, Pressable, View } from "react-native";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
@@ -143,6 +154,133 @@ function toProductPayload(values: ProductFormValues): ProductFormPayload {
     },
     image: values.image,
   };
+}
+
+function applyProductServerErrors(
+  error: unknown,
+  setError: UseFormSetError<ProductFormValues>
+): boolean {
+  if (!isApiError(error) || !error.errors) return false;
+  let applied = false;
+
+  for (const [field, messages] of Object.entries(error.errors)) {
+    if (PRODUCT_FORM_FIELDS.has(field as keyof ProductFormValues) && messages[0]) {
+      setError(field as keyof ProductFormValues, { type: "server", message: messages[0] });
+      applied = true;
+    }
+  }
+
+  return applied;
+}
+
+async function selectProductImage({
+  t,
+  toast,
+  setValue,
+}: {
+  t: Translate;
+  toast: ReturnType<typeof useToast>["toast"];
+  setValue: UseFormSetValue<ProductFormValues>;
+}): Promise<void> {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) {
+    toast.show({
+      variant: "warning",
+      label: t("productForm.photoPermission"),
+      description: t("productForm.photoPermissionDescription"),
+    });
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: "images",
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
+  if (result.canceled) return;
+
+  try {
+    setValue("image", await optimizeProductImage(result.assets[0], t), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  } catch (error: unknown) {
+    toast.show({
+      variant: "danger",
+      label: t("productForm.imagePreparationFailed"),
+      description: getErrorMessage(error),
+    });
+  }
+}
+
+async function saveProduct({
+  values,
+  isNew,
+  createMutation,
+  updateMutation,
+  applyServerErrors,
+  setError,
+  toast,
+  t,
+  router,
+}: {
+  values: ProductFormValues;
+  isNew: boolean;
+  createMutation: ReturnType<typeof useCreateProduct>;
+  updateMutation: ReturnType<typeof useUpdateProduct>;
+  applyServerErrors: (error: unknown) => boolean;
+  setError: UseFormSetError<ProductFormValues>;
+  toast: ReturnType<typeof useToast>["toast"];
+  t: Translate;
+  router: ReturnType<typeof useRouter>;
+}): Promise<void> {
+  try {
+    await (isNew
+      ? createMutation.mutateAsync(toProductPayload(values))
+      : updateMutation.mutateAsync(toProductPayload(values)));
+    toast.show({
+      variant: "success",
+      label: isNew ? t("productForm.created") : t("productForm.updated"),
+    });
+    router.back();
+  } catch (error: unknown) {
+    const hasFieldErrors = applyServerErrors(error);
+    const message = hasFieldErrors ? t("productForm.checkFields") : getErrorMessage(error);
+    setError("root.server", { type: "server", message });
+    toast.show({
+      variant: "danger",
+      label: isNew ? t("productForm.createFailed") : t("productForm.updateFailed"),
+      description: message,
+    });
+  }
+}
+
+async function removeProduct({
+  deleteMutation,
+  setIsDeleteOpen,
+  toast,
+  t,
+  router,
+}: {
+  deleteMutation: ReturnType<typeof useDeleteProduct>;
+  setIsDeleteOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  toast: ReturnType<typeof useToast>["toast"];
+  t: Translate;
+  router: ReturnType<typeof useRouter>;
+}): Promise<void> {
+  try {
+    await deleteMutation.mutateAsync();
+    setIsDeleteOpen(false);
+    toast.show({ variant: "success", label: t("productForm.deleted") });
+    router.back();
+  } catch (error: unknown) {
+    toast.show({
+      variant: "danger",
+      label: t("productForm.deleteFailed"),
+      description: getErrorMessage(error),
+    });
+  }
 }
 
 function SectionHeading({ title, description }: { title: string; description?: string }) {
@@ -682,6 +820,31 @@ function formatDiscountOptionLabel(discount: DiscountListItem, t: Translate): st
   return `${name} ${t("discounts.productCountSuffix", { count: discount.products_count })}`;
 }
 
+type ProductDiscountOption = {
+  value: string;
+  label: string;
+  description: string;
+  discount: DiscountListItem;
+};
+
+function getProductDiscountOptions(
+  discounts: DiscountListItem[],
+  currentDiscount: DiscountListItem | undefined,
+  t: Translate
+): ProductDiscountOption[] {
+  const options: ProductDiscountOption[] = [];
+  for (const discount of discounts) {
+    if (!discount.active && discount.id !== currentDiscount?.id) continue;
+    options.push({
+      value: discount.id,
+      label: formatDiscountOptionLabel(discount, t),
+      description: discount.active ? t("common.active") : t("common.inactive"),
+      discount,
+    });
+  }
+  return options;
+}
+
 function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: () => void }) {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
@@ -697,21 +860,7 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
     }
   }
   const currentDiscount = discountByProductId.get(productId);
-  const discountOptions: {
-    value: string;
-    label: string;
-    description: string;
-    discount: DiscountListItem;
-  }[] = [];
-  for (const discount of discounts) {
-    if (!discount.active && discount.id !== currentDiscount?.id) continue;
-    discountOptions.push({
-      value: discount.id,
-      label: formatDiscountOptionLabel(discount, t),
-      description: discount.active ? t("common.active") : t("common.inactive"),
-      discount,
-    });
-  }
+  const discountOptions = getProductDiscountOptions(discounts, currentDiscount, t);
   const selectedOption = discountOptions.find(
     (option) => option.discount.id === currentDiscount?.id
   );
@@ -754,46 +903,18 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
     <View className="gap-1.5">
       <Label>{t("productForm.discountOptional")}</Label>
       <View className="flex-row items-center gap-2">
-        <Select
-          presentation={choicePresentation}
-          value={selectedOption}
-          onValueChange={(option) => void handleChange(option?.value)}
+        <ProductDiscountSelect
+          choicePresentation={choicePresentation}
+          selectedOption={selectedOption}
+          discountOptions={discountOptions}
           isDisabled={
             discountsQuery.isLoading ||
             discountsQuery.isError ||
             discountOptions.length === 0 ||
             setProductDiscount.isPending
           }
-          className="flex-1"
-        >
-          <Select.Trigger accessibilityLabel={t("productForm.discountOptional")} className="flex-1">
-            <Select.Value placeholder={t("productForm.selectDiscount")} numberOfLines={1} />
-            <Select.TriggerIndicator />
-          </Select.Trigger>
-          <Select.Portal>
-            <Select.Overlay />
-            <Select.Content
-              presentation={choicePresentation}
-              width={choicePresentation === "popover" ? "trigger" : undefined}
-            >
-              {discountOptions.length ? (
-                discountOptions.map((option) => (
-                  <Select.Item key={option.value} value={option.value} label={option.label}>
-                    {() => (
-                      <>
-                        <Select.ItemLabel />
-                        <Select.ItemDescription>{option.description}</Select.ItemDescription>
-                        <Select.ItemIndicator />
-                      </>
-                    )}
-                  </Select.Item>
-                ))
-              ) : (
-                <Select.ListLabel>{t("productForm.noDiscounts")}</Select.ListLabel>
-              )}
-            </Select.Content>
-          </Select.Portal>
-        </Select>
+          onChange={handleChange}
+        />
         <Button
           variant="ghost"
           isIconOnly
@@ -823,6 +944,60 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
         <Description>{t("productForm.discountHelp")}</Description>
       )}
     </View>
+  );
+}
+
+function ProductDiscountSelect({
+  choicePresentation,
+  selectedOption,
+  discountOptions,
+  isDisabled,
+  onChange,
+}: {
+  choicePresentation: OverlayChoicePresentation;
+  selectedOption?: ProductDiscountOption;
+  discountOptions: ProductDiscountOption[];
+  isDisabled: boolean;
+  onChange: (value?: string) => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <Select
+      presentation={choicePresentation}
+      value={selectedOption}
+      onValueChange={(option) => onChange(option?.value)}
+      isDisabled={isDisabled}
+      className="flex-1"
+    >
+      <Select.Trigger accessibilityLabel={t("productForm.discountOptional")} className="flex-1">
+        <Select.Value placeholder={t("productForm.selectDiscount")} numberOfLines={1} />
+        <Select.TriggerIndicator />
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Overlay />
+        <Select.Content
+          presentation={choicePresentation}
+          width={choicePresentation === "popover" ? "trigger" : undefined}
+        >
+          {discountOptions.length ? (
+            discountOptions.map((option) => (
+              <Select.Item key={option.value} value={option.value} label={option.label}>
+                {() => (
+                  <>
+                    <Select.ItemLabel />
+                    <Select.ItemDescription>{option.description}</Select.ItemDescription>
+                    <Select.ItemIndicator />
+                  </>
+                )}
+              </Select.Item>
+            ))
+          ) : (
+            <Select.ListLabel>{t("productForm.noDiscounts")}</Select.ListLabel>
+          )}
+        </Select.Content>
+      </Select.Portal>
+    </Select>
   );
 }
 
@@ -892,13 +1067,280 @@ function SaveProductCard({
   );
 }
 
+type ProductFormMode = "new" | "edit";
+type ProductCategoryState = "loading" | "error" | "ready";
+type ProductRelationshipMode = "none" | "movements" | "recipe";
+type ProductFormLayout = "compact" | "regular";
+type ProductFormStatus = "idle" | "saving";
+type ProductOverlayState = "closed" | "open";
+type ProductDeleteState = "closed" | "open" | "deleting";
+
+function getProductCategoryState(isLoading: boolean, isError: boolean): ProductCategoryState {
+  if (isLoading) return "loading";
+  if (isError) return "error";
+  return "ready";
+}
+
+function getProductRelationshipMode(
+  showRecipe: boolean,
+  showMovements: boolean
+): ProductRelationshipMode {
+  if (showRecipe) return "recipe";
+  if (showMovements) return "movements";
+  return "none";
+}
+
+function getProductDeleteState(isDeleting: boolean, isOpen: boolean): ProductDeleteState {
+  if (isDeleting) return "deleting";
+  return isOpen ? "open" : "closed";
+}
+
+function getProductOverlayState(isOpen: boolean): ProductOverlayState {
+  return isOpen ? "open" : "closed";
+}
+
+function ProductFormContent({
+  mode,
+  categoryState,
+  inventoryState,
+  layout,
+  formStatus,
+  quickCategoryState,
+  quickDiscountState,
+  deleteState,
+  id,
+  t,
+  product,
+  control,
+  errors,
+  setValue,
+  categoryOptions,
+  onRetryCategories,
+  onAddCategory,
+  imageUri,
+  accentColor,
+  onSelectImage,
+  discount,
+  onAddDiscount,
+  onShowMovements,
+  onShowRecipe,
+  addOns,
+  onAddOn,
+  onEditAddOn,
+  onCancel,
+  onSubmit,
+  movementsSheetRef,
+  recipeSheetRef,
+  onQuickCategoryChange,
+  onCategoryCreated,
+  onQuickDiscountChange,
+  onDiscountCreated,
+  onDeleteChange,
+  onDelete,
+}: {
+  mode: ProductFormMode;
+  categoryState: ProductCategoryState;
+  inventoryState: {
+    enabled: boolean;
+    relationship: ProductRelationshipMode;
+  };
+  layout: ProductFormLayout;
+  formStatus: ProductFormStatus;
+  quickCategoryState: ProductOverlayState;
+  quickDiscountState: ProductOverlayState;
+  deleteState: ProductDeleteState;
+  id: string;
+  t: Translate;
+  product: App.Data.Merchant.Product.ProductData | undefined;
+  control: Control<ProductFormValues>;
+  errors: FieldErrors<ProductFormValues>;
+  setValue: UseFormSetValue<ProductFormValues>;
+  categoryOptions: { value: string; label: string }[];
+  onRetryCategories: () => void;
+  onAddCategory: () => void;
+  imageUri: string | null | undefined;
+  accentColor: string;
+  onSelectImage: () => void;
+  discount: App.Data.Merchant.Product.ProductDiscountData | null;
+  onAddDiscount?: () => void;
+  onShowMovements?: () => void;
+  onShowRecipe?: () => void;
+  addOns: App.Data.Merchant.Product.ProductAddOnData[];
+  onAddOn: () => void;
+  onEditAddOn: (id: string) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+  movementsSheetRef: React.MutableRefObject<TrueSheet | null>;
+  recipeSheetRef: React.MutableRefObject<TrueSheet | null>;
+  onQuickCategoryChange: (isOpen: boolean) => void;
+  onCategoryCreated: (category: { id: string; name: string }) => void;
+  onQuickDiscountChange: (isOpen: boolean) => void;
+  onDiscountCreated: () => void;
+  onDeleteChange: (isOpen: boolean) => void;
+  onDelete: () => void;
+}): React.JSX.Element {
+  const isNew = mode === "new";
+  const areCategoriesLoading = categoryState === "loading";
+  const didCategoriesFail = categoryState === "error";
+  const stockEnabled = inventoryState.enabled;
+  const showMovements = inventoryState.relationship === "movements";
+  const showRecipe = inventoryState.relationship === "recipe";
+  const isCompact = layout === "compact";
+  const isSaving = formStatus === "saving";
+  const isQuickCategoryOpen = quickCategoryState === "open";
+  const isQuickDiscountOpen = quickDiscountState === "open";
+  const isDeleteOpen = deleteState !== "closed";
+  const isDeleting = deleteState === "deleting";
+
+  return (
+    <>
+      <Stack.Screen
+        options={{ title: isNew ? t("productForm.newTitle") : t("productForm.editTitle") }}
+      />
+      {!isNew ? (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button
+            {...getToolbarIcon("trash")}
+            tintColor={accentColor}
+            accessibilityLabel={t("productForm.deleteAccessibility")}
+            onPress={onDeleteChange.bind(null, true)}
+          />
+        </Stack.Toolbar>
+      ) : null}
+
+      <View className="flex-1 bg-background">
+        <KeyboardAwareScrollView
+          className="flex-1"
+          contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="w-full max-w-3xl gap-4">
+            <ProductDetailsCard
+              control={control}
+              errors={errors}
+              categoryOptions={categoryOptions}
+              areCategoriesLoading={areCategoriesLoading}
+              didCategoriesFail={didCategoriesFail}
+              onRetryCategories={onRetryCategories}
+              onAddCategory={onAddCategory}
+            />
+
+            <ProductImageCard
+              imageUri={imageUri}
+              accentColor={accentColor}
+              onSelect={onSelectImage}
+            />
+
+            <PricingCard
+              control={control}
+              error={errors.price?.message}
+              productId={!isNew ? id : undefined}
+              discount={discount}
+              onAddDiscount={onAddDiscount}
+            />
+
+            <InventoryCard
+              control={control}
+              errors={errors}
+              stockEnabled={stockEnabled}
+              showMovements={showMovements}
+              showRecipe={showRecipe}
+              onShowMovements={onShowMovements}
+              onShowRecipe={onShowRecipe}
+            />
+
+            <AvailabilityCard control={control} />
+
+            {isNew ? (
+              <NewProductAddOnsCard control={control} errors={errors} setValue={setValue} />
+            ) : (
+              <ProductAddOnsCard addOns={addOns} onAdd={onAddOn} onEdit={onEditAddOn} />
+            )}
+
+            <SaveProductCard
+              isNew={isNew}
+              isCompact={isCompact}
+              isSaving={isSaving}
+              serverError={errors.root?.server?.message}
+              onCancel={onCancel}
+              onSubmit={onSubmit}
+            />
+          </View>
+        </KeyboardAwareScrollView>
+      </View>
+
+      {!isNew && product && (showMovements || showRecipe) ? (
+        <ProductRelationshipSheets
+          productId={product.id}
+          productName={product.name}
+          showMovements={showMovements}
+          showRecipe={showRecipe}
+          movementsSheetRef={movementsSheetRef}
+          recipeSheetRef={recipeSheetRef}
+        />
+      ) : null}
+
+      <QuickCategoryFormOverlay
+        isOpen={isQuickCategoryOpen}
+        onOpenChange={onQuickCategoryChange}
+        onCreated={onCategoryCreated}
+      />
+
+      {!isNew ? (
+        <QuickDiscountFormOverlay
+          isOpen={isQuickDiscountOpen}
+          productId={id}
+          onOpenChange={onQuickDiscountChange}
+          onCreated={onDiscountCreated}
+        />
+      ) : null}
+
+      <DeleteProductDialog
+        isOpen={isDeleteOpen}
+        isDeleting={isDeleting}
+        onOpenChange={onDeleteChange}
+        onDelete={onDelete}
+      />
+    </>
+  );
+}
+
+function getProductFormCategoryOptions(
+  categories: { id: string; name: string }[],
+  createdCategory: { id: string; name: string } | null
+): { value: string; label: string }[] {
+  const categoryItems =
+    createdCategory && !categories.some((item) => item.id === createdCategory.id)
+      ? [...categories, createdCategory]
+      : categories;
+
+  return categoryItems.map((item) => ({ value: item.id, label: item.name }));
+}
+
+function getProductFormViewData(
+  isNew: boolean,
+  product: App.Data.Merchant.Product.ProductData | undefined,
+  imageUri: string | null | undefined
+): {
+  imageUri: string | null | undefined;
+  showMovements: boolean;
+  showRecipe: boolean;
+} {
+  return {
+    imageUri: imageUri ?? product?.image.default,
+    showMovements:
+      !isNew && (product?.inventory_mode === "manual" || product?.inventory_mode === "recipe"),
+    showRecipe: !isNew && product?.inventory_mode === "recipe",
+  };
+}
+
 export default function ProductFormScreen(): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
-  const [themeColorAccent, themeColorDanger] = useThemeColor(["accent", "danger"]);
+  const themeColorAccent = useThemeColor("accent");
   const isNew = id === "new";
   const productQuery = useProduct(id);
   const categoriesQuery = useCategories();
@@ -913,14 +1355,10 @@ export default function ProductFormScreen(): React.JSX.Element {
   const [isQuickDiscountOpen, setIsQuickDiscountOpen] = React.useState(false);
   const movementsSheetRef = React.useRef<TrueSheet | null>(null);
   const recipeSheetRef = React.useRef<TrueSheet | null>(null);
-  const categoryItems = [...(categoriesQuery.data ?? [])];
-  if (createdCategory && !categoryItems.some((category) => category.id === createdCategory.id)) {
-    categoryItems.push(createdCategory);
-  }
-  const categoryOptions = categoryItems.map((item) => ({
-    value: item.id,
-    label: item.name,
-  }));
+  const categoryOptions = getProductFormCategoryOptions(
+    categoriesQuery.data ?? [],
+    createdCategory
+  );
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
   const hydratedProductId = React.useRef<string | null>(null);
   const productSchema = createProductSchema(t);
@@ -984,11 +1422,12 @@ export default function ProductFormScreen(): React.JSX.Element {
   }
 
   const isSaving = createProductMutation.isPending || updateProductMutation.isPending;
-  const imageUri = imageAsset?.uri ?? (!isNew ? productQuery.data?.image.default : null);
   const product = productQuery.data;
-  const showMovements =
-    !isNew && (product?.inventory_mode === "manual" || product?.inventory_mode === "recipe");
-  const showRecipe = !isNew && product?.inventory_mode === "recipe";
+  const { imageUri, showMovements, showRecipe } = getProductFormViewData(
+    isNew,
+    product,
+    imageAsset?.uri
+  );
 
   const showProductMovements = () => {
     void movementsSheetRef.current?.present(0).catch(() => undefined);
@@ -999,208 +1438,85 @@ export default function ProductFormScreen(): React.JSX.Element {
   };
 
   const applyServerErrors = (error: unknown) => {
-    if (!isApiError(error) || !error.errors) return false;
-    let applied = false;
-    for (const [field, messages] of Object.entries(error.errors)) {
-      if (PRODUCT_FORM_FIELDS.has(field as keyof ProductFormValues) && messages[0]) {
-        setError(field as keyof ProductFormValues, { type: "server", message: messages[0] });
-        applied = true;
-      }
-    }
-    return applied;
+    return applyProductServerErrors(error, setError);
   };
 
   const handleSelectImage = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      toast.show({
-        variant: "warning",
-        label: t("productForm.photoPermission"),
-        description: t("productForm.photoPermissionDescription"),
-      });
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images",
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (result.canceled) return;
-
-    try {
-      setValue("image", await optimizeProductImage(result.assets[0], t), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    } catch (error: unknown) {
-      toast.show({
-        variant: "danger",
-        label: t("productForm.imagePreparationFailed"),
-        description: getErrorMessage(error),
-      });
-    }
+    await selectProductImage({ t, toast, setValue });
   };
 
   const submitProduct = async (values: ProductFormValues) => {
-    try {
-      await (isNew
-        ? createProductMutation.mutateAsync(toProductPayload(values))
-        : updateProductMutation.mutateAsync(toProductPayload(values)));
-      toast.show({
-        variant: "success",
-        label: isNew ? t("productForm.created") : t("productForm.updated"),
-      });
-      router.back();
-    } catch (error: unknown) {
-      const hasFieldErrors = applyServerErrors(error);
-      setError("root.server", {
-        type: "server",
-        message: hasFieldErrors ? t("productForm.checkFields") : getErrorMessage(error),
-      });
-      toast.show({
-        variant: "danger",
-        label: isNew ? t("productForm.createFailed") : t("productForm.updateFailed"),
-        description: hasFieldErrors ? t("productForm.checkFields") : getErrorMessage(error),
-      });
-    }
+    await saveProduct({
+      values,
+      isNew,
+      createMutation: createProductMutation,
+      updateMutation: updateProductMutation,
+      applyServerErrors,
+      setError,
+      toast,
+      t,
+      router,
+    });
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteProductMutation.mutateAsync();
-      setIsDeleteOpen(false);
-      toast.show({ variant: "success", label: t("productForm.deleted") });
-      router.back();
-    } catch (error: unknown) {
-      toast.show({
-        variant: "danger",
-        label: t("productForm.deleteFailed"),
-        description: getErrorMessage(error),
-      });
-    }
+    await removeProduct({
+      deleteMutation: deleteProductMutation,
+      setIsDeleteOpen,
+      toast,
+      t,
+      router,
+    });
   };
 
   return (
-    <>
-      <Stack.Screen
-        options={{ title: isNew ? t("productForm.newTitle") : t("productForm.editTitle") }}
-      />
-      {!isNew ? (
-        <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button
-            {...getToolbarIcon("trash")}
-            tintColor={themeColorDanger}
-            accessibilityLabel={t("productForm.deleteAccessibility")}
-            onPress={() => setIsDeleteOpen(true)}
-          />
-        </Stack.Toolbar>
-      ) : null}
-
-      <View className="flex-1 bg-background">
-        <KeyboardAwareScrollView
-          className="flex-1"
-          contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="w-full max-w-3xl gap-4">
-            <ProductDetailsCard
-              control={control}
-              errors={errors}
-              categoryOptions={categoryOptions}
-              areCategoriesLoading={categoriesQuery.isLoading}
-              didCategoriesFail={categoriesQuery.isError}
-              onRetryCategories={() => void categoriesQuery.refetch()}
-              onAddCategory={() => setIsQuickCategoryOpen(true)}
-            />
-
-            <ProductImageCard
-              imageUri={imageUri}
-              accentColor={themeColorAccent}
-              onSelect={handleSelectImage}
-            />
-
-            <PricingCard
-              control={control}
-              error={errors.price?.message}
-              productId={!isNew ? id : undefined}
-              discount={!isNew ? (productQuery.data?.discount ?? null) : null}
-              onAddDiscount={!isNew ? () => setIsQuickDiscountOpen(true) : undefined}
-            />
-
-            <InventoryCard
-              control={control}
-              errors={errors}
-              stockEnabled={stockEnabled}
-              showMovements={showMovements}
-              showRecipe={showRecipe}
-              onShowMovements={showMovements ? showProductMovements : undefined}
-              onShowRecipe={showRecipe ? showProductRecipe : undefined}
-            />
-
-            <AvailabilityCard control={control} />
-
-            {isNew ? (
-              <NewProductAddOnsCard control={control} errors={errors} setValue={setValue} />
-            ) : (
-              <ProductAddOnsCard
-                addOns={productQuery.data?.add_ons ?? []}
-                onAdd={() => router.push(`/products/${id}/add-ons/new`)}
-                onEdit={(addOnId) => router.push(`/products/${id}/add-ons/${addOnId}`)}
-              />
-            )}
-
-            <SaveProductCard
-              isNew={isNew}
-              isCompact={isCompact}
-              isSaving={isSaving}
-              serverError={errors.root?.server?.message}
-              onCancel={() => router.back()}
-              onSubmit={handleSubmit(submitProduct)}
-            />
-          </View>
-        </KeyboardAwareScrollView>
-      </View>
-
-      {!isNew && product && (showMovements || showRecipe) ? (
-        <ProductRelationshipSheets
-          productId={product.id}
-          productName={product.name}
-          showMovements={showMovements}
-          showRecipe={showRecipe}
-          movementsSheetRef={movementsSheetRef}
-          recipeSheetRef={recipeSheetRef}
-        />
-      ) : null}
-
-      <QuickCategoryFormOverlay
-        isOpen={isQuickCategoryOpen}
-        onOpenChange={setIsQuickCategoryOpen}
-        onCreated={(category) => {
-          setCreatedCategory(category);
-          setValue("category_id", category.id, {
-            shouldDirty: true,
-            shouldValidate: true,
-          });
-        }}
-      />
-
-      {!isNew ? (
-        <QuickDiscountFormOverlay
-          isOpen={isQuickDiscountOpen}
-          productId={id}
-          onOpenChange={setIsQuickDiscountOpen}
-          onCreated={() => void productQuery.refetch()}
-        />
-      ) : null}
-
-      <DeleteProductDialog
-        isOpen={isDeleteOpen}
-        isDeleting={deleteProductMutation.isPending}
-        onOpenChange={setIsDeleteOpen}
-        onDelete={handleDelete}
-      />
-    </>
+    <ProductFormContent
+      mode={isNew ? "new" : "edit"}
+      categoryState={getProductCategoryState(categoriesQuery.isLoading, categoriesQuery.isError)}
+      inventoryState={{
+        enabled: stockEnabled,
+        relationship: getProductRelationshipMode(showRecipe, showMovements),
+      }}
+      layout={isCompact ? "compact" : "regular"}
+      formStatus={isSaving ? "saving" : "idle"}
+      quickCategoryState={getProductOverlayState(isQuickCategoryOpen)}
+      quickDiscountState={getProductOverlayState(isQuickDiscountOpen)}
+      deleteState={getProductDeleteState(deleteProductMutation.isPending, isDeleteOpen)}
+      id={id}
+      t={t}
+      product={product}
+      control={control}
+      errors={errors}
+      setValue={setValue}
+      categoryOptions={categoryOptions}
+      onRetryCategories={() => void categoriesQuery.refetch()}
+      onAddCategory={() => setIsQuickCategoryOpen(true)}
+      imageUri={imageUri}
+      accentColor={themeColorAccent}
+      onSelectImage={handleSelectImage}
+      discount={productQuery.data?.discount ?? null}
+      onAddDiscount={() => setIsQuickDiscountOpen(true)}
+      onShowMovements={showProductMovements}
+      onShowRecipe={showProductRecipe}
+      addOns={productQuery.data?.add_ons ?? []}
+      onAddOn={() => router.push(`/products/${id}/add-ons/new`)}
+      onEditAddOn={(addOnId) => router.push(`/products/${id}/add-ons/${addOnId}`)}
+      onCancel={() => router.back()}
+      onSubmit={() => void handleSubmit(submitProduct)()}
+      movementsSheetRef={movementsSheetRef}
+      recipeSheetRef={recipeSheetRef}
+      onQuickCategoryChange={setIsQuickCategoryOpen}
+      onCategoryCreated={(category) => {
+        setCreatedCategory(category);
+        setValue("category_id", category.id, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }}
+      onQuickDiscountChange={setIsQuickDiscountOpen}
+      onDiscountCreated={() => void productQuery.refetch()}
+      onDeleteChange={setIsDeleteOpen}
+      onDelete={handleDelete}
+    />
   );
 }

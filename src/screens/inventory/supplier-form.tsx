@@ -3,6 +3,7 @@ import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import { FormNumberField } from "@/components/common/form-number-field";
+import FormActiveField from "@/components/common/form-active-field";
 import {
   useCreateSupplier,
   useDeleteSupplier,
@@ -22,7 +23,6 @@ import {
   Card,
   Input,
   Label,
-  Switch,
   TextField,
   Typography,
   useThemeColor,
@@ -31,7 +31,7 @@ import {
 import React from "react";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
@@ -200,27 +200,11 @@ function SupplierFormCard({
           />
         </View>
 
-        <Controller
+        <FormActiveField
           control={control}
           name="active"
-          render={({ field: { value, onChange } }) => (
-            <Pressable
-              accessibilityRole="switch"
-              accessibilityState={{ checked: value }}
-              onPress={() => onChange(!value)}
-              className="flex-row items-center justify-between gap-4 py-1"
-            >
-              <View className="flex-1">
-                <Typography type="body-sm" weight="semibold">
-                  {t("common.active")}
-                </Typography>
-                <Typography type="body-xs" color="muted">
-                  {t("suppliers.activeDescription")}
-                </Typography>
-              </View>
-              <Switch isSelected={value} onSelectedChange={onChange} />
-            </Pressable>
-          )}
+          label={t("common.active")}
+          description={t("suppliers.activeDescription")}
         />
 
         {errors.root?.server?.message ? (

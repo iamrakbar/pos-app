@@ -1,6 +1,7 @@
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import { ListSkeleton } from "@/components/common/list-skeleton";
+import ReorderChangesBanner from "@/components/common/reorder-changes-banner";
 import { useManagementCategories, useReorderCategories } from "@/hooks/db/use-categories";
 import { getErrorMessage } from "@/api/api-error";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
@@ -26,7 +27,6 @@ function moveCategory(categories: Category[], index: number, direction: -1 | 1):
 
 export default function CategoriesScreen(): React.JSX.Element {
   const { t } = useTranslation();
-  const router = useRouter();
   const { toast } = useToast();
   const theme = useNavigationTheme();
   const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
@@ -76,6 +76,68 @@ export default function CategoriesScreen(): React.JSX.Element {
   };
 
   return (
+    <CategoriesContent
+      theme={theme}
+      mutedColor={mutedColor}
+      accentColor={accentColor}
+      search={search}
+      setSearch={setSearch}
+      setDraftOrder={setDraftOrder}
+      activeFilter={activeFilter}
+      setActiveFilter={setActiveFilter}
+      isOrderDirty={isOrderDirty}
+      handleCancelOrder={handleCancelOrder}
+      handleSaveOrder={handleSaveOrder}
+      reorderMutation={reorderMutation}
+      categoryQuery={categoryQuery}
+      orderedCategories={orderedCategories}
+      deferredSearch={deferredSearch}
+      canReorder={canReorder}
+      handleMove={handleMove}
+    />
+  );
+}
+
+function CategoriesContent({
+  theme,
+  mutedColor,
+  accentColor,
+  setSearch,
+  setDraftOrder,
+  activeFilter,
+  setActiveFilter,
+  isOrderDirty,
+  handleCancelOrder,
+  handleSaveOrder,
+  reorderMutation,
+  categoryQuery,
+  orderedCategories,
+  deferredSearch,
+  canReorder,
+  handleMove,
+}: {
+  theme: ReturnType<typeof useNavigationTheme>;
+  mutedColor: string;
+  accentColor: string;
+  search: string;
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
+  setDraftOrder: React.Dispatch<React.SetStateAction<Category[] | null>>;
+  activeFilter: ActiveFilter;
+  setActiveFilter: React.Dispatch<React.SetStateAction<ActiveFilter>>;
+  isOrderDirty: boolean;
+  handleCancelOrder: () => void;
+  handleSaveOrder: () => Promise<void>;
+  reorderMutation: ReturnType<typeof useReorderCategories>;
+  categoryQuery: ReturnType<typeof useManagementCategories>;
+  orderedCategories: Category[];
+  deferredSearch: string;
+  canReorder: boolean;
+  handleMove: (index: number, direction: -1 | 1) => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const router = useRouter();
+
+  return (
     <>
       <Stack.Toolbar placement="right">
         <Stack.SearchBar
@@ -121,26 +183,15 @@ export default function CategoriesScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {isOrderDirty ? (
-          <View className="flex-row items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 md:px-6">
-            <Typography type="body-sm" color="muted" className="flex-1">
-              {t("categories.unsavedOrder")}
-            </Typography>
-            <View className="flex-row gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onPress={handleCancelOrder}
-                isDisabled={reorderMutation.isPending}
-              >
-                <Button.Label>{t("common.cancel")}</Button.Label>
-              </Button>
-              <Button size="sm" onPress={handleSaveOrder} isDisabled={reorderMutation.isPending}>
-                <Button.Label>
-                  {reorderMutation.isPending ? t("common.saving") : t("categories.saveOrder")}
-                </Button.Label>
-              </Button>
-            </View>
-          </View>
+          <ReorderChangesBanner
+            message={t("categories.unsavedOrder")}
+            isSaving={reorderMutation.isPending}
+            cancelLabel={t("common.cancel")}
+            onCancel={handleCancelOrder}
+            onSave={handleSaveOrder}
+            saveLabel={t("categories.saveOrder")}
+            savingLabel={t("common.saving")}
+          />
         ) : null}
 
         {categoryQuery.isLoading ? (

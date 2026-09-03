@@ -1,6 +1,7 @@
 import { getErrorMessage } from "@/api/api-error";
 import ErrorState from "@/components/common/error-state";
 import { ListSkeleton } from "@/components/common/list-skeleton";
+import ReorderChangesBanner from "@/components/common/reorder-changes-banner";
 import AppIcon from "@/components/common/app-icon";
 import { useMerchantPayments, useReorderMerchantPayments } from "@/hooks/db/use-payments";
 import { useTranslation } from "@/stores/use-locale";
@@ -201,26 +202,15 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
   return (
     <View className="flex-1 bg-background">
       {isDirty ? (
-        <View className="flex-row items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 md:px-6">
-          <Typography type="body-sm" color="muted" className="flex-1">
-            {t("paymentSettings.unsavedChanges")}
-          </Typography>
-          <View className="flex-row gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onPress={handleCancel}
-              isDisabled={reorderMutation.isPending}
-            >
-              <Button.Label>{t("common.cancel")}</Button.Label>
-            </Button>
-            <Button size="sm" onPress={handleSave} isDisabled={reorderMutation.isPending}>
-              <Button.Label>
-                {reorderMutation.isPending ? t("common.saving") : t("paymentSettings.saveChanges")}
-              </Button.Label>
-            </Button>
-          </View>
-        </View>
+        <ReorderChangesBanner
+          message={t("paymentSettings.unsavedChanges")}
+          isSaving={reorderMutation.isPending}
+          cancelLabel={t("common.cancel")}
+          onCancel={handleCancel}
+          onSave={handleSave}
+          saveLabel={t("paymentSettings.saveChanges")}
+          savingLabel={t("common.saving")}
+        />
       ) : null}
 
       <ScrollView

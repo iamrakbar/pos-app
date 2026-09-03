@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import SettingsMenuRow from "@/components/common/settings-menu-row";
 import { useRouter } from "expo-router";
 import { Button, ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -17,29 +18,6 @@ type SettingsItem = {
   label: string;
   description: string;
 };
-
-function SettingsLinkRow({
-  item,
-  iconColor,
-  onPress,
-}: {
-  item: SettingsItem;
-  iconColor: string;
-  onPress: () => void;
-}) {
-  return (
-    <ListGroup.Item accessibilityRole="button" onPress={onPress}>
-      <ListGroup.ItemPrefix>
-        <AppIcon name={item.icon} size={21} color={iconColor} />
-      </ListGroup.ItemPrefix>
-      <ListGroup.ItemContent>
-        <ListGroup.ItemTitle>{item.label}</ListGroup.ItemTitle>
-        <ListGroup.ItemDescription numberOfLines={2}>{item.description}</ListGroup.ItemDescription>
-      </ListGroup.ItemContent>
-      <ListGroup.ItemSuffix />
-    </ListGroup.Item>
-  );
-}
 
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
@@ -165,7 +143,7 @@ export default function SettingsScreen(): JSX.Element {
                 <ListGroup>
                   {group.items.map((item, index) => (
                     <View key={item.id}>
-                      <SettingsLinkRow
+                      <SettingsMenuRow
                         item={item}
                         iconColor={themeColorMuted}
                         onPress={() => router.push(item.href as never)}

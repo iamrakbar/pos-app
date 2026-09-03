@@ -12,14 +12,19 @@ import { useTrueSheet } from "@lodev09/react-native-true-sheet";
 import CartItemRow from "./cart-item-row";
 import CheckoutSheet, { POS_CHECKOUT_SHEET_NAME } from "./checkout-sheet";
 import TableSelectionButton from "./table-selection-button";
-import { getLocaleTag } from "@/locales";
+import { getLocaleTag, type Locale } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
+import {
+  useOverlayPresentation,
+  type OverlayChoicePresentation,
+} from "@/hooks/use-overlay-presentation";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useRouter } from "expo-router";
 import { resetCurrentOrder } from "@/stores/reset-current-order";
 import Animated from "react-native-reanimated";
 import ParkedOrdersPanel from "./parked-orders-panel";
+import type { CartItem } from "@/types/cart";
+import type { CheckoutFormState, POSProduct, POSTable } from "@/types/pos";
 
 const TIME_PICKER_INTERVAL_MINUTES = 5;
 
@@ -84,6 +89,268 @@ function CartControlsSkeleton({
   );
 }
 
+function CartOrderControls({
+  checkoutForm,
+  selectedTable,
+  choicePresentation,
+  pickerPresentation,
+  locale,
+  t,
+  colorAccent,
+  updateCheckoutForm,
+}: {
+  checkoutForm: CheckoutFormState;
+  selectedTable: POSTable | undefined;
+  choicePresentation: OverlayChoicePresentation;
+  pickerPresentation: OverlayChoicePresentation;
+  locale: Locale;
+  t: ReturnType<typeof useTranslation>["t"];
+  colorAccent: string;
+  updateCheckoutForm: (patch: Partial<CheckoutFormState>) => void;
+}): JSX.Element {
+  return (
+    <View className="h-12 flex-row items-center gap-2">
+      <Select
+        presentation={choicePresentation}
+        value={{
+          value: checkoutForm.order_type,
+          label: checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway"),
+        }}
+        onValueChange={(option) => {
+          if (!option) return;
+          const orderType = option.value as "dine-in" | "takeaway";
+          updateCheckoutForm({
+            order_type: orderType,
+            table_id: orderType === "dine-in" ? checkoutForm.table_id : null,
+            pickup_time:
+              orderType === "takeaway"
+                ? checkoutForm.pickup_time && !isPastPickupTime(checkoutForm.pickup_time)
+                  ? checkoutForm.pickup_time
+                  : getNextPickupTime()
+                : null,
+          });
+        }}
+      >
+        <Select.Trigger asChild variant="unstyled">
+          <Button variant="secondary" size="sm">
+            <Button.Label className="text-sm" numberOfLines={1}>
+              {checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway")}
+            </Button.Label>
+          </Button>
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Overlay />
+          <Select.Content
+            presentation={choicePresentation}
+            width={choicePresentation === "popover" ? 220 : undefined}
+          >
+            <Select.Item value="dine-in" label={t("pos.dineIn")} />
+            <Select.Item value="takeaway" label={t("pos.takeaway")} />
+          </Select.Content>
+        </Select.Portal>
+      </Select>
+
+      {checkoutForm.order_type === "dine-in" ? (
+        <TableSelectionButton selectedTable={selectedTable} />
+      ) : (
+        <TimePicker
+          hourFormat={24}
+          minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
+          locale={getLocaleTag(locale)}
+          value={
+            checkoutForm.pickup_time
+              ? { value: `${checkoutForm.pickup_time}:00`, label: checkoutForm.pickup_time }
+              : undefined
+          }
+          onValueChange={(option) =>
+            updateCheckoutForm({ pickup_time: option?.value.slice(0, 5) ?? null })
+          }
+        >
+          <TimePicker.Select presentation={pickerPresentation}>
+            <TimePicker.Trigger className="h-10 py-0 items-center bg-background-secondary rounded-full shadow-none">
+              <Text className="text-accent size-sm">
+                {checkoutForm.pickup_time ?? t("pos.pickupTime")}
+              </Text>
+              <AppIcon name="time-outline" size={12} color={colorAccent} />
+            </TimePicker.Trigger>
+            <TimePicker.Portal>
+              <TimePicker.Overlay />
+              <TimePicker.Content
+                presentation={pickerPresentation}
+                width={pickerPresentation === "popover" ? 160 : undefined}
+              >
+                <TimePicker.Wheel />
+              </TimePicker.Content>
+            </TimePicker.Portal>
+          </TimePicker.Select>
+        </TimePicker>
+      )}
+      <ParkedOrdersPanel mode="list" />
+    </View>
+  );
+}
+
+function CartHeader({
+  isLoading,
+  checkoutForm,
+  cartProducts,
+  selectedTable,
+  choicePresentation,
+  pickerPresentation,
+  locale,
+  t,
+  colorAccent,
+  colorDanger,
+  updateCheckoutForm,
+}: {
+  isLoading: boolean;
+  checkoutForm: CheckoutFormState;
+  cartProducts: CartItem[];
+  selectedTable: POSTable | undefined;
+  choicePresentation: OverlayChoicePresentation;
+  pickerPresentation: OverlayChoicePresentation;
+  locale: Locale;
+  t: ReturnType<typeof useTranslation>["t"];
+  colorAccent: string;
+  colorDanger: string;
+  updateCheckoutForm: (patch: Partial<CheckoutFormState>) => void;
+}): JSX.Element {
+  return (
+    <View className="flex-row items-center justify-between gap-2 px-4 py-4">
+      {isLoading ? (
+        <CartControlsSkeleton
+          orderType={checkoutForm.order_type}
+          showClearCart={cartProducts.length > 0}
+        />
+      ) : (
+        <>
+          <CartOrderControls
+            checkoutForm={checkoutForm}
+            selectedTable={selectedTable}
+            choicePresentation={choicePresentation}
+            pickerPresentation={pickerPresentation}
+            locale={locale}
+            t={t}
+            colorAccent={colorAccent}
+            updateCheckoutForm={updateCheckoutForm}
+          />
+          {cartProducts.length > 0 ? (
+            <Button variant="ghost" isIconOnly onPress={resetCurrentOrder}>
+              <AppIcon name="trash-outline" size={16} color={colorDanger} />
+            </Button>
+          ) : null}
+        </>
+      )}
+    </View>
+  );
+}
+
+function CartItems({
+  isLoading,
+  cartProducts,
+  productById,
+  colorMuted,
+  t,
+}: {
+  isLoading: boolean;
+  cartProducts: CartItem[];
+  productById: Map<string, POSProduct>;
+  colorMuted: string;
+  t: ReturnType<typeof useTranslation>["t"];
+}): JSX.Element {
+  return (
+    <ScrollView
+      className="flex-1 px-5"
+      contentContainerClassName="pb-3"
+      showsVerticalScrollIndicator={false}
+    >
+      {isLoading ? (
+        <View
+          accessible
+          accessibilityRole="progressbar"
+          accessibilityLabel={t("pos.loadingProducts")}
+          accessibilityState={{ busy: true }}
+        >
+          {[0, 1].map((item) => (
+            <CartItemSkeleton key={item} />
+          ))}
+        </View>
+      ) : cartProducts.length === 0 ? (
+        <EmptyState className="py-16">
+          <EmptyState.Header>
+            <EmptyState.Media variant="icon">
+              <AppIcon name="cart-outline" size={20} color={colorMuted} />
+            </EmptyState.Media>
+            <EmptyState.Title>{t("pos.cartEmpty")}</EmptyState.Title>
+            <EmptyState.Description>{t("pos.cartEmptyDescription")}</EmptyState.Description>
+          </EmptyState.Header>
+        </EmptyState>
+      ) : (
+        cartProducts.map((item) => (
+          <Animated.View key={item.id}>
+            <CartItemRow item={item} product={productById.get(item.product_id)} />
+          </Animated.View>
+        ))
+      )}
+    </ScrollView>
+  );
+}
+
+function CartFooter({
+  isLoading,
+  itemCount,
+  subtotal,
+  cartProducts,
+  t,
+  onCheckout,
+}: {
+  isLoading: boolean;
+  itemCount: number;
+  subtotal: number;
+  cartProducts: CartItem[];
+  t: ReturnType<typeof useTranslation>["t"];
+  onCheckout: () => void;
+}): JSX.Element {
+  return (
+    <View className="px-5 py-4 gap-3">
+      <View className="flex-row items-center justify-between">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-4 w-28 rounded-md" />
+            <Skeleton className="h-5 w-24 rounded-md" />
+          </>
+        ) : (
+          <>
+            <Typography type="body-sm" color="muted">
+              {t(itemCount === 1 ? "pos.subtotalItemsOne" : "pos.subtotalItemsOther", {
+                count: itemCount,
+              })}
+            </Typography>
+            <Typography type="body-sm" weight="semibold" className="tabular-nums">
+              {formatRupiah(subtotal)}
+            </Typography>
+          </>
+        )}
+      </View>
+      <View className="flex-row items-center gap-1">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <Skeleton className="h-10 flex-1 rounded-md" />
+          </>
+        ) : (
+          <>
+            <ParkedOrdersPanel mode="park" isDisabled={cartProducts.length === 0} />
+            <Button className="flex-1" onPress={onCheckout} isDisabled={cartProducts.length === 0}>
+              {t("navigation.checkout")}
+            </Button>
+          </>
+        )}
+      </View>
+    </View>
+  );
+}
+
 export default function CartContent(): JSX.Element {
   const router = useRouter();
   const { present } = useTrueSheet();
@@ -117,186 +384,35 @@ export default function CartContent(): JSX.Element {
 
   return (
     <View className="flex-1">
-      {/* Header */}
-      <View className="flex-row items-center justify-between gap-2 px-4 py-4">
-        {isProductsLoading ? (
-          <CartControlsSkeleton
-            orderType={checkoutForm.order_type}
-            showClearCart={cartProducts.length > 0}
-          />
-        ) : (
-          <>
-            <View className="h-12 flex-row items-center gap-2">
-              <Select
-                presentation={choicePresentation}
-                value={{
-                  value: checkoutForm.order_type,
-                  label:
-                    checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway"),
-                }}
-                onValueChange={(option) => {
-                  if (!option) return;
-
-                  const orderType = option.value as "dine-in" | "takeaway";
-                  updateCheckoutForm({
-                    order_type: orderType,
-                    table_id: orderType === "dine-in" ? checkoutForm.table_id : null,
-                    pickup_time:
-                      orderType === "takeaway"
-                        ? checkoutForm.pickup_time && !isPastPickupTime(checkoutForm.pickup_time)
-                          ? checkoutForm.pickup_time
-                          : getNextPickupTime()
-                        : null,
-                  });
-                }}
-              >
-                <Select.Trigger asChild variant="unstyled">
-                  <Button variant="secondary" size="sm">
-                    <Button.Label className="text-sm" numberOfLines={1}>
-                      {checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway")}
-                    </Button.Label>
-                  </Button>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content
-                    presentation={choicePresentation}
-                    width={choicePresentation === "popover" ? 220 : undefined}
-                  >
-                    <Select.Item value="dine-in" label={t("pos.dineIn")} />
-                    <Select.Item value="takeaway" label={t("pos.takeaway")} />
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-
-              {checkoutForm.order_type === "dine-in" ? (
-                <TableSelectionButton selectedTable={selectedTable} />
-              ) : (
-                <TimePicker
-                  hourFormat={24}
-                  minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
-                  locale={getLocaleTag(locale)}
-                  value={
-                    checkoutForm.pickup_time
-                      ? {
-                          value: `${checkoutForm.pickup_time}:00`,
-                          label: checkoutForm.pickup_time,
-                        }
-                      : undefined
-                  }
-                  onValueChange={(option) => {
-                    const pickupTime = option?.value.slice(0, 5) ?? null;
-                    updateCheckoutForm({ pickup_time: pickupTime });
-                  }}
-                >
-                  <TimePicker.Select presentation={pickerPresentation}>
-                    <TimePicker.Trigger className="h-10 py-0 items-center bg-background-secondary rounded-full shadow-none">
-                      <Text className="text-accent size-sm">
-                        {checkoutForm.pickup_time ?? t("pos.pickupTime")}
-                      </Text>
-                      <AppIcon name="time-outline" size={12} color={colorAccent} />
-                    </TimePicker.Trigger>
-                    <TimePicker.Portal>
-                      <TimePicker.Overlay />
-                      <TimePicker.Content
-                        presentation={pickerPresentation}
-                        width={pickerPresentation === "popover" ? 160 : undefined}
-                      >
-                        <TimePicker.Wheel />
-                      </TimePicker.Content>
-                    </TimePicker.Portal>
-                  </TimePicker.Select>
-                </TimePicker>
-              )}
-              <ParkedOrdersPanel mode="list" />
-            </View>
-            {cartProducts.length > 0 && (
-              <Button variant="ghost" isIconOnly onPress={resetCurrentOrder}>
-                <AppIcon name="trash-outline" size={16} color={colorDanger} />
-              </Button>
-            )}
-          </>
-        )}
-      </View>
-      {/* Cart items */}
-      <ScrollView
-        className="flex-1 px-5"
-        contentContainerClassName="pb-3"
-        showsVerticalScrollIndicator={false}
-      >
-        {isProductsLoading ? (
-          <View
-            accessible
-            accessibilityRole="progressbar"
-            accessibilityLabel={t("pos.loadingProducts")}
-            accessibilityState={{ busy: true }}
-          >
-            {[0, 1].map((item) => (
-              <CartItemSkeleton key={item} />
-            ))}
-          </View>
-        ) : cartProducts.length === 0 ? (
-          <EmptyState className="py-16">
-            <EmptyState.Header>
-              <EmptyState.Media variant="icon">
-                <AppIcon name="cart-outline" size={20} color={colorMuted} />
-              </EmptyState.Media>
-              <EmptyState.Title>{t("pos.cartEmpty")}</EmptyState.Title>
-              <EmptyState.Description>{t("pos.cartEmptyDescription")}</EmptyState.Description>
-            </EmptyState.Header>
-          </EmptyState>
-        ) : (
-          cartProducts.map((item) => (
-            <Animated.View key={item.id}>
-              <CartItemRow item={item} product={productById.get(item.product_id)} />
-            </Animated.View>
-          ))
-        )}
-      </ScrollView>
-
+      <CartHeader
+        isLoading={isProductsLoading}
+        checkoutForm={checkoutForm}
+        cartProducts={cartProducts}
+        selectedTable={selectedTable}
+        choicePresentation={choicePresentation}
+        pickerPresentation={pickerPresentation}
+        locale={locale}
+        t={t}
+        colorAccent={colorAccent}
+        colorDanger={colorDanger}
+        updateCheckoutForm={updateCheckoutForm}
+      />
+      <CartItems
+        isLoading={isProductsLoading}
+        cartProducts={cartProducts}
+        productById={productById}
+        colorMuted={colorMuted}
+        t={t}
+      />
       <Separator />
-
-      {/* Footer */}
-      <View className="px-5 py-4 gap-3">
-        <View className="flex-row items-center justify-between">
-          {isProductsLoading ? (
-            <>
-              <Skeleton className="h-4 w-28 rounded-md" />
-              <Skeleton className="h-5 w-24 rounded-md" />
-            </>
-          ) : (
-            <>
-              <Typography type="body-sm" color="muted">
-                {t(itemCount === 1 ? "pos.subtotalItemsOne" : "pos.subtotalItemsOther", {
-                  count: itemCount,
-                })}
-              </Typography>
-              <Typography type="body-sm" weight="semibold" className="tabular-nums">
-                {formatRupiah(subtotal)}
-              </Typography>
-            </>
-          )}
-        </View>
-        <View className="flex-row items-center gap-1">
-          {isProductsLoading ? (
-            <>
-              <Skeleton className="h-10 w-10 rounded-md" />
-              <Skeleton className="h-10 flex-1 rounded-md" />
-            </>
-          ) : (
-            <>
-              <ParkedOrdersPanel mode="park" isDisabled={cartProducts.length === 0} />
-              <Button
-                className="flex-1"
-                onPress={handleCheckout}
-                isDisabled={cartProducts.length === 0}
-              >
-                {t("navigation.checkout")}
-              </Button>
-            </>
-          )}
-        </View>
-      </View>
+      <CartFooter
+        isLoading={isProductsLoading}
+        itemCount={itemCount}
+        subtotal={subtotal}
+        cartProducts={cartProducts}
+        t={t}
+        onCheckout={handleCheckout}
+      />
       {usesCheckoutScreen ? null : <CheckoutSheet />}
     </View>
   );

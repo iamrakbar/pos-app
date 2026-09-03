@@ -567,49 +567,78 @@ function OrderOverview({
       </Surface>
 
       <View className="gap-2">
-        <SectionTitle>{t("orders.detail.orderType")}</SectionTitle>
-        <Surface className="w-full p-4 gap-3">
-          <View className="flex-row items-center gap-3">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-secondary">
-              <AppIcon
-                name={
-                  order.order_type === "dine-in"
-                    ? "restaurant-outline"
-                    : order.order_type === "delivery"
-                      ? "bicycle-outline"
-                      : "bag-handle-outline"
-                }
-                size={20}
-                color={foregroundColor}
-              />
-            </View>
-            <View className="flex-1 gap-0.5">
-              <Typography type="body" weight="semibold">
-                {order.order_type === "dine-in"
-                  ? t("orders.dineIn")
-                  : order.order_type === "delivery"
-                    ? t("orders.delivery")
-                    : t("orders.takeaway")}
-              </Typography>
-              <Typography type="body-xs" color="muted">
-                {order.order_type === "dine-in"
-                  ? [areaName, tableName].filter(Boolean).join(" · ") ||
-                    t("orders.detail.tableNotAssigned")
-                  : order.order_type === "delivery"
-                    ? (order.orderable?.address?.address ??
-                      t("orders.detail.deliveryAddressNotSet"))
-                    : pickupTime
-                      ? t("orders.detail.pickupAt", { time: pickupTime })
-                      : t("orders.detail.pickupNotSpecified")}
-              </Typography>
-            </View>
-          </View>
-          <DetailRow
-            label={t("orders.detail.customer")}
-            value={customerName ?? t("orders.detail.walkIn")}
-          />
-        </Surface>
+        <OrderTypePanel
+          order={order}
+          foregroundColor={foregroundColor}
+          areaName={areaName}
+          tableName={tableName}
+          pickupTime={pickupTime}
+          customerName={customerName}
+        />
       </View>
+    </>
+  );
+}
+
+function OrderTypePanel({
+  order,
+  foregroundColor,
+  areaName,
+  tableName,
+  pickupTime,
+  customerName,
+}: {
+  order: App.Data.Merchant.Order.OrderData;
+  foregroundColor: string;
+  areaName: string | null;
+  tableName: string | null;
+  pickupTime: string | null;
+  customerName: string | null;
+}) {
+  const { t } = useTranslation();
+  const iconName =
+    order.order_type === "dine-in"
+      ? "restaurant-outline"
+      : order.order_type === "delivery"
+        ? "bicycle-outline"
+        : "bag-handle-outline";
+  const orderTypeLabel =
+    order.order_type === "dine-in"
+      ? t("orders.dineIn")
+      : order.order_type === "delivery"
+        ? t("orders.delivery")
+        : t("orders.takeaway");
+  const orderTypeDescription =
+    order.order_type === "dine-in"
+      ? [areaName, tableName].filter(Boolean).join(" · ") || t("orders.detail.tableNotAssigned")
+      : order.order_type === "delivery"
+        ? (order.orderable?.address?.address ?? t("orders.detail.deliveryAddressNotSet"))
+        : pickupTime
+          ? t("orders.detail.pickupAt", { time: pickupTime })
+          : t("orders.detail.pickupNotSpecified");
+
+  return (
+    <>
+      <SectionTitle>{t("orders.detail.orderType")}</SectionTitle>
+      <Surface className="w-full p-4 gap-3">
+        <View className="flex-row items-center gap-3">
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-secondary">
+            <AppIcon name={iconName} size={20} color={foregroundColor} />
+          </View>
+          <View className="flex-1 gap-0.5">
+            <Typography type="body" weight="semibold">
+              {orderTypeLabel}
+            </Typography>
+            <Typography type="body-xs" color="muted">
+              {orderTypeDescription}
+            </Typography>
+          </View>
+        </View>
+        <DetailRow
+          label={t("orders.detail.customer")}
+          value={customerName ?? t("orders.detail.walkIn")}
+        />
+      </Surface>
     </>
   );
 }
@@ -742,24 +771,202 @@ function OrderItemsPanel({
   );
 }
 
-function OrderPaymentColumn({
-  order,
+function OrderPaymentDetails({
+  paymentStatus,
+  paymentData,
   foregroundColor,
-  isPrinting,
-  onPrint,
+  onOpenQr,
+}: {
+  paymentStatus: ReturnType<typeof usePaymentStatus>;
+  paymentData: ReturnType<typeof getOrderPaymentColumnData>;
+  foregroundColor: string;
+  onOpenQr: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const {
+    paymentName,
+    visiblePaymentDetailsRows,
+    showQrUrl,
+    paymentQrUrl,
+    paymentLink,
+    paymentInstruction,
+    isPaymentPaid,
+    isQrisPayment,
+    hasQrImageUrl,
+    canRefreshPayment,
+    paymentExpiresAt,
+    canShowQr,
+  } = paymentData;
+
+  return (
+    <Surface className="w-full p-4 gap-3">
+      <DetailRow label={t("orders.detail.method")} value={paymentName} />
+      {visiblePaymentDetailsRows.map((row) => (
+        <DetailRow key={row.label} label={row.label} value={row.value} />
+      ))}
+      {showQrUrl ? <QrUrlDisclosure url={paymentQrUrl ?? ""} /> : null}
+      <OrderPaymentQrPanel
+        isVisible={!isPaymentPaid && isQrisPayment}
+        paymentQrUrl={paymentQrUrl}
+        paymentLink={paymentLink}
+        paymentInstruction={paymentInstruction}
+        hasQrImageUrl={hasQrImageUrl}
+        foregroundColor={foregroundColor}
+      />
+      {canRefreshPayment ? (
+        <Countdown
+          expiresAt={paymentExpiresAt}
+          prefix={t("orders.detail.expiresIn")}
+          className="text-sm text-warning font-semibold"
+        />
+      ) : null}
+      {canShowQr ? (
+        <Button variant="outline" onPress={onOpenQr}>
+          <AppIcon name="qr-code-outline" size={16} color={foregroundColor} />
+          <Button.Label>{t("orders.detail.showQris")}</Button.Label>
+        </Button>
+      ) : null}
+      <OrderPaymentRefresh
+        isVisible={canRefreshPayment}
+        isPending={paymentStatus.isPending}
+        isError={paymentStatus.isError}
+        error={paymentStatus.error}
+        foregroundColor={foregroundColor}
+        onRefresh={() => paymentStatus.mutate()}
+      />
+    </Surface>
+  );
+}
+
+function OrderPaymentQrPanel({
+  isVisible,
+  paymentQrUrl,
+  paymentLink,
+  paymentInstruction,
+  hasQrImageUrl,
+  foregroundColor,
+}: {
+  isVisible: boolean;
+  paymentQrUrl: string | null;
+  paymentLink: string | null;
+  paymentInstruction: string | null;
+  hasQrImageUrl: boolean;
+  foregroundColor: string;
+}): React.JSX.Element | null {
+  const { t } = useTranslation();
+  if (!isVisible || (!paymentQrUrl && !paymentLink && !paymentInstruction)) return null;
+
+  return (
+    <View className="gap-3 rounded-2xl bg-surface-secondary p-3">
+      {paymentQrUrl && hasQrImageUrl ? (
+        <View className="items-center gap-2">
+          <Typography type="body-sm" weight="semibold" className="self-start">
+            {t("orders.detail.qrisCode")}
+          </Typography>
+          <View className="rounded-xl bg-white p-3">
+            <Image
+              source={{ uri: paymentQrUrl }}
+              style={{ width: 220, height: 220 }}
+              contentFit="contain"
+              accessibilityLabel={t("orders.detail.qrisCode")}
+            />
+          </View>
+        </View>
+      ) : null}
+      {paymentInstruction ? (
+        <View className="gap-1">
+          <Typography type="body-sm" weight="semibold">
+            {t("orders.detail.paymentInstructions")}
+          </Typography>
+          <Typography type="body-sm" color="muted">
+            {paymentInstruction}
+          </Typography>
+        </View>
+      ) : null}
+      {paymentLink && /^https?:\/\//i.test(paymentLink) ? (
+        <Button variant="outline" onPress={() => void Linking.openURL(paymentLink)}>
+          <AppIcon name="open-outline" size={16} color={foregroundColor} />
+          <Button.Label>{t("orders.detail.openPaymentLink")}</Button.Label>
+        </Button>
+      ) : null}
+      {paymentLink && !hasQrImageUrl ? <QrUrlDisclosure url={paymentLink} /> : null}
+    </View>
+  );
+}
+
+function OrderPaymentRefresh({
+  isVisible,
+  isPending,
+  isError,
+  error,
+  foregroundColor,
+  onRefresh,
+}: {
+  isVisible: boolean;
+  isPending: boolean;
+  isError: boolean;
+  error: unknown;
+  foregroundColor: string;
+  onRefresh: () => void;
+}): React.JSX.Element | null {
+  const { t } = useTranslation();
+  if (!isVisible)
+    return isError ? (
+      <Typography type="body-xs" className="text-danger">
+        {getErrorMessage(error)}
+      </Typography>
+    ) : null;
+
+  return (
+    <>
+      <Button variant="ghost" onPress={onRefresh} isDisabled={isPending}>
+        {isPending ? (
+          <ActivityIndicator />
+        ) : (
+          <AppIcon name="refresh-outline" size={16} color={foregroundColor} />
+        )}
+        <Button.Label>{t("orders.detail.refreshStatus")}</Button.Label>
+      </Button>
+      {isError ? (
+        <Typography type="body-xs" className="text-danger">
+          {getErrorMessage(error)}
+        </Typography>
+      ) : null}
+    </>
+  );
+}
+
+function OrderPaymentSummary({
+  order,
+  feeAmount,
 }: {
   order: App.Data.Merchant.Order.OrderData;
-  foregroundColor: string;
-  isPrinting: boolean;
-  onPrint: () => void | Promise<void>;
-}) {
-  const { t, locale } = useTranslation();
-  const [isQrOpen, setIsQrOpen] = useState(false);
-  const paymentStatus = usePaymentStatus(order.id);
-  const updateStatus = useUpdateOrderStatus();
-  const activeMerchant = useAuth((state) => state.activeMerchant);
-  const canCancel = hasMerchantFeature(activeMerchant?.features, "cancellation");
+  feeAmount: number;
+}): React.JSX.Element {
+  const { t } = useTranslation();
 
+  return (
+    <View className="gap-2">
+      <SectionTitle>{t("orders.detail.summary")}</SectionTitle>
+      <Surface className="w-full p-4 gap-3">
+        <MoneyRow label={t("common.subtotal")} value={order.subtotal} />
+        {order.tax && (order.tax.amount ?? 0) > 0 ? (
+          <MoneyRow
+            label={order.tax.name || t("orders.detail.tax")}
+            value={order.tax.amount ?? 0}
+          />
+        ) : null}
+        {order.payment_fee.charged_to_customer && feeAmount > 0 ? (
+          <MoneyRow label={t("orders.detail.paymentFee")} value={feeAmount} />
+        ) : null}
+        <Separator />
+        <MoneyRow label={t("common.total")} value={order.total} emphasized />
+      </Surface>
+    </View>
+  );
+}
+
+function getOrderPaymentColumnData(order: App.Data.Merchant.Order.OrderData, locale: string) {
   const paymentStatusPresentation = getPaymentStatus(order.payment_status);
   const paymentName = extractPaymentName(order.payment);
   const paymentCode = order.payment.code?.toLowerCase() ?? "";
@@ -782,7 +989,10 @@ function OrderPaymentColumn({
   const paymentLink =
     extractPaymentLink({ payment_details: order.payment_details, payment: order.payment }) ??
     paymentQrUrl;
-  const paymentInstruction = extractPaymentInstruction(order.payment_instruction, locale);
+  const paymentInstruction = extractPaymentInstruction(
+    order.payment_instruction,
+    locale === "id" ? "id" : "en"
+  );
   const isPaymentPaid = order.payment_status.is_successful;
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
   const hasQrImageUrl = !!paymentQrUrl && /^https?:\/\//i.test(paymentQrUrl);
@@ -799,118 +1009,70 @@ function OrderPaymentColumn({
   const feeAmount = extractNumber(order.payment_fee);
   const canRefreshPayment = !isCashPayment && !!paymentExpiresAt && !paymentExpired;
 
+  return {
+    paymentStatusPresentation,
+    paymentName,
+    paymentQrUrl,
+    paymentLink,
+    paymentInstruction,
+    isPaymentPaid,
+    isQrisPayment,
+    hasQrImageUrl,
+    showQrUrl,
+    visiblePaymentDetailsRows,
+    paymentExpiresAt,
+    canShowQr,
+    feeAmount,
+    canRefreshPayment,
+  };
+}
+
+function OrderPaymentColumn({
+  order,
+  foregroundColor,
+  isPrinting,
+  onPrint,
+}: {
+  order: App.Data.Merchant.Order.OrderData;
+  foregroundColor: string;
+  isPrinting: boolean;
+  onPrint: () => void | Promise<void>;
+}) {
+  const { t, locale } = useTranslation();
+  const [isQrOpen, setIsQrOpen] = useState(false);
+  const paymentStatus = usePaymentStatus(order.id);
+  const updateStatus = useUpdateOrderStatus();
+  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const canCancel = hasMerchantFeature(activeMerchant?.features, "cancellation");
+  const paymentData = getOrderPaymentColumnData(order, locale);
+
   return (
     <>
       <View className="gap-4">
         <View className="gap-2">
           <View className="flex-row items-center justify-between gap-3">
             <SectionTitle>{t("orders.detail.payment")}</SectionTitle>
-            <Chip color={paymentStatusPresentation.color} size="sm" variant="soft">
+            <Chip color={paymentData.paymentStatusPresentation.color} size="sm" variant="soft">
               <Chip.Label>
-                {t(`orders.paymentStatus.${paymentStatusPresentation.value}` as TranslationKey)}
+                {t(
+                  `orders.paymentStatus.${paymentData.paymentStatusPresentation.value}` as TranslationKey
+                )}
               </Chip.Label>
             </Chip>
           </View>
-          <Surface className="w-full p-4 gap-3">
-            <DetailRow label={t("orders.detail.method")} value={paymentName} />
-            {visiblePaymentDetailsRows.map((row) => (
-              <DetailRow key={row.label} label={row.label} value={row.value} />
-            ))}
-            {showQrUrl ? <QrUrlDisclosure url={paymentQrUrl} /> : null}
-            {!isPaymentPaid &&
-            isQrisPayment &&
-            (paymentQrUrl || paymentLink || paymentInstruction) ? (
-              <View className="gap-3 rounded-2xl bg-surface-secondary p-3">
-                {paymentQrUrl && hasQrImageUrl ? (
-                  <View className="items-center gap-2">
-                    <Typography type="body-sm" weight="semibold" className="self-start">
-                      {t("orders.detail.qrisCode")}
-                    </Typography>
-                    <View className="rounded-xl bg-white p-3">
-                      <Image
-                        source={{ uri: paymentQrUrl }}
-                        style={{ width: 220, height: 220 }}
-                        contentFit="contain"
-                        accessibilityLabel={t("orders.detail.qrisCode")}
-                      />
-                    </View>
-                  </View>
-                ) : null}
-                {paymentInstruction ? (
-                  <View className="gap-1">
-                    <Typography type="body-sm" weight="semibold">
-                      {t("orders.detail.paymentInstructions")}
-                    </Typography>
-                    <Typography type="body-sm" color="muted">
-                      {paymentInstruction}
-                    </Typography>
-                  </View>
-                ) : null}
-                {paymentLink && /^https?:\/\//i.test(paymentLink) ? (
-                  <Button variant="outline" onPress={() => void Linking.openURL(paymentLink)}>
-                    <AppIcon name="open-outline" size={16} color={foregroundColor} />
-                    <Button.Label>{t("orders.detail.openPaymentLink")}</Button.Label>
-                  </Button>
-                ) : null}
-                {paymentLink && !hasQrImageUrl ? <QrUrlDisclosure url={paymentLink} /> : null}
-              </View>
-            ) : null}
-            {canRefreshPayment ? (
-              <Countdown
-                expiresAt={paymentExpiresAt}
-                prefix={t("orders.detail.expiresIn")}
-                className="text-sm text-warning font-semibold"
-              />
-            ) : null}
-            {canShowQr ? (
-              <Button variant="outline" onPress={() => setIsQrOpen(true)}>
-                <AppIcon name="qr-code-outline" size={16} color={foregroundColor} />
-                <Button.Label>{t("orders.detail.showQris")}</Button.Label>
-              </Button>
-            ) : null}
-            {canRefreshPayment ? (
-              <Button
-                variant="ghost"
-                onPress={() => paymentStatus.mutate()}
-                isDisabled={paymentStatus.isPending}
-              >
-                {paymentStatus.isPending ? (
-                  <ActivityIndicator />
-                ) : (
-                  <AppIcon name="refresh-outline" size={16} color={foregroundColor} />
-                )}
-                <Button.Label>{t("orders.detail.refreshStatus")}</Button.Label>
-              </Button>
-            ) : null}
-            {paymentStatus.isError ? (
-              <Typography type="body-xs" className="text-danger">
-                {getErrorMessage(paymentStatus.error)}
-              </Typography>
-            ) : null}
-          </Surface>
+          <OrderPaymentDetails
+            paymentStatus={paymentStatus}
+            paymentData={paymentData}
+            foregroundColor={foregroundColor}
+            onOpenQr={() => setIsQrOpen(true)}
+          />
         </View>
 
         {order.order_type === "delivery" && order.orderable ? (
           <DeliveryPanel orderable={order.orderable} />
         ) : null}
 
-        <View className="gap-2">
-          <SectionTitle>{t("orders.detail.summary")}</SectionTitle>
-          <Surface className="w-full p-4 gap-3">
-            <MoneyRow label={t("common.subtotal")} value={order.subtotal} />
-            {order.tax && (order.tax.amount ?? 0) > 0 ? (
-              <MoneyRow
-                label={order.tax.name || t("orders.detail.tax")}
-                value={order.tax.amount ?? 0}
-              />
-            ) : null}
-            {order.payment_fee.charged_to_customer && feeAmount > 0 ? (
-              <MoneyRow label={t("orders.detail.paymentFee")} value={feeAmount} />
-            ) : null}
-            <Separator />
-            <MoneyRow label={t("common.total")} value={order.total} emphasized />
-          </Surface>
-        </View>
+        <OrderPaymentSummary order={order} feeAmount={paymentData.feeAmount} />
 
         <View className="flex-row gap-3">
           <OrderCancelAction
@@ -940,12 +1102,12 @@ function OrderPaymentColumn({
       </View>
 
       <PaymentQrDialog
-        isOpen={isQrOpen && canShowQr}
+        isOpen={isQrOpen && paymentData.canShowQr}
         onOpenChange={setIsQrOpen}
         code={order.code}
-        qrUrl={paymentQrUrl ?? ""}
+        qrUrl={paymentData.paymentQrUrl ?? ""}
         total={order.total}
-        expiresAt={paymentExpiresAt}
+        expiresAt={paymentData.paymentExpiresAt}
       />
     </>
   );
