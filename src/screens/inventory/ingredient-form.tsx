@@ -1,14 +1,9 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import AppIcon from "@/components/common/app-icon";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import FormActiveField from "@/components/common/form-active-field";
 import LoadingState from "@/components/common/loading-state";
-import AdjustStockOverlay from "@/screens/inventory/adjust-stock-overlay";
-import RecordMovementOverlay from "@/screens/inventory/record-movement-overlay";
-import IngredientInventoryMovementsSheet from "@/screens/inventory/ingredient-inventory-movements-sheet";
-import IngredientSupplierOffersSheet from "@/screens/inventory/ingredient-supplier-offers-sheet";
 import {
   useCreateIngredient,
   useDeleteIngredient,
@@ -28,7 +23,6 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { createOperationId } from "@/utils/operation-id";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
   Card,
@@ -134,22 +128,13 @@ function IngredientFormCard({
   control,
   errors,
   t,
-  onShowSupplierOffers,
-  onShowMovements,
-  onAdjustStock,
-  onRecordMovement,
 }: {
   isNew: boolean;
   control: Control<IngredientFormValues>;
   errors: FieldErrors<IngredientFormValues>;
   t: Translate;
-  onShowSupplierOffers?: () => void;
-  onShowMovements?: () => void;
-  onAdjustStock?: () => void;
-  onRecordMovement?: () => void;
 }): React.JSX.Element {
   const { choicePresentation } = useOverlayPresentation();
-  const [themeColorForeground] = useThemeColor(["foreground"]);
   const unitOptions = INGREDIENT_UNITS.map((unit) => ({
     value: unit,
     label: t(`ingredients.units.${unit}` as TranslationKey),
@@ -298,56 +283,6 @@ function IngredientFormCard({
           </Typography>
         ) : null}
       </Card.Body>
-      {!isNew ? (
-        <Card.Footer className="gap-2 pt-0">
-          <View className="flex-row gap-2">
-            {onAdjustStock ? (
-              <Button
-                variant="outline"
-                className="min-w-0 flex-1 px-1"
-                accessibilityLabel={t("ingredients.showAdjustStockAccessibility")}
-                onPress={onAdjustStock}
-              >
-                <AppIcon name="options-outline" size={16} color={themeColorForeground} />
-                <Button.Label numberOfLines={1}>{t("ingredients.adjustStock")}</Button.Label>
-              </Button>
-            ) : null}
-            {onRecordMovement ? (
-              <Button
-                variant="outline"
-                className="min-w-0 flex-1 px-1"
-                accessibilityLabel={t("ingredients.showRecordMovementAccessibility")}
-                onPress={onRecordMovement}
-              >
-                <AppIcon name="add-circle-outline" size={16} color={themeColorForeground} />
-                <Button.Label numberOfLines={1}>{t("ingredients.recordMovement")}</Button.Label>
-              </Button>
-            ) : null}
-          </View>
-          {onShowSupplierOffers && onShowMovements ? (
-            <View className="flex-row gap-2">
-              <Button
-                variant="outline"
-                className="min-w-0 flex-1 px-1"
-                accessibilityLabel={t("ingredients.showSupplierOffersAccessibility")}
-                onPress={onShowSupplierOffers}
-              >
-                <AppIcon name="people-outline" size={16} color={themeColorForeground} />
-                <Button.Label numberOfLines={1}>{t("ingredients.supplierOffers")}</Button.Label>
-              </Button>
-              <Button
-                variant="outline"
-                className="min-w-0 flex-1 px-1"
-                accessibilityLabel={t("ingredients.showInventoryMovementsAccessibility")}
-                onPress={onShowMovements}
-              >
-                <AppIcon name="swap-vertical-outline" size={16} color={themeColorForeground} />
-                <Button.Label numberOfLines={1}>{t("ingredients.inventoryMovements")}</Button.Label>
-              </Button>
-            </View>
-          ) : null}
-        </Card.Footer>
-      ) : null}
     </Card>
   );
 }
@@ -355,7 +290,6 @@ function IngredientFormCard({
 type IngredientFormMode = "new" | "edit";
 type IngredientFormStatus = "idle" | "saving";
 type IngredientDeleteState = "hidden" | "confirming" | "deleting";
-type IngredientStockAction = "none" | "adjust" | "record";
 
 function getIngredientDeleteState(
   isConfirmingDelete: boolean,
@@ -366,20 +300,10 @@ function getIngredientDeleteState(
   return "hidden";
 }
 
-function getIngredientStockAction(
-  isAdjustStockOpen: boolean,
-  isRecordMovementOpen: boolean
-): IngredientStockAction {
-  if (isAdjustStockOpen) return "adjust";
-  if (isRecordMovementOpen) return "record";
-  return "none";
-}
-
 function IngredientFormContent({
   mode,
   formStatus,
   deleteState,
-  stockAction,
   ingredient,
   control,
   errors,
@@ -390,18 +314,10 @@ function IngredientFormContent({
   onDeleteRequest,
   onConfirmingDeleteChange,
   onDelete,
-  supplierOffersSheetRef,
-  movementsSheetRef,
-  onStockActionChange,
-  onShowSupplierOffers,
-  onShowMovements,
-  onAdjustStock,
-  onRecordMovement,
 }: {
   mode: IngredientFormMode;
   formStatus: IngredientFormStatus;
   deleteState: IngredientDeleteState;
-  stockAction: IngredientStockAction;
   ingredient: App.Data.Merchant.Inventory.IngredientData | undefined;
   control: Control<IngredientFormValues>;
   errors: FieldErrors<IngredientFormValues>;
@@ -412,13 +328,6 @@ function IngredientFormContent({
   onDeleteRequest: () => void;
   onConfirmingDeleteChange: (isOpen: boolean) => void;
   onDelete: () => void;
-  supplierOffersSheetRef: React.MutableRefObject<TrueSheet | null>;
-  movementsSheetRef: React.MutableRefObject<TrueSheet | null>;
-  onStockActionChange: (action: IngredientStockAction) => void;
-  onShowSupplierOffers?: () => void;
-  onShowMovements?: () => void;
-  onAdjustStock?: () => void;
-  onRecordMovement?: () => void;
 }): React.JSX.Element {
   const isNew = mode === "new";
   const isSaving = formStatus === "saving";
@@ -448,16 +357,7 @@ function IngredientFormContent({
         contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6 gap-3"
         keyboardShouldPersistTaps="handled"
       >
-        <IngredientFormCard
-          isNew={isNew}
-          control={control}
-          errors={errors}
-          t={t}
-          onShowSupplierOffers={onShowSupplierOffers}
-          onShowMovements={onShowMovements}
-          onAdjustStock={onAdjustStock}
-          onRecordMovement={onRecordMovement}
-        />
+        <IngredientFormCard isNew={isNew} control={control} errors={errors} t={t} />
 
         <View className="flex-row gap-3 pt-2 w-full max-w-3xl">
           <Button variant="ghost" onPress={onCancel} isDisabled={isSaving}>
@@ -468,31 +368,6 @@ function IngredientFormContent({
           </Button>
         </View>
       </KeyboardAwareScrollView>
-
-      {!isNew && ingredient ? (
-        <>
-          <IngredientSupplierOffersSheet
-            ingredientId={ingredient.id}
-            ingredientName={ingredient.name}
-            sheetRef={supplierOffersSheetRef}
-          />
-          <IngredientInventoryMovementsSheet
-            ingredientId={ingredient.id}
-            ingredientName={ingredient.name}
-            sheetRef={movementsSheetRef}
-          />
-          <AdjustStockOverlay
-            ingredient={ingredient}
-            isOpen={stockAction === "adjust"}
-            onOpenChange={(isOpen) => onStockActionChange(isOpen ? "adjust" : "none")}
-          />
-          <RecordMovementOverlay
-            ingredient={ingredient}
-            isOpen={stockAction === "record"}
-            onOpenChange={(isOpen) => onStockActionChange(isOpen ? "record" : "none")}
-          />
-        </>
-      ) : null}
 
       <ActionDialog
         isOpen={isConfirmingDelete}
@@ -521,10 +396,6 @@ export default function IngredientFormScreen(): React.JSX.Element {
   const updateMutation = useUpdateIngredient(id);
   const deleteMutation = useDeleteIngredient();
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
-  const supplierOffersSheetRef = React.useRef<TrueSheet | null>(null);
-  const movementsSheetRef = React.useRef<TrueSheet | null>(null);
-  const [isAdjustStockOpen, setIsAdjustStockOpen] = React.useState(false);
-  const [isRecordMovementOpen, setIsRecordMovementOpen] = React.useState(false);
   const operationIdRef = React.useRef<string | null>(null);
   const hydratedIngredientId = React.useRef<string | null>(null);
   const ingredientSchema = createIngredientSchema(t);
@@ -614,21 +485,11 @@ export default function IngredientFormScreen(): React.JSX.Element {
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
-  const showSupplierOffers = () => {
-    void supplierOffersSheetRef.current?.present(0).catch(() => undefined);
-  };
-  const showMovements = () => {
-    void movementsSheetRef.current?.present(0).catch(() => undefined);
-  };
-  const showAdjustStock = () => setIsAdjustStockOpen(true);
-  const showRecordMovement = () => setIsRecordMovementOpen(true);
-
   return (
     <IngredientFormContent
       mode={isNew ? "new" : "edit"}
       formStatus={isSaving ? "saving" : "idle"}
       deleteState={getIngredientDeleteState(isConfirmingDelete, deleteMutation.isPending)}
-      stockAction={getIngredientStockAction(isAdjustStockOpen, isRecordMovementOpen)}
       ingredient={ingredient}
       control={control}
       errors={errors}
@@ -639,16 +500,6 @@ export default function IngredientFormScreen(): React.JSX.Element {
       onDeleteRequest={() => setIsConfirmingDelete(true)}
       onConfirmingDeleteChange={setIsConfirmingDelete}
       onDelete={handleDelete}
-      supplierOffersSheetRef={supplierOffersSheetRef}
-      movementsSheetRef={movementsSheetRef}
-      onStockActionChange={(action) => {
-        setIsAdjustStockOpen(action === "adjust");
-        setIsRecordMovementOpen(action === "record");
-      }}
-      onShowSupplierOffers={!isNew ? showSupplierOffers : undefined}
-      onShowMovements={!isNew ? showMovements : undefined}
-      onAdjustStock={!isNew ? showAdjustStock : undefined}
-      onRecordMovement={!isNew ? showRecordMovement : undefined}
     />
   );
 }

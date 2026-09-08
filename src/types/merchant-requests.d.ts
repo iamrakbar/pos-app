@@ -269,7 +269,7 @@ declare namespace App.Requests.Merchant.Ingredient {
     export type StoreIngredientRequest = {
         name: string;
         base_unit: App.Requests.Merchant.InventoryUnitEnum;
-        reorder_point?: number | null;
+        reorder_point?: number;
         cost_per_unit?: number | null;
         active?: boolean;
         initial_quantity?: number | null;
@@ -278,7 +278,7 @@ declare namespace App.Requests.Merchant.Ingredient {
     export type UpdateIngredientRequest = {
         name?: string;
         base_unit?: App.Requests.Merchant.InventoryUnitEnum;
-        reorder_point?: number | null;
+        reorder_point?: number;
         cost_per_unit?: number | null;
         active?: boolean;
     };
@@ -318,7 +318,6 @@ declare namespace App.Requests.Merchant.Product {
         category_id: string;
         description?: string | null;
         price: number;
-        stock_enabled?: boolean;
         stock?: number | null;
         stock_alert?: number | null;
         active?: boolean;
@@ -346,8 +345,6 @@ declare namespace App.Requests.Merchant.Product {
         category_id?: string;
         description?: string | null;
         price?: number;
-        stock_enabled?: boolean;
-        stock?: number | null;
         stock_alert?: number | null;
         active?: boolean;
     };

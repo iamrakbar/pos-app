@@ -1,63 +1,57 @@
 import AppIcon from "@/components/common/app-icon";
 import ErrorState from "@/components/common/error-state";
+import CreateFAB from "@/components/common/create-fab";
 import { useIngredientSupplierOffers } from "@/hooks/db/use-supplier-offers";
 import { useTranslation } from "@/stores/use-locale";
 import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { Chip, Typography, useThemeColor } from "heroui-native";
 import { EmptyState, Table } from "heroui-native-pro";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import {
-  SheetHeader,
-  SheetLoading,
-} from "@/screens/inventory/ingredient-relationship-sheet-shared";
+import LoadingState from "@/components/common/loading-state";
+import { useRouter } from "expo-router";
 
 type SupplierOffer = App.Data.Merchant.Inventory.SupplierOfferData;
 
-export default function IngredientSupplierOffersSheet({
+export default function IngredientSupplierOffersScreen({
   ingredientId,
-  ingredientName,
-  sheetRef,
 }: {
   ingredientId: string;
-  ingredientName: string;
-  sheetRef: React.RefObject<TrueSheet | null>;
 }): React.JSX.Element {
   const { t } = useTranslation();
+  const router = useRouter();
   const supplierOffersQuery = useIngredientSupplierOffers(ingredientId);
   const offers = supplierOffersQuery.data ?? [];
 
+  const showOfferForm = (offer: SupplierOffer | null) => {
+    router.push(
+      offer
+        ? `/settings/inventory/ingredients/${ingredientId}/supplier-offers/${offer.id}`
+        : `/settings/inventory/ingredients/${ingredientId}/supplier-offers/new`
+    );
+  };
+
   return (
-    <TrueSheet
-      ref={sheetRef}
-      detents={[0.65, 1]}
-      scrollable
-      grabber
-      cornerRadius={24}
-      maxContentWidth={1100}
-      header={
-        <SheetHeader
-          title={t("ingredients.supplierOffers")}
-          description={`${ingredientName} · ${t("ingredients.supplierOffersDescription")}`}
-          onClose={() => void sheetRef.current?.dismiss()}
-        />
-      }
-    >
+    <View className="flex-1">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="p-0"
+        contentContainerClassName="gap-4 px-5 pb-safe pt-4"
+        contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
         {supplierOffersQuery.isLoading ? (
-          <SheetLoading />
+          <LoadingState message={t("suppliers.loadingOne")} />
         ) : supplierOffersQuery.isError ? (
           <ErrorState error={supplierOffersQuery.error} onRetry={supplierOffersQuery.refetch} />
         ) : (
-          <SupplierOffersTable offers={offers} />
+          <SupplierOffersTable offers={offers} onEdit={showOfferForm} />
         )}
       </ScrollView>
-    </TrueSheet>
+      <CreateFAB
+        accessibilityLabel={t("ingredients.addSupplierOffer")}
+        onPress={() => showOfferForm(null)}
+      />
+    </View>
   );
 }
 
@@ -77,7 +71,13 @@ function SupplierOfferStatus({ offer }: { offer: SupplierOffer }): React.JSX.Ele
   );
 }
 
-function SupplierOffersTable({ offers }: { offers: SupplierOffer[] }): React.JSX.Element {
+function SupplierOffersTable({
+  offers,
+  onEdit,
+}: {
+  offers: SupplierOffer[];
+  onEdit: (offer: SupplierOffer) => void;
+}): React.JSX.Element {
   const { t } = useTranslation();
   const [themeColorMuted] = useThemeColor(["muted"]);
 
@@ -129,7 +129,7 @@ function SupplierOffersTable({ offers }: { offers: SupplierOffer[] }): React.JSX
             )}
           >
             {(offer) => (
-              <Table.Row id={String(offer.id)}>
+              <Table.Row id={String(offer.id)} onPress={() => onEdit(offer)}>
                 <Table.Cell textProps={{ numberOfLines: 1 }}>
                   <Typography weight="semibold" numberOfLines={1}>
                     {offer.supplier_name ?? "—"}

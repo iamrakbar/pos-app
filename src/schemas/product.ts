@@ -1,5 +1,6 @@
 import type { ProductImageAsset } from "@/api/endpoints/products";
 import type { Translate } from "@/locales";
+import { PRODUCT_INVENTORY_MODES } from "@/types/product-inventory";
 import { z } from "zod";
 
 export function createProductSchema(t: Translate) {
@@ -43,23 +44,15 @@ export function createProductSchema(t: Translate) {
           }
         }),
       code: z.string().trim().max(100, t("validation.productCodeTooLong")),
-      stock_enabled: z.boolean(),
-      stock: z.string().trim(),
+      inventory_mode: z.enum(PRODUCT_INVENTORY_MODES),
+      inventory_cost: z.string().trim().regex(/^\d*$/, t("validation.wholeNumber")),
       stock_alert: z.string().trim(),
       active: z.boolean(),
       image: z.custom<ProductImageAsset>().nullable(),
       add_ons: z.array(nestedAddOnSchema),
     })
     .superRefine((values, context) => {
-      if (values.stock_enabled) {
-        const stock = Number(values.stock);
-        if (values.stock === "" || !Number.isInteger(stock) || stock < 0) {
-          context.addIssue({
-            code: "custom",
-            path: ["stock"],
-            message: t("validation.productStockInvalid"),
-          });
-        }
+      if (values.inventory_mode === "manual") {
         if (values.stock_alert !== "") {
           const alert = Number(values.stock_alert);
           if (!Number.isInteger(alert) || alert < 0) {

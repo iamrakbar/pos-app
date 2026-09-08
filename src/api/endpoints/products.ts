@@ -15,6 +15,7 @@ type ProductResponse = {
 type ProductRecipeResponse = {
   success: boolean;
   data: App.Data.Merchant.Inventory.RecipeData;
+  message?: string;
 };
 
 type ProductsResponse = {
@@ -95,11 +96,15 @@ export function getProduct(merchantId: string, productId: string): Promise<Produ
   return apiRequest<ProductResponse>(`/${merchantId}/products/${productId}`);
 }
 
-export function getProductRecipe(
+export async function getProductRecipe(
   merchantId: string,
   productId: string
 ): Promise<ProductRecipeResponse> {
-  return apiRequest<ProductRecipeResponse>(`/${merchantId}/products/${productId}/recipe`);
+  const response = await apiRequest<ProductRecipeResponse>(
+    `/${merchantId}/products/${productId}/recipe`
+  );
+  if (!response.success) throw new Error(response.message ?? "Product recipe could not be loaded.");
+  return response;
 }
 
 export function getProducts(

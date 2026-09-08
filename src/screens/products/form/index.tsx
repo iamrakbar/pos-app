@@ -31,7 +31,6 @@ import {
   useWatch,
   type Control,
   type FieldErrors,
-  type UseFormSetError,
   type UseFormSetValue,
 } from "react-hook-form";
 import { Image } from "expo-image";
@@ -41,7 +40,7 @@ import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
 import ActionDialog from "@/components/common/action-dialog";
 import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
-import { getErrorMessage, isApiError } from "@/api/api-error";
+import { getErrorMessage } from "@/api/api-error";
 import type { ProductImageAsset } from "@/api/endpoints/products";
 import { useCategories } from "@/hooks/db/use-categories";
 import {
@@ -53,37 +52,34 @@ import {
   useCreateProduct,
   useDeleteProduct,
   useProduct,
+  useProductInventory,
   useUpdateProduct,
-  type ProductFormPayload,
+  useUpdateProductInventory,
 } from "@/hooks/db/use-products";
+import { useInventoryMovements } from "@/hooks/db/use-inventory-audit";
 import { createProductSchema, type ProductFormValues } from "@/schemas/product";
+import {
+  getProductInventoryCapabilities,
+  toProductInventoryPayload,
+} from "@/schemas/product-inventory";
+import { PRODUCT_INVENTORY_MODES, type ProductInventory } from "@/types/product-inventory";
 import ProductAddOnsCard from "./product-add-ons-card";
 import NewProductAddOnsCard from "./new-product-add-ons-card";
 import ProductRelationshipSheets from "./product-relationship-sheets";
+import { ProductAdjustStockOverlay, ProductOpeningBalanceOverlay } from "./product-stock-overlays";
 import QuickCategoryFormOverlay from "./quick-category-form-overlay";
 import QuickDiscountFormOverlay from "./quick-discount-form-overlay";
-import { formatRupiah } from "@/utils/format";
+import { saveProduct, toProductPayload } from "./product-form-save";
+import { applyProductServerErrors } from "./product-form-errors";
+import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
-import type { Translate } from "@/locales";
+import type { Translate, TranslationKey } from "@/locales";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const PRODUCT_IMAGE_MAX_EDGE = 1600;
 const PRODUCT_IMAGE_QUALITY = 0.82;
 const PRODUCT_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
-const PRODUCT_FORM_FIELDS = new Set<keyof ProductFormValues>([
-  "category_id",
-  "name",
-  "description",
-  "price",
-  "code",
-  "stock_enabled",
-  "stock",
-  "stock_alert",
-  "active",
-  "image",
-]);
-
 async function optimizeProductImage(
   asset: ImagePicker.ImagePickerAsset,
   t: Translate
@@ -125,54 +121,6 @@ async function optimizeProductImage(
   };
 }
 
-function toProductPayload(values: ProductFormValues): ProductFormPayload {
-  return {
-    values: {
-      name: values.name.trim(),
-      code: values.code.trim() || null,
-      category_id: values.category_id,
-      description: values.description.trim() || null,
-      price: Number(values.price),
-      stock_enabled: values.stock_enabled,
-      stock: values.stock_enabled ? Number(values.stock) : null,
-      stock_alert: values.stock_enabled && values.stock_alert ? Number(values.stock_alert) : null,
-      active: values.active,
-      add_ons:
-        values.add_ons.length > 0
-          ? values.add_ons.map((addOn) => ({
-              name: addOn.name.trim(),
-              required: addOn.required,
-              multiple: addOn.multiple,
-              min: addOn.required && addOn.multiple ? Number(addOn.min) : addOn.required ? 1 : 0,
-              max: addOn.multiple ? Number(addOn.max) : 1,
-              options: addOn.options.map((option) => ({
-                name: option.name.trim(),
-                price: Number(option.price),
-              })),
-            }))
-          : undefined,
-    },
-    image: values.image,
-  };
-}
-
-function applyProductServerErrors(
-  error: unknown,
-  setError: UseFormSetError<ProductFormValues>
-): boolean {
-  if (!isApiError(error) || !error.errors) return false;
-  let applied = false;
-
-  for (const [field, messages] of Object.entries(error.errors)) {
-    if (PRODUCT_FORM_FIELDS.has(field as keyof ProductFormValues) && messages[0]) {
-      setError(field as keyof ProductFormValues, { type: "server", message: messages[0] });
-      applied = true;
-    }
-  }
-
-  return applied;
-}
-
 async function selectProductImage({
   t,
   toast,
@@ -210,48 +158,6 @@ async function selectProductImage({
       variant: "danger",
       label: t("productForm.imagePreparationFailed"),
       description: getErrorMessage(error),
-    });
-  }
-}
-
-async function saveProduct({
-  values,
-  isNew,
-  createMutation,
-  updateMutation,
-  applyServerErrors,
-  setError,
-  toast,
-  t,
-  router,
-}: {
-  values: ProductFormValues;
-  isNew: boolean;
-  createMutation: ReturnType<typeof useCreateProduct>;
-  updateMutation: ReturnType<typeof useUpdateProduct>;
-  applyServerErrors: (error: unknown) => boolean;
-  setError: UseFormSetError<ProductFormValues>;
-  toast: ReturnType<typeof useToast>["toast"];
-  t: Translate;
-  router: ReturnType<typeof useRouter>;
-}): Promise<void> {
-  try {
-    await (isNew
-      ? createMutation.mutateAsync(toProductPayload(values))
-      : updateMutation.mutateAsync(toProductPayload(values)));
-    toast.show({
-      variant: "success",
-      label: isNew ? t("productForm.created") : t("productForm.updated"),
-    });
-    router.back();
-  } catch (error: unknown) {
-    const hasFieldErrors = applyServerErrors(error);
-    const message = hasFieldErrors ? t("productForm.checkFields") : getErrorMessage(error);
-    setError("root.server", { type: "server", message });
-    toast.show({
-      variant: "danger",
-      label: isNew ? t("productForm.createFailed") : t("productForm.updateFailed"),
-      description: message,
     });
   }
 }
@@ -620,25 +526,274 @@ function ProductDetailsCard({
   );
 }
 
-function InventoryCard({
+function ProductInventoryFields({
   control,
   errors,
-  stockEnabled,
-  showMovements,
-  showRecipe,
-  onShowMovements,
-  onShowRecipe,
+  inventory,
+  isNew,
 }: {
   control: Control<ProductFormValues>;
   errors: FieldErrors<ProductFormValues>;
-  stockEnabled: boolean;
-  showMovements: boolean;
-  showRecipe: boolean;
+  inventory: ProductInventory | undefined;
+  isNew: boolean;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const { choicePresentation } = useOverlayPresentation();
+  const inventoryMode = useWatch({ control, name: "inventory_mode" });
+  const capabilities = getProductInventoryCapabilities(inventoryMode, isNew);
+  const modeOptions = PRODUCT_INVENTORY_MODES.map((mode) => ({
+    value: mode,
+    label: t(`productForm.inventoryModes.${mode}` as TranslationKey),
+  }));
+
+  return (
+    <>
+      <Controller
+        control={control}
+        name="inventory_mode"
+        render={({ field: { value, onChange } }) => (
+          <View className="gap-1.5">
+            <Label isRequired isInvalid={Boolean(errors.inventory_mode)}>
+              {t("productForm.inventoryMode")}
+            </Label>
+            <Select
+              presentation={choicePresentation}
+              value={modeOptions.find((option) => option.value === value)}
+              onValueChange={(option) => onChange(option?.value ?? "unlimited")}
+            >
+              <Select.Trigger
+                accessibilityLabel={t("productForm.inventoryMode")}
+                className={errors.inventory_mode ? "border-danger" : undefined}
+              >
+                <Select.Value placeholder={t("productForm.inventoryModePlaceholder")} />
+                <Select.TriggerIndicator />
+              </Select.Trigger>
+              <Select.Portal>
+                <Select.Overlay />
+                <Select.Content
+                  presentation={choicePresentation}
+                  width={choicePresentation === "popover" ? "trigger" : undefined}
+                >
+                  <Select.ListLabel>{t("productForm.inventoryMode")}</Select.ListLabel>
+                  {modeOptions.map((option) => (
+                    <Select.Item key={option.value} {...option} />
+                  ))}
+                </Select.Content>
+              </Select.Portal>
+            </Select>
+            <Description>
+              {t(`productForm.inventoryModeDescriptions.${inventoryMode}` as TranslationKey)}
+            </Description>
+          </View>
+        )}
+      />
+      {capabilities.showInventoryCost ? (
+        <View className="flex-row flex-wrap gap-3">
+          <Controller
+            control={control}
+            name="inventory_cost"
+            render={({ field: { value, onChange } }) => (
+              <RupiahField
+                className="flex-1"
+                label={t("productForm.inventoryCost")}
+                placeholder={t("productForm.inventoryCostPlaceholder")}
+                inputVariant="secondary"
+                value={value}
+                onChange={onChange}
+                minValue={0}
+                isInvalid={Boolean(errors.inventory_cost)}
+              >
+                <Description className={errors.inventory_cost ? "text-danger" : undefined}>
+                  {errors.inventory_cost?.message ?? t("productForm.inventoryCostDescription")}
+                </Description>
+              </RupiahField>
+            )}
+          />
+          {capabilities.showStockAlert ? (
+            <Controller
+              control={control}
+              name="stock_alert"
+              render={({ field: { value, onChange } }) => (
+                <ProductNumberStepper
+                  label={t("productForm.lowStockAlert")}
+                  description={t("productForm.lowStockDescription")}
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.stock_alert?.message}
+                />
+              )}
+            />
+          ) : null}
+        </View>
+      ) : null}
+      {capabilities.showCurrentStock && inventory ? (
+        <View className="rounded-panel-inner bg-surface-secondary px-4 py-3">
+          <Typography type="body-xs" color="muted">
+            {t("productForm.currentStock")}
+          </Typography>
+          <Typography type="body-sm" weight="semibold" className="tabular-nums">
+            {formatInventoryQuantity(inventory.stock)}
+          </Typography>
+        </View>
+      ) : null}
+      {capabilities.showRecipe && inventory ? (
+        <View className="rounded-panel-inner bg-surface-secondary px-4 py-3">
+          <Typography type="body-xs" color="muted">
+            {t("productForm.recipeEstimatedUnitCogs")}
+          </Typography>
+          <Typography type="body-sm" weight="semibold" className="tabular-nums">
+            {formatRupiah(inventory.estimated_unit_cogs)}
+          </Typography>
+        </View>
+      ) : null}
+    </>
+  );
+}
+
+function ProductInventoryActions({
+  control,
+  isNew,
+  canShowOpeningBalance,
+  onShowMovements,
+  onShowRecipe,
+  onShowOpeningBalance,
+  onShowAdjustment,
+}: {
+  control: Control<ProductFormValues>;
+  isNew: boolean;
+  canShowOpeningBalance: boolean;
   onShowMovements?: () => void;
   onShowRecipe?: () => void;
-}) {
+  onShowOpeningBalance?: () => void;
+  onShowAdjustment?: () => void;
+}): React.JSX.Element | null {
   const { t } = useTranslation();
   const [themeColorForeground] = useThemeColor(["foreground"]);
+  const inventoryMode = useWatch({ control, name: "inventory_mode" });
+  const actions = getProductInventoryActions({
+    inventoryMode,
+    isNew,
+    canShowOpeningBalance,
+    onShowMovements,
+    onShowRecipe,
+    onShowOpeningBalance,
+    onShowAdjustment,
+    t,
+  });
+
+  if (actions.length === 0) return null;
+
+  return (
+    <Card.Footer className="flex-row flex-wrap gap-2 pt-0">
+      {actions.map((action) => (
+        <Button
+          key={action.key}
+          size="sm"
+          variant="outline"
+          className="min-w-0 flex-1 px-1"
+          accessibilityLabel={action.accessibilityLabel}
+          onPress={action.onPress}
+        >
+          <AppIcon name={action.icon} size={16} color={themeColorForeground} />
+          <Button.Label numberOfLines={1}>{action.label}</Button.Label>
+        </Button>
+      ))}
+    </Card.Footer>
+  );
+}
+
+type ProductInventoryAction = {
+  key: string;
+  icon: React.ComponentProps<typeof AppIcon>["name"];
+  label: string;
+  accessibilityLabel: string;
+  onPress: () => void;
+};
+
+function getProductInventoryActions({
+  inventoryMode,
+  isNew,
+  canShowOpeningBalance,
+  onShowMovements,
+  onShowRecipe,
+  onShowOpeningBalance,
+  onShowAdjustment,
+  t,
+}: {
+  inventoryMode: ProductFormValues["inventory_mode"];
+  isNew: boolean;
+  canShowOpeningBalance: boolean;
+  onShowMovements?: () => void;
+  onShowRecipe?: () => void;
+  onShowOpeningBalance?: () => void;
+  onShowAdjustment?: () => void;
+  t: Translate;
+}): ProductInventoryAction[] {
+  if (isNew) return [];
+
+  const capabilities = getProductInventoryCapabilities(inventoryMode, isNew);
+  const actions: ProductInventoryAction[] = [];
+  if (capabilities.showOpeningBalance && canShowOpeningBalance && onShowOpeningBalance) {
+    actions.push({
+      key: "opening-balance",
+      icon: "add-circle-outline",
+      label: t("productForm.openingBalance"),
+      accessibilityLabel: t("productForm.showOpeningBalanceAccessibility"),
+      onPress: onShowOpeningBalance,
+    });
+  }
+  if (capabilities.showAdjustment && onShowAdjustment) {
+    actions.push({
+      key: "adjust-stock",
+      icon: "options-outline",
+      label: t("productForm.adjustStock"),
+      accessibilityLabel: t("productForm.showAdjustStockAccessibility"),
+      onPress: onShowAdjustment,
+    });
+  }
+  if (capabilities.showMovements && onShowMovements) {
+    actions.push({
+      key: "movements",
+      icon: "swap-vertical-outline",
+      label: t("productForm.inventoryMovements"),
+      accessibilityLabel: t("productForm.showInventoryMovementsAccessibility"),
+      onPress: onShowMovements,
+    });
+  }
+  if (capabilities.showRecipe && onShowRecipe) {
+    actions.push({
+      key: "recipe",
+      icon: "restaurant-outline",
+      label: t("productForm.recipe"),
+      accessibilityLabel: t("productForm.showRecipeAccessibility"),
+      onPress: onShowRecipe,
+    });
+  }
+  return actions;
+}
+
+function InventoryCard({
+  control,
+  errors,
+  inventory,
+  isNew,
+  canShowOpeningBalance,
+  onShowMovements,
+  onShowRecipe,
+  onShowOpeningBalance,
+  onShowAdjustment,
+}: {
+  control: Control<ProductFormValues>;
+  errors: FieldErrors<ProductFormValues>;
+  inventory: ProductInventory | undefined;
+  isNew: boolean;
+  canShowOpeningBalance: boolean;
+  onShowMovements?: () => void;
+  onShowRecipe?: () => void;
+  onShowOpeningBalance?: () => void;
+  onShowAdjustment?: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
 
   return (
     <Card className="gap-3 overflow-hidden">
@@ -667,77 +822,22 @@ function InventoryCard({
           )}
         />
         <Separator />
-        <Controller
+        <ProductInventoryFields
           control={control}
-          name="stock_enabled"
-          render={({ field: { value, onChange } }) => (
-            <ToggleRow
-              title={t("productForm.trackStock")}
-              description={t("productForm.trackStockDescription")}
-              isSelected={value}
-              onSelectedChange={onChange}
-            />
-          )}
+          errors={errors}
+          inventory={inventory}
+          isNew={isNew}
         />
-        {stockEnabled ? (
-          <View className="flex-row flex-wrap gap-3">
-            <Controller
-              control={control}
-              name="stock"
-              render={({ field: { value, onChange } }) => (
-                <ProductNumberStepper
-                  label={t("productForm.availableStock")}
-                  required
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.stock?.message}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="stock_alert"
-              render={({ field: { value, onChange } }) => (
-                <ProductNumberStepper
-                  label={t("productForm.lowStockAlert")}
-                  description={t("productForm.lowStockDescription")}
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.stock_alert?.message}
-                />
-              )}
-            />
-          </View>
-        ) : null}
       </Card.Body>
-      {showMovements || showRecipe ? (
-        <Card.Footer className="flex-row gap-2 pt-0">
-          {showMovements && onShowMovements ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className={showRecipe ? "min-w-0 flex-1 px-1" : "w-full"}
-              accessibilityLabel={t("productForm.showInventoryMovementsAccessibility")}
-              onPress={onShowMovements}
-            >
-              <AppIcon name="swap-vertical-outline" size={16} color={themeColorForeground} />
-              <Button.Label numberOfLines={1}>{t("productForm.inventoryMovements")}</Button.Label>
-            </Button>
-          ) : null}
-          {showRecipe && onShowRecipe ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className={showMovements ? "min-w-0 flex-1 px-1" : "w-full"}
-              accessibilityLabel={t("productForm.showRecipeAccessibility")}
-              onPress={onShowRecipe}
-            >
-              <AppIcon name="restaurant-outline" size={16} color={themeColorForeground} />
-              <Button.Label numberOfLines={1}>{t("productForm.recipe")}</Button.Label>
-            </Button>
-          ) : null}
-        </Card.Footer>
-      ) : null}
+      <ProductInventoryActions
+        control={control}
+        isNew={isNew}
+        canShowOpeningBalance={canShowOpeningBalance}
+        onShowMovements={onShowMovements}
+        onShowRecipe={onShowRecipe}
+        onShowOpeningBalance={onShowOpeningBalance}
+        onShowAdjustment={onShowAdjustment}
+      />
     </Card>
   );
 }
@@ -1069,7 +1169,6 @@ function SaveProductCard({
 
 type ProductFormMode = "new" | "edit";
 type ProductCategoryState = "loading" | "error" | "ready";
-type ProductRelationshipMode = "none" | "movements" | "recipe";
 type ProductFormLayout = "compact" | "regular";
 type ProductFormStatus = "idle" | "saving";
 type ProductOverlayState = "closed" | "open";
@@ -1081,15 +1180,6 @@ function getProductCategoryState(isLoading: boolean, isError: boolean): ProductC
   return "ready";
 }
 
-function getProductRelationshipMode(
-  showRecipe: boolean,
-  showMovements: boolean
-): ProductRelationshipMode {
-  if (showRecipe) return "recipe";
-  if (showMovements) return "movements";
-  return "none";
-}
-
 function getProductDeleteState(isDeleting: boolean, isOpen: boolean): ProductDeleteState {
   if (isDeleting) return "deleting";
   return isOpen ? "open" : "closed";
@@ -1097,6 +1187,21 @@ function getProductDeleteState(isDeleting: boolean, isOpen: boolean): ProductDel
 
 function getProductOverlayState(isOpen: boolean): ProductOverlayState {
   return isOpen ? "open" : "closed";
+}
+
+function canRecordProductOpeningBalance({
+  isNew,
+  inventoryMode,
+  movementsQuery,
+}: {
+  isNew: boolean;
+  inventoryMode: ProductFormValues["inventory_mode"];
+  movementsQuery: ReturnType<typeof useInventoryMovements>;
+}): boolean {
+  if (isNew || inventoryMode !== "manual" || !movementsQuery.isSuccess) return false;
+
+  const hasMovements = movementsQuery.data?.pages.some((page) => page.data.length > 0) ?? false;
+  return !hasMovements && !movementsQuery.hasNextPage;
 }
 
 function ProductFormContent({
@@ -1124,6 +1229,9 @@ function ProductFormContent({
   onAddDiscount,
   onShowMovements,
   onShowRecipe,
+  onShowOpeningBalance,
+  onShowAdjustment,
+  canShowOpeningBalance,
   addOns,
   onAddOn,
   onEditAddOn,
@@ -1141,8 +1249,8 @@ function ProductFormContent({
   mode: ProductFormMode;
   categoryState: ProductCategoryState;
   inventoryState: {
-    enabled: boolean;
-    relationship: ProductRelationshipMode;
+    mode: App.Requests.Merchant.InventoryModeEnum;
+    data: ProductInventory | undefined;
   };
   layout: ProductFormLayout;
   formStatus: ProductFormStatus;
@@ -1165,6 +1273,9 @@ function ProductFormContent({
   onAddDiscount?: () => void;
   onShowMovements?: () => void;
   onShowRecipe?: () => void;
+  onShowOpeningBalance?: () => void;
+  onShowAdjustment?: () => void;
+  canShowOpeningBalance: boolean;
   addOns: App.Data.Merchant.Product.ProductAddOnData[];
   onAddOn: () => void;
   onEditAddOn: (id: string) => void;
@@ -1182,9 +1293,9 @@ function ProductFormContent({
   const isNew = mode === "new";
   const areCategoriesLoading = categoryState === "loading";
   const didCategoriesFail = categoryState === "error";
-  const stockEnabled = inventoryState.enabled;
-  const showMovements = inventoryState.relationship === "movements";
-  const showRecipe = inventoryState.relationship === "recipe";
+  const inventoryCapabilities = getProductInventoryCapabilities(inventoryState.mode, isNew);
+  const showMovements = inventoryCapabilities.showMovements;
+  const showRecipe = inventoryCapabilities.showRecipe;
   const isCompact = layout === "compact";
   const isSaving = formStatus === "saving";
   const isQuickCategoryOpen = quickCategoryState === "open";
@@ -1242,11 +1353,13 @@ function ProductFormContent({
             <InventoryCard
               control={control}
               errors={errors}
-              stockEnabled={stockEnabled}
-              showMovements={showMovements}
-              showRecipe={showRecipe}
+              inventory={inventoryState.data}
+              isNew={isNew}
+              canShowOpeningBalance={canShowOpeningBalance}
               onShowMovements={onShowMovements}
               onShowRecipe={onShowRecipe}
+              onShowOpeningBalance={onShowOpeningBalance}
+              onShowAdjustment={onShowAdjustment}
             />
 
             <AvailabilityCard control={control} />
@@ -1318,20 +1431,79 @@ function getProductFormCategoryOptions(
 }
 
 function getProductFormViewData(
-  isNew: boolean,
   product: App.Data.Merchant.Product.ProductData | undefined,
   imageUri: string | null | undefined
 ): {
   imageUri: string | null | undefined;
-  showMovements: boolean;
-  showRecipe: boolean;
 } {
   return {
     imageUri: imageUri ?? product?.image.default,
-    showMovements:
-      !isNew && (product?.inventory_mode === "manual" || product?.inventory_mode === "recipe"),
-    showRecipe: !isNew && product?.inventory_mode === "recipe",
   };
+}
+
+function getProductFormLoadState({
+  isNew,
+  productQuery,
+  productInventoryQuery,
+  t,
+}: {
+  isNew: boolean;
+  productQuery: ReturnType<typeof useProduct>;
+  productInventoryQuery: ReturnType<typeof useProductInventory>;
+  t: Translate;
+}): React.JSX.Element | null {
+  if (!isNew && productQuery.isLoading) {
+    return <LoadingState message={t("productForm.loading")} />;
+  }
+
+  if (!isNew && productQuery.isError) {
+    return <ErrorState error={productQuery.error} onRetry={productQuery.refetch} />;
+  }
+
+  if (!isNew && productInventoryQuery.isLoading) {
+    return <LoadingState message={t("productForm.inventoryLoading")} />;
+  }
+
+  if (!isNew && productInventoryQuery.isError) {
+    return (
+      <ErrorState error={productInventoryQuery.error} onRetry={productInventoryQuery.refetch} />
+    );
+  }
+
+  return null;
+}
+
+function ProductFormOverlays({
+  id,
+  isNew,
+  isOpeningBalanceOpen,
+  isAdjustmentOpen,
+  onOpeningBalanceChange,
+  onAdjustmentChange,
+}: {
+  id: string;
+  isNew: boolean;
+  isOpeningBalanceOpen: boolean;
+  isAdjustmentOpen: boolean;
+  onOpeningBalanceChange: (isOpen: boolean) => void;
+  onAdjustmentChange: (isOpen: boolean) => void;
+}): React.JSX.Element | null {
+  if (isNew) return null;
+
+  return (
+    <>
+      <ProductOpeningBalanceOverlay
+        productId={id}
+        isOpen={isOpeningBalanceOpen}
+        onOpenChange={onOpeningBalanceChange}
+      />
+      <ProductAdjustStockOverlay
+        productId={id}
+        isOpen={isAdjustmentOpen}
+        onOpenChange={onAdjustmentChange}
+      />
+    </>
+  );
 }
 
 export default function ProductFormScreen(): React.JSX.Element {
@@ -1341,18 +1513,24 @@ export default function ProductFormScreen(): React.JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
   const themeColorAccent = useThemeColor("accent");
-  const isNew = id === "new";
-  const productQuery = useProduct(id);
+  const [createdProductId, setCreatedProductId] = React.useState<string | null>(null);
+  const productId = createdProductId ?? id;
+  const isNew = id === "new" && createdProductId === null;
+  const productQuery = useProduct(productId);
+  const productInventoryQuery = useProductInventory(productId);
   const categoriesQuery = useCategories();
   const createProductMutation = useCreateProduct();
-  const updateProductMutation = useUpdateProduct(id);
-  const deleteProductMutation = useDeleteProduct(id);
+  const updateProductMutation = useUpdateProduct(productId);
+  const updateInventoryMutation = useUpdateProductInventory();
+  const deleteProductMutation = useDeleteProduct(productId);
   const [createdCategory, setCreatedCategory] = React.useState<{
     id: string;
     name: string;
   } | null>(null);
   const [isQuickCategoryOpen, setIsQuickCategoryOpen] = React.useState(false);
   const [isQuickDiscountOpen, setIsQuickDiscountOpen] = React.useState(false);
+  const [isOpeningBalanceOpen, setIsOpeningBalanceOpen] = React.useState(false);
+  const [isAdjustmentOpen, setIsAdjustmentOpen] = React.useState(false);
   const movementsSheetRef = React.useRef<TrueSheet | null>(null);
   const recipeSheetRef = React.useRef<TrueSheet | null>(null);
   const categoryOptions = getProductFormCategoryOptions(
@@ -1378,16 +1556,25 @@ export default function ProductFormScreen(): React.JSX.Element {
       description: "",
       price: "",
       code: "",
-      stock_enabled: false,
-      stock: "",
+      inventory_mode: "unlimited",
+      inventory_cost: "",
       stock_alert: "",
       active: true,
       image: null,
       add_ons: [],
     },
   });
-  const stockEnabled = useWatch({ control, name: "stock_enabled" });
   const imageAsset = useWatch({ control, name: "image" });
+  const inventoryMode = useWatch({ control, name: "inventory_mode" });
+  const productMovementsQuery = useInventoryMovements(
+    { productId },
+    { enabled: !isNew && inventoryMode === "manual" }
+  );
+  const canShowOpeningBalance = canRecordProductOpeningBalance({
+    isNew,
+    inventoryMode,
+    movementsQuery: productMovementsQuery,
+  });
 
   React.useEffect(() => {
     clearErrors();
@@ -1395,7 +1582,8 @@ export default function ProductFormScreen(): React.JSX.Element {
 
   React.useEffect(() => {
     const product = productQuery.data;
-    if (isNew || !product || hydratedProductId.current === product.id) return;
+    const inventory = productInventoryQuery.data;
+    if (isNew || !product || !inventory || hydratedProductId.current === product.id) return;
 
     reset({
       category_id: product.category?.id ?? "",
@@ -1403,31 +1591,31 @@ export default function ProductFormScreen(): React.JSX.Element {
       description: product.description ?? "",
       price: String(product.price),
       code: product.code ?? "",
-      stock_enabled: product.stock.enabled,
-      stock: product.stock.enabled && product.stock.qty !== null ? String(product.stock.qty) : "",
-      stock_alert: product.stock.alert === null ? "" : String(product.stock.alert),
+      inventory_mode: inventory.inventory_mode,
+      inventory_cost: inventory.cost === null ? "" : String(inventory.cost),
+      stock_alert: inventory.stock_alert === null ? "" : String(inventory.stock_alert),
       active: product.active,
       image: null,
       add_ons: [],
     });
     hydratedProductId.current = product.id;
-  }, [isNew, productQuery.data, reset]);
+  }, [isNew, productInventoryQuery.data, productQuery.data, reset]);
 
-  if (!isNew && productQuery.isLoading) {
-    return <LoadingState message={t("productForm.loading")} />;
-  }
-
-  if (!isNew && productQuery.isError) {
-    return <ErrorState error={productQuery.error} onRetry={productQuery.refetch} />;
-  }
-
-  const isSaving = createProductMutation.isPending || updateProductMutation.isPending;
-  const product = productQuery.data;
-  const { imageUri, showMovements, showRecipe } = getProductFormViewData(
+  const loadState = getProductFormLoadState({
     isNew,
-    product,
-    imageAsset?.uri
-  );
+    productQuery,
+    productInventoryQuery,
+    t,
+  });
+  if (loadState) return loadState;
+
+  const isSaving =
+    createProductMutation.isPending ||
+    updateProductMutation.isPending ||
+    updateInventoryMutation.isPending;
+  const product = productQuery.data;
+  const inventory = productInventoryQuery.data;
+  const { imageUri } = getProductFormViewData(product, imageAsset?.uri);
 
   const showProductMovements = () => {
     void movementsSheetRef.current?.present(0).catch(() => undefined);
@@ -1445,17 +1633,25 @@ export default function ProductFormScreen(): React.JSX.Element {
     await selectProductImage({ t, toast, setValue });
   };
 
+  const handleProductCreated = (createdId: string) => {
+    hydratedProductId.current = createdId;
+    setCreatedProductId(createdId);
+  };
+
   const submitProduct = async (values: ProductFormValues) => {
     await saveProduct({
-      values,
+      catalogPayload: toProductPayload(values),
       isNew,
       createMutation: createProductMutation,
       updateMutation: updateProductMutation,
+      updateInventoryMutation,
+      inventoryValues: toProductInventoryPayload(values),
       applyServerErrors,
       setError,
       toast,
       t,
       router,
+      onProductCreated: handleProductCreated,
     });
   };
 
@@ -1470,53 +1666,66 @@ export default function ProductFormScreen(): React.JSX.Element {
   };
 
   return (
-    <ProductFormContent
-      mode={isNew ? "new" : "edit"}
-      categoryState={getProductCategoryState(categoriesQuery.isLoading, categoriesQuery.isError)}
-      inventoryState={{
-        enabled: stockEnabled,
-        relationship: getProductRelationshipMode(showRecipe, showMovements),
-      }}
-      layout={isCompact ? "compact" : "regular"}
-      formStatus={isSaving ? "saving" : "idle"}
-      quickCategoryState={getProductOverlayState(isQuickCategoryOpen)}
-      quickDiscountState={getProductOverlayState(isQuickDiscountOpen)}
-      deleteState={getProductDeleteState(deleteProductMutation.isPending, isDeleteOpen)}
-      id={id}
-      t={t}
-      product={product}
-      control={control}
-      errors={errors}
-      setValue={setValue}
-      categoryOptions={categoryOptions}
-      onRetryCategories={() => void categoriesQuery.refetch()}
-      onAddCategory={() => setIsQuickCategoryOpen(true)}
-      imageUri={imageUri}
-      accentColor={themeColorAccent}
-      onSelectImage={handleSelectImage}
-      discount={productQuery.data?.discount ?? null}
-      onAddDiscount={() => setIsQuickDiscountOpen(true)}
-      onShowMovements={showProductMovements}
-      onShowRecipe={showProductRecipe}
-      addOns={productQuery.data?.add_ons ?? []}
-      onAddOn={() => router.push(`/products/${id}/add-ons/new`)}
-      onEditAddOn={(addOnId) => router.push(`/products/${id}/add-ons/${addOnId}`)}
-      onCancel={() => router.back()}
-      onSubmit={() => void handleSubmit(submitProduct)()}
-      movementsSheetRef={movementsSheetRef}
-      recipeSheetRef={recipeSheetRef}
-      onQuickCategoryChange={setIsQuickCategoryOpen}
-      onCategoryCreated={(category) => {
-        setCreatedCategory(category);
-        setValue("category_id", category.id, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-      }}
-      onQuickDiscountChange={setIsQuickDiscountOpen}
-      onDiscountCreated={() => void productQuery.refetch()}
-      onDeleteChange={setIsDeleteOpen}
-      onDelete={handleDelete}
-    />
+    <>
+      <ProductFormContent
+        mode={isNew ? "new" : "edit"}
+        categoryState={getProductCategoryState(categoriesQuery.isLoading, categoriesQuery.isError)}
+        inventoryState={{
+          mode: inventoryMode,
+          data: inventory,
+        }}
+        layout={isCompact ? "compact" : "regular"}
+        formStatus={isSaving ? "saving" : "idle"}
+        quickCategoryState={getProductOverlayState(isQuickCategoryOpen)}
+        quickDiscountState={getProductOverlayState(isQuickDiscountOpen)}
+        deleteState={getProductDeleteState(deleteProductMutation.isPending, isDeleteOpen)}
+        id={productId}
+        t={t}
+        product={product}
+        control={control}
+        errors={errors}
+        setValue={setValue}
+        categoryOptions={categoryOptions}
+        onRetryCategories={() => void categoriesQuery.refetch()}
+        onAddCategory={() => setIsQuickCategoryOpen(true)}
+        imageUri={imageUri}
+        accentColor={themeColorAccent}
+        onSelectImage={handleSelectImage}
+        discount={productQuery.data?.discount ?? null}
+        onAddDiscount={() => setIsQuickDiscountOpen(true)}
+        onShowMovements={showProductMovements}
+        onShowRecipe={showProductRecipe}
+        onShowOpeningBalance={() => setIsOpeningBalanceOpen(true)}
+        onShowAdjustment={() => setIsAdjustmentOpen(true)}
+        canShowOpeningBalance={canShowOpeningBalance}
+        addOns={productQuery.data?.add_ons ?? []}
+        onAddOn={() => router.push(`/products/${productId}/add-ons/new`)}
+        onEditAddOn={(addOnId) => router.push(`/products/${productId}/add-ons/${addOnId}`)}
+        onCancel={() => router.back()}
+        onSubmit={() => void handleSubmit(submitProduct)()}
+        movementsSheetRef={movementsSheetRef}
+        recipeSheetRef={recipeSheetRef}
+        onQuickCategoryChange={setIsQuickCategoryOpen}
+        onCategoryCreated={(category) => {
+          setCreatedCategory(category);
+          setValue("category_id", category.id, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+        }}
+        onQuickDiscountChange={setIsQuickDiscountOpen}
+        onDiscountCreated={() => void productQuery.refetch()}
+        onDeleteChange={setIsDeleteOpen}
+        onDelete={handleDelete}
+      />
+      <ProductFormOverlays
+        id={productId}
+        isNew={isNew}
+        isOpeningBalanceOpen={isOpeningBalanceOpen}
+        isAdjustmentOpen={isAdjustmentOpen}
+        onOpeningBalanceChange={setIsOpeningBalanceOpen}
+        onAdjustmentChange={setIsAdjustmentOpen}
+      />
+    </>
   );
 }

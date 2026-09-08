@@ -10,6 +10,13 @@ import {
   uploadProductImage,
   type ProductImageAsset,
 } from "@/api/endpoints/products";
+import {
+  adjustProductStock,
+  getProductInventory,
+  recordProductOpeningBalance,
+  updateProductRecipe,
+  updateProductInventory,
+} from "@/api/endpoints/product-inventory";
 import { useAuth } from "@/stores/use-auth";
 import type { POSProduct } from "@/types/pos";
 
@@ -53,8 +60,8 @@ function optimisticListProduct(payload: ProductFormPayload, id: string): POSProd
     price: payload.values.price,
     discount: null,
     stock: {
-      enabled: payload.values.stock_enabled ?? false,
-      qty: payload.values.stock_enabled ? (payload.values.stock ?? 0) : null,
+      enabled: false,
+      qty: null,
     },
     image: { default: imageUri, thumbnail: imageUri },
     category: payload.values.category_id
@@ -142,6 +149,84 @@ export function useProduct(id: string) {
   });
 }
 
+export const productInventoryKeys = {
+  detail: (merchantId: string | null, productId: string) =>
+    ["product-inventory", merchantId, productId] as const,
+};
+
+export function useProductInventory(productId: string) {
+  const merchantId = useAuth((state) => state.merchantId);
+
+  return useQuery({
+    queryKey: productInventoryKeys.detail(merchantId, productId),
+    queryFn: async () => (await getProductInventory(merchantId!, productId)).data,
+    enabled: !!merchantId && productId !== "new",
+  });
+}
+
+function useInvalidateProductInventory() {
+  const merchantId = useAuth((state) => state.merchantId);
+  const queryClient = useQueryClient();
+
+  return async (productId: string, operationId?: string) => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["product", merchantId, productId] }),
+      queryClient.invalidateQueries({
+        queryKey: productInventoryKeys.detail(merchantId, productId),
+      }),
+      queryClient.invalidateQueries({ queryKey: ["management-products", merchantId] }),
+      queryClient.invalidateQueries({ queryKey: ["products-raw", merchantId] }),
+      queryClient.invalidateQueries({ queryKey: ["product-recipe", merchantId, productId] }),
+      queryClient.invalidateQueries({ queryKey: ["inventory-overview", merchantId] }),
+      queryClient.invalidateQueries({ queryKey: ["inventory-movements", merchantId] }),
+      queryClient.invalidateQueries({ queryKey: ["inventory-operations", merchantId] }),
+      operationId
+        ? queryClient.invalidateQueries({
+            queryKey: ["inventory-operation", merchantId, operationId],
+          })
+        : Promise.resolve(),
+    ]);
+  };
+}
+
+export function useUpdateProductInventory() {
+  const merchantId = useAuth((state) => state.merchantId);
+  const invalidate = useInvalidateProductInventory();
+
+  return useMutation({
+    mutationFn: async ({
+      productId,
+      values,
+    }: {
+      productId: string;
+      values: App.Requests.Merchant.Product.UpdateInventoryRequest;
+    }) => (await updateProductInventory(merchantId!, productId, values)).data,
+    onSuccess: async (_inventory, variables) => invalidate(variables.productId),
+  });
+}
+
+export function useRecordProductOpeningBalance(productId: string) {
+  const merchantId = useAuth((state) => state.merchantId);
+  const invalidate = useInvalidateProductInventory();
+
+  return useMutation({
+    mutationFn: async (values: App.Requests.Merchant.Inventory.OpeningBalanceRequest) =>
+      (await recordProductOpeningBalance(merchantId!, productId, values)).data,
+    onSuccess: async (operation) => invalidate(productId, operation.id),
+  });
+}
+
+export function useAdjustProductStock(productId: string) {
+  const merchantId = useAuth((state) => state.merchantId);
+  const invalidate = useInvalidateProductInventory();
+
+  return useMutation({
+    mutationFn: async (values: App.Requests.Merchant.Inventory.AdjustmentRequest) =>
+      (await adjustProductStock(merchantId!, productId, values)).data,
+    onSuccess: async (operation) => invalidate(productId, operation.id),
+  });
+}
+
 export function useProductRecipe(productId: string, enabled = true) {
   const merchantId = useAuth((state) => state.merchantId);
 
@@ -149,6 +234,23 @@ export function useProductRecipe(productId: string, enabled = true) {
     queryKey: ["product-recipe", merchantId, productId],
     queryFn: async () => (await getProductRecipe(merchantId!, productId)).data,
     enabled: !!merchantId && productId !== "new" && enabled,
+  });
+}
+
+export function useUpdateProductRecipe(productId: string) {
+  const merchantId = useAuth((state) => state.merchantId);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (values: App.Requests.Merchant.Product.UpdateRecipeRequest) =>
+      (await updateProductRecipe(merchantId!, productId, values)).data,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["product-recipe", merchantId, productId] }),
+        queryClient.invalidateQueries({ queryKey: ["product-inventory", merchantId, productId] }),
+        queryClient.invalidateQueries({ queryKey: ["product", merchantId, productId] }),
+      ]);
+    },
   });
 }
 
@@ -272,11 +374,7 @@ export function useUpdateProduct(productId: string) {
           price: values.price,
           active: values.active ?? true,
           category: detail.category?.id === values.category_id ? detail.category : null,
-          stock: {
-            enabled: values.stock_enabled ?? false,
-            qty: values.stock_enabled ? (values.stock ?? null) : null,
-            alert: values.stock_alert ?? null,
-          },
+          stock: detail.stock,
           image: payload.image
             ? { default: payload.image.uri, thumbnail: payload.image.uri }
             : detail.image,

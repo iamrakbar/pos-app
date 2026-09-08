@@ -7,10 +7,12 @@ import { View } from "react-native";
 export function SheetHeader({
   title,
   description,
+  action,
   onClose,
 }: {
   title: string;
   description: string;
+  action?: React.ReactNode;
   onClose: () => void;
 }): React.JSX.Element {
   const [themeColorForeground] = useThemeColor(["foreground"]);
@@ -18,12 +20,17 @@ export function SheetHeader({
 
   return (
     <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
-      <Typography type="h4" weight="semibold">
-        {title}
-      </Typography>
-      <Typography type="body-sm" color="muted" numberOfLines={2}>
-        {description}
-      </Typography>
+      <View className="flex-row items-start gap-3">
+        <View className="min-w-0 flex-1 gap-1">
+          <Typography type="h4" weight="semibold">
+            {title}
+          </Typography>
+          <Typography type="body-sm" color="muted" numberOfLines={2}>
+            {description}
+          </Typography>
+        </View>
+        {action}
+      </View>
       <Button
         variant="ghost"
         size="sm"

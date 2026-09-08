@@ -2934,7 +2934,7 @@
               }
             ],
             "url": {
-              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products?filter[category_id]={{category_id}}&filter[active]=1&filter[stock_enabled]=1&filter[search]=&sort=-created_at&per_page=10",
+              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products?filter[category_id]={{category_id}}&filter[active]=1&filter[search]=&sort=-created_at&per_page=10",
               "host": [
                 "{{api_base_url}}"
               ],
@@ -2956,11 +2956,6 @@
                   "disabled": true
                 },
                 {
-                  "key": "filter[stock_enabled]",
-                  "value": "1",
-                  "disabled": true
-                },
-                {
                   "key": "filter[search]",
                   "value": "",
                   "disabled": true
@@ -2977,7 +2972,7 @@
                 }
               ]
             },
-            "description": "**Purpose:** List menu items (products).\n\n**Auth required:** Yes.\n\n**Response contract:** Each menu includes nested `stock` (`enabled`, `qty`, `alert`), `image` (`default`, `thumbnail`), nullable `category`, nullable `discount` (`unit`, `value`, `price`), and an `add_ons` array with nested `options`. Legacy flat response fields `category_id`, `stock_enabled`, `stock_alert`, `image_url`, and `thumbnail_url` are not returned.\n\n**Query params (Spatie QueryBuilder):** `filter[category_id]`, `filter[active]`, `filter[stock_enabled]` (exact); `filter[search]` (matches name/code/description); `sort` (allowed `name`,`price`,`stock`,`created_at`, default `-created_at`); `per_page` (default 10, max 50)."
+            "description": "**Purpose:** List menu items (products).\n\n**Auth required:** Yes.\n\n**Response contract:** Each menu includes nested `stock` (`enabled`, `qty`, `alert`), `image` (`default`, `thumbnail`), nullable `category`, nullable `discount` (`unit`, `value`, `price`), and an `add_ons` array with nested `options`. Legacy flat response fields `category_id`, `stock_alert`, `image_url`, and `thumbnail_url` are not returned.\n\n**Query params (Spatie QueryBuilder):** `filter[category_id]`, `filter[active]` (exact); `filter[search]` (matches name/code/description); `sort` (allowed `name`,`price`,`stock`,`created_at`, default `-created_at`); `per_page` (default 10, max 50)."
           },
           "response": [],
           "event": [
@@ -3055,7 +3050,7 @@
                 "products"
               ]
             },
-            "description": "**Purpose:** Create a new menu item, optionally with an image and nested add-ons in the same request.\n\n**Auth required:** Yes.\n\n**Body (multipart/form-data):** `name` (required, max:255); `code` (required, regex `^[A-Z0-9-]+$`, unique per merchant); `category_id` (required uuid, exists within merchant); `description` (nullable); `price` (required int min:0, in smallest currency unit / IDR); `stock_enabled` (boolean); `stock` (required if `stock_enabled=true`); `stock_alert` (nullable int min:0); `active` (boolean); `image` (nullable, image, mimes jpeg/jpg/png/webp, max 4096 KB). Add-ons use bracketed fields such as `add_ons[0][name]`, `add_ons[0][required]`, `add_ons[0][multiple]`, `add_ons[0][min]`, `add_ons[0][max]`, `add_ons[0][options][0][name]`, and `add_ons[0][options][0][price]`; each add-on requires at least one option and must satisfy its selection limits.\n\n**Error response (422):** duplicate `code` or invalid nested add-on configuration.",
+            "description": "**Purpose:** Create a new menu item, optionally with an image and nested add-ons in the same request.\n\n**Auth required:** Yes.\n\n**Body (multipart/form-data):** `name` (required, max:255); `code` (required, regex `^[A-Z0-9-]+$`, unique per merchant); `category_id` (required uuid, exists within merchant); `description` (nullable); `price` (required int min:0, in smallest currency unit / IDR); `stock` (nullable int min:0); `stock_alert` (nullable int min:0); `active` (boolean); `image` (nullable, image, mimes jpeg/jpg/png/webp, max 4096 KB). Add-ons use bracketed fields such as `add_ons[0][name]`, `add_ons[0][required]`, `add_ons[0][multiple]`, `add_ons[0][min]`, `add_ons[0][max]`, `add_ons[0][options][0][name]`, and `add_ons[0][options][0][price]`; each add-on requires at least one option and must satisfy its selection limits.\n\n**Error response (422):** duplicate `code` or invalid nested add-on configuration.",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -3086,12 +3081,6 @@
                 {
                   "key": "price",
                   "value": "35000",
-                  "type": "text",
-                  "description": ""
-                },
-                {
-                  "key": "stock_enabled",
-                  "value": "true",
                   "type": "text",
                   "description": ""
                 },
@@ -3218,7 +3207,7 @@
                 "{{product_id}}"
               ]
             },
-            "description": "**Purpose:** Get a single menu item.\n\n**Auth required:** Yes.\n\n**Response contract:** Includes nested `stock` (`enabled`, `qty`, `alert`), `image` (`default`, `thumbnail`), nullable `category`, nullable `discount` (`unit`, `value`, `price`), and an `add_ons` array with nested `options`. Legacy flat response fields `category_id`, `stock_enabled`, `stock_alert`, `image_url`, and `thumbnail_url` are not returned."
+            "description": "**Purpose:** Get a single menu item.\n\n**Auth required:** Yes.\n\n**Response contract:** Includes nested `stock` (`enabled`, `qty`, `alert`), `image` (`default`, `thumbnail`), nullable `category`, nullable `discount` (`unit`, `value`, `price`), and an `add_ons` array with nested `options`. Legacy flat response fields `category_id`, `stock_alert`, `image_url`, and `thumbnail_url` are not returned."
           },
           "response": [],
           "event": [
@@ -7489,7 +7478,7 @@
             "method": "GET",
             "header": [],
             "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/status",
-            "description": "Returns whether inventory is enabled, supported inventory modes (unlimited, manual, recipe), supported units (gram, kilogram, milliliter, liter, piece, serving), and legacy stock_enabled compatibility."
+            "description": "Returns whether inventory is enabled, supported inventory modes (unlimited, manual, recipe), and supported units (gram, kilogram, milliliter, liter, piece, serving)."
           },
           "response": []
         },
@@ -7952,7 +7941,7 @@
               "options": {"raw": {"language": "json"}}
             },
             "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/inventory",
-            "description": "Inventory mode values are unlimited, manual, and recipe. Mode changes are blocked while the product has an active/open order. Legacy stock_enabled is retained only for compatibility in other product responses and must not be sent to this endpoint."
+            "description": "Inventory mode values are unlimited, manual, and recipe. Mode changes are blocked while the product has an active/open order. Stock balances are changed through the opening-balance and adjustment endpoints."
           },
           "response": []
         }

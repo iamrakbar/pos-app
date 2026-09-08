@@ -10,6 +10,7 @@ export default function CheckoutScreen(): JSX.Element {
   const router = useRouter();
   const clearCart = useCartStore((state) => state.clearCart);
   const setPaymentSession = usePOSStore((state) => state.setPaymentSession);
+  const resetCheckoutSelection = usePOSStore((state) => state.resetCheckoutSelection);
 
   const handlePaymentReady = (
     session: PaymentSession,
@@ -17,6 +18,7 @@ export default function CheckoutScreen(): JSX.Element {
     options: { processingMode: PaymentSession["processing_mode"] }
   ) => {
     setPaymentSession(session, result);
+    resetCheckoutSelection();
     clearCart();
     router.replace(options.processingMode === "gateway" ? "/pos/payment" : "/pos/payment-success");
   };

@@ -1,4 +1,11 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+  type QueryKey,
+} from "@tanstack/react-query";
 import {
   adjustIngredientStock,
   createIngredient,
@@ -12,6 +19,13 @@ import {
 import { useAuth } from "@/stores/use-auth";
 
 const INGREDIENTS_PER_PAGE = 50;
+type Ingredient = App.Data.Merchant.Inventory.IngredientData;
+type IngredientListPage = Awaited<ReturnType<typeof getIngredients>>;
+type IngredientListCache = InfiniteData<IngredientListPage>;
+type IngredientInventoryMutationContext = {
+  previousDetail: Ingredient | undefined;
+  previousLists: [QueryKey, IngredientListCache | undefined][];
+};
 
 export const ingredientKeys = {
   all: (merchantId: string | null) => ["ingredients", merchantId] as const,
@@ -20,6 +34,66 @@ export const ingredientKeys = {
   detail: (merchantId: string | null, ingredientId: string) =>
     ["ingredients", merchantId, "detail", ingredientId] as const,
 };
+
+function ingredientListQueries(merchantId: string | null) {
+  return {
+    queryKey: ingredientKeys.all(merchantId),
+    predicate: (query: { queryKey: QueryKey }) => query.queryKey[2] === "list",
+  };
+}
+
+function updateIngredientInventoryCaches(
+  queryClient: ReturnType<typeof useQueryClient>,
+  merchantId: string | null,
+  ingredientId: string,
+  update: (ingredient: Ingredient) => Ingredient
+): void {
+  queryClient.setQueryData<Ingredient>(
+    ingredientKeys.detail(merchantId, ingredientId),
+    (ingredient) => (ingredient?.id === ingredientId ? update(ingredient) : ingredient)
+  );
+  queryClient.setQueriesData<IngredientListCache>(ingredientListQueries(merchantId), (cache) =>
+    cache
+      ? {
+          ...cache,
+          pages: cache.pages.map((page) => ({
+            ...page,
+            data: page.data.map((ingredient) =>
+              ingredient.id === ingredientId ? update(ingredient) : ingredient
+            ),
+          })),
+        }
+      : cache
+  );
+}
+
+function restoreIngredientInventoryCaches(
+  queryClient: ReturnType<typeof useQueryClient>,
+  merchantId: string | null,
+  ingredientId: string,
+  context: IngredientInventoryMutationContext
+): void {
+  queryClient.setQueryData(ingredientKeys.detail(merchantId, ingredientId), context.previousDetail);
+  for (const [queryKey, cache] of context.previousLists) {
+    queryClient.setQueryData(queryKey, cache);
+  }
+}
+
+async function snapshotIngredientInventoryCaches(
+  queryClient: ReturnType<typeof useQueryClient>,
+  merchantId: string | null,
+  ingredientId: string
+): Promise<IngredientInventoryMutationContext> {
+  await queryClient.cancelQueries({ queryKey: ingredientKeys.all(merchantId) });
+  return {
+    previousDetail: queryClient.getQueryData<Ingredient>(
+      ingredientKeys.detail(merchantId, ingredientId)
+    ),
+    previousLists: queryClient.getQueriesData<IngredientListCache>(
+      ingredientListQueries(merchantId)
+    ),
+  };
+}
 
 export function useIngredients(params: Omit<IngredientListParams, "page" | "perPage"> = {}) {
   const merchantId = useAuth((state) => state.merchantId);
@@ -102,34 +176,93 @@ export function useCreateIngredient() {
 
 export function useUpdateIngredient(ingredientId: string) {
   const merchantId = useAuth((state) => state.merchantId);
+  const queryClient = useQueryClient();
   const invalidateIngredients = useInvalidateIngredients();
 
   return useMutation({
     mutationFn: async (values: App.Requests.Merchant.Ingredient.UpdateIngredientRequest) =>
       (await updateIngredient(merchantId!, ingredientId, values)).data,
-    onSuccess: async () => invalidateIngredients(ingredientId),
+    onMutate: async (values) => {
+      const context = await snapshotIngredientInventoryCaches(
+        queryClient,
+        merchantId,
+        ingredientId
+      );
+      updateIngredientInventoryCaches(queryClient, merchantId, ingredientId, (ingredient) => ({
+        ...ingredient,
+        ...(values.name === undefined ? {} : { name: values.name }),
+        ...(values.base_unit === undefined ? {} : { base_unit: values.base_unit }),
+        ...(values.reorder_point === undefined ? {} : { reorder_point: values.reorder_point }),
+        ...(values.cost_per_unit === undefined ? {} : { cost_per_unit: values.cost_per_unit }),
+        ...(values.active === undefined ? {} : { active: values.active }),
+      }));
+      return context;
+    },
+    onError: (_error, _values, context) => {
+      if (context) {
+        restoreIngredientInventoryCaches(queryClient, merchantId, ingredientId, context);
+      }
+    },
+    onSettled: async () => invalidateIngredients(ingredientId),
   });
 }
 
 export function useAdjustIngredientStock(ingredientId: string) {
   const merchantId = useAuth((state) => state.merchantId);
+  const queryClient = useQueryClient();
   const invalidateIngredientInventory = useInvalidateIngredientInventory(ingredientId);
 
   return useMutation({
     mutationFn: async (values: App.Requests.Merchant.Inventory.AdjustmentRequest) =>
       (await adjustIngredientStock(merchantId!, ingredientId, values)).data,
-    onSuccess: async (operation) => invalidateIngredientInventory(operation.id),
+    onMutate: async (values) => {
+      const context = await snapshotIngredientInventoryCaches(
+        queryClient,
+        merchantId,
+        ingredientId
+      );
+      updateIngredientInventoryCaches(queryClient, merchantId, ingredientId, (ingredient) => ({
+        ...ingredient,
+        current_stock: values.target_balance,
+      }));
+      return context;
+    },
+    onError: (_error, _values, context) => {
+      if (context) {
+        restoreIngredientInventoryCaches(queryClient, merchantId, ingredientId, context);
+      }
+    },
+    onSettled: async (operation) => invalidateIngredientInventory(operation?.id),
   });
 }
 
 export function useRecordIngredientMovement(ingredientId: string) {
   const merchantId = useAuth((state) => state.merchantId);
+  const queryClient = useQueryClient();
   const invalidateIngredientInventory = useInvalidateIngredientInventory(ingredientId);
 
   return useMutation({
     mutationFn: async (values: App.Requests.Merchant.Ingredient.MovementRequest) =>
       (await recordIngredientMovement(merchantId!, ingredientId, values)).data,
-    onSuccess: async (operation) => invalidateIngredientInventory(operation.id),
+    onMutate: async (values) => {
+      const context = await snapshotIngredientInventoryCaches(
+        queryClient,
+        merchantId,
+        ingredientId
+      );
+      const stockDelta = values.type === "purchase" ? values.quantity : -values.quantity;
+      updateIngredientInventoryCaches(queryClient, merchantId, ingredientId, (ingredient) => ({
+        ...ingredient,
+        current_stock: ingredient.current_stock + stockDelta,
+      }));
+      return context;
+    },
+    onError: (_error, _values, context) => {
+      if (context) {
+        restoreIngredientInventoryCaches(queryClient, merchantId, ingredientId, context);
+      }
+    },
+    onSettled: async (operation) => invalidateIngredientInventory(operation?.id),
   });
 }
 

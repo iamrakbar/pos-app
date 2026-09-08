@@ -17,6 +17,7 @@ export default function CheckoutSheet(): JSX.Element {
   const { dismiss } = useTrueSheet();
   const { t } = useTranslation();
   const setPaymentSession = usePOSStore((state) => state.setPaymentSession);
+  const resetCheckoutSelection = usePOSStore((state) => state.resetCheckoutSelection);
   const clearCart = useCartStore((state) => state.clearCart);
 
   const handlePaymentReady = (
@@ -25,6 +26,7 @@ export default function CheckoutSheet(): JSX.Element {
     options: { processingMode: PaymentSession["processing_mode"] }
   ) => {
     setPaymentSession(session, result);
+    resetCheckoutSelection();
     clearCart();
     const destination =
       options.processingMode === "gateway" ? "/pos/payment" : "/pos/payment-success";

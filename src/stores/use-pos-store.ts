@@ -28,6 +28,7 @@ type POSAction = {
   toggleCategories: () => void;
   updateCheckoutForm: (patch: Partial<CheckoutFormState>) => void;
   replaceCheckoutForm: (form: CheckoutFormState) => void;
+  resetCheckoutSelection: () => void;
   resetCheckoutForm: () => void;
 };
 
@@ -95,6 +96,13 @@ export const usePOSStore = create<POSState & POSAction>()(
         })),
 
       replaceCheckoutForm: (checkoutForm) => set({ checkoutForm }),
+
+      resetCheckoutSelection: () =>
+        set({
+          selectedProduct: null,
+          editingCartItemId: null,
+          checkoutForm: { ...DEFAULT_CHECKOUT_FORM },
+        }),
 
       resetCheckoutForm: () =>
         set({

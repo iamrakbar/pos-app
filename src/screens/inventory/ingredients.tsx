@@ -3,6 +3,7 @@ import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import TableSkeleton from "@/components/common/table-skeleton";
 import { useIngredients } from "@/hooks/db/use-ingredients";
+import { IngredientDetailCoordinator } from "@/screens/inventory/ingredient-detail-sheet";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { formatDateTime, formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
@@ -157,6 +158,8 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
   const [search, setSearch] = React.useState("");
   const deferredSearch = React.useDeferredValue(search.trim());
   const [filter, setFilter] = React.useState<IngredientFilter>("all");
+  const [selectedIngredientId, setSelectedIngredientId] = React.useState<string | null>(null);
+  const [detailOpenRequest, setDetailOpenRequest] = React.useState(0);
   const [sortDescriptor, setSortDescriptor] = React.useState<TableSortDescriptor>({
     column: "name",
     direction: "ascending",
@@ -169,6 +172,9 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
   });
   const ingredients = query.data?.pages.flatMap((page) => page.data) ?? [];
   const sortedIngredients = sortIngredients(ingredients, sortDescriptor);
+  const selectedIngredient = selectedIngredientId
+    ? (ingredients.find((item) => item.id === selectedIngredientId) ?? null)
+    : null;
 
   return (
     <>
@@ -275,12 +281,11 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
                         <Table.Row
                           id={ingredient.id}
                           accessibilityRole="button"
-                          accessibilityLabel={t("ingredients.editAccessibility", {
-                            ingredient: ingredient.name,
-                          })}
-                          onPress={() =>
-                            router.push(`/settings/inventory/ingredients/${ingredient.id}`)
-                          }
+                          accessibilityLabel={`${t("ingredients.detailsTitle")}: ${ingredient.name}`}
+                          onPress={() => {
+                            setSelectedIngredientId(ingredient.id);
+                            setDetailOpenRequest((request) => request + 1);
+                          }}
                         >
                           <Table.Cell textProps={{ numberOfLines: 1 }}>
                             <Typography weight="semibold" numberOfLines={1}>
@@ -356,6 +361,10 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
           onPress={() => router.push("/settings/inventory/ingredients/new")}
         />
       </View>
+      <IngredientDetailCoordinator
+        ingredient={selectedIngredient}
+        openRequest={detailOpenRequest}
+      />
     </>
   );
 }
