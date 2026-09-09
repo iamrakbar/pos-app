@@ -7,14 +7,13 @@ import { getPaymentStatus } from "@/api/mappers/order";
 import ActionDialog from "@/components/common/action-dialog";
 import Countdown from "@/components/common/countdown";
 import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
-import { Button, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
 import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
 import Constants from "expo-constants";
-import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import type { StatusPresentation } from "@/api/mappers/order";
@@ -70,7 +69,6 @@ type PaymentStatusView = { label: string; color: StatusPresentation["color"] };
 
 function PaymentQrPanel({
   paymentSession,
-  isWide,
   canShowQr,
   sessionExpired,
   showQrUrl,
@@ -78,7 +76,6 @@ function PaymentQrPanel({
   onExpire,
 }: {
   paymentSession: PaymentSessionData;
-  isWide: boolean;
   canShowQr: boolean;
   sessionExpired: boolean;
   showQrUrl: boolean;
@@ -88,10 +85,7 @@ function PaymentQrPanel({
   const { t } = useTranslation();
 
   return (
-    <Surface
-      variant="secondary"
-      className={isWide ? "flex-1 items-center gap-5 p-6" : "w-full items-center gap-5 p-5"}
-    >
+    <Surface variant="secondary" className="flex-1 items-center gap-5 p-5 landscape:p-6">
       <View className="w-full flex-row items-center justify-between gap-3">
         <View className="flex-1 gap-1">
           <Typography type="body-sm" weight="semibold">
@@ -105,20 +99,15 @@ function PaymentQrPanel({
       </View>
 
       {canShowQr ? (
-        <View
-          className={`${isWide ? "h-72 w-72" : "h-64 w-64"} items-center justify-center rounded-xl border border-border bg-white`}
-        >
+        <View className="h-64 w-64 landscape:size-72 items-center justify-center rounded-xl border border-border bg-white">
           <Image
             source={{ uri: paymentSession.qr_url! }}
-            style={{ width: isWide ? 256 : 224, height: isWide ? 256 : 224 }}
+            style={{ width: 224, height: 224 }}
             contentFit="contain"
           />
         </View>
       ) : (
-        <View
-          className={`${isWide ? "h-72 w-72" : "h-64 w-64"} items-center justify-center rounded-xl bg-surface-tertiary px-6`}
-        >
-          <AppIcon name="qr-code-outline" size={64} color={themeColorMuted} />
+        <View className="h-64 w-64 landscape:size-72 items-center justify-center rounded-xl bg-surface px-6">
           <Typography type="body-sm" color="muted" className="mt-3 text-center">
             {sessionExpired ? t("payment.qrExpired") : t("payment.qrUnavailable")}
           </Typography>
@@ -153,8 +142,8 @@ function PaymentInfoPanel({
   const { t } = useTranslation();
 
   return (
-    <View className="w-full gap-5">
-      <Surface className="gap-5 p-5">
+    <View className="flex-1 gap-5">
+      <Surface className="flex-1 h-full gap-5 p-5">
         <View className="gap-1">
           <Typography type="body-sm" color="muted">
             {t("payment.total")}
@@ -206,28 +195,33 @@ function PaymentInfoPanel({
           </Typography>
         ) : null}
       </Surface>
-
       {paymentDetails?.code || paymentDetails?.extra ? (
-        <Surface variant="secondary" className="gap-3 p-4">
-          <Typography type="body-sm" weight="semibold">
-            {t("payment.details")}
-          </Typography>
-          {paymentDetails.code ? (
-            <View className="flex-row items-start justify-between gap-4">
-              <Typography type="body-sm" color="muted">
-                {t("payment.code")}
-              </Typography>
-              <Typography type="body-xs" weight="semibold" className="flex-1 text-right font-mono">
-                {paymentDetails.code}
-              </Typography>
-            </View>
-          ) : null}
-          {paymentDetails.extra ? (
-            <Typography type="body-xs" selectable>
-              {paymentDetails.extra}
+        <Card className="gap-2">
+          <Card.Header>
+            <Typography type="body-sm" weight="semibold">
+              {t("payment.details")}
             </Typography>
+          </Card.Header>
+          <Card.Body>
+            {paymentDetails.code ? (
+              <Surface variant="secondary">
+                <Typography type="body-xs" color="muted">
+                  {t("payment.code")}
+                </Typography>
+                <Typography type="body-xs" weight="semibold" className="font-mono" selectable>
+                  {paymentDetails.code}
+                </Typography>
+              </Surface>
+            ) : null}
+          </Card.Body>
+          {paymentDetails.extra ? (
+            <Card.Footer>
+              <Typography type="body-xs" selectable>
+                {paymentDetails.extra}
+              </Typography>
+            </Card.Footer>
           ) : null}
-        </Surface>
+        </Card>
       ) : null}
 
       {showQrUrl ? <QrUrlDisclosure url={paymentSession.qr_url!} /> : null}
@@ -250,7 +244,7 @@ function PaymentContentFooter({
     <View className="border-t border-border bg-surface px-safe pb-safe">
       <View className="w-full max-w-5xl self-center flex-row gap-3 px-5 py-4">
         <Button variant="outline" onPress={onClose}>
-          <Button.Label>{t("common.cancel")}</Button.Label>
+          <Button.Label>{t("common.close")}</Button.Label>
         </Button>
         <Button className="flex-1" onPress={onCheck} isDisabled={paymentStatus.isPending}>
           {paymentStatus.isPending ? (
@@ -275,7 +269,6 @@ export function PaymentContent({
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const themeColorMuted = useThemeColor("muted");
-  const { isWide } = useResponsiveLayout();
   const [expiredSessionKey, setExpiredSessionKey] = useState<string | null>(null);
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
   const showQrUrl =
@@ -309,7 +302,7 @@ export function PaymentContent({
 
   return (
     <View className="flex-1 bg-background">
-      <View className="border-b border-border bg-background px-safe pt-safe">
+      <View className="border-b border-border bg-surface px-safe pt-safe">
         <View className="w-full max-w-5xl self-center flex-row items-center justify-between px-5 pb-4 pt-4">
           <View className="min-w-0 flex-1 gap-0.5">
             <Typography type="h4" weight="bold">
@@ -337,12 +330,9 @@ export function PaymentContent({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View
-          className={`w-full max-w-5xl self-center gap-5 px-5 ${isWide ? "flex-row items-start" : ""}`}
-        >
+        <View className="flex-1 w-full max-w-5xl landscape:flex-row mx-auto px-5 gap-5">
           <PaymentQrPanel
             paymentSession={paymentSession}
-            isWide={isWide}
             canShowQr={canShowQr}
             sessionExpired={sessionExpired}
             showQrUrl={showQrUrl}

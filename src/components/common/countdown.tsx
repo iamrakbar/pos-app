@@ -67,12 +67,12 @@ export default function Countdown({
       <View
         accessibilityRole="timer"
         accessibilityLabel={`${resolvedPrefix} ${formatRemaining(remainingMs)}`}
-        className="flex-row items-center justify-between rounded-lg bg-warning/10 px-4 py-3"
+        className="flex-row items-center justify-between gap-1 rounded-full bg-warning/10 px-3 py-1"
       >
         <Typography type="body-sm" weight="semibold" className="text-warning">
           {resolvedPrefix}
         </Typography>
-        <Typography.Heading type="h4" className="text-warning tabular-nums">
+        <Typography.Heading type="h6" className="text-warning tabular-nums">
           {formatRemaining(remainingMs)}
         </Typography.Heading>
       </View>
