@@ -500,7 +500,7 @@ payment: App.Data.Merchant.Order.OrderPaymentData;
 order_type: string;
 order_status: App.Data.Merchant.Order.OrderStatusDetailData;
 cancellation_reason_code: string | null;
-kitchen_ticket: App.Data.Merchant.Order.KitchenTicketData | null;
+kitchen_ticket: App.Data.Merchant.Order.OrderKitchenTicketData | null;
 payment_status: App.Data.Merchant.Order.OrderPaymentStatusDetailData;
 notes: string | null;
 products: Array<App.Data.Merchant.Order.OrderProductData>;
@@ -519,6 +519,25 @@ export type OrderDeliveryFeeData = {
 name: string;
 amount: number;
 };
+export type OrderKitchenTicketData = {
+id: string;
+order: App.Data.Merchant.Order.OrderKitchenTicketOrderData;
+status: App.Data.Merchant.Order.KitchenTicketStatusData;
+preparation_started_at: string | null;
+ready_at: string | null;
+cancelled_at: string | null;
+created_at: string;
+};
+export type OrderKitchenTicketOrderData = {
+id: string;
+code: string;
+payment_status: App.Data.Merchant.Order.KitchenTicketPaymentStatusData;
+total: number;
+products_count: number;
+order_type: string;
+order_status: App.Data.Merchant.Order.KitchenTicketOrderStatusData;
+created_at: string;
+};
 export type OrderListData = {
 id: string;
 code: string;
@@ -528,7 +547,7 @@ payment: Array<any>;
 order_type: string;
 order_status: Array<any>;
 cancellation_reason_code: string | null;
-kitchen_ticket: App.Data.Merchant.Order.KitchenTicketData | null;
+kitchen_ticket: App.Data.Merchant.Order.OrderKitchenTicketData | null;
 payment_status: Array<any>;
 total: number;
 products_count: number;
