@@ -23,6 +23,7 @@ import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
 import Constants from "expo-constants";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import type { StatusPresentation } from "@/api/mappers/order";
@@ -78,6 +79,7 @@ type PaymentStatusView = { label: string; color: StatusPresentation["color"] };
 
 function PaymentQrPanel({
   paymentSession,
+  isWide,
   canShowQr,
   sessionExpired,
   showQrUrl,
@@ -85,6 +87,7 @@ function PaymentQrPanel({
   onExpire,
 }: {
   paymentSession: PaymentSessionData;
+  isWide: boolean;
   canShowQr: boolean;
   sessionExpired: boolean;
   showQrUrl: boolean;
@@ -94,7 +97,10 @@ function PaymentQrPanel({
   const { t } = useTranslation();
 
   return (
-    <Surface variant="secondary" className="flex-1 items-center gap-5 p-5 landscape:p-6">
+    <Surface
+      variant="secondary"
+      className={isWide ? "flex-1 items-center gap-5 p-6" : "w-full items-center gap-5 p-5"}
+    >
       <View className="w-full flex-row items-center justify-between gap-3">
         <View className="flex-1 gap-1">
           <Typography type="body-sm" weight="semibold">
@@ -108,15 +114,19 @@ function PaymentQrPanel({
       </View>
 
       {canShowQr ? (
-        <View className="h-64 w-64 landscape:size-72 items-center justify-center rounded-xl border border-border bg-white">
+        <View
+          className={`${isWide ? "h-72 w-72" : "h-64 w-64"} items-center justify-center rounded-xl border border-border bg-white`}
+        >
           <Image
             source={{ uri: paymentSession.qr_url! }}
-            style={{ width: 224, height: 224 }}
+            style={{ width: isWide ? 256 : 224, height: isWide ? 256 : 224 }}
             contentFit="contain"
           />
         </View>
       ) : (
-        <View className="h-64 w-64 landscape:size-72 items-center justify-center rounded-xl bg-surface px-6">
+        <View
+          className={`${isWide ? "h-72 w-72" : "h-64 w-64"} items-center justify-center rounded-xl bg-surface px-6`}
+        >
           <Typography type="body-sm" color="muted" className="mt-3 text-center">
             {sessionExpired ? t("payment.qrExpired") : t("payment.qrUnavailable")}
           </Typography>
@@ -137,12 +147,14 @@ function PaymentQrPanel({
 
 function PaymentInfoPanel({
   paymentSession,
+  isWide,
   paymentStatus,
   status,
   paymentDetails,
   showQrUrl,
 }: {
   paymentSession: PaymentSessionData;
+  isWide: boolean;
   paymentStatus: ReturnType<typeof usePaymentStatus>;
   status: PaymentStatusView;
   paymentDetails: App.Data.Merchant.Order.OrderPaymentDetailsData | undefined;
@@ -151,8 +163,8 @@ function PaymentInfoPanel({
   const { t } = useTranslation();
 
   return (
-    <View className="flex-1 gap-5">
-      <Surface className="flex-1 h-full gap-5 p-5">
+    <View className={isWide ? "flex-1 gap-5" : "w-full gap-5"}>
+      <Surface className={`${isWide ? "flex-1 h-full" : ""} gap-5 p-5`}>
         <View className="gap-1">
           <Typography type="body-sm" color="muted">
             {t("payment.total")}
@@ -279,6 +291,7 @@ export function PaymentContent({
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const themeColorMuted = useThemeColor("muted");
+  const { isWide } = useResponsiveLayout();
   const [expiredSessionKey, setExpiredSessionKey] = useState<string | null>(null);
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
   const showQrUrl =
@@ -365,9 +378,12 @@ export function PaymentContent({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-1 w-full max-w-5xl landscape:flex-row mx-auto px-5 gap-5">
+        <View
+          className={`flex-1 w-full max-w-5xl self-center px-5 gap-5 ${isWide ? "flex-row items-start" : ""}`}
+        >
           <PaymentQrPanel
             paymentSession={paymentSession}
+            isWide={isWide}
             canShowQr={canShowQr}
             sessionExpired={sessionExpired}
             showQrUrl={showQrUrl}
@@ -376,6 +392,7 @@ export function PaymentContent({
           />
           <PaymentInfoPanel
             paymentSession={paymentSession}
+            isWide={isWide}
             paymentStatus={paymentStatus}
             status={status}
             paymentDetails={paymentDetails}
