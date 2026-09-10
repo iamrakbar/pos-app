@@ -8,6 +8,7 @@ import { Platform, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import { getReceiptLogoPreviewWidth } from "@/utils/receipt-logo-layout";
+import { cn } from "heroui-native";
 
 export type ReceiptPreviewData = {
   code: string;
@@ -375,7 +376,7 @@ export const ReceiptPaper = forwardRef<
       <View
         ref={ref}
         collapsable={false}
-        className={`max-w-full self-center items-center bg-white ${isCompact ? "py-6" : "py-10"}`}
+        className={cn("max-w-full self-center items-center bg-white", isCompact ? "py-6" : "py-10")}
         style={{ width: widthOverride ?? (paperWidth === "58mm" ? 300 : 400) }}
       >
         <ReceiptHeaderBlock

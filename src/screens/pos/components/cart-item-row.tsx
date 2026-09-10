@@ -4,7 +4,7 @@ import type { CartItem } from "@/types/cart";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { getCartItemSubtotal } from "@/utils/cart-pricing";
-import { Button, Typography, useThemeColor } from "heroui-native";
+import { Button, cn, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
@@ -71,7 +71,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
           <Typography
             type="body-sm"
             color={hasDiscount ? undefined : "muted"}
-            className={`tabular-nums ${hasDiscount ? "text-accent" : ""}`}
+            className={cn("tabular-nums", hasDiscount && "text-accent")}
           >
             {formatRupiah(item.price)}
           </Typography>

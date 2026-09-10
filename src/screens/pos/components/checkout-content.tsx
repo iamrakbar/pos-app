@@ -19,6 +19,7 @@ import { TrueSheet, useTrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
   Chip,
+  cn,
   RadioGroup,
   ScrollShadow,
   SearchField,
@@ -521,11 +522,12 @@ function PaymentFields({
                   <RadioGroup.Item key={payment.id} value={payment.id}>
                     {({ isSelected }) => (
                       <View
-                        className={`w-32 h-24 px-2 justify-center items-center gap-1 rounded-2xl border-2 ${
+                        className={cn(
+                          "w-32 h-24 px-2 justify-center items-center gap-1 rounded-2xl border-2",
                           isSelected
                             ? "border-accent bg-surface"
                             : "border-border bg-surface-secondary"
-                        }`}
+                        )}
                       >
                         {payment.image ? (
                           <Image
@@ -739,7 +741,10 @@ function CustomerFields({
             <Pressable
               key={customer.id}
               onPress={() => setValue("customer_id", customer.id)}
-              className={`rounded-lg px-3 py-2 ${customerId === customer.id ? "bg-accent/10" : "bg-surface-secondary"}`}
+              className={cn(
+                "rounded-lg px-3 py-2",
+                customerId === customer.id ? "bg-accent/10" : "bg-surface-secondary"
+              )}
             >
               <Typography type="body-sm" weight="semibold">
                 {customer.name}

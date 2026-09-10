@@ -11,6 +11,7 @@ import {
   Button,
   Card,
   Chip,
+  cn,
   Separator,
   Surface,
   Typography,
@@ -115,7 +116,10 @@ function PaymentQrPanel({
 
       {canShowQr ? (
         <View
-          className={`${isWide ? "h-72 w-72" : "h-64 w-64"} items-center justify-center rounded-xl border border-border bg-white`}
+          className={cn(
+            "items-center justify-center rounded-xl border border-border bg-white",
+            isWide ? "h-72 w-72" : "h-64 w-64"
+          )}
         >
           <Image
             source={{ uri: paymentSession.qr_url! }}
@@ -125,7 +129,10 @@ function PaymentQrPanel({
         </View>
       ) : (
         <View
-          className={`${isWide ? "h-72 w-72" : "h-64 w-64"} items-center justify-center rounded-xl bg-surface px-6`}
+          className={cn(
+            "items-center justify-center rounded-xl bg-surface px-6",
+            isWide ? "h-72 w-72" : "h-64 w-64"
+          )}
         >
           <Typography type="body-sm" color="muted" className="mt-3 text-center">
             {sessionExpired ? t("payment.qrExpired") : t("payment.qrUnavailable")}
@@ -164,7 +171,7 @@ function PaymentInfoPanel({
 
   return (
     <View className={isWide ? "flex-1 gap-5" : "w-full gap-5"}>
-      <Surface className={`${isWide ? "flex-1 h-full" : ""} gap-5 p-5`}>
+      <Surface className={cn("gap-5 p-5", isWide && "flex-1 h-full")}>
         <View className="gap-1">
           <Typography type="body-sm" color="muted">
             {t("payment.total")}
@@ -379,7 +386,10 @@ export function PaymentContent({
         showsVerticalScrollIndicator={false}
       >
         <View
-          className={`flex-1 w-full max-w-5xl self-center px-5 gap-5 ${isWide ? "flex-row items-start" : ""}`}
+          className={cn(
+            "flex-1 w-full max-w-5xl self-center px-5 gap-5",
+            isWide && "flex-row items-start"
+          )}
         >
           <PaymentQrPanel
             paymentSession={paymentSession}

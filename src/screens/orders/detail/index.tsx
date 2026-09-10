@@ -43,6 +43,7 @@ import { EmptyState } from "heroui-native-pro";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
   Button,
+  cn,
   Chip,
   Label,
   Separator,
@@ -532,7 +533,7 @@ function OrderOverview({
   return (
     <>
       <Surface className="w-full p-5">
-        <View className={`gap-4 ${isCompact ? "" : "flex-row items-start justify-between"}`}>
+        <View className={cn("gap-4", !isCompact && "flex-row items-start justify-between")}>
           <View className="flex-1 gap-2">
             <View className="flex-row items-center gap-2 flex-wrap">
               <Typography type="h4" weight="bold" className="font-mono tabular-nums">
@@ -554,7 +555,7 @@ function OrderOverview({
               </Typography>
             ) : null}
           </View>
-          <View className={`${isCompact ? "items-start" : "items-end"} gap-1`}>
+          <View className={cn("gap-1", isCompact ? "items-start" : "items-end")}>
             <Typography type="body-xs" color="muted">
               {t("common.total")}
             </Typography>
@@ -705,9 +706,12 @@ function OrderItemsPanel({
           {items.map((item, index) => (
             <View
               key={`${order.products[index]?.product_id}-${item.name}-${item.subtotal}`}
-              className={`gap-2 px-4 py-3.5 ${index < items.length - 1 ? "border-b border-border" : ""}`}
+              className={cn(
+                "gap-2 px-4 py-3.5",
+                index < items.length - 1 && "border-b border-border"
+              )}
             >
-              <View className={`gap-2 ${isCompact ? "" : "flex-row items-start justify-between"}`}>
+              <View className={cn("gap-2", !isCompact && "flex-row items-start justify-between")}>
                 <View className="flex-1 gap-0.5">
                   <Typography type="body-sm" weight="semibold">
                     {item.name}

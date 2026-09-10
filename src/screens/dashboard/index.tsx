@@ -4,7 +4,7 @@ import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
-import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { Chip, cn, Separator, Typography, useThemeColor } from "heroui-native";
 import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -44,7 +44,10 @@ function SummaryWidget({
       <Widget.Header>
         <Widget.Title>{label}</Widget.Title>
         <View
-          className={`size-9 items-center justify-center rounded-panel-inner ${SUMMARY_ICON_BACKGROUNDS[color]}`}
+          className={cn(
+            "size-9 items-center justify-center rounded-panel-inner",
+            SUMMARY_ICON_BACKGROUNDS[color]
+          )}
         >
           <AppIcon name={icon} size={18} color={iconColor} />
         </View>
@@ -120,13 +123,7 @@ function normalizeChartRange(
   return normalized;
 }
 
-function OrdersChart({
-  data,
-  isCompact,
-}: {
-  data: ChartPoint[];
-  isCompact: boolean;
-}) {
+function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boolean }) {
   const [width, setWidth] = React.useState(0);
   const height = isCompact ? 192 : 224;
   const max = Math.max(1, ...data.map((point) => point.count));

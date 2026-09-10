@@ -1,5 +1,5 @@
 import Logo from "@/components/common/logo";
-import { Button, Card, InputGroup, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, cn, InputGroup, Typography, useThemeColor } from "heroui-native";
 import AppIcon from "@/components/common/app-icon";
 import { useEffect, useState, type JSX } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
@@ -46,7 +46,10 @@ export default function SignInScreen(): JSX.Element {
       >
         <View className="w-full">
           <Card
-            className={`items-center gap-4 w-full max-w-md self-center ${isCompact ? "py-6" : "py-10 md:gap-6"}`}
+            className={cn(
+              "items-center gap-4 w-full max-w-md self-center",
+              isCompact ? "py-6" : "py-10 md:gap-6"
+            )}
           >
             <Logo tintColor={themeColorAccent} />
 

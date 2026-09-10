@@ -7,7 +7,7 @@ import ErrorState from "@/components/common/error-state";
 import { GridSkeleton, ListSkeleton } from "@/components/common/list-skeleton";
 import { formatTime } from "@/utils/format";
 import { EmptyState } from "heroui-native-pro";
-import { Button, Chip, ScrollShadow, Surface, Typography, useThemeColor } from "heroui-native";
+import { Button, Chip, cn, ScrollShadow, Surface, Typography, useThemeColor } from "heroui-native";
 import React from "react";
 import { FlatList, RefreshControl, useWindowDimensions, View } from "react-native";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
@@ -73,7 +73,7 @@ function TicketCard({
 
   return (
     <Surface className="w-full h-full gap-0 p-0">
-      <View className={`flex-row items-start justify-between gap-3 p-4 ${statusBackground}`}>
+      <View className={cn("flex-row items-start justify-between gap-3 p-4", statusBackground)}>
         <View className="flex-1 gap-1">
           <View className="flex-row items-center justify-between">
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
@@ -326,9 +326,10 @@ export default function KdsScreen(): React.JSX.Element {
                 />
               </Animated.View>
             )}
-            contentContainerClassName={`gap-3 pb-10 pt-4 px-4 md:px-6 ${
-              activeTickets.length === 0 ? "flex-grow" : ""
-            }`}
+            contentContainerClassName={cn(
+              "gap-3 pb-10 pt-4 px-4 md:px-6",
+              activeTickets.length === 0 && "flex-grow"
+            )}
             columnWrapperStyle={gridColumns > 1 ? { gap: gridGap } : undefined}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
             onEndReachedThreshold={0.5}

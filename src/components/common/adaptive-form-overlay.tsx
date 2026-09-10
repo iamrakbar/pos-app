@@ -1,6 +1,6 @@
 import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import { BottomSheet, Dialog, useBottomSheetAwareHandlers } from "heroui-native";
+import { BottomSheet, cn, Dialog, useBottomSheetAwareHandlers } from "heroui-native";
 import type GorhomBottomSheet from "@gorhom/bottom-sheet";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useKeyboardState } from "react-native-keyboard-controller";
@@ -86,7 +86,7 @@ export default function AdaptiveFormOverlay({
         <Dialog.Overlay />
         <Dialog.Content
           isSwipeable={false}
-          className={`w-full self-center overflow-hidden p-0 ${maxWidthClassName}`}
+          className={cn("w-full self-center overflow-hidden p-0", maxWidthClassName)}
           style={{
             marginBottom: isKeyboardVisible ? keyboardHeight : 0,
           }}

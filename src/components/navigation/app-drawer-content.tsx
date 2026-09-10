@@ -12,6 +12,7 @@ import type { DrawerContentComponentProps } from "expo-router/drawer";
 import {
   Avatar,
   Button,
+  cn,
   Popover,
   ScrollShadow,
   Surface,
@@ -155,7 +156,10 @@ export default function AppDrawerContent({
                   >
                     <Surface
                       variant="transparent"
-                      className={`h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0 ${focused ? "bg-accent-soft" : "bg-transparent"}`}
+                      className={cn(
+                        "h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0",
+                        focused ? "bg-accent-soft" : "bg-transparent"
+                      )}
                     >
                       <AppIcon
                         name={iconName}
@@ -249,7 +253,10 @@ export default function AppDrawerContent({
                       accessibilityLabel={action.label}
                       accessibilityState={{ selected: isSelected }}
                       onPress={() => setThemeMode(action.value)}
-                      className={`h-9 flex-1 items-center justify-center rounded-full ${isSelected ? "bg-accent" : "active:bg-surface-tertiary"}`}
+                      className={cn(
+                        "h-9 flex-1 items-center justify-center rounded-full",
+                        isSelected ? "bg-accent" : "active:bg-surface-tertiary"
+                      )}
                     >
                       <AppIcon
                         name={action.icon}

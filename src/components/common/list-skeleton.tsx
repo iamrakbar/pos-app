@@ -1,4 +1,4 @@
-import { Skeleton } from "heroui-native";
+import { cn, Skeleton } from "heroui-native";
 import type { StyleProp, ViewStyle } from "react-native";
 import { View } from "react-native";
 import type { JSX } from "react";
@@ -43,7 +43,7 @@ export function ListSkeleton({
 }: ListSkeletonProps): JSX.Element {
   return (
     <View
-      className={`${fill ? "flex-1" : ""} gap-px py-2 ${className}`}
+      className={cn("gap-px py-2", fill && "flex-1", className)}
       accessibilityRole="progressbar"
     >
       {Array.from({ length: rows }, (_, index) => (

@@ -10,6 +10,7 @@ import {
   Button,
   Checkbox,
   Chip,
+  cn,
   ControlField,
   Description,
   FieldError,
@@ -92,9 +93,10 @@ function OptionRow({
       isSelected={isSelected}
       isDisabled={isDisabled}
       onSelectedChange={onSelect}
-      className={`min-h-15 flex-row items-center gap-4 px-4 py-3 ${
-        isSelected ? "bg-accent-soft" : ""
-      }`}
+      className={cn(
+        "min-h-15 flex-row items-center gap-4 px-4 py-3",
+        isSelected && "bg-accent-soft"
+      )}
     >
       <View className="min-w-0 flex-1 gap-0.5">
         <Typography type="body-sm" weight="semibold" numberOfLines={2}>

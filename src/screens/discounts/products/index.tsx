@@ -12,6 +12,7 @@ import {
   Card,
   Checkbox,
   Chip,
+  cn,
   SearchField,
   Separator,
   Typography,
@@ -125,7 +126,10 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                           accessibilityLabel={product.name}
                           accessibilityState={{ checked: selected }}
                           onPress={() => toggleProduct(product.id)}
-                          className={`min-h-16 flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary ${selected ? "bg-accent-soft" : ""}`}
+                          className={cn(
+                            "min-h-16 flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary",
+                            selected && "bg-accent-soft"
+                          )}
                         >
                           <Checkbox
                             isSelected={selected}

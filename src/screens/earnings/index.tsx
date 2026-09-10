@@ -10,6 +10,7 @@ import DatePickerField from "@/components/common/date-picker-field";
 import {
   Button,
   Chip,
+  cn,
   Description,
   Select,
   Separator,
@@ -122,7 +123,7 @@ function SummaryWidget({
       <Widget.Header>
         <Widget.Title>{label}</Widget.Title>
         <View
-          className={`size-9 items-center justify-center rounded-panel-inner ${style.background}`}
+          className={cn("size-9 items-center justify-center rounded-panel-inner", style.background)}
         >
           <AppIcon name={icon} size={18} color={iconColor} />
         </View>
@@ -209,9 +210,10 @@ function CustomDateRangeDialog({
       maxWidthClassName="max-w-lg"
       footer={
         <View
-          className={`gap-3 px-5 pb-5 pt-4 ${
+          className={cn(
+            "gap-3 px-5 pb-5 pt-4",
             isPhonePortrait ? "items-stretch" : "flex-row justify-end"
-          }`}
+          )}
         >
           <Button
             variant="ghost"
@@ -297,7 +299,7 @@ function OrderTypesWidget({
           return (
             <View key={orderType.name}>
               <View className="gap-3 p-4">
-                <View className={`gap-3 ${isCompact ? "items-start" : "flex-row items-center"}`}>
+                <View className={cn("gap-3", isCompact ? "items-start" : "flex-row items-center")}>
                   <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
                     <AppIcon
                       name={
@@ -371,7 +373,7 @@ function RecentEarningsWidget({
               <View className="size-10 mt-1 items-center justify-center rounded-panel-inner bg-success-soft">
                 <AppIcon name="checkmark" size={18} color={successColor} />
               </View>
-              <View className={`flex-1 gap-3 ${isCompact ? "flex-col" : "flex-row"}`}>
+              <View className={cn("flex-1 gap-3", isCompact ? "flex-col" : "flex-row")}>
                 <View className="flex-1 gap-0.5">
                   <View className="flex-row flex-wrap items-center gap-2">
                     <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">

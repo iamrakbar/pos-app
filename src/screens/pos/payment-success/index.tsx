@@ -4,6 +4,7 @@ import { useReceiptStore } from "@/stores/use-receipt-store";
 import { formatDateTime, formatRupiah } from "@/utils/format";
 import {
   Button,
+  cn,
   Separator,
   Spinner,
   Surface,
@@ -165,7 +166,7 @@ function PaymentSuccessActions({
             <Switch.Thumb />
           </Switch>
         </View>
-        <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
+        <View className={cn("gap-3", !isCompact && "flex-row")}>
           {!receiptSettings.autoPrintOnSuccess ? (
             <Button
               variant="outline"

@@ -7,7 +7,7 @@ import { formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import AppIcon from "@/components/common/app-icon";
-import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { Chip, cn, Separator, Typography, useThemeColor } from "heroui-native";
 import { Image } from "expo-image";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -203,7 +203,7 @@ export default function ProductsScreen(): React.JSX.Element {
                           <Typography
                             type="body-sm"
                             weight="semibold"
-                            className={`tabular-nums ${isDiscounted ? "text-accent" : ""}`}
+                            className={cn("tabular-nums", isDiscounted && "text-accent")}
                           >
                             {(() => {
                               const effective = product.discount?.price ?? product.price;

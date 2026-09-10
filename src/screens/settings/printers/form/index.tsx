@@ -10,6 +10,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   Button,
   Card,
+  cn,
   Input,
   Separator,
   Spinner,
@@ -793,7 +794,7 @@ function PrinterFormView(props: PrinterFormViewProps) {
               {errors.root?.server?.message ? (
                 <FieldError message={errors.root.server.message} />
               ) : null}
-              <View className={`gap-3 ${isCompact ? "" : "flex-row"}`}>
+              <View className={cn("gap-3", !isCompact && "flex-row")}>
                 <Button variant="ghost" onPress={props.onCancel}>
                   <Button.Label>{t("common.cancel")}</Button.Label>
                 </Button>

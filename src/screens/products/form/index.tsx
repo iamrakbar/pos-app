@@ -435,7 +435,7 @@ function ProductDetailsCard({
                 >
                   <Select.Trigger
                     accessibilityLabel={t("productForm.category")}
-                    className={`${errors.category_id ? "border-danger" : ""}`}
+                    className={errors.category_id ? "border-danger" : undefined}
                   >
                     <Select.Value placeholder={t("productForm.selectCategory")} numberOfLines={1} />
                     <Select.TriggerIndicator />

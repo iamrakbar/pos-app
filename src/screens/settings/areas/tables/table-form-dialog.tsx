@@ -10,7 +10,7 @@ import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-t
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { createTableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, cn, Typography, useThemeColor, useToast } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -122,9 +122,10 @@ export default function TableFormDialog({
         description={t("areasManagement.tableDescription")}
         footer={
           <View
-            className={`gap-3 px-5 pb-5 pt-4 ${
+            className={cn(
+              "gap-3 px-5 pb-5 pt-4",
               isPhonePortrait ? "items-stretch" : "flex-row items-center"
-            }`}
+            )}
           >
             <View className="flex-1 flex-row items-center gap-3">
               {table ? (

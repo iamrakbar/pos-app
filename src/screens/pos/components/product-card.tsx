@@ -1,6 +1,6 @@
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
-import { Card, Typography, useThemeColor } from "heroui-native";
+import { Card, cn, Typography, useThemeColor } from "heroui-native";
 import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
@@ -31,7 +31,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
       style={{
         width: width - 12,
       }}
-      className={`m-1.5 active:opacity-85 ${isOutOfStock ? "opacity-50" : ""}`}
+      className={cn("m-1.5 active:opacity-85", isOutOfStock && "opacity-50")}
       accessibilityRole="button"
       accessibilityLabel={t("pos.addProduct", { product: product.name })}
     >
