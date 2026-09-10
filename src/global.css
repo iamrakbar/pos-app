@@ -4,6 +4,8 @@
 @import "heroui-native/styles";
 @import "heroui-native-pro/styles";
 
+@source "../vendor/heroui-native-pro/lib";
+
 /* global.css */
 @layer theme {
   @variant light {
