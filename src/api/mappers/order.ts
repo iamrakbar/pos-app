@@ -108,8 +108,38 @@ export function getOrderStatus(status: unknown): StatusPresentation {
   return getStatusPresentation(status, ORDER_STATUSES);
 }
 
-export function getPaymentStatus(status: unknown): StatusPresentation {
-  return getStatusPresentation(status, PAYMENT_STATUSES);
+function isExpiredTimestamp(value: unknown): boolean {
+  if (!value) return false;
+  const timestamp =
+    value instanceof Date
+      ? value.getTime()
+      : typeof value === "string" || typeof value === "number"
+        ? new Date(value).getTime()
+        : Number.NaN;
+  return Number.isFinite(timestamp) && timestamp <= Date.now();
+}
+
+export function isPaymentExpired(
+  status: unknown,
+  expiresAt?: unknown,
+  forceExpired = false
+): boolean {
+  const value = extractStatusValue(status);
+  return forceExpired || ["expire", "expired"].includes(value) || isExpiredTimestamp(expiresAt);
+}
+
+export function getPaymentStatus(
+  status: unknown,
+  options?: { expiresAt?: unknown; forceExpired?: boolean }
+): StatusPresentation {
+  const presentation = getStatusPresentation(status, PAYMENT_STATUSES);
+  if (
+    isPaymentExpired(status, options?.expiresAt, options?.forceExpired) &&
+    ["pending", "unpaid"].includes(presentation.value)
+  ) {
+    return getStatusPresentation("expired", PAYMENT_STATUSES);
+  }
+  return presentation;
 }
 
 export function extractCustomerName(customer: unknown): string | null {

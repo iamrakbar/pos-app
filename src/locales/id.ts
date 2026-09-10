@@ -781,6 +781,7 @@ export const id: TranslationSchema = {
     checking: "Memeriksa pembayaran",
     checkFailed: "Pemeriksaan status gagal",
     confirmed: "Pembayaran dikonfirmasi",
+    stillPending: "Masih tertunda",
     expired: "Pembayaran kedaluwarsa",
     waiting: "Menunggu pembayaran",
     qrExpired: "Kode QR pembayaran sudah kedaluwarsa",

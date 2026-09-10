@@ -4,10 +4,8 @@ import { useTables } from "@/hooks/db/use-tables";
 import {
   extractPaymentDetailsRows,
   extractPaymentExpiry,
-  extractPaymentInstruction,
   extractPaymentLink,
   extractPaymentQrUrl,
-  isExpired,
 } from "@/api/mappers/checkout";
 import {
   extractCustomerName,
@@ -17,6 +15,7 @@ import {
   extractTableName,
   getOrderStatus,
   getPaymentStatus,
+  isPaymentExpired,
   normalizeStatusColor,
 } from "@/api/mappers/order";
 import LoadingState from "@/components/common/loading-state";
@@ -776,11 +775,13 @@ function OrderPaymentDetails({
   paymentData,
   foregroundColor,
   onOpenQr,
+  onPaymentExpire,
 }: {
   paymentStatus: ReturnType<typeof usePaymentStatus>;
   paymentData: ReturnType<typeof getOrderPaymentColumnData>;
   foregroundColor: string;
   onOpenQr: () => void;
+  onPaymentExpire: () => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
   const {
@@ -789,13 +790,13 @@ function OrderPaymentDetails({
     showQrUrl,
     paymentQrUrl,
     paymentLink,
-    paymentInstruction,
     isPaymentPaid,
     isQrisPayment,
     hasQrImageUrl,
     canRefreshPayment,
     paymentExpiresAt,
     canShowQr,
+    paymentExpired,
   } = paymentData;
 
   return (
@@ -806,10 +807,9 @@ function OrderPaymentDetails({
       ))}
       {showQrUrl ? <QrUrlDisclosure url={paymentQrUrl ?? ""} /> : null}
       <OrderPaymentQrPanel
-        isVisible={!isPaymentPaid && isQrisPayment}
+        isVisible={!isPaymentPaid && !paymentExpired && isQrisPayment}
         paymentQrUrl={paymentQrUrl}
         paymentLink={paymentLink}
-        paymentInstruction={paymentInstruction}
         hasQrImageUrl={hasQrImageUrl}
         foregroundColor={foregroundColor}
       />
@@ -818,6 +818,7 @@ function OrderPaymentDetails({
           expiresAt={paymentExpiresAt}
           prefix={t("orders.detail.expiresIn")}
           className="text-sm text-warning font-semibold"
+          onExpire={onPaymentExpire}
         />
       ) : null}
       {canShowQr ? (
@@ -842,19 +843,17 @@ function OrderPaymentQrPanel({
   isVisible,
   paymentQrUrl,
   paymentLink,
-  paymentInstruction,
   hasQrImageUrl,
   foregroundColor,
 }: {
   isVisible: boolean;
   paymentQrUrl: string | null;
   paymentLink: string | null;
-  paymentInstruction: string | null;
   hasQrImageUrl: boolean;
   foregroundColor: string;
 }): React.JSX.Element | null {
   const { t } = useTranslation();
-  if (!isVisible || (!paymentQrUrl && !paymentLink && !paymentInstruction)) return null;
+  if (!isVisible || (!paymentQrUrl && !paymentLink)) return null;
 
   return (
     <View className="gap-3 rounded-2xl bg-surface-secondary p-3">
@@ -871,16 +870,6 @@ function OrderPaymentQrPanel({
               accessibilityLabel={t("orders.detail.qrisCode")}
             />
           </View>
-        </View>
-      ) : null}
-      {paymentInstruction ? (
-        <View className="gap-1">
-          <Typography type="body-sm" weight="semibold">
-            {t("orders.detail.paymentInstructions")}
-          </Typography>
-          <Typography type="body-sm" color="muted">
-            {paymentInstruction}
-          </Typography>
         </View>
       ) : null}
       {paymentLink && /^https?:\/\//i.test(paymentLink) ? (
@@ -966,8 +955,10 @@ function OrderPaymentSummary({
   );
 }
 
-function getOrderPaymentColumnData(order: App.Data.Merchant.Order.OrderData, locale: string) {
-  const paymentStatusPresentation = getPaymentStatus(order.payment_status);
+function getOrderPaymentColumnData(
+  order: App.Data.Merchant.Order.OrderData,
+  expiredPaymentAt: string | null = null
+) {
   const paymentName = extractPaymentName(order.payment);
   const paymentCode = order.payment.code?.toLowerCase() ?? "";
   const paymentGroup = order.payment.group_type?.toLowerCase() ?? "";
@@ -989,38 +980,44 @@ function getOrderPaymentColumnData(order: App.Data.Merchant.Order.OrderData, loc
   const paymentLink =
     extractPaymentLink({ payment_details: order.payment_details, payment: order.payment }) ??
     paymentQrUrl;
-  const paymentInstruction = extractPaymentInstruction(
-    order.payment_instruction,
-    locale === "id" ? "id" : "en"
-  );
   const isPaymentPaid = order.payment_status.is_successful;
+  const effectivePaymentExpired = isPaymentExpired(
+    order.payment_status,
+    paymentExpiresAt,
+    paymentExpiresAt !== null && paymentExpiresAt === expiredPaymentAt
+  );
+  const paymentStatusPresentation = getPaymentStatus(order.payment_status, {
+    expiresAt: paymentExpiresAt,
+    forceExpired: paymentExpiresAt !== null && paymentExpiresAt === expiredPaymentAt,
+  });
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
   const hasQrImageUrl = !!paymentQrUrl && /^https?:\/\//i.test(paymentQrUrl);
   const showQrUrl =
     !isPaymentPaid &&
+    !effectivePaymentExpired &&
     (buildVariant === "development" || buildVariant === "preview") &&
     hasQrImageUrl &&
     isQrisPayment;
   const visiblePaymentDetailsRows = paymentDetailsRows.filter(
     (row) => !hasQrImageUrl || row.value !== paymentQrUrl
   );
-  const paymentExpired = isExpired(paymentExpiresAt);
-  const canShowQr = !isPaymentPaid && !!paymentQrUrl && !paymentExpired && isQrisPayment;
+  const canShowQr = !isPaymentPaid && !!paymentQrUrl && !effectivePaymentExpired && isQrisPayment;
   const feeAmount = extractNumber(order.payment_fee);
-  const canRefreshPayment = !isCashPayment && !!paymentExpiresAt && !paymentExpired;
+  const canRefreshPayment =
+    !isPaymentPaid && !isCashPayment && !!paymentExpiresAt && !effectivePaymentExpired;
 
   return {
     paymentStatusPresentation,
     paymentName,
     paymentQrUrl,
     paymentLink,
-    paymentInstruction,
     isPaymentPaid,
     isQrisPayment,
     hasQrImageUrl,
     showQrUrl,
     visiblePaymentDetailsRows,
     paymentExpiresAt,
+    paymentExpired: effectivePaymentExpired,
     canShowQr,
     feeAmount,
     canRefreshPayment,
@@ -1038,13 +1035,14 @@ function OrderPaymentColumn({
   isPrinting: boolean;
   onPrint: () => void | Promise<void>;
 }) {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const [expiredPaymentAt, setExpiredPaymentAt] = useState<string | null>(null);
   const paymentStatus = usePaymentStatus(order.id);
   const updateStatus = useUpdateOrderStatus();
   const activeMerchant = useAuth((state) => state.activeMerchant);
   const canCancel = hasMerchantFeature(activeMerchant?.features, "cancellation");
-  const paymentData = getOrderPaymentColumnData(order, locale);
+  const paymentData = getOrderPaymentColumnData(order, expiredPaymentAt);
 
   return (
     <>
@@ -1065,6 +1063,9 @@ function OrderPaymentColumn({
             paymentData={paymentData}
             foregroundColor={foregroundColor}
             onOpenQr={() => setIsQrOpen(true)}
+            onPaymentExpire={() => {
+              if (paymentData.paymentExpiresAt) setExpiredPaymentAt(paymentData.paymentExpiresAt);
+            }}
           />
         </View>
 

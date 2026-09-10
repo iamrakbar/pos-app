@@ -174,16 +174,307 @@ function SupplierOfferSaveActions({
   );
 }
 
+type SupplierOption = { value: string; label: string };
+
+function getRouteParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getSupplierSelectPresentation(
+  presentation: "bottom-sheet" | "dialog" | "popover"
+): "dialog" | "popover" {
+  return presentation === "bottom-sheet" ? "dialog" : presentation;
+}
+
+function getSupplierOptions(
+  suppliers: App.Data.Merchant.Inventory.SupplierData[],
+  offer: App.Data.Merchant.Inventory.SupplierOfferData | undefined
+): SupplierOption[] {
+  const options = suppliers.map((supplier) => ({
+    value: supplier.id,
+    label: supplier.name,
+  }));
+
+  if (offer && !options.some((option) => option.value === offer.supplier_id)) {
+    options.unshift({
+      value: offer.supplier_id,
+      label: offer.supplier_name ?? offer.supplier_id,
+    });
+  }
+
+  return options;
+}
+
+function getSupplierOfferFormValues(
+  offer: App.Data.Merchant.Inventory.SupplierOfferData | undefined
+): SupplierOfferFormValues {
+  if (!offer) {
+    return {
+      supplier_id: "",
+      supplier_sku: "",
+      purchase_unit: "",
+      pack_quantity: "",
+      minimum_order_quantity: "",
+      last_purchase_price: "",
+      lead_time_days: "",
+      is_preferred: false,
+      active: true,
+    };
+  }
+
+  return {
+    supplier_id: offer.supplier_id,
+    supplier_sku: offer.supplier_sku ?? "",
+    purchase_unit: offer.purchase_unit,
+    pack_quantity: String(offer.pack_quantity),
+    minimum_order_quantity:
+      offer.minimum_order_quantity === null ? "" : String(offer.minimum_order_quantity),
+    last_purchase_price:
+      offer.last_purchase_price === null ? "" : String(offer.last_purchase_price),
+    lead_time_days: offer.lead_time_days === null ? "" : String(offer.lead_time_days),
+    is_preferred: offer.is_preferred,
+    active: offer.active,
+  };
+}
+
+function getSupplierOfferLoadState({
+  isEditing,
+  isLoading,
+  isError,
+  error,
+  onRetry,
+  offer,
+  loadingMessage,
+  notFoundMessage,
+}: {
+  isEditing: boolean;
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  onRetry: () => void;
+  offer: App.Data.Merchant.Inventory.SupplierOfferData | undefined;
+  loadingMessage: string;
+  notFoundMessage: string;
+}): React.JSX.Element | null {
+  if (!isEditing) return null;
+  if (isLoading) return <LoadingState message={loadingMessage} />;
+  if (isError) return <ErrorState error={error} onRetry={onRetry} />;
+  if (!offer) return <ErrorState error={new Error(notFoundMessage)} />;
+  return null;
+}
+
+function SupplierSelectField({
+  control,
+  errors,
+  options,
+  presentation,
+  isLoading,
+  isError,
+  error,
+  isPending,
+}: {
+  control: Control<SupplierOfferFormValues>;
+  errors: FieldErrors<SupplierOfferFormValues>;
+  options: SupplierOption[];
+  presentation: "dialog" | "popover";
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  isPending: boolean;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <Controller
+      control={control}
+      name="supplier_id"
+      render={({ field: { value, onChange } }) => (
+        <View className="gap-1.5">
+          <Label isRequired isInvalid={Boolean(errors.supplier_id)}>
+            {t("ingredients.supplierOfferSupplier")}
+          </Label>
+          <Select
+            presentation={presentation}
+            value={options.find((option) => option.value === value)}
+            onValueChange={(option) => onChange(option?.value ?? "")}
+            isDisabled={isLoading || isError || options.length === 0 || isPending}
+          >
+            <Select.Trigger
+              accessibilityLabel={t("ingredients.supplierOfferSupplier")}
+              className={errors.supplier_id ? "border-danger" : undefined}
+            >
+              <Select.Value placeholder={t("ingredients.supplierOfferSupplierPlaceholder")} />
+              <Select.TriggerIndicator />
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Overlay />
+              <Select.Content
+                presentation={presentation}
+                width={presentation === "popover" ? "trigger" : undefined}
+              >
+                <Select.ListLabel>{t("ingredients.supplierOfferSupplier")}</Select.ListLabel>
+                {options.map((option) => (
+                  <Select.Item key={option.value} {...option} />
+                ))}
+              </Select.Content>
+            </Select.Portal>
+          </Select>
+          <FieldMessage message={errors.supplier_id?.message} />
+          {!errors.supplier_id && (isLoading || isError || options.length === 0) ? (
+            <Typography type="body-xs" color={isError ? undefined : "muted"}>
+              {isLoading
+                ? t("suppliers.loadingOne")
+                : isError
+                  ? getErrorMessage(error)
+                  : t("ingredients.supplierOfferNoSuppliers")}
+            </Typography>
+          ) : null}
+        </View>
+      )}
+    />
+  );
+}
+
+function SupplierOfferFormCard({
+  control,
+  errors,
+  supplierOptions,
+  supplierSelectPresentation,
+  suppliersLoading,
+  suppliersError,
+  suppliersErrorValue,
+  isPending,
+  isEditing,
+}: {
+  control: Control<SupplierOfferFormValues>;
+  errors: FieldErrors<SupplierOfferFormValues>;
+  supplierOptions: SupplierOption[];
+  supplierSelectPresentation: "dialog" | "popover";
+  suppliersLoading: boolean;
+  suppliersError: boolean;
+  suppliersErrorValue: unknown;
+  isPending: boolean;
+  isEditing: boolean;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <Card className="w-full gap-4 overflow-hidden">
+      <Card.Header>
+        <View className="gap-1">
+          <Card.Title>
+            {t(isEditing ? "ingredients.editSupplierOffer" : "ingredients.addSupplierOffer")}
+          </Card.Title>
+          <Card.Description>{t("ingredients.supplierOfferFormDescription")}</Card.Description>
+        </View>
+      </Card.Header>
+      <Card.Body className="gap-5">
+        <SupplierSelectField
+          control={control}
+          errors={errors}
+          options={supplierOptions}
+          presentation={supplierSelectPresentation}
+          isLoading={suppliersLoading}
+          isError={suppliersError}
+          error={suppliersErrorValue}
+          isPending={isPending}
+        />
+
+        <View className="gap-4 md:flex-row">
+          <SupplierOfferTextField
+            control={control}
+            errors={errors}
+            name="purchase_unit"
+            label={t("ingredients.supplierOfferPurchaseUnit")}
+            placeholder={t("ingredients.supplierOfferPurchaseUnitPlaceholder")}
+            isRequired
+          />
+          <SupplierOfferTextField
+            control={control}
+            errors={errors}
+            name="supplier_sku"
+            label={t("ingredients.supplierOfferSku")}
+            placeholder={t("ingredients.supplierOfferSku")}
+          />
+        </View>
+
+        <View className="gap-4 md:flex-row">
+          <SupplierOfferNumberField
+            control={control}
+            errors={errors}
+            name="pack_quantity"
+            label={t("ingredients.supplierOfferPackQuantity")}
+            placeholder={t("ingredients.supplierOfferPackQuantityPlaceholder")}
+            required
+          />
+          <SupplierOfferNumberField
+            control={control}
+            errors={errors}
+            name="minimum_order_quantity"
+            label={t("ingredients.supplierOfferMinimumOrderQuantity")}
+            placeholder={t("ingredients.supplierOfferMinimumOrderQuantityPlaceholder")}
+          />
+        </View>
+
+        <View className="gap-4 md:flex-row">
+          <Controller
+            control={control}
+            name="last_purchase_price"
+            render={({ field: { value, onChange } }) => (
+              <AdaptiveFormKeyboardHandlers>
+                {(keyboardHandlers) => (
+                  <RupiahField
+                    className="w-full md:flex-1"
+                    label={t("ingredients.supplierOfferLastPurchasePrice")}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={t("ingredients.supplierOfferLastPurchasePricePlaceholder")}
+                    minValue={0}
+                    inputVariant="secondary"
+                    inputProps={keyboardHandlers}
+                    isInvalid={Boolean(errors.last_purchase_price)}
+                  >
+                    <FieldMessage message={errors.last_purchase_price?.message} />
+                  </RupiahField>
+                )}
+              </AdaptiveFormKeyboardHandlers>
+            )}
+          />
+          <SupplierOfferNumberField
+            control={control}
+            errors={errors}
+            name="lead_time_days"
+            label={t("ingredients.supplierOfferLeadTime")}
+            placeholder={t("ingredients.supplierOfferLeadTimePlaceholder")}
+          />
+        </View>
+
+        <FormActiveField
+          control={control}
+          name="is_preferred"
+          label={t("ingredients.supplierOfferPreferred")}
+          description={t("ingredients.supplierOfferPreferredDescription")}
+        />
+        <FormActiveField
+          control={control}
+          name="active"
+          label={t("common.active")}
+          description={t("ingredients.supplierOfferActiveDescription")}
+        />
+      </Card.Body>
+    </Card>
+  );
+}
+
 export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
   const { locale, t } = useTranslation();
   const params = useLocalSearchParams<{ id: string; offerId?: string }>();
-  const ingredientId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const offerId = Array.isArray(params.offerId) ? params.offerId[0] : params.offerId;
+  const ingredientId = getRouteParam(params.id) ?? "";
+  const offerId = getRouteParam(params.offerId);
   const router = useRouter();
   const { toast } = useToast();
   const { choicePresentation } = useOverlayPresentation();
-  const supplierSelectPresentation =
-    choicePresentation === "bottom-sheet" ? "dialog" : choicePresentation;
+  const supplierSelectPresentation = getSupplierSelectPresentation(choicePresentation);
   const isEditing = Boolean(offerId);
   const supplierOffersQuery = useIngredientSupplierOffers(ingredientId, isEditing);
   const offer = supplierOffersQuery.data?.find((item) => String(item.id) === offerId);
@@ -198,16 +489,7 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
   const dangerColor = useThemeColor("danger");
   const suppliers = suppliersQuery.data?.pages.flatMap((page) => page.data) ?? [];
-  const supplierOptions = suppliers.map((supplier) => ({
-    value: supplier.id,
-    label: supplier.name,
-  }));
-  if (offer && !supplierOptions.some((option) => option.value === offer.supplier_id)) {
-    supplierOptions.unshift({
-      value: offer.supplier_id,
-      label: offer.supplier_name ?? offer.supplier_id,
-    });
-  }
+  const supplierOptions = getSupplierOptions(suppliers, offer);
   const schema = createSupplierOfferSchema(t);
   const {
     control,
@@ -236,33 +518,7 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
   }, [clearErrors, locale]);
 
   React.useEffect(() => {
-    reset(
-      offer
-        ? {
-            supplier_id: offer.supplier_id,
-            supplier_sku: offer.supplier_sku ?? "",
-            purchase_unit: offer.purchase_unit,
-            pack_quantity: String(offer.pack_quantity),
-            minimum_order_quantity:
-              offer.minimum_order_quantity === null ? "" : String(offer.minimum_order_quantity),
-            last_purchase_price:
-              offer.last_purchase_price === null ? "" : String(offer.last_purchase_price),
-            lead_time_days: offer.lead_time_days === null ? "" : String(offer.lead_time_days),
-            is_preferred: offer.is_preferred,
-            active: offer.active,
-          }
-        : {
-            supplier_id: "",
-            supplier_sku: "",
-            purchase_unit: "",
-            pack_quantity: "",
-            minimum_order_quantity: "",
-            last_purchase_price: "",
-            lead_time_days: "",
-            is_preferred: false,
-            active: true,
-          }
-    );
+    reset(getSupplierOfferFormValues(offer));
   }, [offer, reset]);
 
   const handleClose = () => {
@@ -328,17 +584,17 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
     }
   };
 
-  if (isEditing && supplierOffersQuery.isLoading) {
-    return <LoadingState message={t("ingredients.loadingOne")} />;
-  }
-
-  if (isEditing && supplierOffersQuery.isError) {
-    return <ErrorState error={supplierOffersQuery.error} onRetry={supplierOffersQuery.refetch} />;
-  }
-
-  if (isEditing && !offer) {
-    return <ErrorState error={new Error(t("ingredients.supplierOfferNotFound"))} />;
-  }
+  const loadState = getSupplierOfferLoadState({
+    isEditing,
+    isLoading: supplierOffersQuery.isLoading,
+    isError: supplierOffersQuery.isError,
+    error: supplierOffersQuery.error,
+    onRetry: () => void supplierOffersQuery.refetch(),
+    offer,
+    loadingMessage: t("ingredients.loadingOne"),
+    notFoundMessage: t("ingredients.supplierOfferNotFound"),
+  });
+  if (loadState) return loadState;
 
   return (
     <>
@@ -369,166 +625,17 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           <View className="w-full max-w-3xl gap-4">
-            <Card className="w-full gap-4 overflow-hidden">
-              <Card.Header>
-                <View className="gap-1">
-                  <Card.Title>
-                    {t(
-                      isEditing ? "ingredients.editSupplierOffer" : "ingredients.addSupplierOffer"
-                    )}
-                  </Card.Title>
-                  <Card.Description>
-                    {t("ingredients.supplierOfferFormDescription")}
-                  </Card.Description>
-                </View>
-              </Card.Header>
-              <Card.Body className="gap-5">
-                <Controller
-                  control={control}
-                  name="supplier_id"
-                  render={({ field: { value, onChange } }) => (
-                    <View className="gap-1.5">
-                      <Label isRequired isInvalid={Boolean(errors.supplier_id)}>
-                        {t("ingredients.supplierOfferSupplier")}
-                      </Label>
-                      <Select
-                        presentation={supplierSelectPresentation}
-                        value={supplierOptions.find((option) => option.value === value)}
-                        onValueChange={(option) => onChange(option?.value ?? "")}
-                        isDisabled={
-                          suppliersQuery.isLoading ||
-                          suppliersQuery.isError ||
-                          supplierOptions.length === 0 ||
-                          isPending
-                        }
-                      >
-                        <Select.Trigger
-                          accessibilityLabel={t("ingredients.supplierOfferSupplier")}
-                          className={errors.supplier_id ? "border-danger" : undefined}
-                        >
-                          <Select.Value
-                            placeholder={t("ingredients.supplierOfferSupplierPlaceholder")}
-                          />
-                          <Select.TriggerIndicator />
-                        </Select.Trigger>
-                        <Select.Portal>
-                          <Select.Overlay />
-                          <Select.Content
-                            presentation={supplierSelectPresentation}
-                            width={supplierSelectPresentation === "popover" ? "trigger" : undefined}
-                          >
-                            <Select.ListLabel>
-                              {t("ingredients.supplierOfferSupplier")}
-                            </Select.ListLabel>
-                            {supplierOptions.map((option) => (
-                              <Select.Item key={option.value} {...option} />
-                            ))}
-                          </Select.Content>
-                        </Select.Portal>
-                      </Select>
-                      <FieldMessage message={errors.supplier_id?.message} />
-                      {!errors.supplier_id &&
-                      (suppliersQuery.isLoading ||
-                        suppliersQuery.isError ||
-                        supplierOptions.length === 0) ? (
-                        <Typography
-                          type="body-xs"
-                          color={suppliersQuery.isError ? undefined : "muted"}
-                        >
-                          {suppliersQuery.isLoading
-                            ? t("suppliers.loadingOne")
-                            : suppliersQuery.isError
-                              ? getErrorMessage(suppliersQuery.error)
-                              : t("ingredients.supplierOfferNoSuppliers")}
-                        </Typography>
-                      ) : null}
-                    </View>
-                  )}
-                />
-
-                <View className="gap-4 md:flex-row">
-                  <SupplierOfferTextField
-                    control={control}
-                    errors={errors}
-                    name="purchase_unit"
-                    label={t("ingredients.supplierOfferPurchaseUnit")}
-                    placeholder={t("ingredients.supplierOfferPurchaseUnitPlaceholder")}
-                    isRequired
-                  />
-                  <SupplierOfferTextField
-                    control={control}
-                    errors={errors}
-                    name="supplier_sku"
-                    label={t("ingredients.supplierOfferSku")}
-                    placeholder={t("ingredients.supplierOfferSku")}
-                  />
-                </View>
-
-                <View className="gap-4 md:flex-row">
-                  <SupplierOfferNumberField
-                    control={control}
-                    errors={errors}
-                    name="pack_quantity"
-                    label={t("ingredients.supplierOfferPackQuantity")}
-                    placeholder={t("ingredients.supplierOfferPackQuantityPlaceholder")}
-                    required
-                  />
-                  <SupplierOfferNumberField
-                    control={control}
-                    errors={errors}
-                    name="minimum_order_quantity"
-                    label={t("ingredients.supplierOfferMinimumOrderQuantity")}
-                    placeholder={t("ingredients.supplierOfferMinimumOrderQuantityPlaceholder")}
-                  />
-                </View>
-
-                <View className="gap-4 md:flex-row">
-                  <Controller
-                    control={control}
-                    name="last_purchase_price"
-                    render={({ field: { value, onChange } }) => (
-                      <AdaptiveFormKeyboardHandlers>
-                        {(keyboardHandlers) => (
-                          <RupiahField
-                            className="w-full md:flex-1"
-                            label={t("ingredients.supplierOfferLastPurchasePrice")}
-                            value={value}
-                            onChange={onChange}
-                            placeholder={t("ingredients.supplierOfferLastPurchasePricePlaceholder")}
-                            minValue={0}
-                            inputVariant="secondary"
-                            inputProps={keyboardHandlers}
-                            isInvalid={Boolean(errors.last_purchase_price)}
-                          >
-                            <FieldMessage message={errors.last_purchase_price?.message} />
-                          </RupiahField>
-                        )}
-                      </AdaptiveFormKeyboardHandlers>
-                    )}
-                  />
-                  <SupplierOfferNumberField
-                    control={control}
-                    errors={errors}
-                    name="lead_time_days"
-                    label={t("ingredients.supplierOfferLeadTime")}
-                    placeholder={t("ingredients.supplierOfferLeadTimePlaceholder")}
-                  />
-                </View>
-
-                <FormActiveField
-                  control={control}
-                  name="is_preferred"
-                  label={t("ingredients.supplierOfferPreferred")}
-                  description={t("ingredients.supplierOfferPreferredDescription")}
-                />
-                <FormActiveField
-                  control={control}
-                  name="active"
-                  label={t("common.active")}
-                  description={t("ingredients.supplierOfferActiveDescription")}
-                />
-              </Card.Body>
-            </Card>
+            <SupplierOfferFormCard
+              control={control}
+              errors={errors}
+              supplierOptions={supplierOptions}
+              supplierSelectPresentation={supplierSelectPresentation}
+              suppliersLoading={suppliersQuery.isLoading}
+              suppliersError={suppliersQuery.isError}
+              suppliersErrorValue={suppliersQuery.error}
+              isPending={isPending}
+              isEditing={isEditing}
+            />
             <SupplierOfferSaveActions
               isEditing={isEditing}
               isPending={isPending}

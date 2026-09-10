@@ -776,6 +776,7 @@ export const en = {
     checking: "Checking payment",
     checkFailed: "Status check failed",
     confirmed: "Payment confirmed",
+    stillPending: "Still pending",
     expired: "Payment expired",
     waiting: "Waiting for payment",
     qrExpired: "The payment QR code has expired",

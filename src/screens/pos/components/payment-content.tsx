@@ -7,7 +7,16 @@ import { getPaymentStatus } from "@/api/mappers/order";
 import ActionDialog from "@/components/common/action-dialog";
 import Countdown from "@/components/common/countdown";
 import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
-import { Button, Card, Chip, Separator, Surface, Typography, useThemeColor } from "heroui-native";
+import {
+  Button,
+  Card,
+  Chip,
+  Separator,
+  Surface,
+  Typography,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
 import { Image } from "expo-image";
@@ -266,6 +275,7 @@ export function PaymentContent({
   onPaymentSuccess,
 }: PaymentContentProps): JSX.Element | null {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const themeColorMuted = useThemeColor("muted");
@@ -287,9 +297,34 @@ export function PaymentContent({
   const handleCheckPayment = () => {
     paymentStatus.mutate(undefined, {
       onSuccess: (data) => {
+        const status = getPaymentStatus(data.payment_status);
+
         if (data.is_successful) {
+          toast.show({ variant: "success", label: t("payment.confirmed") });
           onPaymentSuccess?.();
+          return;
         }
+
+        const isPending = ["pending", "unpaid"].includes(status.value);
+        const isTerminalFailure = [
+          "deny",
+          "denied",
+          "cancel",
+          "cancelled",
+          "canceled",
+          "expire",
+          "expired",
+          "failure",
+          "failed",
+        ].includes(status.value);
+
+        toast.show({
+          variant: isTerminalFailure ? "danger" : "warning",
+          label: isPending ? t("payment.stillPending") : getLocalizedPaymentStatus(status, t),
+        });
+      },
+      onError: () => {
+        toast.show({ variant: "danger", label: t("payment.checkFailed") });
       },
     });
   };

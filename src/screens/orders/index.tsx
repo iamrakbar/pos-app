@@ -1,4 +1,5 @@
 import { useOrders } from "@/hooks/db/use-orders";
+import { extractPaymentExpiry } from "@/api/mappers/checkout";
 import {
   extractAreaName,
   extractCustomerName,
@@ -145,7 +146,9 @@ function OrderRow({
   const { t } = useTranslation();
   const themeColorMuted = useThemeColor("muted");
   const orderStatus = getOrderStatus(order.order_status);
-  const paymentStatus = getPaymentStatus(order.payment_status);
+  const paymentStatus = getPaymentStatus(order.payment_status, {
+    expiresAt: extractPaymentExpiry(order.payment),
+  });
   const customerName = extractCustomerName(order.customer);
   const paymentName = extractPaymentName(order.payment);
   const tableName = extractTableName(order.orderable);

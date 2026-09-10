@@ -150,6 +150,165 @@ function IngredientStatus({ ingredient }: { ingredient: Ingredient }): React.JSX
   );
 }
 
+function IngredientsTable({
+  query,
+  ingredients,
+  sortDescriptor,
+  onSortChange,
+  onSelectIngredient,
+  mutedColor,
+}: {
+  query: ReturnType<typeof useIngredients>;
+  ingredients: Ingredient[];
+  sortDescriptor: TableSortDescriptor;
+  onSortChange: React.Dispatch<React.SetStateAction<TableSortDescriptor>>;
+  onSelectIngredient: (id: string) => void;
+  mutedColor: string;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+
+  if (query.isLoading) {
+    return <TableSkeleton columnWidths={[230, 125, 150, 150, 150, 220, 130, 180, 180]} />;
+  }
+
+  if (query.isError) {
+    return <ErrorState error={query.error} onRetry={query.refetch} />;
+  }
+
+  return (
+    <ScrollView
+      className="flex-1"
+      contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
+      refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />}
+    >
+      <View className="flex-1 items-center w-full">
+        <Table sortDescriptor={sortDescriptor} onSortChange={onSortChange}>
+          <Table.ScrollContainer className="w-full self-center">
+            <Table.Content className="w-full">
+              <Table.Header>
+                <Table.Column id="name" width={230} allowsSorting>
+                  {t("ingredients.name")}
+                </Table.Column>
+                <Table.Column id="unit" width={125} allowsSorting>
+                  {t("ingredients.unit")}
+                </Table.Column>
+                <Table.Column id="current_stock" width={150} allowsSorting>
+                  {t("ingredients.currentStock")}
+                </Table.Column>
+                <Table.Column id="reorder_point" width={150} allowsSorting>
+                  {t("ingredients.reorderPoint")}
+                </Table.Column>
+                <Table.Column id="cost_per_unit" width={150} allowsSorting>
+                  {t("ingredients.costPerUnit")}
+                </Table.Column>
+                <Table.Column id="supplier" width={220} allowsSorting>
+                  {t("ingredients.supplier")}
+                </Table.Column>
+                <Table.Column id="status" width={130} allowsSorting>
+                  {t("ingredients.status")}
+                </Table.Column>
+                <Table.Column id="created_at" width={180} allowsSorting>
+                  {t("ingredients.createdAt")}
+                </Table.Column>
+                <Table.Column id="updated_at" width={180} allowsSorting>
+                  {t("ingredients.updatedAt")}
+                </Table.Column>
+              </Table.Header>
+              <Table.Body
+                items={ingredients}
+                keyExtractor={(ingredient) => ingredient.id}
+                renderEmptyState={() => (
+                  <EmptyState className="py-16">
+                    <EmptyState.Header>
+                      <EmptyState.Media variant="icon">
+                        <AppIcon name="nutrition-outline" size={22} color={mutedColor} />
+                      </EmptyState.Media>
+                      <EmptyState.Title>{t("ingredients.empty")}</EmptyState.Title>
+                      <EmptyState.Description>
+                        {t("ingredients.emptyDescription")}
+                      </EmptyState.Description>
+                    </EmptyState.Header>
+                  </EmptyState>
+                )}
+              >
+                {(ingredient) => (
+                  <Table.Row
+                    id={ingredient.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t("ingredients.detailsTitle")}: ${ingredient.name}`}
+                    onPress={() => onSelectIngredient(ingredient.id)}
+                  >
+                    <Table.Cell textProps={{ numberOfLines: 1 }}>
+                      <Typography weight="semibold" numberOfLines={1}>
+                        {ingredient.name}
+                      </Typography>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Chip size="sm" variant="soft" color="default">
+                        <Chip.Label>{ingredient.base_unit}</Chip.Label>
+                      </Chip>
+                    </Table.Cell>
+                    <Table.Cell textProps={{ className: "tabular-nums" }}>
+                      {formatInventoryQuantity(ingredient.current_stock)}
+                    </Table.Cell>
+                    <Table.Cell textProps={{ className: "tabular-nums" }}>
+                      {formatInventoryQuantity(ingredient.reorder_point)}
+                    </Table.Cell>
+                    <Table.Cell textProps={{ className: "tabular-nums" }}>
+                      {ingredient.cost_per_unit === null
+                        ? "—"
+                        : formatRupiah(ingredient.cost_per_unit)}
+                    </Table.Cell>
+                    <Table.Cell textProps={{ numberOfLines: 1 }}>
+                      {ingredient.preferred_supplier?.name ?? "—"}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <IngredientStatus ingredient={ingredient} />
+                    </Table.Cell>
+                    <Table.Cell textProps={{ className: "tabular-nums" }}>
+                      {formatDateTime(ingredient.created_at, {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </Table.Cell>
+                    <Table.Cell textProps={{ className: "tabular-nums" }}>
+                      {formatDateTime(ingredient.updated_at, {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
+          {query.hasNextPage ? (
+            <Table.Footer className="flex-row items-center justify-between gap-3">
+              <Typography type="body-xs" color="muted">
+                {t("ingredients.loadedCount", { count: ingredients.length })}
+              </Typography>
+              <Button
+                size="sm"
+                variant="ghost"
+                onPress={() => query.fetchNextPage()}
+                isDisabled={query.isFetchingNextPage}
+              >
+                <Button.Label>
+                  {query.isFetchingNextPage
+                    ? t("ingredients.loadingMore")
+                    : t("ingredients.loadMore")}
+                </Button.Label>
+              </Button>
+            </Table.Footer>
+          ) : null}
+        </Table>
+      </View>
+    </ScrollView>
+  );
+}
+
 export default function InventoryIngredientsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
@@ -215,147 +374,17 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
       </Stack.Toolbar>
 
       <View className="flex-1 bg-background">
-        {query.isLoading ? (
-          <TableSkeleton columnWidths={[230, 125, 150, 150, 150, 220, 130, 180, 180]} />
-        ) : query.isError ? (
-          <ErrorState error={query.error} onRetry={query.refetch} />
-        ) : (
-          <ScrollView
-            className="flex-1"
-            contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
-            refreshControl={
-              <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
-            }
-          >
-            <View className="flex-1 items-center w-full">
-              <Table sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor}>
-                <Table.ScrollContainer className="w-full self-center">
-                  <Table.Content className="w-full">
-                    <Table.Header>
-                      <Table.Column id="name" width={230} allowsSorting>
-                        {t("ingredients.name")}
-                      </Table.Column>
-                      <Table.Column id="unit" width={125} allowsSorting>
-                        {t("ingredients.unit")}
-                      </Table.Column>
-                      <Table.Column id="current_stock" width={150} allowsSorting>
-                        {t("ingredients.currentStock")}
-                      </Table.Column>
-                      <Table.Column id="reorder_point" width={150} allowsSorting>
-                        {t("ingredients.reorderPoint")}
-                      </Table.Column>
-                      <Table.Column id="cost_per_unit" width={150} allowsSorting>
-                        {t("ingredients.costPerUnit")}
-                      </Table.Column>
-                      <Table.Column id="supplier" width={220} allowsSorting>
-                        {t("ingredients.supplier")}
-                      </Table.Column>
-                      <Table.Column id="status" width={130} allowsSorting>
-                        {t("ingredients.status")}
-                      </Table.Column>
-                      <Table.Column id="created_at" width={180} allowsSorting>
-                        {t("ingredients.createdAt")}
-                      </Table.Column>
-                      <Table.Column id="updated_at" width={180} allowsSorting>
-                        {t("ingredients.updatedAt")}
-                      </Table.Column>
-                    </Table.Header>
-                    <Table.Body
-                      items={sortedIngredients}
-                      keyExtractor={(ingredient) => ingredient.id}
-                      renderEmptyState={() => (
-                        <EmptyState className="py-16">
-                          <EmptyState.Header>
-                            <EmptyState.Media variant="icon">
-                              <AppIcon name="nutrition-outline" size={22} color={themeColorMuted} />
-                            </EmptyState.Media>
-                            <EmptyState.Title>{t("ingredients.empty")}</EmptyState.Title>
-                            <EmptyState.Description>
-                              {t("ingredients.emptyDescription")}
-                            </EmptyState.Description>
-                          </EmptyState.Header>
-                        </EmptyState>
-                      )}
-                    >
-                      {(ingredient) => (
-                        <Table.Row
-                          id={ingredient.id}
-                          accessibilityRole="button"
-                          accessibilityLabel={`${t("ingredients.detailsTitle")}: ${ingredient.name}`}
-                          onPress={() => {
-                            setSelectedIngredientId(ingredient.id);
-                            setDetailOpenRequest((request) => request + 1);
-                          }}
-                        >
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            <Typography weight="semibold" numberOfLines={1}>
-                              {ingredient.name}
-                            </Typography>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Chip size="sm" variant="soft" color="default">
-                              <Chip.Label>{ingredient.base_unit}</Chip.Label>
-                            </Chip>
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatInventoryQuantity(ingredient.current_stock)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatInventoryQuantity(ingredient.reorder_point)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {ingredient.cost_per_unit === null
-                              ? "—"
-                              : formatRupiah(ingredient.cost_per_unit)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            {ingredient.preferred_supplier?.name ?? "—"}
-                          </Table.Cell>
-                          <Table.Cell>
-                            <IngredientStatus ingredient={ingredient} />
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatDateTime(ingredient.created_at, {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatDateTime(ingredient.updated_at, {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </Table.Cell>
-                        </Table.Row>
-                      )}
-                    </Table.Body>
-                  </Table.Content>
-                </Table.ScrollContainer>
-                {query.hasNextPage ? (
-                  <Table.Footer className="flex-row items-center justify-between gap-3">
-                    <Typography type="body-xs" color="muted">
-                      {t("ingredients.loadedCount", { count: sortedIngredients.length })}
-                    </Typography>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => query.fetchNextPage()}
-                      isDisabled={query.isFetchingNextPage}
-                    >
-                      <Button.Label>
-                        {query.isFetchingNextPage
-                          ? t("ingredients.loadingMore")
-                          : t("ingredients.loadMore")}
-                      </Button.Label>
-                    </Button>
-                  </Table.Footer>
-                ) : null}
-              </Table>
-            </View>
-          </ScrollView>
-        )}
+        <IngredientsTable
+          query={query}
+          ingredients={sortedIngredients}
+          sortDescriptor={sortDescriptor}
+          onSortChange={setSortDescriptor}
+          mutedColor={themeColorMuted}
+          onSelectIngredient={(ingredientId) => {
+            setSelectedIngredientId(ingredientId);
+            setDetailOpenRequest((request) => request + 1);
+          }}
+        />
         <CreateFAB
           accessibilityLabel={t("ingredients.addAccessibility")}
           onPress={() => router.push("/settings/inventory/ingredients/new")}
