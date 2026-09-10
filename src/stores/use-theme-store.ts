@@ -20,6 +20,8 @@ function applyTheme(mode: ThemeMode) {
   Uniwind.setTheme(mode);
 }
 
+applyTheme("system");
+
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
