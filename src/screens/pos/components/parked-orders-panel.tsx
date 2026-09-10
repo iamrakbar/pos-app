@@ -1,5 +1,6 @@
 import ActionDialog from "@/components/common/action-dialog";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useAuth } from "@/stores/use-auth";
 import { useCartStore } from "@/stores/use-cart-store";
@@ -108,11 +109,11 @@ export default function ParkedOrdersPanel({
       >
         {mode === "list" ? (
           <>
-            <AppIcon name="archive-outline" size={18} color={colorAcent} />
+            <AppIcon icon={AppIcons.queue} size={18} color={colorAcent} />
             <Button.Label>{merchantDrafts.length}</Button.Label>
           </>
         ) : (
-          <AppIcon name="save-outline" size={19} color={colorMuted} />
+          <AppIcon icon={AppIcons.save} size={21} color={colorMuted} />
         )}
       </Button>
 
@@ -147,7 +148,7 @@ export default function ParkedOrdersPanel({
               <View className="mt-5 gap-3">
                 {merchantDrafts.length === 0 ? (
                   <Surface variant="secondary" className="items-center gap-1 p-5">
-                    <AppIcon name="time-outline" size={22} color={colorMuted} />
+                    <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
                     <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
                     <Typography type="body-sm" color="muted" className="text-center">
                       {t("pos.parkedOrdersEmptyDescription")}
@@ -180,7 +181,7 @@ export default function ParkedOrdersPanel({
                         onPress={() => setDeleteTarget(draft)}
                         accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
                       >
-                        <AppIcon name="trash-outline" size={17} color={colorDanger} />
+                        <AppIcon icon={AppIcons.trash} size={17} color={colorDanger} />
                       </Button>
                     </Surface>
                   ))

@@ -3,6 +3,7 @@ import ErrorState from "@/components/common/error-state";
 import { ListSkeleton } from "@/components/common/list-skeleton";
 import ReorderChangesBanner from "@/components/common/reorder-changes-banner";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useMerchantPayments, useReorderMerchantPayments } from "@/hooks/db/use-payments";
 import { useTranslation } from "@/stores/use-locale";
 import { useFocusEffect } from "expo-router";
@@ -120,7 +121,7 @@ function PaymentSettingsRow({
               isDisabled={isFirstInGroup || isSaving}
               onPress={() => onMove(payment.id, -1)}
             >
-              <AppIcon name="chevron-up" size={18} color={mutedColor} />
+              <AppIcon icon={AppIcons.chevronUp} size={18} color={mutedColor} />
             </Button>
             <Button
               size="sm"
@@ -132,7 +133,7 @@ function PaymentSettingsRow({
               isDisabled={isLastInGroup || isSaving}
               onPress={() => onMove(payment.id, 1)}
             >
-              <AppIcon name="chevron-down" size={18} color={mutedColor} />
+              <AppIcon icon={AppIcons.chevronDown} size={18} color={mutedColor} />
             </Button>
           </View>
           <Switch

@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
 import { Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
@@ -37,7 +38,7 @@ export default function PrintersScreen(): React.JSX.Element {
         <EmptyState className="py-20">
           <EmptyState.Header>
             <EmptyState.Media variant="icon">
-              <AppIcon name="print-outline" size={20} color={themeColorMuted} />
+              <AppIcon icon={AppIcons.print} size={20} color={themeColorMuted} />
             </EmptyState.Media>
             <EmptyState.Title>{t("printerManagement.empty")}</EmptyState.Title>
             <EmptyState.Description>
@@ -77,7 +78,7 @@ export default function PrintersScreen(): React.JSX.Element {
                     })}
                   >
                     <AppIcon
-                      name={isSelected ? "radio-button-on" : "radio-button-off"}
+                      icon={isSelected ? AppIcons.radioOn : AppIcons.radioOff}
                       size={20}
                       color={isSelected ? themeColorAccent : themeColorMuted}
                     />
@@ -87,7 +88,7 @@ export default function PrintersScreen(): React.JSX.Element {
                       <Typography type="body-sm" weight="semibold" numberOfLines={1}>
                         {printer.name || t("printerManagement.unnamed")}
                       </Typography>
-                      <AppIcon name="chevron-forward" size={18} color={themeColorMuted} />
+                      <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />
                     </View>
                     <Typography type="body-xs" color="muted" numberOfLines={1}>
                       {printer.connection === "bluetooth"

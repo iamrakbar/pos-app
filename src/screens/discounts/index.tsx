@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import CreateFAB from "@/components/common/create-fab";
 import { EmptyState } from "heroui-native-pro";
 import ErrorState from "@/components/common/error-state";
@@ -63,7 +64,7 @@ export default function DiscountsScreen(): React.JSX.Element {
             <EmptyState className="py-20">
               <EmptyState.Header>
                 <EmptyState.Media variant="icon">
-                  <AppIcon name="pricetag-outline" size={22} color={muted} />
+                  <AppIcon icon={AppIcons.priceTag} size={22} color={muted} />
                 </EmptyState.Media>
                 <EmptyState.Title>{t("discounts.empty")}</EmptyState.Title>
                 <EmptyState.Description>{t("discounts.emptyDescription")}</EmptyState.Description>
@@ -86,7 +87,7 @@ export default function DiscountsScreen(): React.JSX.Element {
                 onPress={() => router.push(`/settings/discounts/${discount.id}` as never)}
               >
                 <View className="h-11 w-11 items-center justify-center rounded-full bg-accent-soft">
-                  <AppIcon name="pricetag-outline" size={20} color={muted} />
+                  <AppIcon icon={AppIcons.priceTag} size={20} color={muted} />
                 </View>
                 <View className="flex-1 gap-1">
                   <View className="flex-row items-center gap-2">
@@ -124,7 +125,7 @@ export default function DiscountsScreen(): React.JSX.Element {
                     </Typography>
                   ) : null}
                 </View>
-                <AppIcon name="chevron-forward" size={16} color={muted} />
+                <AppIcon icon={AppIcons.chevronForward} size={16} color={muted} />
               </Pressable>
             )}
           />

@@ -4,6 +4,7 @@ import { ListSkeleton } from "@/components/common/list-skeleton";
 import { useAddOns } from "@/hooks/db/use-add-ons";
 import { formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Separator, Typography, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
@@ -34,7 +35,7 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
             <EmptyState className="py-20">
               <EmptyState.Header>
                 <EmptyState.Media variant="icon">
-                  <AppIcon name="options-outline" size={20} color={mutedColor} />
+                  <AppIcon icon={AppIcons.options} size={20} color={mutedColor} />
                 </EmptyState.Media>
                 <EmptyState.Title>{t("addOnManagement.empty")}</EmptyState.Title>
                 <EmptyState.Description>
@@ -54,7 +55,7 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
                   className="min-h-20 flex-row items-center gap-4 px-4 py-3 active:bg-surface-secondary md:px-6"
                 >
                   <View className="size-11 items-center justify-center rounded-panel-inner bg-accent-soft">
-                    <AppIcon name="options-outline" size={20} color={accentColor} />
+                    <AppIcon icon={AppIcons.options} size={20} color={accentColor} />
                   </View>
                   <View className="flex-1 gap-1">
                     <Typography type="body-sm" weight="semibold">
@@ -87,7 +88,7 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
                         .join(", ")}
                     </Typography>
                   </View>
-                  <AppIcon name="chevron-forward" size={17} color={mutedColor} />
+                  <AppIcon icon={AppIcons.chevronForward} size={17} color={mutedColor} />
                 </Pressable>
                 {index < addOns.length - 1 ? <Separator className="mx-5" /> : null}
               </View>

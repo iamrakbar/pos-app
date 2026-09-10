@@ -1,6 +1,7 @@
 import { getErrorMessage } from "@/api/api-error";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 import { getMerchantOrderUrl } from "@/utils/merchant-order-url";
@@ -119,7 +120,7 @@ export default function MerchantQrOverlay({
             isDisabled={isUnavailable || isDownloading}
             onPress={handleDownload}
           >
-            <AppIcon name="download-outline" size={18} color={foregroundColor} />
+            <AppIcon icon={AppIcons.download} size={18} color={foregroundColor} />
             <Button.Label>
               {isDownloading ? t("merchantProfile.downloading") : t("merchantProfile.download")}
             </Button.Label>
@@ -171,7 +172,7 @@ export default function MerchantQrOverlay({
               onPress={handlePreview}
               accessibilityLabel={t("merchantProfile.orderUrl")}
             >
-              <AppIcon name="open-outline" size={16} color={foregroundColor} />
+              <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
             </Button>
           </View>
         </View>

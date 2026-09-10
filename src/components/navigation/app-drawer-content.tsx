@@ -7,6 +7,7 @@ import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
 import {
@@ -37,14 +38,14 @@ const DRAWER_ROUTE_ORDER: DrawerRouteName[] = [
   "settings",
 ];
 
-const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof AppIcon>["name"]> = {
-  index: "grid-outline",
-  pos: "calculator-outline",
-  products: "fast-food-outline",
-  orders: "receipt-outline",
-  kds: "flame-outline",
-  earnings: "wallet-outline",
-  settings: "settings-outline",
+const DRAWER_ICONS: Record<DrawerRouteName, ComponentProps<typeof AppIcon>["icon"]> = {
+  index: AppIcons.grid,
+  pos: AppIcons.cashier,
+  products: AppIcons.handPlatter,
+  orders: AppIcons.receipt,
+  kds: AppIcons.chefHat,
+  earnings: AppIcons.wallet,
+  settings: AppIcons.settings,
 };
 
 function getRouteLabel(routeName: string, translate: Translate): string {
@@ -95,12 +96,12 @@ export default function AppDrawerContent({
   };
   const themeActions: {
     value: ThemeMode;
-    icon: ComponentProps<typeof AppIcon>["name"];
+    icon: ComponentProps<typeof AppIcon>["icon"];
     label: string;
   }[] = [
-    { value: "light", icon: "sunny-outline", label: t("theme.useLight") },
-    { value: "dark", icon: "moon-outline", label: t("theme.useDark") },
-    { value: "system", icon: "desktop-outline", label: t("theme.useSystem") },
+    { value: "light", icon: AppIcons.sunny, label: t("theme.useLight") },
+    { value: "dark", icon: AppIcons.moon, label: t("theme.useDark") },
+    { value: "system", icon: AppIcons.desktop, label: t("theme.useSystem") },
   ];
 
   return (
@@ -125,7 +126,7 @@ export default function AppDrawerContent({
               typeof descriptor?.options.drawerLabel === "string"
                 ? descriptor.options.drawerLabel
                 : (descriptor?.options.title ?? getRouteLabel(route.name, t));
-            const iconName = DRAWER_ICONS[routeName] ?? "ellipse-outline";
+            const iconName = DRAWER_ICONS[routeName] ?? AppIcons.ellipse;
 
             return (
               <Fragment key={routeName}>
@@ -162,7 +163,7 @@ export default function AppDrawerContent({
                       )}
                     >
                       <AppIcon
-                        name={iconName}
+                        icon={iconName}
                         size={20}
                         color={focused ? themeColorAccentSoftForeground : themeColorMuted}
                       />
@@ -211,7 +212,7 @@ export default function AppDrawerContent({
                   </Typography>
                 </View>
                 <AppIcon
-                  name={isProfileOpen ? "chevron-down" : "chevron-up"}
+                  icon={isProfileOpen ? AppIcons.chevronDown : AppIcons.chevronUp}
                   size={16}
                   color={themeColorMuted}
                 />
@@ -240,7 +241,7 @@ export default function AppDrawerContent({
                 className="flex-1 items-center justify-between"
               >
                 <Button.Label>{t("profile.account")}</Button.Label>
-                <AppIcon name="chevron-forward" size={18} color={themeColorMuted} />
+                <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />
               </Button>
 
               <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">
@@ -259,7 +260,7 @@ export default function AppDrawerContent({
                       )}
                     >
                       <AppIcon
-                        name={action.icon}
+                        icon={action.icon}
                         size={19}
                         color={isSelected ? themeColorAccentForeground : themeColorMuted}
                       />
@@ -274,7 +275,7 @@ export default function AppDrawerContent({
                   setIsLogoutOpen(true);
                 }}
               >
-                <AppIcon name="log-out-outline" size={18} color={themeColorDanger} />
+                <AppIcon icon={AppIcons.logout} size={18} color={themeColorDanger} />
                 <Button.Label>{t("settings.logout")}</Button.Label>
               </Button>
             </Popover.Content>

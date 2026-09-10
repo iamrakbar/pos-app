@@ -7,6 +7,7 @@ import { getErrorMessage } from "@/api/api-error";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Button, Chip, Separator, Typography, useThemeColor, useToast } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
@@ -204,7 +205,7 @@ function CategoriesContent({
               <EmptyState className="py-20">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <AppIcon name="grid-outline" size={20} color={mutedColor} />
+                    <AppIcon icon={AppIcons.grid} size={20} color={mutedColor} />
                   </EmptyState.Media>
                   <EmptyState.Title>{t("categories.empty")}</EmptyState.Title>
                   <EmptyState.Description>
@@ -227,7 +228,7 @@ function CategoriesContent({
                       className="flex-1 flex-row items-center gap-3 active:opacity-70"
                     >
                       <View className="size-11 items-center justify-center rounded-panel-inner bg-accent-soft">
-                        <AppIcon name="grid-outline" size={20} color={accentColor} />
+                        <AppIcon icon={AppIcons.grid} size={20} color={accentColor} />
                       </View>
                       <View className="flex-1 gap-1">
                         <View className="flex-row items-center gap-2">
@@ -270,7 +271,7 @@ function CategoriesContent({
                           isDisabled={index === 0 || reorderMutation.isPending}
                           onPress={() => handleMove(index, -1)}
                         >
-                          <AppIcon name="chevron-up" size={18} color={mutedColor} />
+                          <AppIcon icon={AppIcons.chevronUp} size={18} color={mutedColor} />
                         </Button>
                         <Button
                           size="sm"
@@ -284,11 +285,11 @@ function CategoriesContent({
                           }
                           onPress={() => handleMove(index, 1)}
                         >
-                          <AppIcon name="chevron-down" size={18} color={mutedColor} />
+                          <AppIcon icon={AppIcons.chevronDown} size={18} color={mutedColor} />
                         </Button>
                       </View>
                     ) : (
-                      <AppIcon name="chevron-forward" size={17} color={mutedColor} />
+                      <AppIcon icon={AppIcons.chevronForward} size={17} color={mutedColor} />
                     )}
                   </View>
                   {index < orderedCategories.length - 1 ? <Separator className="mx-5" /> : null}

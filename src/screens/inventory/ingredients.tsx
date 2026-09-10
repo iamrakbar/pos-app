@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import TableSkeleton from "@/components/common/table-skeleton";
@@ -221,7 +222,7 @@ function IngredientsTable({
                   <EmptyState className="py-16">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <AppIcon name="nutrition-outline" size={22} color={mutedColor} />
+                        <AppIcon icon={AppIcons.food} size={22} color={mutedColor} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("ingredients.empty")}</EmptyState.Title>
                       <EmptyState.Description>

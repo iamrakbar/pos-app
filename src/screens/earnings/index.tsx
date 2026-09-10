@@ -6,6 +6,7 @@ import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatDateTime, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import DatePickerField from "@/components/common/date-picker-field";
 import {
   Button,
@@ -111,7 +112,7 @@ function SummaryWidget({
 }: {
   label: string;
   value: string;
-  icon: React.ComponentProps<typeof AppIcon>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["icon"];
   color: keyof typeof SUMMARY_STYLES;
   isSingleColumn: boolean;
 }) {
@@ -125,7 +126,7 @@ function SummaryWidget({
         <View
           className={cn("size-9 items-center justify-center rounded-panel-inner", style.background)}
         >
-          <AppIcon name={icon} size={18} color={iconColor} />
+          <AppIcon icon={icon} size={18} color={iconColor} />
         </View>
       </Widget.Header>
       <Widget.Content className="p-4">
@@ -302,9 +303,7 @@ function OrderTypesWidget({
                 <View className={cn("gap-3", isCompact ? "items-start" : "flex-row items-center")}>
                   <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
                     <AppIcon
-                      name={
-                        orderType.name === "Dine-in" ? "restaurant-outline" : "bag-handle-outline"
-                      }
+                      icon={orderType.name === "Dine-in" ? AppIcons.restaurant : AppIcons.bag}
                       size={18}
                       color={accentColor}
                     />
@@ -371,7 +370,7 @@ function RecentEarningsWidget({
           <View key={entry.id}>
             <View className="flex-row gap-3 px-4 py-3.5">
               <View className="size-10 mt-1 items-center justify-center rounded-panel-inner bg-success-soft">
-                <AppIcon name="checkmark" size={18} color={successColor} />
+                <AppIcon icon={AppIcons.checkmark} size={18} color={successColor} />
               </View>
               <View className={cn("flex-1 gap-3", isCompact ? "flex-col" : "flex-row")}>
                 <View className="flex-1 gap-0.5">
@@ -572,28 +571,28 @@ export default function EarningsScreen(): React.JSX.Element {
                 <SummaryWidget
                   label={t("earnings.settledEarnings")}
                   value={formatRupiah(totalEarnings)}
-                  icon="wallet-outline"
+                  icon={AppIcons.wallet}
                   color="success"
                   isSingleColumn={isPhone}
                 />
                 <SummaryWidget
                   label={t("earnings.settledOrders")}
                   value={String(data.length)}
-                  icon="receipt-outline"
+                  icon={AppIcons.receipt}
                   color="accent"
                   isSingleColumn={isPhone}
                 />
                 <SummaryWidget
                   label={t("earnings.averageOrder")}
                   value={formatRupiah(averageOrder)}
-                  icon="analytics-outline"
+                  icon={AppIcons.analytics}
                   color="warning"
                   isSingleColumn={isPhone}
                 />
                 <SummaryWidget
                   label={t("earnings.itemsSold")}
                   value={String(itemCount)}
-                  icon="bag-handle-outline"
+                  icon={AppIcons.bag}
                   color="default"
                   isSingleColumn={isPhone}
                 />
@@ -603,7 +602,7 @@ export default function EarningsScreen(): React.JSX.Element {
                 <EmptyState className="py-16">
                   <EmptyState.Header>
                     <EmptyState.Media variant="icon">
-                      <AppIcon name="wallet-outline" size={20} color={mutedColor} />
+                      <AppIcon icon={AppIcons.wallet} size={20} color={mutedColor} />
                     </EmptyState.Media>
                     <EmptyState.Title>{t("earnings.empty")}</EmptyState.Title>
                     <EmptyState.Description>

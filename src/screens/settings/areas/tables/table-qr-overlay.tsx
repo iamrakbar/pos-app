@@ -1,5 +1,6 @@
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useTranslation } from "@/stores/use-locale";
 import { getTableOrderUrl } from "@/utils/table-order-url";
 import { Asset, requestPermissionsAsync } from "expo-media-library";
@@ -230,7 +231,7 @@ export default function TableQrOverlay({
             isDisabled={isUnavailable || activeAction !== null}
             onPress={handleShare}
           >
-            <AppIcon name="share-outline" size={18} color={mutedColor} />
+            <AppIcon icon={AppIcons.share} size={18} color={mutedColor} />
             <Button.Label>
               {activeAction === "share"
                 ? t("areasManagement.tableQrSharing")
@@ -245,7 +246,7 @@ export default function TableQrOverlay({
             isDisabled={isUnavailable || activeAction !== null}
             onPress={handleDownload}
           >
-            <AppIcon name="download-outline" size={18} color={accentForegroundColor} />
+            <AppIcon icon={AppIcons.download} size={18} color={accentForegroundColor} />
             <Button.Label>
               {activeAction === "download"
                 ? t("areasManagement.tableQrDownloading")
@@ -313,7 +314,7 @@ export default function TableQrOverlay({
               isDisabled={isUnavailable || activeAction !== null}
               onPress={handlePreview}
             >
-              <AppIcon name="open-outline" size={16} color={foregroundColor} />
+              <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
             </Button>
           </View>
         </View>

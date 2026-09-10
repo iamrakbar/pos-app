@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import SettingsMenuRow from "@/components/common/settings-menu-row";
 import { useRouter } from "expo-router";
 import { Button, ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
@@ -14,7 +15,7 @@ import { hasMerchantFeature } from "@/utils/merchant-features";
 type SettingsItem = {
   id: string;
   href: string;
-  icon: React.ComponentProps<typeof AppIcon>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["icon"];
   label: string;
   description: string;
 };
@@ -38,7 +39,7 @@ export default function SettingsScreen(): JSX.Element {
     {
       id: "account",
       href: "/settings/account",
-      icon: "person-circle-outline",
+      icon: AppIcons.personCircle,
       label: t("settings.account"),
       description: t("settings.accountDescription"),
     },
@@ -47,35 +48,35 @@ export default function SettingsScreen(): JSX.Element {
     {
       id: "merchant-profile",
       href: "/settings/merchant-profile",
-      icon: "storefront-outline",
+      icon: AppIcons.storefront,
       label: t("settings.merchantProfile"),
       description: t("settings.merchantProfileDescription"),
     },
     {
       id: "payments",
       href: "/settings/payments",
-      icon: "card-outline",
+      icon: AppIcons.card,
       label: t("settings.payments"),
       description: t("settings.paymentsDescription"),
     },
     {
       id: "categories",
       href: "/settings/categories",
-      icon: "albums-outline",
+      icon: AppIcons.layers,
       label: t("settings.categories"),
       description: t("settings.categoriesDescription"),
     },
     {
       id: "discounts",
       href: "/settings/discounts",
-      icon: "pricetag-outline",
+      icon: AppIcons.priceTag,
       label: t("settings.discounts"),
       description: t("settings.discountsDescription"),
     },
     {
       id: "areas",
       href: "/settings/areas",
-      icon: "restaurant-outline",
+      icon: AppIcons.diningTable,
       label: t("settings.areas"),
       description: t("settings.areasDescription"),
     },
@@ -84,7 +85,7 @@ export default function SettingsScreen(): JSX.Element {
     storeItems.push({
       id: "inventory",
       href: "/settings/inventory",
-      icon: "cube-outline",
+      icon: AppIcons.cube,
       label: t("navigation.inventory"),
       description: t("navigation.descriptions.inventory"),
     });
@@ -93,14 +94,14 @@ export default function SettingsScreen(): JSX.Element {
     {
       id: "printer",
       href: "/settings/printers",
-      icon: "print-outline",
+      icon: AppIcons.print,
       label: t("settings.printer"),
       description: t("settings.printerDescription"),
     },
     {
       id: "receipt",
       href: "/settings/receipt",
-      icon: "receipt-outline",
+      icon: AppIcons.receipt,
       label: t("settings.receipt"),
       description: t("settings.receiptDescription"),
     },
@@ -109,14 +110,14 @@ export default function SettingsScreen(): JSX.Element {
     {
       id: "notifications",
       href: "/settings/notifications",
-      icon: "notifications-outline",
+      icon: AppIcons.notifications,
       label: t("settings.notifications"),
       description: t("settings.notificationsDescription"),
     },
     {
       id: "preferences",
       href: "/settings/preferences",
-      icon: "options-outline",
+      icon: AppIcons.options,
       label: t("settings.appPreferences"),
       description: t("settings.appPreferencesDescription"),
     },
@@ -157,7 +158,7 @@ export default function SettingsScreen(): JSX.Element {
           </View>
 
           <Button variant="danger-soft" onPress={() => setIsLogoutOpen(true)} className="w-full">
-            <AppIcon name="log-out-outline" size={18} color={themeColorDangerSoftForeground} />
+            <AppIcon icon={AppIcons.logout} size={18} color={themeColorDangerSoftForeground} />
             <Button.Label>{t("settings.logout")}</Button.Label>
           </Button>
         </View>

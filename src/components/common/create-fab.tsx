@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useThemeColor } from "heroui-native";
 import { FAB } from "heroui-native-pro";
 import React from "react";
@@ -28,7 +29,7 @@ export default function CreateFAB({
         classNames={{ container: "bg-accent" }}
         onPress={onPress}
       >
-        <AppIcon name="add-outline" size={22} color={accentForeground} />
+        <AppIcon icon={AppIcons.add} size={22} color={accentForeground} />
       </FAB.Trigger>
     </FAB>
   );

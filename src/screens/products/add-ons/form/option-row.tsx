@@ -1,6 +1,7 @@
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import { RupiahField } from "@/components/common/form-number-field";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { Button, Input, Label, Surface, TextField, Typography, useThemeColor } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
@@ -45,7 +46,7 @@ export default function OptionRow({
   return (
     <Surface variant="transparent" className="gap-3 border border-border">
       <Button size="sm" variant="danger-soft" isIconOnly onPress={onRemove} className="self-end">
-        <AppIcon name="close-outline" size={20} color={dangerSoftForeground} />
+        <AppIcon icon={AppIcons.close} size={20} color={dangerSoftForeground} />
       </Button>
       <View className="flex-1 flex-col md:flex-row items-center gap-3">
         <Controller

@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import SettingsMenuRow from "@/components/common/settings-menu-row";
 import { useRouter } from "expo-router";
 import { ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
@@ -9,7 +10,7 @@ import { useTranslation } from "@/stores/use-locale";
 type InventoryMenuItem = {
   id: string;
   href: string;
-  icon: React.ComponentProps<typeof AppIcon>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["icon"];
   label: string;
   description: string;
 };
@@ -22,14 +23,14 @@ export default function InventoryOverviewScreen(): JSX.Element {
     {
       id: "ingredients",
       href: "/settings/inventory/ingredients",
-      icon: "nutrition-outline",
+      icon: AppIcons.food,
       label: t("navigation.ingredients"),
       description: t("navigation.ingredientsDescription"),
     },
     {
       id: "suppliers",
       href: "/settings/inventory/suppliers",
-      icon: "people-outline",
+      icon: AppIcons.people,
       label: t("navigation.suppliers"),
       description: t("navigation.suppliersDescription"),
     },
@@ -38,14 +39,14 @@ export default function InventoryOverviewScreen(): JSX.Element {
     {
       id: "movements",
       href: "/settings/inventory/movements",
-      icon: "swap-vertical-outline",
+      icon: AppIcons.swapVertical,
       label: t("navigation.movements"),
       description: t("navigation.movementsDescription"),
     },
     {
       id: "operations",
       href: "/settings/inventory/operations",
-      icon: "list-outline",
+      icon: AppIcons.list,
       label: t("navigation.operations"),
       description: t("navigation.operationsDescription"),
     },

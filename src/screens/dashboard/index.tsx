@@ -4,6 +4,7 @@ import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { Chip, cn, Separator, Typography, useThemeColor } from "heroui-native";
 import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
@@ -34,7 +35,7 @@ function SummaryWidget({
 }: {
   label: string;
   value: string;
-  icon: React.ComponentProps<typeof AppIcon>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["icon"];
   color?: "accent" | "warning" | "success";
 }) {
   const iconColor = useThemeColor(`${color}-soft-foreground`);
@@ -49,7 +50,7 @@ function SummaryWidget({
             SUMMARY_ICON_BACKGROUNDS[color]
           )}
         >
-          <AppIcon name={icon} size={18} color={iconColor} />
+          <AppIcon icon={icon} size={18} color={iconColor} />
         </View>
       </Widget.Header>
       <Widget.Content className="p-4">
@@ -226,24 +227,24 @@ export default function DashboardScreen(): React.JSX.Element {
               <SummaryWidget
                 label={t("dashboard.revenue")}
                 value={formatRupiah(dashboard.data?.revenue_today ?? 0)}
-                icon="wallet-outline"
+                icon={AppIcons.wallet}
                 color="success"
               />
               <SummaryWidget
                 label={t("dashboard.orders")}
                 value={String(dashboard.data?.orders_today ?? 0)}
-                icon="receipt-outline"
+                icon={AppIcons.receipt}
               />
               <SummaryWidget
                 label={t("dashboard.pending")}
                 value={String(dashboard.data?.pending_orders ?? 0)}
-                icon="time-outline"
+                icon={AppIcons.time}
                 color="warning"
               />
               <SummaryWidget
                 label={t("dashboard.completed")}
                 value={String(dashboard.data?.completed_orders ?? 0)}
-                icon="checkmark-circle-outline"
+                icon={AppIcons.checkmarkCircle}
                 color="success"
               />
             </View>
@@ -265,7 +266,7 @@ export default function DashboardScreen(): React.JSX.Element {
                   <EmptyState className="py-12">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <AppIcon name="stats-chart-outline" size={20} color={themeColorMuted} />
+                        <AppIcon icon={AppIcons.analytics} size={20} color={themeColorMuted} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("dashboard.noOrderActivity")}</EmptyState.Title>
                       <EmptyState.Description>
@@ -294,7 +295,7 @@ export default function DashboardScreen(): React.JSX.Element {
                   <EmptyState className="py-12">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <AppIcon name="cube-outline" size={20} color={themeColorMuted} />
+                        <AppIcon icon={AppIcons.cube} size={20} color={themeColorMuted} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("dashboard.noProductsSold")}</EmptyState.Title>
                       <EmptyState.Description>

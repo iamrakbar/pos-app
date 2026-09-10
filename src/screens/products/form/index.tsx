@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -366,7 +367,7 @@ function ProductImageCard({
           ) : (
             <>
               <View className="size-14 items-center justify-center rounded-full bg-accent-soft">
-                <AppIcon name="image-outline" size={26} color={accentColor} />
+                <AppIcon icon={AppIcons.image} size={26} color={accentColor} />
               </View>
               <View className="items-center gap-1 px-6">
                 <Typography type="body-sm" weight="semibold">
@@ -458,7 +459,7 @@ function ProductDetailsCard({
                   accessibilityLabel={t("productForm.addCategoryAccessibility")}
                   onPress={onAddCategory}
                 >
-                  <AppIcon name="add" size={18} color={themeColorForeground} />
+                  <AppIcon icon={AppIcons.add} size={18} color={themeColorForeground} />
                 </Button>
               </View>
               {didCategoriesFail ? (
@@ -694,7 +695,7 @@ function ProductInventoryActions({
           accessibilityLabel={action.accessibilityLabel}
           onPress={action.onPress}
         >
-          <AppIcon name={action.icon} size={16} color={themeColorForeground} />
+          <AppIcon icon={action.icon} size={16} color={themeColorForeground} />
           <Button.Label numberOfLines={1}>{action.label}</Button.Label>
         </Button>
       ))}
@@ -704,7 +705,7 @@ function ProductInventoryActions({
 
 type ProductInventoryAction = {
   key: string;
-  icon: React.ComponentProps<typeof AppIcon>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["icon"];
   label: string;
   accessibilityLabel: string;
   onPress: () => void;
@@ -736,7 +737,7 @@ function getProductInventoryActions({
   if (capabilities.showOpeningBalance && canShowOpeningBalance && onShowOpeningBalance) {
     actions.push({
       key: "opening-balance",
-      icon: "add-circle-outline",
+      icon: AppIcons.addCircle,
       label: t("productForm.openingBalance"),
       accessibilityLabel: t("productForm.showOpeningBalanceAccessibility"),
       onPress: onShowOpeningBalance,
@@ -745,7 +746,7 @@ function getProductInventoryActions({
   if (capabilities.showAdjustment && onShowAdjustment) {
     actions.push({
       key: "adjust-stock",
-      icon: "options-outline",
+      icon: AppIcons.options,
       label: t("productForm.adjustStock"),
       accessibilityLabel: t("productForm.showAdjustStockAccessibility"),
       onPress: onShowAdjustment,
@@ -754,7 +755,7 @@ function getProductInventoryActions({
   if (capabilities.showMovements && onShowMovements) {
     actions.push({
       key: "movements",
-      icon: "swap-vertical-outline",
+      icon: AppIcons.swapVertical,
       label: t("productForm.inventoryMovements"),
       accessibilityLabel: t("productForm.showInventoryMovementsAccessibility"),
       onPress: onShowMovements,
@@ -763,7 +764,7 @@ function getProductInventoryActions({
   if (capabilities.showRecipe && onShowRecipe) {
     actions.push({
       key: "recipe",
-      icon: "restaurant-outline",
+      icon: AppIcons.restaurant,
       label: t("productForm.recipe"),
       accessibilityLabel: t("productForm.showRecipeAccessibility"),
       onPress: onShowRecipe,
@@ -1022,7 +1023,7 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
           onPress={onAdd}
           isDisabled={setProductDiscount.isPending}
         >
-          <AppIcon name="add" size={18} color={themeColorForeground} />
+          <AppIcon icon={AppIcons.add} size={18} color={themeColorForeground} />
         </Button>
         {currentDiscount ? (
           <Button
@@ -1032,7 +1033,7 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
             onPress={() => void handleRemove()}
             isDisabled={setProductDiscount.isPending}
           >
-            <AppIcon name="close-outline" size={18} color={themeColorMuted} />
+            <AppIcon icon={AppIcons.close} size={18} color={themeColorMuted} />
           </Button>
         ) : null}
       </View>
@@ -1302,6 +1303,7 @@ function ProductFormContent({
   const isQuickDiscountOpen = quickDiscountState === "open";
   const isDeleteOpen = deleteState !== "closed";
   const isDeleting = deleteState === "deleting";
+  const themeColorDanger = useThemeColor("danger");
 
   return (
     <>
@@ -1312,7 +1314,7 @@ function ProductFormContent({
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button
             {...getToolbarIcon("trash")}
-            tintColor={accentColor}
+            tintColor={themeColorDanger}
             accessibilityLabel={t("productForm.deleteAccessibility")}
             onPress={onDeleteChange.bind(null, true)}
           />

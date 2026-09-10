@@ -3,6 +3,7 @@ import type { KitchenTicketData, KitchenTicketOrderType } from "@/api/endpoints/
 import { extractStatusValue, normalizeStatusColor } from "@/api/mappers/order";
 import { getErrorMessage } from "@/api/api-error";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import ErrorState from "@/components/common/error-state";
 import { GridSkeleton, ListSkeleton } from "@/components/common/list-skeleton";
 import { formatTime } from "@/utils/format";
@@ -44,9 +45,9 @@ function ticketStatus(ticket: KitchenTicketData): string {
 }
 
 function orderTypeIcon(orderType: string) {
-  if (orderType === "dine-in") return "restaurant-outline" as const;
-  if (orderType === "delivery") return "bicycle-outline" as const;
-  return "bag-handle-outline" as const;
+  if (orderType === "dine-in") return AppIcons.restaurant;
+  if (orderType === "delivery") return AppIcons.bicycle;
+  return AppIcons.bag;
 }
 
 function TicketCard({
@@ -87,7 +88,7 @@ function TicketCard({
           </View>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-1.5">
-              <AppIcon name={orderTypeIcon(order.order_type)} size={12} color={mutedColor} />
+              <AppIcon icon={orderTypeIcon(order.order_type)} size={12} color={mutedColor} />
               <Typography type="body-xs" color="muted">
                 {t(order.products_count === 1 ? "orders.itemOne" : "orders.itemOther", {
                   count: order.products_count,
@@ -152,7 +153,7 @@ function TicketCard({
             className={isQueuedAction ? "bg-warning" : ""}
           >
             <AppIcon
-              name={action === "start" ? "play-outline" : "checkmark-circle-outline"}
+              icon={action === "start" ? AppIcons.play : AppIcons.checkmarkCircle}
               size={16}
               color={"white"}
             />
@@ -343,7 +344,7 @@ export default function KdsScreen(): React.JSX.Element {
                   <EmptyState className="self-center w-full max-w-sm py-20">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <AppIcon name="flame-outline" size={20} color={mutedColor} />
+                        <AppIcon icon={AppIcons.flame} size={20} color={mutedColor} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("kds.empty")}</EmptyState.Title>
                       <EmptyState.Description>{t("kds.emptyDescription")}</EmptyState.Description>
@@ -353,7 +354,7 @@ export default function KdsScreen(): React.JSX.Element {
                   <EmptyState className="self-center w-full max-w-sm py-20">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <AppIcon name="flame-outline" size={20} color={mutedColor} />
+                        <AppIcon icon={AppIcons.flame} size={20} color={mutedColor} />
                       </EmptyState.Media>
                       <EmptyState.Title>
                         {t(`kds.laneEmpty.${activeLane}.title` as TranslationKey)}

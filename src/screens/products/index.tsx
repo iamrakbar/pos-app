@@ -7,6 +7,7 @@ import { formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { Chip, cn, Separator, Typography, useThemeColor } from "heroui-native";
 import { Image } from "expo-image";
 import React from "react";
@@ -119,7 +120,7 @@ export default function ProductsScreen(): React.JSX.Element {
               <EmptyState className="py-20">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <AppIcon name="search-outline" size={20} color={themeColorMuted} />
+                    <AppIcon icon={AppIcons.search} size={20} color={themeColorMuted} />
                   </EmptyState.Media>
                   <EmptyState.Title>{t("products.empty")}</EmptyState.Title>
                   <EmptyState.Description>{t("products.emptyDescription")}</EmptyState.Description>
@@ -145,7 +146,7 @@ export default function ProductsScreen(): React.JSX.Element {
                             contentFit="cover"
                           />
                         ) : (
-                          <AppIcon name="fast-food-outline" size={24} color={themeColorMuted} />
+                          <AppIcon icon={AppIcons.food} size={24} color={themeColorMuted} />
                         )}
                       </View>
 
@@ -213,7 +214,7 @@ export default function ProductsScreen(): React.JSX.Element {
                         </View>
                       </View>
 
-                      <AppIcon name="chevron-forward" size={16} color={themeColorMuted} />
+                      <AppIcon icon={AppIcons.chevronForward} size={16} color={themeColorMuted} />
                     </Pressable>
                     {index < filtered.length - 1 && <Separator className="mx-5" />}
                   </View>

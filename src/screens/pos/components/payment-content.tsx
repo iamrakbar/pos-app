@@ -23,6 +23,7 @@ import { useState } from "react";
 import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useTranslation } from "@/stores/use-locale";
@@ -111,7 +112,7 @@ function PaymentQrPanel({
             {t("payment.scanInstruction")}
           </Typography>
         </View>
-        <AppIcon name="qr-code-outline" size={22} color={themeColorMuted} />
+        <AppIcon icon={AppIcons.qrCode} size={22} color={themeColorMuted} />
       </View>
 
       {canShowQr ? (
@@ -279,7 +280,7 @@ function PaymentContentFooter({
             <ActivityIndicator color="#fff" />
           ) : (
             <>
-              <AppIcon name="refresh-outline" size={16} color="white" />
+              <AppIcon icon={AppIcons.refresh} size={16} color="white" />
               <Button.Label className="ml-2">{t("payment.checkStatus")}</Button.Label>
             </>
           )}
@@ -374,7 +375,7 @@ export function PaymentContent({
             accessibilityLabel={t("common.close")}
             onPress={requestClose}
           >
-            <AppIcon name="close-outline" size={20} color={themeColorMuted} />
+            <AppIcon icon={AppIcons.close} size={20} color={themeColorMuted} />
           </Button>
         </View>
       </View>

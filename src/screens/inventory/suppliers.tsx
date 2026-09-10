@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import TableSkeleton from "@/components/common/table-skeleton";
@@ -226,7 +227,7 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                           <EmptyState.Header>
                             <EmptyState.Media variant="icon">
                               <AppIcon
-                                name="storefront-outline"
+                                icon={AppIcons.storefront}
                                 size={22}
                                 color={themeColorMuted}
                               />

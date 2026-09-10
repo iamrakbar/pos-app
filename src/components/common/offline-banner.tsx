@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { Typography, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import { useNetworkStore } from "@/stores/use-network-store";
@@ -13,7 +14,7 @@ export default function OfflineBanner() {
 
   return (
     <View className="bg-warning-soft px-4 py-2 flex-row items-center gap-2 pb-safe">
-      <AppIcon name="cloud-offline-outline" size={16} color={themeColorWarningSoftForeground} />
+      <AppIcon icon={AppIcons.cloudOffline} size={16} color={themeColorWarningSoftForeground} />
       <View className="flex-1">
         <Typography type="body-xs" weight="semibold" className="text-warning-soft-foreground">
           {t("offline.title")}

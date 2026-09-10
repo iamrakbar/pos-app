@@ -6,6 +6,7 @@ import { useArea } from "@/hooks/db/use-areas";
 import { useAreaTables } from "@/hooks/db/use-tables";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { Button, Card, Chip, useThemeColor } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
@@ -124,7 +125,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
                     onPress={() => openQr(table)}
                     className="flex-1"
                   >
-                    <AppIcon name="qr-code-sharp" size={16} color={mutedColor} />
+                    <AppIcon icon={AppIcons.qrCode} size={16} color={mutedColor} />
                     <Button.Label className="ml-2">
                       {t("areasManagement.tableQrAction")}
                     </Button.Label>
@@ -140,7 +141,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
                     onPress={() => openEdit(table)}
                     className="flex-1"
                   >
-                    <AppIcon name="pencil-outline" size={18} color={mutedColor} />
+                    <AppIcon icon={AppIcons.pencil} size={18} color={mutedColor} />
                     <Button.Label className="ml-2">
                       {t("areasManagement.editTableAction")}
                     </Button.Label>
@@ -153,7 +154,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
             <EmptyState className="flex-1 justify-center">
               <EmptyState.Header>
                 <EmptyState.Media variant="icon">
-                  <AppIcon name="restaurant-outline" size={20} color={mutedColor} />
+                  <AppIcon icon={AppIcons.restaurant} size={20} color={mutedColor} />
                 </EmptyState.Media>
                 <EmptyState.Title>{t("areasManagement.emptyTables")}</EmptyState.Title>
                 <EmptyState.Description>

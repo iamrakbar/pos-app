@@ -39,6 +39,7 @@ import { usePrinterStore } from "@/stores/use-printer-store";
 import { formatDateTime, formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/api-error";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { EmptyState } from "heroui-native-pro";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import {
@@ -180,7 +181,7 @@ function OrderCancelAction({
         onPress={() => setIsCancelOpen(true)}
         isDisabled={isPending}
       >
-        <AppIcon name="close-circle-outline" size={16} color={themeColorDanger} />
+        <AppIcon icon={AppIcons.closeCircle} size={16} color={themeColorDanger} />
         <Button.Label className="ml-1.5">{t("orders.detail.cancelOrder")}</Button.Label>
       </Button>
       {error ? (
@@ -426,7 +427,7 @@ function ReceiptPreviewSheet({
             onPress={dismissSheet}
             accessibilityLabel={t("common.close")}
           >
-            <AppIcon name="close-outline" size={20} color={themeColorForeground} />
+            <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
           </Button>
         </View>
       }
@@ -439,7 +440,7 @@ function ReceiptPreviewSheet({
             isDisabled={isBusy}
             onPress={() => void runExportAction(saveReceiptImage, t("orders.detail.receiptSaved"))}
           >
-            <AppIcon name="download-outline" size={16} color={themeColorForeground} />
+            <AppIcon icon={AppIcons.download} size={16} color={themeColorForeground} />
             <Button.Label numberOfLines={1}>{t("common.save")}</Button.Label>
           </Button>
           <Button
@@ -454,17 +455,17 @@ function ReceiptPreviewSheet({
               )
             }
           >
-            <AppIcon name="share-outline" size={16} color={themeColorForeground} />
+            <AppIcon icon={AppIcons.share} size={16} color={themeColorForeground} />
             <Button.Label numberOfLines={1}>{t("orders.detail.shareReceipt")}</Button.Label>
           </Button>
           <Button
             size="sm"
             className="min-w-0 flex-1 px-1"
-            variant="ghost"
+            variant="outline"
             isDisabled={isBusy}
             onPress={() => void handlePrint()}
           >
-            <AppIcon name="print-outline" size={16} color={themeColorForeground} />
+            <AppIcon icon={AppIcons.print} size={16} color={themeColorForeground} />
             <Button.Label numberOfLines={1}>{t("orders.detail.printReceipt")}</Button.Label>
           </Button>
         </View>
@@ -472,7 +473,7 @@ function ReceiptPreviewSheet({
     >
       <ScrollView
         className="flex-1 bg-surface-secondary"
-        contentContainerClassName="items-center px-4 py-5"
+        contentContainerClassName="items-center px-4 pt-5 pb-17"
         showsVerticalScrollIndicator={false}
       >
         <ReceiptPaper
@@ -495,7 +496,7 @@ function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () =>
       <EmptyState>
         <EmptyState.Header>
           <EmptyState.Media variant="icon">
-            <AppIcon name="receipt-outline" size={20} color={iconColor} />
+            <AppIcon icon={AppIcons.receipt} size={20} color={iconColor} />
           </EmptyState.Media>
           <EmptyState.Title>{t("orders.detail.notFound")}</EmptyState.Title>
           <EmptyState.Description>{t("orders.detail.notFoundDescription")}</EmptyState.Description>
@@ -598,10 +599,10 @@ function OrderTypePanel({
   const { t } = useTranslation();
   const iconName =
     order.order_type === "dine-in"
-      ? "restaurant-outline"
+      ? AppIcons.restaurant
       : order.order_type === "delivery"
-        ? "bicycle-outline"
-        : "bag-handle-outline";
+        ? AppIcons.bicycle
+        : AppIcons.bag;
   const orderTypeLabel =
     order.order_type === "dine-in"
       ? t("orders.dineIn")
@@ -623,7 +624,7 @@ function OrderTypePanel({
       <Surface className="w-full p-4 gap-3">
         <View className="flex-row items-center gap-3">
           <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-secondary">
-            <AppIcon name={iconName} size={20} color={foregroundColor} />
+            <AppIcon icon={iconName} size={20} color={foregroundColor} />
           </View>
           <View className="flex-1 gap-0.5">
             <Typography type="body" weight="semibold">
@@ -827,7 +828,7 @@ function OrderPaymentDetails({
       ) : null}
       {canShowQr ? (
         <Button variant="outline" onPress={onOpenQr}>
-          <AppIcon name="qr-code-outline" size={16} color={foregroundColor} />
+          <AppIcon icon={AppIcons.qrCode} size={16} color={foregroundColor} />
           <Button.Label>{t("orders.detail.showQris")}</Button.Label>
         </Button>
       ) : null}
@@ -878,7 +879,7 @@ function OrderPaymentQrPanel({
       ) : null}
       {paymentLink && /^https?:\/\//i.test(paymentLink) ? (
         <Button variant="outline" onPress={() => void Linking.openURL(paymentLink)}>
-          <AppIcon name="open-outline" size={16} color={foregroundColor} />
+          <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
           <Button.Label>{t("orders.detail.openPaymentLink")}</Button.Label>
         </Button>
       ) : null}
@@ -916,7 +917,7 @@ function OrderPaymentRefresh({
         {isPending ? (
           <ActivityIndicator />
         ) : (
-          <AppIcon name="refresh-outline" size={16} color={foregroundColor} />
+          <AppIcon icon={AppIcons.refresh} size={16} color={foregroundColor} />
         )}
         <Button.Label>{t("orders.detail.refreshStatus")}</Button.Label>
       </Button>
@@ -1097,7 +1098,7 @@ function OrderPaymentColumn({
             {isPrinting ? (
               <ActivityIndicator />
             ) : (
-              <AppIcon name="print-outline" size={18} color={foregroundColor} />
+              <AppIcon icon={AppIcons.print} size={18} color={foregroundColor} />
             )}
             <Button.Label>
               {isPrinting ? t("orders.detail.printingReceipt") : t("orders.detail.printReceipt")}
@@ -1163,7 +1164,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
               onPress={() => setIsReceiptPreviewOpen(true)}
               accessibilityLabel={t("orders.detail.previewReceipt")}
             >
-              <AppIcon name="receipt-outline" size={21} color={themeColorForeground} />
+              <AppIcon icon={AppIcons.receipt} size={21} color={themeColorForeground} />
             </Button>
           ),
         }}

@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import ErrorState from "@/components/common/error-state";
 import TableSkeleton from "@/components/common/table-skeleton";
 import type { InventoryOperationStatus } from "@/api/endpoints/inventory-audit";
@@ -224,7 +225,7 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
                         <EmptyState className="py-16">
                           <EmptyState.Header>
                             <EmptyState.Media variant="icon">
-                              <AppIcon name="time-outline" size={22} color={themeColorMuted} />
+                              <AppIcon icon={AppIcons.time} size={22} color={themeColorMuted} />
                             </EmptyState.Media>
                             <EmptyState.Title>{t("operations.empty")}</EmptyState.Title>
                             <EmptyState.Description>

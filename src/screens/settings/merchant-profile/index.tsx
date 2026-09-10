@@ -1,6 +1,7 @@
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { MerchantImageAsset } from "@/api/endpoints/merchant";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import ErrorState from "@/components/common/error-state";
 import { FormNumberField } from "@/components/common/form-number-field";
 import LoadingState from "@/components/common/loading-state";
@@ -283,7 +284,7 @@ function MerchantImageSlot({
         ) : (
           <>
             <View className="size-12 items-center justify-center rounded-full bg-accent-soft">
-              <AppIcon name="image-outline" size={22} color={accentColor} />
+              <AppIcon icon={AppIcons.image} size={22} color={accentColor} />
             </View>
             <Typography type="body-sm" weight="semibold">
               {isUploading ? t("common.saving") : t("merchantProfile.chooseImage")}
@@ -658,7 +659,7 @@ function MerchantProfileContent({
               onPress={() => onQrChange(true)}
               accessibilityLabel={t("merchantProfile.qrTitle")}
             >
-              <AppIcon name="qr-code-outline" size={20} color={foregroundColor} />
+              <AppIcon icon={AppIcons.qrCode} size={20} color={foregroundColor} />
             </Button>
           ),
         }}

@@ -3,6 +3,7 @@ import { useProducts } from "@/hooks/db/use-products";
 import ErrorState from "@/components/common/error-state";
 import type { POSProduct } from "@/types/pos";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { Card, ScrollShadow, Skeleton, useThemeColor } from "heroui-native";
@@ -122,7 +123,7 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
                   <EmptyState className="py-20">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
-                        <AppIcon name="fast-food-outline" size={20} color={themeColorMuted} />
+                        <AppIcon icon={AppIcons.food} size={20} color={themeColorMuted} />
                       </EmptyState.Media>
                       <EmptyState.Title>{t("pos.noProducts")}</EmptyState.Title>
                       <EmptyState.Description>

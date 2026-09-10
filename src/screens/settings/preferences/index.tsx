@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
 import { ListGroup, Select, Separator, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -42,12 +43,12 @@ export default function PreferencesScreen(): JSX.Element {
             <View className="flex-1 flex-row items-center gap-4">
               <ListGroup.ItemPrefix>
                 <AppIcon
-                  name={
+                  icon={
                     themeMode === "dark"
-                      ? "moon-outline"
+                      ? AppIcons.moon
                       : themeMode === "light"
-                        ? "sunny-outline"
-                        : "desktop-outline"
+                        ? AppIcons.sunny
+                        : AppIcons.desktop
                   }
                   size={21}
                   color={mutedColor}
@@ -96,7 +97,7 @@ export default function PreferencesScreen(): JSX.Element {
           >
             <View className="flex-1 flex-row items-center gap-4">
               <ListGroup.ItemPrefix>
-                <AppIcon name="language-outline" size={21} color={mutedColor} />
+                <AppIcon icon={AppIcons.language} size={21} color={mutedColor} />
               </ListGroup.ItemPrefix>
               <ListGroup.ItemContent>
                 <ListGroup.ItemTitle>{t("settings.language")}</ListGroup.ItemTitle>
@@ -140,7 +141,7 @@ export default function PreferencesScreen(): JSX.Element {
             onPress={() => router.push("/settings/updates")}
           >
             <ListGroup.ItemPrefix>
-              <AppIcon name="cloud-download-outline" size={21} color={mutedColor} />
+              <AppIcon icon={AppIcons.cloudDownload} size={21} color={mutedColor} />
             </ListGroup.ItemPrefix>
             <ListGroup.ItemContent>
               <ListGroup.ItemTitle>{t("settings.updates")}</ListGroup.ItemTitle>

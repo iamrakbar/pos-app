@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import ErrorState from "@/components/common/error-state";
 import TableSkeleton from "@/components/common/table-skeleton";
 import { useInventoryMovements } from "@/hooks/db/use-inventory-audit";
@@ -271,7 +272,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                           <EmptyState.Header>
                             <EmptyState.Media variant="icon">
                               <AppIcon
-                                name="stats-chart-outline"
+                                icon={AppIcons.analytics}
                                 size={22}
                                 color={themeColorMuted}
                               />

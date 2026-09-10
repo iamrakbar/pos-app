@@ -14,6 +14,7 @@ import { ListSkeleton } from "@/components/common/list-skeleton";
 import ErrorState from "@/components/common/error-state";
 import { formatDateTime, formatRupiah, formatTime } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
 import React from "react";
@@ -98,7 +99,7 @@ export default function OrdersScreen(): React.JSX.Element {
           <EmptyState className="py-20">
             <EmptyState.Header>
               <EmptyState.Media variant="icon">
-                <AppIcon name="receipt-outline" size={20} color={themeColorMuted} />
+                <AppIcon icon={AppIcons.receipt} size={20} color={themeColorMuted} />
               </EmptyState.Media>
               <EmptyState.Title>{t("orders.empty")}</EmptyState.Title>
               <EmptyState.Description>{t("orders.emptyDescription")}</EmptyState.Description>
@@ -180,7 +181,7 @@ function OrderRow({
           </View>
           <View className="flex-row items-center gap-1.5">
             <AppIcon
-              name={order.order_type === "dine-in" ? "restaurant-outline" : "bag-outline"}
+              icon={order.order_type === "dine-in" ? AppIcons.restaurant : AppIcons.bag}
               size={12}
               color={themeColorMuted}
             />
@@ -223,7 +224,7 @@ function OrderRow({
             })}
           </Typography>
         </View>
-        <AppIcon name="chevron-forward" size={14} color={themeColorMuted} />
+        <AppIcon icon={AppIcons.chevronForward} size={14} color={themeColorMuted} />
       </View>
     </Pressable>
   );

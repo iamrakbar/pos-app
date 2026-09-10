@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useTranslation } from "@/stores/use-locale";
 import { getProductSellingPrice } from "@/utils/product-price";
 
@@ -44,7 +45,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
               contentFit="cover"
             />
           ) : (
-            <AppIcon name="fast-food-outline" size={30} color={themeColorMuted} />
+            <AppIcon icon={AppIcons.food} size={30} color={themeColorMuted} />
           )}
         </View>
         <Card.Body className="min-h-20 justify-between px-3.5 py-3">

@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import * as Updates from "expo-updates";
 import {
   Alert as HeroAlert,
@@ -211,7 +212,7 @@ function UpdateSettingsCard({
             {isBusy ? (
               <Spinner size="sm" color={themeColorAccent} />
             ) : (
-              <AppIcon name="cloud-download-outline" size={20} color={themeColorAccent} />
+              <AppIcon icon={AppIcons.cloudDownload} size={20} color={themeColorAccent} />
             )}
           </View>
           <View className="flex-1 gap-0.5">
@@ -259,7 +260,7 @@ function UpdateSettingsCard({
             isDisabled={isBusy || updates.isUpdatePending}
             className="flex-1"
           >
-            <AppIcon name="refresh-outline" size={18} color={themeColorAccent} />
+            <AppIcon icon={AppIcons.refresh} size={18} color={themeColorAccent} />
             <Button.Label>{t("updates.check")}</Button.Label>
           </Button>
           <Button
@@ -268,7 +269,7 @@ function UpdateSettingsCard({
             isDisabled={!updates.isUpdatePending || isBusy}
             className="flex-1"
           >
-            <AppIcon name="reload-outline" size={18} color="white" />
+            <AppIcon icon={AppIcons.refresh} size={18} color="white" />
             <Button.Label>{t("updates.restart")}</Button.Label>
           </Button>
         </View>

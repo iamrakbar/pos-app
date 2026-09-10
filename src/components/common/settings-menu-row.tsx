@@ -8,7 +8,7 @@ export default function SettingsMenuRow({
   onPress,
 }: {
   item: {
-    icon: React.ComponentProps<typeof AppIcon>["name"];
+    icon: React.ComponentProps<typeof AppIcon>["icon"];
     label: string;
     description: string;
   };
@@ -18,7 +18,7 @@ export default function SettingsMenuRow({
   return (
     <ListGroup.Item accessibilityRole="button" onPress={onPress}>
       <ListGroup.ItemPrefix>
-        <AppIcon name={item.icon} size={21} color={iconColor} />
+        <AppIcon icon={item.icon} size={21} color={iconColor} />
       </ListGroup.ItemPrefix>
       <ListGroup.ItemContent>
         <ListGroup.ItemTitle>{item.label}</ListGroup.ItemTitle>

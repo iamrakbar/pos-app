@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useNavigation } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
@@ -26,7 +27,7 @@ export default function DrawerMenuButton({
       onPress={() => navigation.openDrawer()}
       accessibilityLabel={accessibilityLabel ?? t("navigation.openNavigation")}
     >
-      <AppIcon name="menu-outline" size={24} color={themeColorForeground} />
+      <AppIcon icon={AppIcons.menu} size={24} color={themeColorForeground} />
     </Button>
   );
 }

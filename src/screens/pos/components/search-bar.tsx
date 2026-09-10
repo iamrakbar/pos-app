@@ -15,6 +15,7 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -98,7 +99,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
             }
           >
             <AppIcon
-              name={"albums-outline"}
+              icon={AppIcons.layers}
               size={22}
               color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
             />
@@ -116,7 +117,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
                   sort: selectedSort.label,
                 })}
               >
-                <AppIcon name="swap-vertical-outline" size={22} color={themeColorForeground} />
+                <AppIcon icon={AppIcons.swapVertical} size={22} color={themeColorForeground} />
               </Button>
             </Select.Trigger>
             <Select.Portal>

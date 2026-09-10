@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import type { InventoryMovementType } from "@/api/endpoints/inventory-audit";
 import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
@@ -103,7 +104,7 @@ export default function InventoryMovementsTable({
               <EmptyState className="py-16">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <AppIcon name="swap-vertical-outline" size={22} color={themeColorMuted} />
+                    <AppIcon icon={AppIcons.swapVertical} size={22} color={themeColorMuted} />
                   </EmptyState.Media>
                   <EmptyState.Title>{emptyTitle}</EmptyState.Title>
                   <EmptyState.Description>{emptyDescription}</EmptyState.Description>

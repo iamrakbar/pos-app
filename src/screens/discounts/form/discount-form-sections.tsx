@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import DatePickerField from "@/components/common/date-picker-field";
 import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
 import type { Translate } from "@/locales";
@@ -233,7 +234,7 @@ export function DiscountProductsCard({
           <Typography type="body-sm" className="text-accent">
             {t("discounts.changeProducts")}
           </Typography>
-          <AppIcon name="chevron-forward" size={16} color={muted} />
+          <AppIcon icon={AppIcons.chevronForward} size={16} color={muted} />
         </Pressable>
       </Card.Body>
     </Card>

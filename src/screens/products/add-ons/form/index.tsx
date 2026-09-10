@@ -20,6 +20,7 @@ import SelectionRulesCard from "./selection-rules-card";
 import { useTranslation } from "@/stores/use-locale";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 
 const EMPTY_OPTION = { id: null, name: "", price: "0", destroyed: false };
 
@@ -193,7 +194,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
                 </Typography>
               ) : null}
               <Button variant="outline" onPress={() => append(EMPTY_OPTION)}>
-                <AppIcon name="add-outline" size={16} color={foregroundColor} />
+                <AppIcon icon={AppIcons.add} size={16} color={foregroundColor} />
                 <Button.Label>{t("addOnManagement.addOption")}</Button.Label>
               </Button>
             </Card.Body>

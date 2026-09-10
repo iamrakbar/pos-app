@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useNotificationPermission } from "@/hooks/use-notification-permission";
 import type { Translate } from "@/locales";
 import {
@@ -167,7 +168,7 @@ function NotificationsCard({
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-1 flex-row items-center gap-3">
             <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
-              <AppIcon name="notifications-outline" size={20} color={accentColor} />
+              <AppIcon icon={AppIcons.notifications} size={20} color={accentColor} />
             </View>
             <View className="flex-1 gap-1">
               <Card.Title>{t("notifications.title")}</Card.Title>

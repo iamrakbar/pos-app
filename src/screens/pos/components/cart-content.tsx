@@ -7,6 +7,7 @@ import { Button, Select, Separator, Skeleton, Typography, useThemeColor } from "
 import type { JSX } from "react";
 import { ScrollView, Text, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { EmptyState, TimePicker } from "heroui-native-pro";
 import { useTrueSheet } from "@lodev09/react-native-true-sheet";
 import CartItemRow from "./cart-item-row";
@@ -171,7 +172,7 @@ function CartOrderControls({
               <Text className="text-accent size-sm">
                 {checkoutForm.pickup_time ?? t("pos.pickupTime")}
               </Text>
-              <AppIcon name="time-outline" size={12} color={colorAccent} />
+              <AppIcon icon={AppIcons.time} size={12} color={colorAccent} />
             </TimePicker.Trigger>
             <TimePicker.Portal>
               <TimePicker.Overlay />
@@ -236,7 +237,7 @@ function CartHeader({
           />
           {cartProducts.length > 0 ? (
             <Button variant="ghost" isIconOnly onPress={resetCurrentOrder}>
-              <AppIcon name="trash-outline" size={16} color={colorDanger} />
+              <AppIcon icon={AppIcons.trash} size={16} color={colorDanger} />
             </Button>
           ) : null}
         </>
@@ -279,7 +280,7 @@ function CartItems({
         <EmptyState className="py-16">
           <EmptyState.Header>
             <EmptyState.Media variant="icon">
-              <AppIcon name="cart-outline" size={20} color={colorMuted} />
+              <AppIcon icon={AppIcons.cart} size={20} color={colorMuted} />
             </EmptyState.Media>
             <EmptyState.Title>{t("pos.cartEmpty")}</EmptyState.Title>
             <EmptyState.Description>{t("pos.cartEmptyDescription")}</EmptyState.Description>

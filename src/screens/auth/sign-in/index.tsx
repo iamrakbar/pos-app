@@ -1,6 +1,7 @@
 import Logo from "@/components/common/logo";
 import { Button, Card, cn, InputGroup, Typography, useThemeColor } from "heroui-native";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useEffect, useState, type JSX } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
@@ -60,7 +61,7 @@ export default function SignInScreen(): JSX.Element {
                 render={({ field }) => (
                   <InputGroup className="w-full">
                     <InputGroup.Prefix isDecorative>
-                      <AppIcon name="person-outline" size={16} color="#888" />
+                      <AppIcon icon={AppIcons.person} size={16} color="#888" />
                     </InputGroup.Prefix>
                     <InputGroup.Input
                       value={field.value}
@@ -84,7 +85,7 @@ export default function SignInScreen(): JSX.Element {
                 render={({ field }) => (
                   <InputGroup className="w-full">
                     <InputGroup.Prefix isDecorative>
-                      <AppIcon name="lock-closed-outline" size={16} color="#888" />
+                      <AppIcon icon={AppIcons.lockClosed} size={16} color="#888" />
                     </InputGroup.Prefix>
                     <InputGroup.Input
                       value={field.value}
@@ -102,7 +103,7 @@ export default function SignInScreen(): JSX.Element {
                         }
                       >
                         <AppIcon
-                          name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                          icon={isPasswordVisible ? AppIcons.eyeOff : AppIcons.eye}
                           size={16}
                           color="#888"
                         />

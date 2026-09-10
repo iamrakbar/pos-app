@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import ErrorState from "@/components/common/error-state";
 import CreateFAB from "@/components/common/create-fab";
 import { useIngredientSupplierOffers } from "@/hooks/db/use-supplier-offers";
@@ -118,7 +119,7 @@ function SupplierOffersTable({
               <EmptyState className="py-16">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <AppIcon name="pricetag-outline" size={22} color={themeColorMuted} />
+                    <AppIcon icon={AppIcons.priceTag} size={22} color={themeColorMuted} />
                   </EmptyState.Media>
                   <EmptyState.Title>{t("ingredients.supplierOffersEmpty")}</EmptyState.Title>
                   <EmptyState.Description>

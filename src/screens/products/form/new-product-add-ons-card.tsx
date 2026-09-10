@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { RupiahField } from "@/components/common/form-number-field";
 import type { ProductFormValues } from "@/schemas/product";
 import { Button, Card, Input, Label, Surface, Switch, TextField, Typography } from "heroui-native";
@@ -73,7 +74,7 @@ function NewProductAddOnGroup({
           onPress={onRemove}
           accessibilityLabel={t("productForm.removeAddOnGroup")}
         >
-          <AppIcon name="close-outline" size={20} />
+          <AppIcon icon={AppIcons.close} size={20} />
         </Button>
       </View>
 
@@ -246,7 +247,7 @@ function NewProductAddOnGroup({
               onPress={() => remove(optionIndex)}
               accessibilityLabel={t("addOnManagement.removeOption")}
             >
-              <AppIcon name="close-outline" size={20} />
+              <AppIcon icon={AppIcons.close} size={20} />
             </Button>
           </View>
         ))}
@@ -256,7 +257,7 @@ function NewProductAddOnGroup({
           </Typography>
         ) : null}
         <Button variant="outline" onPress={() => append({ name: "", price: "0" })}>
-          <AppIcon name="add-outline" size={16} />
+          <AppIcon icon={AppIcons.add} size={16} />
           <Button.Label>{t("addOnManagement.addOption")}</Button.Label>
         </Button>
       </View>
@@ -314,7 +315,7 @@ export default function NewProductAddOnsCard({
             })
           }
         >
-          <AppIcon name="add-outline" size={16} />
+          <AppIcon icon={AppIcons.add} size={16} />
           <Button.Label>{t("productForm.addAddOnGroup")}</Button.Label>
         </Button>
       </Card.Body>

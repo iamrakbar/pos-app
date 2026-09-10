@@ -3,6 +3,7 @@ import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
 import type { POSTable } from "@/types/pos";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { GridSkeleton } from "@/components/common/list-skeleton";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
@@ -171,7 +172,7 @@ export default function TableSelectionScreen(): JSX.Element {
             <EmptyState className="flex-1 justify-center">
               <EmptyState.Header>
                 <EmptyState.Media variant="icon">
-                  <AppIcon name="grid-outline" size={20} color={muted} />
+                  <AppIcon icon={AppIcons.grid} size={20} color={muted} />
                 </EmptyState.Media>
                 <EmptyState.Title>{t("tables.empty")}</EmptyState.Title>
                 <EmptyState.Description>{t("tables.emptyDescription")}</EmptyState.Description>

@@ -2,6 +2,7 @@ import { Component, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { Typography } from "heroui-native";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { t } from "@/locales";
 
 type Props = { children: ReactNode };
@@ -22,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <View className="flex-1 items-center justify-center gap-3 bg-background px-6">
-          <AppIcon name="warning-outline" size={40} color="#ef4444" />
+          <AppIcon icon={AppIcons.warning} size={40} color="#ef4444" />
           <Typography className="text-base font-semibold text-foreground text-center">
             {t("errors.unexpected")}
           </Typography>

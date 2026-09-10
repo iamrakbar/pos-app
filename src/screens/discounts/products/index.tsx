@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { ListSkeleton } from "@/components/common/list-skeleton";
 import ErrorState from "@/components/common/error-state";
 import { useManagementProducts } from "@/hooks/db/use-products";
@@ -108,7 +109,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
               <EmptyState className="py-12">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <AppIcon name="search-outline" size={20} color={muted} />
+                    <AppIcon icon={AppIcons.search} size={20} color={muted} />
                   </EmptyState.Media>
                   <EmptyState.Title>{t("products.empty")}</EmptyState.Title>
                   <EmptyState.Description>{t("products.emptyDescription")}</EmptyState.Description>

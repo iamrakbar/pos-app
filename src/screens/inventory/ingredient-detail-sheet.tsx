@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import AdjustStockOverlay from "@/screens/inventory/adjust-stock-overlay";
 import RecordMovementOverlay from "@/screens/inventory/record-movement-overlay";
 import type { Ingredient } from "@/screens/inventory/ingredient-stock-overlay-utils";
@@ -59,7 +60,7 @@ function DetailAction({
   label,
   onPress,
 }: {
-  icon: React.ComponentProps<typeof AppIcon>["name"];
+  icon: React.ComponentProps<typeof AppIcon>["icon"];
   label: string;
   onPress: () => void;
 }): React.JSX.Element {
@@ -73,7 +74,7 @@ function DetailAction({
       onPress={onPress}
       accessibilityLabel={label}
     >
-      <AppIcon name={icon} size={17} color={themeColorAccent} />
+      <AppIcon icon={icon} size={17} color={themeColorAccent} />
       <Button.Label numberOfLines={1}>{label}</Button.Label>
     </Button>
   );
@@ -116,17 +117,17 @@ export default function IngredientDetailSheet({
           <View className="border-t border-border bg-surface px-5 pb-safe pt-4">
             <View className="flex-row gap-2">
               <DetailAction
-                icon="pencil-outline"
+                icon={AppIcons.pencil}
                 label={t("ingredients.editTitle")}
                 onPress={() => void dismissThen(onEdit)}
               />
               <DetailAction
-                icon="options-outline"
+                icon={AppIcons.options}
                 label={t("ingredients.adjustStock")}
                 onPress={() => void dismissThen(() => setIsAdjustStockOpen(true))}
               />
               <DetailAction
-                icon="add-circle-outline"
+                icon={AppIcons.addCircle}
                 label={t("ingredients.recordMovement")}
                 onPress={() => void dismissThen(() => setIsRecordMovementOpen(true))}
               />
@@ -193,7 +194,7 @@ export default function IngredientDetailSheet({
                   className="min-w-0 flex-1"
                   onPress={() => void dismissThen(onShowMovements)}
                 >
-                  <AppIcon name="swap-vertical-outline" size={18} color={themeColorForeground} />
+                  <AppIcon icon={AppIcons.swapVertical} size={18} color={themeColorForeground} />
                   <Button.Label numberOfLines={1}>
                     {t("ingredients.inventoryMovements")}
                   </Button.Label>
@@ -203,7 +204,7 @@ export default function IngredientDetailSheet({
                   className="min-w-0 flex-1"
                   onPress={() => void dismissThen(onShowSupplierOffers)}
                 >
-                  <AppIcon name="people-outline" size={18} color={themeColorForeground} />
+                  <AppIcon icon={AppIcons.people} size={18} color={themeColorForeground} />
                   <Button.Label numberOfLines={1}>{t("ingredients.supplierOffers")}</Button.Label>
                 </Button>
               </View>

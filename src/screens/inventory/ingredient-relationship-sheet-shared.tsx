@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useTranslation } from "@/stores/use-locale";
 import { Button, Spinner, Typography, useThemeColor } from "heroui-native";
 import React from "react";
@@ -39,7 +40,7 @@ export function SheetHeader({
         onPress={onClose}
         accessibilityLabel={t("common.close")}
       >
-        <AppIcon name="close-outline" size={20} color={themeColorForeground} />
+        <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
       </Button>
     </View>
   );

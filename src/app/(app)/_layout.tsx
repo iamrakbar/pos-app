@@ -4,6 +4,7 @@ import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -68,7 +69,7 @@ export default function AppLayout() {
               onPress={() => router.push("/pos")}
               accessibilityLabel={t("navigation.openPosAccessibility")}
             >
-              <AppIcon name="calculator-outline" size={16} color={accentForeground} />
+              <AppIcon icon={AppIcons.cashier} size={16} color={accentForeground} />
               <Button.Label>{t("navigation.openPos")}</Button.Label>
             </Button>
           ),

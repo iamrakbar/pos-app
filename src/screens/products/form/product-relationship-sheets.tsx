@@ -1,4 +1,5 @@
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import InventoryMovementsTable from "@/components/common/inventory-movements-table";
 import ErrorState from "@/components/common/error-state";
 import { useInventoryMovements } from "@/hooks/db/use-inventory-audit";
@@ -62,7 +63,7 @@ function SheetHeader({
         onPress={onClose}
         accessibilityLabel={t("common.close")}
       >
-        <AppIcon name="close-outline" size={20} color={themeColorForeground} />
+        <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
       </Button>
     </View>
   );
@@ -105,7 +106,7 @@ function RecipeTable({ ingredients }: { ingredients: RecipeIngredient[] }): Reac
               <EmptyState className="py-16">
                 <EmptyState.Header>
                   <EmptyState.Media variant="icon">
-                    <AppIcon name="restaurant-outline" size={22} color={themeColorMuted} />
+                    <AppIcon icon={AppIcons.restaurant} size={22} color={themeColorMuted} />
                   </EmptyState.Media>
                   <EmptyState.Title>{t("productForm.recipeEmpty")}</EmptyState.Title>
                   <EmptyState.Description>
@@ -186,7 +187,7 @@ function RecipeEditor({
                 accessibilityLabel={t("productForm.recipeRemoveIngredientAccessibility")}
                 onPress={() => onRemove(index)}
               >
-                <AppIcon name="trash-outline" size={17} color={themeColorDanger} />
+                <AppIcon icon={AppIcons.trash} size={17} color={themeColorDanger} />
               </Button>
             </View>
             <View className="gap-1.5">
@@ -265,7 +266,7 @@ function RecipePickerTrigger({
       <Button.Label numberOfLines={1} className={value ? undefined : "text-muted"}>
         {value ?? children}
       </Button.Label>
-      <AppIcon name="chevron-down-outline" size={17} color={themeColorMuted} />
+      <AppIcon icon={AppIcons.chevronDown} size={17} color={themeColorMuted} />
     </Button>
   );
 }
@@ -323,7 +324,7 @@ function RecipePickerSheet({
             >
               <Button.Label numberOfLines={1}>{option.label}</Button.Label>
               {isSelected ? (
-                <AppIcon name="checkmark-outline" size={18} color={themeColorAccent} />
+                <AppIcon icon={AppIcons.checkmark} size={18} color={themeColorAccent} />
               ) : null}
             </Button>
           );

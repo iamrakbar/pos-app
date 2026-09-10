@@ -8,6 +8,7 @@ import { Button, cn, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
 import { useTranslation } from "@/stores/use-locale";
 
 type Props = {
@@ -113,7 +114,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             onPress={() => removeItem(item.id)}
             accessibilityLabel={t("pos.removeProductAccessibility", { product: item.name })}
           >
-            <AppIcon name="trash-outline" size={16} color={themeColorDangerSoftForeground} />
+            <AppIcon icon={AppIcons.trash} size={16} color={themeColorDangerSoftForeground} />
           </Button>
         </View>
         <View className="flex-row items-center gap-2 rounded-full bg-surface-secondary p-1">
@@ -124,7 +125,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             onPress={handleDecrement}
             accessibilityLabel={t("pos.decreaseProductAccessibility", { product: item.name })}
           >
-            <AppIcon name="remove" size={18} color={themeColorForeground} />
+            <AppIcon icon={AppIcons.remove} size={18} color={themeColorForeground} />
           </Button>
           <View className="w-8">
             <Typography type="body-sm" weight="semibold" align="center" className="tabular-nums">
@@ -138,7 +139,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             onPress={() => updateQty(item.id, item.qty + 1)}
             accessibilityLabel={t("pos.increaseProductAccessibility", { product: item.name })}
           >
-            <AppIcon name="add" size={18} color={themeColorForeground} />
+            <AppIcon icon={AppIcons.add} size={18} color={themeColorForeground} />
           </Button>
         </View>
       </View>
