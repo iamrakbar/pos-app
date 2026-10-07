@@ -19,10 +19,11 @@ declare namespace App.Requests.Merchant {
     export type InventoryUnitEnum = "gram" | "kilogram" | "milliliter" | "liter" | "piece" | "serving";
     export type KitchenTicketStatusActionEnum = "start" | "ready" | "cancel";
     export type KitchenTicketStatusEnum = "queued" | "preparing" | "ready" | "cancelled";
+    export type MerchantPayoutMethodEnum = "automatic_transfer" | "manual_transfer";
     export type OrderStatusEnum = "open" | "completed" | "cancelled";
     export type OrderTypeEnum = "dine-in" | "takeaway" | "delivery";
     export type PaymentGroupEnum = "cash" | "card" | "bank_transfer" | "qris" | "e_wallet" | "food_delivery" | "marketplace" | "over_the_counter";
-    export type PaymentStatusEnum = "capture" | "settlement" | "pending" | "deny" | "expire" | "cancel" | "failure";
+    export type PaymentStatusEnum = "capture" | "settlement" | "pending" | "deny" | "expire" | "cancel" | "failure" | "superseded" | "challenge" | "refund" | "partial_refund" | "chargeback" | "partial_chargeback";
     export type ReviewStatusEnum = "approved" | "unapproved";
     export type UnitTypeEnum = "percentage" | "fixed";
     export type UserRoleEnum = "owner" | "manager" | "cashier" | "waiter" | "chef";
@@ -45,12 +46,12 @@ declare namespace App.Requests.Merchant.AddOn {
         multiple?: boolean;
         min?: number;
         max?: number;
-        options?: {
+        options?: ({
             id?: string | null;
             name: string;
             price: number;
             _destroy?: boolean | null;
-        }[];
+        })[];
     };
 }
 declare namespace App.Requests.Merchant.Area {
@@ -111,7 +112,7 @@ declare namespace App.Requests.Merchant.Category {
 }
 declare namespace App.Requests.Merchant.Checkout {
     export type CartValidateRequest = {
-        products: {
+        products: ({
             id: string;
             product_id: string;
             name: string;
@@ -119,7 +120,7 @@ declare namespace App.Requests.Merchant.Checkout {
             price: number;
             subtotal: number;
             notes?: string | null;
-            add_ons?: {
+            add_ons?: ({
                 id: string;
                 name: string;
                 options?: {
@@ -127,12 +128,12 @@ declare namespace App.Requests.Merchant.Checkout {
                     name: string;
                     price: number;
                 }[] | null;
-            }[] | null;
-        }[];
+            })[] | null;
+        })[];
         coupon_codes?: string[] | null;
     };
     export type CheckoutRequest = {
-        products: {
+        products: ({
             id: string;
             product_id: string;
             name: string;
@@ -140,7 +141,7 @@ declare namespace App.Requests.Merchant.Checkout {
             price: number;
             subtotal: number;
             notes?: string | null;
-            add_ons?: {
+            add_ons?: ({
                 id: string;
                 name: string;
                 options?: {
@@ -148,8 +149,8 @@ declare namespace App.Requests.Merchant.Checkout {
                     name: string;
                     price: number;
                 }[] | null;
-            }[] | null;
-        }[];
+            })[] | null;
+        })[];
         customer_type: "guest" | "customer" | "anonymous";
         guest_id?: string | null;
         guest?: {
@@ -194,6 +195,12 @@ declare namespace App.Requests.Merchant.Coupon {
     };
 }
 declare namespace App.Requests.Merchant.Delivery {
+    export type ConfirmCourierChangeRequest = {
+        quote_id: string;
+        option_id: string;
+        accept_unquoted_cancellation_charge?: boolean;
+        manual_handoff_void_reason?: string | null;
+    };
     export type SubmitWaybillRequest = {
         waybill_id: string;
         courier_code: string;
@@ -229,6 +236,7 @@ declare namespace App.Requests.Merchant.Finance {
     export type StorePayoutRequest = {
         beneficiary_id: string;
         amount: number;
+        payout_method?: App.Requests.Merchant.MerchantPayoutMethodEnum | null;
         notes?: string | null;
     };
     export type ValidateBeneficiaryRequest = {
@@ -374,11 +382,11 @@ declare namespace App.Requests.Merchant.Profile {
         tax_name?: string | null;
         tax_value?: number | null;
         charge_app_payment_fee_to_customer?: boolean;
-        schedule?: {
+        schedule?: ({
             day_of_week: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
             open_time: string;
             close_time: string;
-        }[];
+        })[];
         address?: {
             address?: string | null;
             province?: string | null;
@@ -417,7 +425,8 @@ declare namespace App.Requests.Merchant.Staff {
 }
 declare namespace App.Requests.Merchant.Subscription {
     export type SubscribeRequest = {
-        plan_key: "trial" | "monthly" | "semesterly" | "yearly";
+        plan_key: "trial" | "monthly" | "semesterly" | "yearly" | "none";
+        idempotency_key?: string | null;
     };
 }
 declare namespace App.Requests.Merchant.Supplier {

@@ -53,7 +53,28 @@ access_token: string;
 token_type: string;
 expires_in: number;
 user: App.Data.Merchant.Auth.MerchantUserProfileData;
-merchants: Array<App.Data.Merchant.Auth.MerchantSummaryData>;
+merchants: Array<App.Data.Merchant.Auth.MerchantAuthSummaryData>;
+};
+export type MerchantAuthSummaryData = {
+id: string;
+name: string;
+slug: string;
+logo_url: string | null;
+dine_in: boolean;
+takeaway: boolean;
+delivery: boolean;
+tax_is_enable: boolean;
+tax_name: string | null;
+tax_value: number | null;
+charge_app_payment_fee_to_customer: boolean;
+features: Array<'dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe'>;
+readiness: App.Data.Merchant.Auth.MerchantReadinessSummaryData;
+};
+export type MerchantReadinessSummaryData = {
+ready: boolean;
+accepting_orders: boolean;
+progress: { completed: number; total: number; percentage: number };
+issue_keys: Array<string>;
 };
 export type MerchantSummaryData = {
 id: string;
@@ -67,7 +88,7 @@ tax_is_enable: boolean;
 tax_name: string | null;
 tax_value: number | null;
 charge_app_payment_fee_to_customer: boolean;
-features: Array<string>;
+features: Array<'dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe'>;
 };
 export type MerchantUserProfileData = {
 id: string;
@@ -215,6 +236,34 @@ period: { start: string; end: string };
 };
 }
 declare namespace App.Data.Merchant.Delivery {
+export type CourierChangeOptionData = {
+option_id: string;
+courier_id: string;
+courier_name: string;
+service_name: string | null;
+courier_code: string;
+service_code: string;
+delivery_mode: string;
+price: number;
+estimated_merchant_adjustment: number | null;
+delivery_zone_id: string | null;
+};
+export type CourierChangeQuoteData = {
+quote_id: string;
+expires_at: string;
+current_attempt_id: string | null;
+requires_provider_cancellation: boolean;
+cancellation_charge_known: boolean;
+options: Array<App.Data.Merchant.Delivery.CourierChangeOptionData>;
+};
+export type CourierChangeStateData = {
+operation_id: string;
+status: string;
+error_code: string | null;
+expires_at: string | null;
+estimated_merchant_adjustment: number | null;
+actual_merchant_adjustment: number;
+};
 export type DeliveryDetailData = {
 waybill_id: string | null;
 tracking_status: Array<any> | null;
@@ -225,6 +274,7 @@ courier: Array<any> | null;
 driver: Array<any> | null;
 address: Array<any> | null;
 delivery_fee: number;
+courier_change: App.Data.Merchant.Delivery.CourierChangeStateData | null;
 };
 export type DeliveryTrackingData = {
 order_id: string;
@@ -290,13 +340,15 @@ created_at: string;
 };
 export type PayoutData = {
 id: string;
-status: Array<any>;
+status: { value: 'new' | 'processed' | 'rejected' | 'cancelled' | 'waiting_disbursement' | 'awaiting_manual_transfer' | 'processing' | 'under_review' | 'disbursed'; label: string };
+payout_method: { value: 'automatic_transfer' | 'manual_transfer'; label: string };
 amount: number;
 fee: number;
 app_fee: number;
 balance_before: number;
 balance_after: number;
 reference_no: string | null;
+manual_transfer_reference: string | null;
 notes: string | null;
 rejection_message: string | null;
 beneficiary_bank_name: string | null;
@@ -856,9 +908,28 @@ cover_url: string | null;
 address: App.Data.Merchant.Profile.MerchantAddressData | null;
 has_schedule: boolean;
 schedule: Record<string, Array<{ open: string; close: string }>>;
-features: Array<string>;
+features: Array<'dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe'>;
 created_at: string;
 updated_at: string;
+};
+}
+declare namespace App.Data.Merchant.Readiness {
+export type MerchantReadinessData = {
+merchant_id: string;
+merchant_type: string;
+active: boolean;
+ready: boolean;
+accepting_orders: boolean;
+progress: { completed: number; total: number; percentage: number };
+channels: { dine_in: boolean; takeaway: boolean; delivery: boolean };
+issues: Array<App.Data.Merchant.Readiness.MerchantReadinessIssueData>;
+checked_at: string;
+};
+export type MerchantReadinessIssueData = {
+key: string;
+label: string;
+description: string;
+action: string;
 };
 }
 declare namespace App.Data.Merchant.Review {
@@ -894,6 +965,11 @@ days_remaining: number;
 starts_at: string;
 ends_at: string;
 cancelled_at: string | null;
+access_state: string;
+can_accept_orders: boolean;
+can_manage_existing_orders: boolean;
+can_access_financials: boolean;
+can_recover: boolean;
 };
 export type SubscriptionPaymentData = {
 id: string;

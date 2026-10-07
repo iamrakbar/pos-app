@@ -44,6 +44,11 @@
       "key": "operation_id",
       "value": "",
       "description": "Inventory operation UUID used to inspect or retry an operation."
+    },
+    {
+      "key": "subscription_payment_id",
+      "value": "",
+      "description": "Subscription payment UUID used by subscription billing status requests."
     }
   ],
   "item": [
@@ -77,7 +82,7 @@
                 "login"
               ]
             },
-            "description": "**Purpose:** Authenticate a merchant staff user (owner/manager/cashier/chef/waiter) and obtain a JWT access token.\n\n**Auth required:** No (throttled via `auth-login` rate limiter).\n\n**Method / URL:** `POST /api/v0/merchant/login`\n\n**Body:** `email` (required, valid email), `password` (required, string).\n\n**Success response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"access_token\": \"eyJ...\",\n    \"token_type\": \"bearer\",\n    \"expires_in\": 3600,\n    \"user\": { \"id\": \"uuid\", \"name\": \"Owner Name\", \"email\": \"owner@soeat.id\", \"role\": \"owner\", \"role_label\": \"Owner\" },\n    \"merchants\": [ { \"id\": \"uuid\", \"name\": \"Merchant Name\", \"slug\": \"merchant-slug\" } ]\n  }\n}\n```\n\n**Error response (401):**\n```json\n{ \"success\": false, \"message\": \"Invalid credentials\", \"error_code\": \"INVALID_CREDENTIALS\" }\n```",
+            "description": "**Purpose:** Authenticate a merchant staff user (owner/manager/cashier/chef/waiter) and obtain a JWT access token.\n\n**Auth required:** No (throttled via `auth-login` rate limiter).\n\n**Method / URL:** `POST /api/v0/merchant/login`\n\n**Body:** `email` (required, valid email), `password` (required, string).\n\n**Success response (200):** Each merchant includes its enabled `features`. `inventory_recipe` appears only when inventory is enabled for the merchant and both inventory platform flags are enabled.\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"access_token\": \"eyJ...\",\n    \"token_type\": \"bearer\",\n    \"expires_in\": 3600,\n    \"user\": { \"id\": \"uuid\", \"name\": \"Owner Name\", \"email\": \"owner@soeat.id\", \"role\": \"owner\", \"role_label\": \"Owner\" },\n    \"merchants\": [ { \"id\": \"uuid\", \"name\": \"Merchant Name\", \"slug\": \"merchant-slug\", \"features\": [\"dine_in\", \"takeaway\", \"inventory\", \"inventory_recipe\"] } ]\n  }\n}\n```\n\n**Error response (401):**\n```json\n{ \"success\": false, \"message\": \"Invalid credentials\", \"error_code\": \"INVALID_CREDENTIALS\" }\n```",
             "auth": {
               "type": "noauth"
             },
@@ -125,6 +130,11 @@
                   "    }",
                   "    pm.test(\"Access token was captured\", function () {",
                   "        pm.expect(data.access_token).to.be.a(\"string\").and.not.empty;",
+                  "    });",
+                  "    pm.test(\"Merchant readiness summary was returned\", function () {",
+                  "        pm.expect(data.merchants[0].readiness).to.be.an(\"object\");",
+                  "        pm.expect(data.merchants[0].readiness).to.have.property(\"accepting_orders\");",
+                  "        pm.expect(data.merchants[0].readiness).to.have.property(\"issue_keys\");",
                   "    });",
                   "}"
                 ]
@@ -440,8 +450,69 @@
               }
             }
           ]
-        }
-        ,{
+        },
+        {
+          "name": "Get Merchant Readiness",
+          "id": "req-merchant-readiness",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/readiness",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "{{merchant_id}}",
+                "readiness"
+              ]
+            },
+            "description": "**Purpose:** Return the current setup readiness for the selected merchant.\n\n**Auth required:** Yes. The authenticated merchant user must be assigned to `{{merchant_id}}`.\n\n**Method / URL:** `GET /api/v0/merchant/{{merchant_id}}/readiness`\n\n**Success response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"merchant_id\": \"uuid\",\n    \"merchant_type\": \"offstore\",\n    \"active\": true,\n    \"ready\": false,\n    \"accepting_orders\": false,\n    \"progress\": { \"completed\": 0, \"total\": 3, \"percentage\": 0 },\n    \"channels\": { \"dine_in\": false, \"takeaway\": false, \"delivery\": true },\n    \"issues\": [\n      { \"key\": \"products\", \"label\": \"Products\", \"description\": \"Add at least one active product customers can order.\", \"action\": \"products\" }\n    ],\n    \"checked_at\": \"2026-09-14T10:00:00+00:00\"\n  }\n}\n```\n\n`readiness` in the authentication response is a compact snapshot. Use this endpoint for localized issue labels, descriptions, actions, and a fresh calculation. Checkout remains enforced by the API.\n\n**Error responses:** `401` when unauthenticated; `403` when the user cannot manage the merchant.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is successful\", function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "if (pm.response.code < 300) {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data || {};",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(data.merchant_id).to.eql(pm.environment.get(\"merchant_id\"));",
+                  "    pm.expect(data).to.have.property(\"progress\");",
+                  "    pm.expect(data).to.have.property(\"channels\");",
+                  "    pm.expect(data).to.have.property(\"issues\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Register FCM Device Token",
           "id": "req-merchant-device-token-register",
           "request": {
@@ -1806,6 +1877,79 @@
               }
             }
           ]
+        },
+        {
+          "name": "Get Courier Change Quote",
+          "id": "req-23",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/orders/{{order_id}}/delivery/courier-options",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "{{merchant_id}}",
+                "orders",
+                "{{order_id}}",
+                "delivery",
+                "courier-options"
+              ]
+            },
+            "description": "**Purpose:** Get merchant enabled courier options for an open delivery order. Quotes expire after five minutes. The customer delivery fee stays unchanged. Confirm with `quote_id` and the selected `option_id`. A fresh rate check is performed at confirmation."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Courier Change",
+          "id": "req-24",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/orders/{{order_id}}/delivery/courier-change",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "{{merchant_id}}",
+                "orders",
+                "{{order_id}}",
+                "delivery",
+                "courier-change"
+              ]
+            },
+            "description": "**Purpose:** Confirm a courier change before provider booking. Returns the durable operation status and active attempt. Existing provider booked orders currently return a guarded provider cancellation flow error until cancel-and-rebook orchestration is enabled.\n\nSet `accept_unquoted_cancellation_charge` to `true` only after accepting an unquoted provider cancellation charge. Supply a concrete void reason when replacing an already handed off manual/internal delivery.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quote_id\": \"{{courier_change_quote_id}}\",\n  \"option_id\": \"{{courier_change_option_id}}\",\n  \"accept_unquoted_cancellation_charge\": false,\n  \"manual_handoff_void_reason\": \"Required only when the previous manual handoff or waybill has been explicitly voided.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -1839,7 +1983,7 @@
                 "{{merchant_id}}"
               ]
             },
-            "description": "**Purpose:** Get the merchant's own profile/settings (name, address, schedule, tax, feature toggles).\n\n**Auth required:** Yes (`verify.merchant` re-checks DB membership).\n\n**Method / URL:** `GET /api/v0/merchant/{{merchant_id}}`"
+            "description": "**Purpose:** Get the merchant's own profile/settings (name, address, schedule, tax, feature toggles).\n\n**Auth required:** Yes (`verify.merchant` re-checks DB membership).\n\n**Method / URL:** `GET /api/v0/merchant/{{merchant_id}}`\n\nThe `features` array includes `inventory_recipe` only when the merchant has inventory enabled and both `FEATURE_INVENTORY` and `FEATURE_INVENTORY_RECIPE` are enabled."
           },
           "response": [],
           "event": [
@@ -5366,6 +5510,65 @@
           ]
         },
         {
+          "name": "Get Subscription Payment Status",
+          "id": "req-105",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/subscription/payments/{{subscription_payment_id}}/status",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "{{merchant_id}}",
+                "subscription",
+                "payments",
+                "{{subscription_payment_id}}",
+                "status"
+              ]
+            },
+            "description": "**Purpose:** Refresh and return the payment status for one subscription payment owned by this merchant.\n\n**Auth required:** Yes.\n\n**Path params:** `merchant_id` and `subscription_payment_id` (UUID).\n\n**Responses:** `200` with the updated subscription payment, `404 PAYMENT_NOT_FOUND` when the payment does not belong to this merchant, or `502 PAYMENT_STATUS_FAILED` when the payment provider cannot be checked."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Response is JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test(\"Successful response has the standard envelope\", function () {",
+                  "        const json = pm.response.json();",
+                  "        pm.expect(json.success).to.eql(true);",
+                  "        pm.expect(json.data).to.be.an(\"object\");",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Error response uses a documented status\", function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([404, 502]);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Subscribe To Plan",
           "id": "req-74",
           "request": {
@@ -5727,8 +5930,67 @@
     },
     {
       "name": "Finance",
-      "description": "Payout/withdrawal requests (Midtrans Iris) and beneficiary bank account management.",
+      "description": "Payout/withdrawal requests and beneficiary bank account management.\n\nPublic payout methods: automatic_transfer and manual_transfer. Read enabled methods from the balance or quote endpoint; hide the selector when exactly one method is available. Legacy automatic method input remains accepted during client migration, but responses use only public values.\n\nPublic exceptional statuses: processing (submission in progress) and under_review (transfer outcome being checked; funds remain reserved). Other values remain new, processed, rejected, cancelled, waiting_disbursement, awaiting_manual_transfer, and disbursed. Only disbursed means paid.\n\nreference_no is the SoEat payout ID. manual_transfer_reference is a bank reference exposed only after a manual payout is disbursed. Internal provider references and diagnostics are not exposed.\n\nPayout status broadcasts retain the payout envelope and use the same safe PayoutData object as the API. Clients should consume status.value/status.label and payout_method.value/payout_method.label. Frontend migration is deferred until the client update is ready; verify client compatibility before deploying this API contract change.",
       "item": [
+        {
+          "name": "Get Payout Quote",
+          "id": "payout-quote",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/payouts/quote?beneficiary_id={{beneficiary_id}}&amount=100000&payout_method=automatic_transfer",
+              "host": [
+                "{{api_base_url}}"
+              ],
+              "path": [
+                "v0",
+                "merchant",
+                "{{merchant_id}}",
+                "payouts",
+                "quote"
+              ],
+              "query": [
+                {
+                  "key": "beneficiary_id",
+                  "value": "{{beneficiary_id}}"
+                },
+                {
+                  "key": "amount",
+                  "value": "100000"
+                },
+                {
+                  "key": "payout_method",
+                  "value": "automatic_transfer"
+                }
+              ]
+            },
+            "description": "Quote the selected payout method before submission. Returns available_methods, payout_method, fee, app_fee, total_debit, and payable_amount. Use manual_transfer to quote a manual payout. Disabled methods return 422. Requires merchant authentication."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Payout quote succeeds', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json().data;",
+                  "  pm.test('Public payout method', () => pm.expect(data.payout_method.value).to.be.oneOf(['automatic_transfer', 'manual_transfer']));",
+                  "  pm.test('Fee quote includes total debit', () => pm.expect(data.total_debit).to.eql(100000 + data.fee + data.app_fee));",
+                  "  pm.test('Quote method uses public fields', () => pm.expect(Object.keys(data.payout_method)).to.have.members(['value', 'label']));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "Get Payout Balance",
           "id": "req-78",
@@ -5938,10 +6200,10 @@
                 "payouts"
               ]
             },
-            "description": "**Purpose:** Request a payout/withdrawal to a registered beneficiary bank account via Midtrans Iris.\n\n**Auth required:** Yes.\n\n**Body:** `beneficiary_id` (required uuid, exists:beneficiaries); `amount` (required int, min:10000); `notes` (nullable, max:500).\n\n**Error response (422):** amount exceeds payable balance, or a payout is already in progress.",
+            "description": "**Purpose:** Request a payout/withdrawal to a registered beneficiary bank account.\n\n**Auth required:** Yes.\n\n**Body:** `beneficiary_id` (required uuid, exists:beneficiaries); `amount` (required int, min:10000); `payout_method` (optional: automatic_transfer or manual_transfer); `notes` (nullable, max:500).\n\n**Error response (422):** amount exceeds payable balance, the selected method is unavailable, or a payout is already in progress.",
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"beneficiary_id\": \"{{beneficiary_id}}\",\n    \"amount\": 100000,\n    \"notes\": \"Weekly withdrawal\"\n}",
+              "raw": "{\n    \"beneficiary_id\": \"{{beneficiary_id}}\",\n    \"amount\": 100000,\n    \"payout_method\": \"automatic_transfer\",\n    \"notes\": \"Weekly withdrawal\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6065,7 +6327,7 @@
                 "validate"
               ]
             },
-            "description": "**Purpose:** Validate a bank account number with Midtrans Iris before saving it as a beneficiary (returns account holder name for confirmation).\n\n**Auth required:** Yes.\n\n**Body:** `disbursement_id` (required uuid, exists:disbursements — i.e. the bank); `account_number` (required, min:6, max:50, digits only).\n\n**Error response (422):** invalid account number.",
+            "description": "**Purpose:** Validate a bank account number before using it as a beneficiary (returns account holder name for confirmation).\n\n**Auth required:** Yes.\n\n**Body:** `disbursement_id` (required uuid, exists:disbursements — i.e. the bank); `account_number` (required, min:6, max:50, digits only).\n\n**Error response (422):** invalid account number.",
             "body": {
               "mode": "raw",
               "raw": "{\n    \"disbursement_id\": \"disbursement-uuid\",\n    \"account_number\": \"1234567890\"\n}",
@@ -7472,543 +7734,595 @@
         {
           "name": "Overview",
           "item": [
-        {
-          "name": "Get Inventory Status",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/status",
-            "description": "Returns whether inventory is enabled, supported inventory modes (unlimited, manual, recipe), and supported units (gram, kilogram, milliliter, liter, piece, serving)."
-          },
-          "response": []
-        },
-        {
-          "name": "Get Inventory Overview",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/overview",
-            "description": "Returns inventory alerts, recognized COGS, losses, gross profit, and failed operation counts."
-          },
-          "response": []
-        }
+            {
+              "name": "Get Inventory Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/status",
+                "description": "Returns whether inventory is enabled, supported inventory modes (unlimited, manual, recipe), and supported units (gram, kilogram, milliliter, liter, piece, serving)."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Inventory Overview",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/overview",
+                "description": "Returns inventory alerts, recognized COGS, losses, gross profit, and failed operation counts."
+              },
+              "response": []
+            }
           ]
         },
         {
           "name": "Operations",
           "item": [
-        {
-          "name": "List Inventory Movements",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/movements?filter[type]=purchase&filter[date_from]=2026-07-01&filter[date_to]=2026-07-31&sort=-moved_at&per_page=25",
-              "host": [
-                "{{api_base_url}}"
-              ],
-              "path": [
-                "v0",
-                "merchant",
-                "{{merchant_id}}",
-                "inventory",
-                "movements"
-              ],
-              "query": [
-                {
-                  "key": "filter[type]",
-                  "value": "purchase",
-                  "disabled": true
+            {
+              "name": "List Inventory Movements",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/movements?filter[type]=purchase&filter[date_from]=2026-07-01&filter[date_to]=2026-07-31&sort=-moved_at&per_page=25",
+                  "host": [
+                    "{{api_base_url}}"
+                  ],
+                  "path": [
+                    "v0",
+                    "merchant",
+                    "{{merchant_id}}",
+                    "inventory",
+                    "movements"
+                  ],
+                  "query": [
+                    {
+                      "key": "filter[type]",
+                      "value": "purchase",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[date_from]",
+                      "value": "2026-07-01",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[date_to]",
+                      "value": "2026-07-31",
+                      "disabled": true
+                    },
+                    {
+                      "key": "sort",
+                      "value": "-moved_at",
+                      "disabled": false
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "25",
+                      "disabled": false
+                    }
+                  ]
                 },
-                {
-                  "key": "filter[date_from]",
-                  "value": "2026-07-01",
-                  "disabled": true
-                },
-                {
-                  "key": "filter[date_to]",
-                  "value": "2026-07-31",
-                  "disabled": true
-                },
-                {
-                  "key": "sort",
-                  "value": "-moved_at",
-                  "disabled": false
-                },
-                {
-                  "key": "per_page",
-                  "value": "25",
-                  "disabled": false
-                }
-              ]
+                "description": "Append-only inventory ledger. Filter by ingredient_id, product_id, type, source, date_from, and date_to. Movement types include opening, purchase, sale, reversal, adjustment, waste, damage, and return when generated by the system."
+              },
+              "response": []
             },
-            "description": "Append-only inventory ledger. Filter by ingredient_id, product_id, type, source, date_from, and date_to. Movement types include opening, purchase, sale, reversal, adjustment, waste, damage, and return when generated by the system."
-          },
-          "response": []
-        },
-        {
-          "name": "List Inventory Operations",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/operations?filter[status]=failed&filter[source]=order&filter[date_from]=2026-07-01&filter[date_to]=2026-07-31&sort=-created_at&per_page=25",
-              "host": [
-                "{{api_base_url}}"
-              ],
-              "path": [
-                "v0",
-                "merchant",
-                "{{merchant_id}}",
-                "inventory",
-                "operations"
-              ],
-              "query": [
-                {
-                  "key": "filter[status]",
-                  "value": "failed",
-                  "disabled": true
+            {
+              "name": "List Inventory Operations",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/operations?filter[status]=failed&filter[source]=order&filter[date_from]=2026-07-01&filter[date_to]=2026-07-31&sort=-created_at&per_page=25",
+                  "host": [
+                    "{{api_base_url}}"
+                  ],
+                  "path": [
+                    "v0",
+                    "merchant",
+                    "{{merchant_id}}",
+                    "inventory",
+                    "operations"
+                  ],
+                  "query": [
+                    {
+                      "key": "filter[status]",
+                      "value": "failed",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[source]",
+                      "value": "order",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[date_from]",
+                      "value": "2026-07-01",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[date_to]",
+                      "value": "2026-07-31",
+                      "disabled": true
+                    },
+                    {
+                      "key": "sort",
+                      "value": "-created_at",
+                      "disabled": false
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "25",
+                      "disabled": false
+                    }
+                  ]
                 },
-                {
-                  "key": "filter[source]",
-                  "value": "order",
-                  "disabled": true
-                },
-                {
-                  "key": "filter[date_from]",
-                  "value": "2026-07-01",
-                  "disabled": true
-                },
-                {
-                  "key": "filter[date_to]",
-                  "value": "2026-07-31",
-                  "disabled": true
-                },
-                {
-                  "key": "sort",
-                  "value": "-created_at",
-                  "disabled": false
-                },
-                {
-                  "key": "per_page",
-                  "value": "25",
-                  "disabled": false
-                }
-              ]
+                "description": "Lists inventory operation envelopes without movement details. Operation statuses: processing, posted, reversed, failed."
+              },
+              "response": []
             },
-            "description": "Lists inventory operation envelopes without movement details. Operation statuses: processing, posted, reversed, failed."
-          },
-          "response": []
-        },
-        {
-          "name": "Get Inventory Operation",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/operations/{{operation_id}}",
-            "description": "Returns one tenant-scoped operation with its movements."
-          },
-          "response": []
-        },
-        {
-          "name": "Retry Failed Inventory Operation",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/operations/{{operation_id}}/retry",
-            "description": "Retries a failed order deduction. The operation is retried only when its status and source allow it; otherwise the API returns 409 INVENTORY_RETRY_NOT_ALLOWED."
-          },
-          "response": []
-        }
+            {
+              "name": "Get Inventory Operation",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/operations/{{operation_id}}",
+                "description": "Returns one tenant-scoped operation with its movements."
+              },
+              "response": []
+            },
+            {
+              "name": "Retry Failed Inventory Operation",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/inventory/operations/{{operation_id}}/retry",
+                "description": "Retries a failed order deduction. The operation is retried only when its status and source allow it; otherwise the API returns 409 INVENTORY_RETRY_NOT_ALLOWED."
+              },
+              "response": []
+            }
           ]
         },
         {
           "name": "Ingredients",
           "item": [
-        {
-          "name": "List Ingredients",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients?filter[active]=1&filter[base_unit]=gram&filter[low_stock]=1&filter[search]=&sort=name&per_page=15",
-              "host": [
-                "{{api_base_url}}"
-              ],
-              "path": [
-                "v0",
-                "merchant",
-                "{{merchant_id}}",
-                "ingredients"
-              ],
-              "query": [
-                {
-                  "key": "filter[active]",
-                  "value": "1",
-                  "disabled": true
+            {
+              "name": "List Ingredients",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients?filter[active]=1&filter[base_unit]=gram&filter[low_stock]=1&filter[search]=&sort=name&per_page=15",
+                  "host": [
+                    "{{api_base_url}}"
+                  ],
+                  "path": [
+                    "v0",
+                    "merchant",
+                    "{{merchant_id}}",
+                    "ingredients"
+                  ],
+                  "query": [
+                    {
+                      "key": "filter[active]",
+                      "value": "1",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[base_unit]",
+                      "value": "gram",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[low_stock]",
+                      "value": "1",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[search]",
+                      "value": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "sort",
+                      "value": "name",
+                      "disabled": false
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15",
+                      "disabled": false
+                    }
+                  ]
                 },
-                {
-                  "key": "filter[base_unit]",
-                  "value": "gram",
-                  "disabled": true
+                "description": "Lists ingredients with current stock, reorder point, integer IDR cost per unit, preferred supplier, and supplier offer count."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Ingredient",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Coffee beans\",\n    \"base_unit\": \"gram\",\n    \"reorder_point\": 500,\n    \"cost_per_unit\": 2,\n    \"initial_quantity\": 1000,\n    \"operation_id\": \"{{$guid}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "filter[low_stock]",
-                  "value": "1",
-                  "disabled": true
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients",
+                "description": "Creates an ingredient. initial_quantity and operation_id are optional; initial_quantity creates an opening operation when greater than zero."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Ingredient",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Ingredient",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Coffee beans\",\n    \"reorder_point\": 750,\n    \"cost_per_unit\": 3,\n    \"active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "filter[search]",
-                  "value": "",
-                  "disabled": true
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Ingredient",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Record Ingredient Opening Balance",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"quantity\": 1000.5,\n    \"cost_per_unit\": 2,\n    \"operation_id\": \"{{$guid}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "sort",
-                  "value": "name",
-                  "disabled": false
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/opening-balance",
+                "description": "Records opening stock using up to six decimal places. operation_id makes a repeated request idempotent."
+              },
+              "response": []
+            },
+            {
+              "name": "Adjust Ingredient Stock",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"target_balance\": 850.25,\n    \"reason\": \"Cycle count correction\",\n    \"operation_id\": \"{{$guid}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "per_page",
-                  "value": "15",
-                  "disabled": false
-                }
-              ]
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/adjustments"
+              },
+              "response": []
             },
-            "description": "Lists ingredients with current stock, reorder point, integer IDR cost per unit, preferred supplier, and supplier offer count."
-          },
-          "response": []
-        },
-        {
-          "name": "Create Ingredient",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Coffee beans\",\n    \"base_unit\": \"gram\",\n    \"reorder_point\": 500,\n    \"cost_per_unit\": 2,\n    \"initial_quantity\": 1000,\n    \"operation_id\": \"{{$guid}}\"\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients",
-            "description": "Creates an ingredient. initial_quantity and operation_id are optional; initial_quantity creates an opening operation when greater than zero."
-          },
-          "response": []
-        },
-        {
-          "name": "Get Ingredient",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Ingredient",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Coffee beans\",\n    \"reorder_point\": 750,\n    \"cost_per_unit\": 3,\n    \"active\": true\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Ingredient",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Record Ingredient Opening Balance",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"quantity\": 1000.5,\n    \"cost_per_unit\": 2,\n    \"operation_id\": \"{{$guid}}\"\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/opening-balance",
-            "description": "Records opening stock using up to six decimal places. operation_id makes a repeated request idempotent."
-          },
-          "response": []
-        },
-        {
-          "name": "Adjust Ingredient Stock",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"target_balance\": 850.25,\n    \"reason\": \"Cycle count correction\",\n    \"operation_id\": \"{{$guid}}\"\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/adjustments"
-          },
-          "response": []
-        },
-        {
-          "name": "Record Ingredient Movement",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"type\": \"purchase\",\n    \"quantity\": 1000.5,\n    \"cost_per_unit\": 2,\n    \"supplier_offer_id\": {{supplier_offer_id}},\n    \"reason\": \"Supplier delivery\",\n    \"operation_id\": \"{{$guid}}\"\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/movements",
-            "description": "Records a purchase, return, waste, or damage movement. Send a positive quantity; the server signs waste and damage movements. Supplier offers are valid for purchase and return movements."
-          },
-          "response": []
-        }
+            {
+              "name": "Record Ingredient Movement",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"type\": \"purchase\",\n    \"quantity\": 1000.5,\n    \"cost_per_unit\": 2,\n    \"supplier_offer_id\": {{supplier_offer_id}},\n    \"reason\": \"Supplier delivery\",\n    \"operation_id\": \"{{$guid}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/movements",
+                "description": "Records a purchase, return, waste, or damage movement. Send a positive quantity; the server signs waste and damage movements. Supplier offers are valid for purchase and return movements."
+              },
+              "response": []
+            }
           ]
         },
         {
           "name": "Supplier Offers",
           "item": [
-        {
-          "name": "List Ingredient Supplier Offers",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers"
-          },
-          "response": []
-        },
-        {
-          "name": "Create Ingredient Supplier Offer",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"supplier_id\": \"{{supplier_id}}\",\n    \"purchase_unit\": \"bag\",\n    \"pack_quantity\": 1000,\n    \"minimum_order_quantity\": 1,\n    \"last_purchase_price\": 250000,\n    \"is_preferred\": true,\n    \"active\": true\n}",
-              "options": {"raw": {"language": "json"}}
+            {
+              "name": "List Ingredient Supplier Offers",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers"
+              },
+              "response": []
             },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Ingredient Supplier Offer",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"supplier_id\": \"{{supplier_id}}\",\n    \"purchase_unit\": \"bag\",\n    \"pack_quantity\": 1000,\n    \"last_purchase_price\": 260000,\n    \"is_preferred\": true,\n    \"active\": true\n}",
-              "options": {"raw": {"language": "json"}}
+            {
+              "name": "Create Ingredient Supplier Offer",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"supplier_id\": \"{{supplier_id}}\",\n    \"purchase_unit\": \"bag\",\n    \"pack_quantity\": 1000,\n    \"minimum_order_quantity\": 1,\n    \"last_purchase_price\": 250000,\n    \"is_preferred\": true,\n    \"active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers"
+              },
+              "response": []
             },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers/{{supplier_offer_id}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Ingredient Supplier Offer",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers/{{supplier_offer_id}}"
-          },
-          "response": []
-        }
+            {
+              "name": "Update Ingredient Supplier Offer",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"supplier_id\": \"{{supplier_id}}\",\n    \"purchase_unit\": \"bag\",\n    \"pack_quantity\": 1000,\n    \"last_purchase_price\": 260000,\n    \"is_preferred\": true,\n    \"active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers/{{supplier_offer_id}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Ingredient Supplier Offer",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/ingredients/{{ingredient_id}}/supplier-offers/{{supplier_offer_id}}"
+              },
+              "response": []
+            }
           ]
         },
         {
           "name": "Suppliers",
           "item": [
-        {
-          "name": "List Suppliers",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers?filter[active]=1&filter[search]=&sort=name&per_page=15",
-              "host": [
-                "{{api_base_url}}"
-              ],
-              "path": [
-                "v0",
-                "merchant",
-                "{{merchant_id}}",
-                "suppliers"
-              ],
-              "query": [
-                {
-                  "key": "filter[active]",
-                  "value": "1",
-                  "disabled": true
-                },
-                {
-                  "key": "filter[search]",
-                  "value": "",
-                  "disabled": true
-                },
-                {
-                  "key": "sort",
-                  "value": "name",
-                  "disabled": false
-                },
-                {
-                  "key": "per_page",
-                  "value": "15",
-                  "disabled": false
+            {
+              "name": "List Suppliers",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers?filter[active]=1&filter[search]=&sort=name&per_page=15",
+                  "host": [
+                    "{{api_base_url}}"
+                  ],
+                  "path": [
+                    "v0",
+                    "merchant",
+                    "{{merchant_id}}",
+                    "suppliers"
+                  ],
+                  "query": [
+                    {
+                      "key": "filter[active]",
+                      "value": "1",
+                      "disabled": true
+                    },
+                    {
+                      "key": "filter[search]",
+                      "value": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "sort",
+                      "value": "name",
+                      "disabled": false
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15",
+                      "disabled": false
+                    }
+                  ]
                 }
-              ]
+              },
+              "response": []
+            },
+            {
+              "name": "Create Supplier",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Coffee Supplier\",\n    \"contact_name\": \"Ayu\",\n    \"email\": \"ayu@supplier.test\",\n    \"phone\": \"08123456789\",\n    \"lead_time_days\": 2,\n    \"payment_terms\": \"COD\",\n    \"active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Supplier",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers/{{supplier_id}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Supplier",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Coffee Supplier Updated\",\n    \"active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers/{{supplier_id}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Supplier",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers/{{supplier_id}}"
+              },
+              "response": []
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Supplier",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Coffee Supplier\",\n    \"contact_name\": \"Ayu\",\n    \"email\": \"ayu@supplier.test\",\n    \"phone\": \"08123456789\",\n    \"lead_time_days\": 2,\n    \"payment_terms\": \"COD\",\n    \"active\": true\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers"
-          },
-          "response": []
-        },
-        {
-          "name": "Get Supplier",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers/{{supplier_id}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Supplier",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Coffee Supplier Updated\",\n    \"active\": true\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers/{{supplier_id}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Supplier",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/suppliers/{{supplier_id}}"
-          },
-          "response": []
-        }
           ]
         },
         {
           "name": "Products",
           "item": [
-        {
-          "name": "Inventory",
-          "item": [
-        {
-          "name": "Get Product Inventory",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/inventory"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Product Inventory",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"inventory_mode\": \"manual\",\n    \"stock_alert\": 2\n}",
-              "options": {"raw": {"language": "json"}}
+            {
+              "name": "Inventory",
+              "item": [
+                {
+                  "name": "Get Product Inventory",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/inventory"
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Update Product Inventory",
+                  "request": {
+                    "method": "PUT",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"inventory_mode\": \"manual\",\n    \"stock_alert\": 2\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/inventory",
+                    "description": "Inventory mode values are unlimited, manual, and recipe. Mode changes are blocked while the product has an active/open order. Stock balances are changed through the opening-balance and adjustment endpoints."
+                  },
+                  "response": []
+                }
+              ]
             },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/inventory",
-            "description": "Inventory mode values are unlimited, manual, and recipe. Mode changes are blocked while the product has an active/open order. Stock balances are changed through the opening-balance and adjustment endpoints."
-          },
-          "response": []
-        }
-          ]
-        },
-        {
-          "name": "Recipes",
-          "item": [
-        {
-          "name": "Get Product Recipe",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/recipe"
-          },
-          "response": []
-        },
-        {
-          "name": "Replace Product Recipe",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"ingredients\": [\n        {\n            \"ingredient_id\": \"{{ingredient_id}}\",\n            \"quantity\": 18.5,\n            \"unit\": \"gram\"\n        }\n    ]\n}",
-              "options": {"raw": {"language": "json"}}
+            {
+              "name": "Recipes",
+              "item": [
+                {
+                  "name": "Get Product Recipe",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/recipe"
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Replace Product Recipe",
+                  "request": {
+                    "method": "PUT",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"ingredients\": [\n        {\n            \"ingredient_id\": \"{{ingredient_id}}\",\n            \"quantity\": 18.5,\n            \"unit\": \"gram\"\n        }\n    ]\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/recipe",
+                    "description": "Replaces the entire recipe. Ingredient units must be compatible with each ingredient base unit."
+                  },
+                  "response": []
+                }
+              ]
             },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/recipe",
-            "description": "Replaces the entire recipe. Ingredient units must be compatible with each ingredient base unit."
-          },
-          "response": []
-        }
-          ]
-        },
-        {
-          "name": "Stock",
-          "item": [
-        {
-          "name": "Record Product Opening Balance",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"quantity\": 10,\n    \"operation_id\": \"{{$guid}}\"\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/opening-balance"
-          },
-          "response": []
-        },
-        {
-          "name": "Adjust Product Stock",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"target_balance\": 8,\n    \"reason\": \"Cycle count correction\",\n    \"operation_id\": \"{{$guid}}\"\n}",
-              "options": {"raw": {"language": "json"}}
-            },
-            "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/adjustments"
-          },
-          "response": []
-        }
-          ]
-        }
+            {
+              "name": "Stock",
+              "item": [
+                {
+                  "name": "Record Product Opening Balance",
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"quantity\": 10,\n    \"operation_id\": \"{{$guid}}\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/opening-balance"
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Adjust Product Stock",
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n    \"target_balance\": 8,\n    \"reason\": \"Cycle count correction\",\n    \"operation_id\": \"{{$guid}}\"\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": "{{api_base_url}}/v0/merchant/{{merchant_id}}/products/{{product_id}}/adjustments"
+                  },
+                  "response": []
+                }
+              ]
+            }
           ]
         }
       ]
