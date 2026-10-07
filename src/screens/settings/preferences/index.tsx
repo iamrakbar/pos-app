@@ -61,7 +61,7 @@ export default function PreferencesScreen(): JSX.Element {
                 </ListGroup.ItemDescription>
               </ListGroup.ItemContent>
             </View>
-            <ListGroup.ItemSuffix className={isCompact ? "w-full" : "w-36"}>
+            <ListGroup.ItemSuffix className={isCompact ? "w-full" : "w-48"}>
               <Select
                 key={`theme-${locale}`}
                 presentation={choicePresentation}
@@ -106,7 +106,7 @@ export default function PreferencesScreen(): JSX.Element {
                 </ListGroup.ItemDescription>
               </ListGroup.ItemContent>
             </View>
-            <ListGroup.ItemSuffix className={isCompact ? "w-full" : "w-36"}>
+            <ListGroup.ItemSuffix className={isCompact ? "w-full" : "w-48"}>
               <Select
                 key={`language-${locale}`}
                 presentation={choicePresentation}
