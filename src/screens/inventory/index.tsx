@@ -6,6 +6,9 @@ import { ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import { useAuth } from "@/stores/use-auth";
+import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
+import { hasMerchantFeature } from "@/utils/merchant-features";
 
 type InventoryMenuItem = {
   id: string;
@@ -19,22 +22,30 @@ export default function InventoryOverviewScreen(): JSX.Element {
   const router = useRouter();
   const { t } = useTranslation();
   const [themeColorMuted] = useThemeColor(["muted"]);
-  const manageItems: InventoryMenuItem[] = [
-    {
-      id: "ingredients",
-      href: "/settings/inventory/ingredients",
-      icon: AppIcons.food,
-      label: t("navigation.ingredients"),
-      description: t("navigation.ingredientsDescription"),
-    },
-    {
-      id: "suppliers",
-      href: "/settings/inventory/suppliers",
-      icon: AppIcons.people,
-      label: t("navigation.suppliers"),
-      description: t("navigation.suppliersDescription"),
-    },
-  ];
+  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const { data: merchantProfile } = useMerchantProfile();
+  const recipeInventoryEnabled = hasMerchantFeature(
+    merchantProfile?.features ?? activeMerchant?.features,
+    "inventory_recipe"
+  );
+  const manageItems: InventoryMenuItem[] = recipeInventoryEnabled
+    ? [
+        {
+          id: "ingredients",
+          href: "/settings/inventory/ingredients",
+          icon: AppIcons.food,
+          label: t("navigation.ingredients"),
+          description: t("navigation.ingredientsDescription"),
+        },
+        {
+          id: "suppliers",
+          href: "/settings/inventory/suppliers",
+          icon: AppIcons.people,
+          label: t("navigation.suppliers"),
+          description: t("navigation.suppliersDescription"),
+        },
+      ]
+    : [];
   const monitorItems: InventoryMenuItem[] = [
     {
       id: "movements",
@@ -58,23 +69,25 @@ export default function InventoryOverviewScreen(): JSX.Element {
       contentContainerClassName="flex-grow px-4 py-6 md:px-6"
     >
       <View className="mx-auto w-full max-w-3xl gap-6 pb-safe">
-        <View className="gap-2">
-          <Typography type="body-sm" weight="semibold">
-            {t("navigation.inventoryManage")}
-          </Typography>
-          <ListGroup>
-            {manageItems.map((item, index) => (
-              <View key={item.id}>
-                <SettingsMenuRow
-                  item={item}
-                  iconColor={themeColorMuted}
-                  onPress={() => router.push(item.href as never)}
-                />
-                {index < manageItems.length - 1 ? <Separator className="mx-4" /> : null}
-              </View>
-            ))}
-          </ListGroup>
-        </View>
+        {manageItems.length > 0 ? (
+          <View className="gap-2">
+            <Typography type="body-sm" weight="semibold">
+              {t("navigation.inventoryManage")}
+            </Typography>
+            <ListGroup>
+              {manageItems.map((item, index) => (
+                <View key={item.id}>
+                  <SettingsMenuRow
+                    item={item}
+                    iconColor={themeColorMuted}
+                    onPress={() => router.push(item.href as never)}
+                  />
+                  {index < manageItems.length - 1 ? <Separator className="mx-4" /> : null}
+                </View>
+              ))}
+            </ListGroup>
+          </View>
+        ) : null}
 
         <View className="gap-2">
           <Typography type="body-sm" weight="semibold">

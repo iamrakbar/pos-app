@@ -154,13 +154,13 @@ export const productInventoryKeys = {
     ["product-inventory", merchantId, productId] as const,
 };
 
-export function useProductInventory(productId: string) {
+export function useProductInventory(productId: string, options: { enabled?: boolean } = {}) {
   const merchantId = useAuth((state) => state.merchantId);
 
   return useQuery({
     queryKey: productInventoryKeys.detail(merchantId, productId),
     queryFn: async () => (await getProductInventory(merchantId!, productId)).data,
-    enabled: !!merchantId && productId !== "new",
+    enabled: !!merchantId && productId !== "new" && (options.enabled ?? true),
   });
 }
 

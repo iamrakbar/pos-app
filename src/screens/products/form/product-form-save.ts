@@ -63,6 +63,8 @@ export async function saveProduct({
   updateMutation,
   updateInventoryMutation,
   inventoryValues,
+  inventoryEnabled,
+  inventoryRecipeEnabled,
   applyServerErrors,
   setError,
   toast,
@@ -76,6 +78,8 @@ export async function saveProduct({
   updateMutation: ProductMutation;
   updateInventoryMutation: InventoryMutation;
   inventoryValues: App.Requests.Merchant.Product.UpdateInventoryRequest;
+  inventoryEnabled: boolean;
+  inventoryRecipeEnabled: boolean;
   applyServerErrors: (error: unknown) => boolean;
   setError: UseFormSetError<ProductFormValues>;
   toast: Toast;
@@ -90,7 +94,7 @@ export async function saveProduct({
       ? createMutation.mutateAsync(catalogPayload)
       : updateMutation.mutateAsync(catalogPayload));
 
-    if (isNew && inventoryValues.inventory_mode === "recipe") {
+    if (inventoryEnabled && isNew && inventoryValues.inventory_mode === "recipe") {
       onProductCreated?.(savedProduct.id);
       toast.show({
         variant: "warning",
@@ -99,10 +103,15 @@ export async function saveProduct({
       return;
     }
 
-    await updateInventoryMutation.mutateAsync({
-      productId: savedProduct.id,
-      values: inventoryValues,
-    });
+    if (
+      inventoryEnabled &&
+      (inventoryRecipeEnabled || inventoryValues.inventory_mode !== "recipe")
+    ) {
+      await updateInventoryMutation.mutateAsync({
+        productId: savedProduct.id,
+        values: inventoryValues,
+      });
+    }
     toast.show({
       variant: "success",
       label: isNew ? t("productForm.created") : t("productForm.updated"),

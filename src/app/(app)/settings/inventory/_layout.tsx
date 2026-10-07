@@ -1,10 +1,26 @@
 import { useNavigationTheme } from "@/utils/navigation-theme";
-import { Stack } from "expo-router";
+import { Redirect, Stack, usePathname } from "expo-router";
 import { useTranslation } from "@/stores/use-locale";
+import { useAuth } from "@/stores/use-auth";
+import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
+import { hasMerchantFeature } from "@/utils/merchant-features";
 
 export default function InventoryLayout(): React.JSX.Element {
   const theme = useNavigationTheme();
   const { t } = useTranslation();
+  const pathname = usePathname();
+  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const { data: merchantProfile } = useMerchantProfile();
+  const features = merchantProfile?.features ?? activeMerchant?.features;
+  const inventoryEnabled = hasMerchantFeature(features, "inventory");
+  const inventoryRecipeEnabled = hasMerchantFeature(features, "inventory_recipe");
+  const isRecipeInventoryRoute =
+    pathname.includes("/ingredients") || pathname.includes("/suppliers");
+
+  if (!inventoryEnabled) return <Redirect href="/settings" />;
+  if (!inventoryRecipeEnabled && isRecipeInventoryRoute) {
+    return <Redirect href="/settings/inventory" />;
+  }
 
   return (
     <Stack

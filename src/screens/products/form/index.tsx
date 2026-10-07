@@ -74,6 +74,9 @@ import { saveProduct, toProductPayload } from "./product-form-save";
 import { applyProductServerErrors } from "./product-form-errors";
 import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
+import { useAuth } from "@/stores/use-auth";
+import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
+import { hasMerchantFeature } from "@/utils/merchant-features";
 import type { Translate, TranslationKey } from "@/locales";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -532,17 +535,25 @@ function ProductInventoryFields({
   errors,
   inventory,
   isNew,
+  inventoryEnabled,
+  inventoryRecipeEnabled,
 }: {
   control: Control<ProductFormValues>;
   errors: FieldErrors<ProductFormValues>;
   inventory: ProductInventory | undefined;
   isNew: boolean;
+  inventoryEnabled: boolean;
+  inventoryRecipeEnabled: boolean;
 }): React.JSX.Element {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
   const inventoryMode = useWatch({ control, name: "inventory_mode" });
+  if (!inventoryEnabled) return <></>;
   const capabilities = getProductInventoryCapabilities(inventoryMode, isNew);
-  const modeOptions = PRODUCT_INVENTORY_MODES.map((mode) => ({
+  const hideRecipeStock = inventoryMode === "recipe" && !inventoryRecipeEnabled;
+  const modeOptions = PRODUCT_INVENTORY_MODES.filter(
+    (mode) => mode !== "recipe" || inventoryRecipeEnabled || inventoryMode === "recipe"
+  ).map((mode) => ({
     value: mode,
     label: t(`productForm.inventoryModes.${mode}` as TranslationKey),
   }));
@@ -560,7 +571,12 @@ function ProductInventoryFields({
             <Select
               presentation={choicePresentation}
               value={modeOptions.find((option) => option.value === value)}
-              onValueChange={(option) => onChange(option?.value ?? "unlimited")}
+              onValueChange={(option) => {
+                if (option?.value === "recipe" && !inventoryRecipeEnabled && inventoryMode !== "recipe") {
+                  return;
+                }
+                onChange(option?.value ?? "unlimited");
+              }}
             >
               <Select.Trigger
                 accessibilityLabel={t("productForm.inventoryMode")}
@@ -627,7 +643,7 @@ function ProductInventoryFields({
           ) : null}
         </View>
       ) : null}
-      {capabilities.showCurrentStock && inventory ? (
+      {capabilities.showCurrentStock && !hideRecipeStock && inventory ? (
         <View className="rounded-panel-inner bg-surface-secondary px-4 py-3">
           <Typography type="body-xs" color="muted">
             {t("productForm.currentStock")}
@@ -637,7 +653,7 @@ function ProductInventoryFields({
           </Typography>
         </View>
       ) : null}
-      {capabilities.showRecipe && inventory ? (
+      {capabilities.showRecipe && inventoryRecipeEnabled && inventory ? (
         <View className="rounded-panel-inner bg-surface-secondary px-4 py-3">
           <Typography type="body-xs" color="muted">
             {t("productForm.recipeEstimatedUnitCogs")}
@@ -654,6 +670,7 @@ function ProductInventoryFields({
 function ProductInventoryActions({
   control,
   isNew,
+  inventoryRecipeEnabled,
   canShowOpeningBalance,
   onShowMovements,
   onShowRecipe,
@@ -662,6 +679,7 @@ function ProductInventoryActions({
 }: {
   control: Control<ProductFormValues>;
   isNew: boolean;
+  inventoryRecipeEnabled: boolean;
   canShowOpeningBalance: boolean;
   onShowMovements?: () => void;
   onShowRecipe?: () => void;
@@ -674,6 +692,7 @@ function ProductInventoryActions({
   const actions = getProductInventoryActions({
     inventoryMode,
     isNew,
+    inventoryRecipeEnabled,
     canShowOpeningBalance,
     onShowMovements,
     onShowRecipe,
@@ -714,6 +733,7 @@ type ProductInventoryAction = {
 function getProductInventoryActions({
   inventoryMode,
   isNew,
+  inventoryRecipeEnabled,
   canShowOpeningBalance,
   onShowMovements,
   onShowRecipe,
@@ -723,6 +743,7 @@ function getProductInventoryActions({
 }: {
   inventoryMode: ProductFormValues["inventory_mode"];
   isNew: boolean;
+  inventoryRecipeEnabled: boolean;
   canShowOpeningBalance: boolean;
   onShowMovements?: () => void;
   onShowRecipe?: () => void;
@@ -752,7 +773,11 @@ function getProductInventoryActions({
       onPress: onShowAdjustment,
     });
   }
-  if (capabilities.showMovements && onShowMovements) {
+  if (
+    capabilities.showMovements &&
+    onShowMovements &&
+    (inventoryRecipeEnabled || inventoryMode !== "recipe")
+  ) {
     actions.push({
       key: "movements",
       icon: AppIcons.swapVertical,
@@ -778,6 +803,8 @@ function InventoryCard({
   errors,
   inventory,
   isNew,
+  inventoryEnabled,
+  inventoryRecipeEnabled,
   canShowOpeningBalance,
   onShowMovements,
   onShowRecipe,
@@ -788,6 +815,8 @@ function InventoryCard({
   errors: FieldErrors<ProductFormValues>;
   inventory: ProductInventory | undefined;
   isNew: boolean;
+  inventoryEnabled: boolean;
+  inventoryRecipeEnabled: boolean;
   canShowOpeningBalance: boolean;
   onShowMovements?: () => void;
   onShowRecipe?: () => void;
@@ -828,17 +857,20 @@ function InventoryCard({
           errors={errors}
           inventory={inventory}
           isNew={isNew}
+          inventoryEnabled={inventoryEnabled}
+          inventoryRecipeEnabled={inventoryRecipeEnabled}
         />
       </Card.Body>
-      <ProductInventoryActions
+      {inventoryEnabled ? <ProductInventoryActions
         control={control}
         isNew={isNew}
+        inventoryRecipeEnabled={inventoryRecipeEnabled}
         canShowOpeningBalance={canShowOpeningBalance}
         onShowMovements={onShowMovements}
-        onShowRecipe={onShowRecipe}
+        onShowRecipe={inventoryRecipeEnabled ? onShowRecipe : undefined}
         onShowOpeningBalance={onShowOpeningBalance}
         onShowAdjustment={onShowAdjustment}
-      />
+      /> : null}
     </Card>
   );
 }
@@ -1252,6 +1284,8 @@ function ProductFormContent({
   inventoryState: {
     mode: App.Requests.Merchant.InventoryModeEnum;
     data: ProductInventory | undefined;
+    inventoryEnabled: boolean;
+    inventoryRecipeEnabled: boolean;
   };
   layout: ProductFormLayout;
   formStatus: ProductFormStatus;
@@ -1295,8 +1329,9 @@ function ProductFormContent({
   const areCategoriesLoading = categoryState === "loading";
   const didCategoriesFail = categoryState === "error";
   const inventoryCapabilities = getProductInventoryCapabilities(inventoryState.mode, isNew);
-  const showMovements = inventoryCapabilities.showMovements;
-  const showRecipe = inventoryCapabilities.showRecipe;
+  const showMovements = inventoryState.inventoryEnabled && inventoryCapabilities.showMovements &&
+    (inventoryState.inventoryRecipeEnabled || inventoryState.mode !== "recipe");
+  const showRecipe = inventoryState.inventoryEnabled && inventoryState.inventoryRecipeEnabled && inventoryCapabilities.showRecipe;
   const isCompact = layout === "compact";
   const isSaving = formStatus === "saving";
   const isQuickCategoryOpen = quickCategoryState === "open";
@@ -1357,9 +1392,11 @@ function ProductFormContent({
               errors={errors}
               inventory={inventoryState.data}
               isNew={isNew}
+              inventoryEnabled={inventoryState.inventoryEnabled}
+              inventoryRecipeEnabled={inventoryState.inventoryRecipeEnabled}
               canShowOpeningBalance={canShowOpeningBalance}
               onShowMovements={onShowMovements}
-              onShowRecipe={onShowRecipe}
+              onShowRecipe={inventoryState.inventoryRecipeEnabled ? onShowRecipe : undefined}
               onShowOpeningBalance={onShowOpeningBalance}
               onShowAdjustment={onShowAdjustment}
             />
@@ -1447,11 +1484,13 @@ function getProductFormLoadState({
   isNew,
   productQuery,
   productInventoryQuery,
+  inventoryEnabled,
   t,
 }: {
   isNew: boolean;
   productQuery: ReturnType<typeof useProduct>;
   productInventoryQuery: ReturnType<typeof useProductInventory>;
+  inventoryEnabled: boolean;
   t: Translate;
 }): React.JSX.Element | null {
   if (!isNew && productQuery.isLoading) {
@@ -1462,11 +1501,11 @@ function getProductFormLoadState({
     return <ErrorState error={productQuery.error} onRetry={productQuery.refetch} />;
   }
 
-  if (!isNew && productInventoryQuery.isLoading) {
+  if (!isNew && inventoryEnabled && productInventoryQuery.isLoading) {
     return <LoadingState message={t("productForm.inventoryLoading")} />;
   }
 
-  if (!isNew && productInventoryQuery.isError) {
+  if (!isNew && inventoryEnabled && productInventoryQuery.isError) {
     return (
       <ErrorState error={productInventoryQuery.error} onRetry={productInventoryQuery.refetch} />
     );
@@ -1518,8 +1557,13 @@ export default function ProductFormScreen(): React.JSX.Element {
   const [createdProductId, setCreatedProductId] = React.useState<string | null>(null);
   const productId = createdProductId ?? id;
   const isNew = id === "new" && createdProductId === null;
+  const activeMerchant = useAuth((state) => state.activeMerchant);
+  const { data: merchantProfile } = useMerchantProfile();
+  const merchantFeatures = merchantProfile?.features ?? activeMerchant?.features;
+  const inventoryEnabled = hasMerchantFeature(merchantFeatures, "inventory");
+  const inventoryRecipeEnabled = hasMerchantFeature(merchantFeatures, "inventory_recipe");
   const productQuery = useProduct(productId);
-  const productInventoryQuery = useProductInventory(productId);
+  const productInventoryQuery = useProductInventory(productId, { enabled: inventoryEnabled });
   const categoriesQuery = useCategories();
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct(productId);
@@ -1585,7 +1629,7 @@ export default function ProductFormScreen(): React.JSX.Element {
   React.useEffect(() => {
     const product = productQuery.data;
     const inventory = productInventoryQuery.data;
-    if (isNew || !product || !inventory || hydratedProductId.current === product.id) return;
+    if (isNew || !product || (inventoryEnabled && !inventory) || hydratedProductId.current === product.id) return;
 
     reset({
       category_id: product.category?.id ?? "",
@@ -1593,20 +1637,21 @@ export default function ProductFormScreen(): React.JSX.Element {
       description: product.description ?? "",
       price: String(product.price),
       code: product.code ?? "",
-      inventory_mode: inventory.inventory_mode,
-      inventory_cost: inventory.cost === null ? "" : String(inventory.cost),
-      stock_alert: inventory.stock_alert === null ? "" : String(inventory.stock_alert),
+      inventory_mode: inventory?.inventory_mode ?? "unlimited",
+      inventory_cost: inventory?.cost == null ? "" : String(inventory.cost),
+      stock_alert: inventory?.stock_alert == null ? "" : String(inventory.stock_alert),
       active: product.active,
       image: null,
       add_ons: [],
     });
     hydratedProductId.current = product.id;
-  }, [isNew, productInventoryQuery.data, productQuery.data, reset]);
+  }, [inventoryEnabled, isNew, productInventoryQuery.data, productQuery.data, reset]);
 
   const loadState = getProductFormLoadState({
     isNew,
     productQuery,
     productInventoryQuery,
+    inventoryEnabled,
     t,
   });
   if (loadState) return loadState;
@@ -1648,6 +1693,8 @@ export default function ProductFormScreen(): React.JSX.Element {
       updateMutation: updateProductMutation,
       updateInventoryMutation,
       inventoryValues: toProductInventoryPayload(values),
+      inventoryEnabled,
+      inventoryRecipeEnabled,
       applyServerErrors,
       setError,
       toast,
@@ -1675,6 +1722,8 @@ export default function ProductFormScreen(): React.JSX.Element {
         inventoryState={{
           mode: inventoryMode,
           data: inventory,
+          inventoryEnabled,
+          inventoryRecipeEnabled,
         }}
         layout={isCompact ? "compact" : "regular"}
         formStatus={isSaving ? "saving" : "idle"}
