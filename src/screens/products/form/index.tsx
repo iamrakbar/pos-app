@@ -1237,6 +1237,43 @@ function canRecordProductOpeningBalance({
   return !hasMovements && !movementsQuery.hasNextPage;
 }
 
+function ProductInventorySheets({
+  isNew,
+  product,
+  inventoryState,
+  movementsSheetRef,
+  recipeSheetRef,
+}: {
+  isNew: boolean;
+  product: App.Data.Merchant.Product.ProductData | undefined;
+  inventoryState: {
+    mode: App.Requests.Merchant.InventoryModeEnum;
+    inventoryEnabled: boolean;
+    inventoryRecipeEnabled: boolean;
+  };
+  movementsSheetRef: React.MutableRefObject<TrueSheet | null>;
+  recipeSheetRef: React.MutableRefObject<TrueSheet | null>;
+}): React.JSX.Element | null {
+  if (isNew || !product || !inventoryState.inventoryEnabled) return null;
+
+  const capabilities = getProductInventoryCapabilities(inventoryState.mode, isNew);
+  const showMovements = capabilities.showMovements &&
+    (inventoryState.inventoryRecipeEnabled || inventoryState.mode !== "recipe");
+  const showRecipe = inventoryState.inventoryRecipeEnabled && capabilities.showRecipe;
+  if (!showMovements && !showRecipe) return null;
+
+  return (
+    <ProductRelationshipSheets
+      productId={product.id}
+      productName={product.name}
+      showMovements={showMovements}
+      showRecipe={showRecipe}
+      movementsSheetRef={movementsSheetRef}
+      recipeSheetRef={recipeSheetRef}
+    />
+  );
+}
+
 function ProductFormContent({
   mode,
   categoryState,
@@ -1328,10 +1365,6 @@ function ProductFormContent({
   const isNew = mode === "new";
   const areCategoriesLoading = categoryState === "loading";
   const didCategoriesFail = categoryState === "error";
-  const inventoryCapabilities = getProductInventoryCapabilities(inventoryState.mode, isNew);
-  const showMovements = inventoryState.inventoryEnabled && inventoryCapabilities.showMovements &&
-    (inventoryState.inventoryRecipeEnabled || inventoryState.mode !== "recipe");
-  const showRecipe = inventoryState.inventoryEnabled && inventoryState.inventoryRecipeEnabled && inventoryCapabilities.showRecipe;
   const isCompact = layout === "compact";
   const isSaving = formStatus === "saving";
   const isQuickCategoryOpen = quickCategoryState === "open";
@@ -1421,16 +1454,13 @@ function ProductFormContent({
         </KeyboardAwareScrollView>
       </View>
 
-      {!isNew && product && (showMovements || showRecipe) ? (
-        <ProductRelationshipSheets
-          productId={product.id}
-          productName={product.name}
-          showMovements={showMovements}
-          showRecipe={showRecipe}
-          movementsSheetRef={movementsSheetRef}
-          recipeSheetRef={recipeSheetRef}
-        />
-      ) : null}
+      <ProductInventorySheets
+        isNew={isNew}
+        product={product}
+        inventoryState={inventoryState}
+        movementsSheetRef={movementsSheetRef}
+        recipeSheetRef={recipeSheetRef}
+      />
 
       <QuickCategoryFormOverlay
         isOpen={isQuickCategoryOpen}
