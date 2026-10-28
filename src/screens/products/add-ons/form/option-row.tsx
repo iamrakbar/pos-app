@@ -56,7 +56,7 @@ export default function OptionRow({
   if (isDestroyed) {
     return (
       <View className="flex-row items-center gap-3 rounded-xl bg-surface-secondary px-3 py-3">
-        <Typography type="body-sm" muted className="flex-1 line-through">
+        <Typography type="body-sm" muted className="flex-1" strike>
           {t("addOnManagement.removedOption")}
         </Typography>
         <PanelButton size="sm" variant="ghost" onPress={onRestore} disabled={!canRestore}>

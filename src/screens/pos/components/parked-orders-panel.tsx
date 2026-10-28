@@ -153,7 +153,7 @@ export default function ParkedOrdersPanel({
                 <Surface variant="secondary" className="items-center gap-1 p-5">
                   <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
                   <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
-                  <Typography type="body-sm" muted className="text-center">
+                  <Typography type="body-sm" muted align="center">
                     {t("pos.parkedOrdersEmptyDescription")}
                   </Typography>
                 </Surface>

@@ -135,7 +135,7 @@ function TicketCard({
                   ))
                 )}
                 {product.notes ? (
-                  <Typography type="body-xs" muted className="pl-6 italic">
+                  <Typography type="body-xs" muted className="pl-6" italic>
                     {t("orders.detail.note", { note: product.notes })}
                   </Typography>
                 ) : null}

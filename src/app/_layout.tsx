@@ -67,7 +67,7 @@ function RootLayout(): JSX.Element {
     }
   }, [navigationTheme.background]);
 
-  if (__DEV__ && process.env.EXPO_PUBLIC_PANELUI_SPIKE === "1") {
+  if (__DEV__ && session && process.env.EXPO_PUBLIC_PANELUI_SPIKE === "1") {
     return (
       <PanelUIProvider>
         <QueryClientProvider client={queryClient}>
@@ -91,14 +91,14 @@ function RootLayout(): JSX.Element {
             {isAppReady && (
               <View className="flex-1" onLayout={handleAppLayout}>
                 <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Protected guard={__DEV__}>
-                    <Stack.Screen name="panelui-integration" />
-                  </Stack.Protected>
                   <Stack.Protected guard={session}>
                     <Stack.Screen name="(app)" />
                   </Stack.Protected>
                   <Stack.Protected guard={!session}>
                     <Stack.Screen name="(auth)" />
+                  </Stack.Protected>
+                  <Stack.Protected guard={__DEV__ && session}>
+                    <Stack.Screen name="panelui-integration" />
                   </Stack.Protected>
                 </Stack>
                 {session ? <POSAddOnSheet /> : null}

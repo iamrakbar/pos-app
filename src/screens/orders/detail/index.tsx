@@ -102,7 +102,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <Typography type="body-sm" muted>
         {label}
       </Typography>
-      <Typography type="body-sm" weight="medium" className="flex-1 text-right">
+      <Typography type="body-sm" weight="medium" className="flex-1" align="right">
         {value}
       </Typography>
     </View>
@@ -189,7 +189,7 @@ function OrderCancelAction({
         {t("orders.detail.cancelOrder")}
       </PanelButton>
       {error ? (
-        <Typography className="text-xs text-destructive-foreground">
+        <Typography className="text-destructive-foreground" type="body-xs">
           {getErrorMessage(error)}
         </Typography>
       ) : null}
@@ -259,7 +259,7 @@ function PaymentQrDialog({
         <View className="h-64 w-64 items-center justify-center rounded-lg border border-border bg-white">
           <Image source={{ uri: qrUrl }} style={{ width: 240, height: 240 }} contentFit="contain" />
         </View>
-        <Typography className="text-base font-semibold text-foreground">
+        <Typography className="text-foreground" type="body" weight="semibold">
           {formatRupiah(total)}
         </Typography>
         {target !== null ? (
@@ -813,7 +813,7 @@ function OrderItemsPanel({
                       {item.qty} x {formatRupiah(item.price)}
                     </Typography>
                     {item.originalPrice !== null ? (
-                      <Typography type="body-xs" muted className="line-through tabular-nums">
+                      <Typography type="body-xs" muted className="tabular-nums" strike>
                         {formatRupiah(item.originalPrice)}
                       </Typography>
                     ) : null}
@@ -841,7 +841,7 @@ function OrderItemsPanel({
                 ))
               )}
               {order.products[index]?.notes ? (
-                <Typography type="body-xs" muted className="italic">
+                <Typography type="body-xs" muted italic>
                   {t("orders.detail.note", { note: order.products[index].notes ?? "" })}
                 </Typography>
               ) : null}

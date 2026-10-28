@@ -1,4 +1,6 @@
-import { Surface , Typography ,
+import {
+  Surface,
+  Typography,
   Input as PanelInput,
   SearchBar,
   SlideButton,
@@ -9,7 +11,8 @@ import { Surface , Typography ,
   Button as PanelButton,
   Chip as PanelChip,
   Select as PanelSelect,
-  cn } from "panelui-native";
+  cn,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -540,7 +543,7 @@ function PaymentFields({
                           accessible={false}
                         />
                       ) : null}
-                      <PanelTypography className="text-center text-sm">
+                      <PanelTypography type="body-sm" align="center">
                         {payment.name}
                       </PanelTypography>
                     </View>
@@ -763,10 +766,10 @@ function CheckoutProcessingState({ accentColor }: { accentColor: string }) {
     <View className="flex-1 items-center justify-center gap-4 px-6 py-10">
       <ActivityIndicator size="large" color={accentColor} />
       <View className="items-center gap-1.5">
-        <Typography type="h4" weight="semibold" className="text-center">
+        <Typography type="h4" weight="semibold" align="center">
           {t("checkout.processingPayment")}
         </Typography>
-        <Typography type="body-sm" muted className="max-w-sm text-center">
+        <Typography type="body-sm" muted className="max-w-sm" align="center">
           {t("checkout.processingDescription")}
         </Typography>
       </View>

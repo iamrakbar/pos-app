@@ -66,7 +66,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
             {item.qty} x
           </Typography>
           {hasDiscount ? (
-            <Typography type="body-xs" muted className="tabular-nums line-through">
+            <Typography type="body-xs" muted className="tabular-nums" strike>
               {formatRupiah(item.original_price ?? item.price)}
             </Typography>
           ) : null}

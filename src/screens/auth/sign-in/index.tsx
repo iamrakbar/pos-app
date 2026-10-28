@@ -76,7 +76,9 @@ export default function SignInScreen(): JSX.Element {
                 )}
               />
               {errors.email && (
-                <Typography className="text-xs text-destructive-foreground">{errors.email.message}</Typography>
+                <Typography className="text-destructive-foreground" type="body-xs">
+                  {errors.email.message}
+                </Typography>
               )}
             </View>
 
@@ -116,12 +118,14 @@ export default function SignInScreen(): JSX.Element {
                 )}
               />
               {errors.password && (
-                <Typography className="text-xs text-destructive-foreground">{errors.password.message}</Typography>
+                <Typography className="text-destructive-foreground" type="body-xs">
+                  {errors.password.message}
+                </Typography>
               )}
             </View>
 
             {login.isError && (
-              <Typography className="text-sm text-destructive-foreground text-center">
+              <Typography className="text-destructive-foreground" type="body-sm" align="center">
                 {getErrorMessage(login.error)}
               </Typography>
             )}

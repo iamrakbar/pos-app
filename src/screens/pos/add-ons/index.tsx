@@ -8,6 +8,7 @@ import {
   Surface,
   Separator,
   RadioGroup as PanelRadioGroup,
+  Alert,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { POS_ADD_ON_SHEET_NAME } from "@/hooks/use-pos-add-on-sheet";
@@ -111,9 +112,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
                         ? `+${formatRupiah(option.price)}`
                         : t("addOns.noAdditionalCharge")
                     }
-                    className={isSelected ? "min-h-15 bg-accent px-4 py-3" : "min-h-15 px-4 py-3"}
-                    labelClassName="font-semibold"
-                    descriptionClassName="tabular-nums"
+                    size="lg"
                   />
                 </React.Fragment>
               );
@@ -322,11 +321,12 @@ export default function POSAddOnSheet(): React.JSX.Element {
         }}
         ListHeaderComponent={
           hasSubmitError ? (
-            <Surface variant="secondary" padding="none" className="bg-destructive-soft p-3">
-              <PanelTypography type="body-sm" className="text-destructive-foreground">
-                {t("addOns.completeRequired")}
-              </PanelTypography>
-            </Surface>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>{t("addOns.completeRequired")}</Alert.Title>
+              </Alert.Content>
+            </Alert>
           ) : null
         }
         renderItem={({ item: group }) => {

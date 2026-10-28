@@ -348,7 +348,7 @@ export default function NewProductAddOnsCard({
             <Typography type="body-sm" weight="semibold">
               {t("productForm.noAddOns")}
             </Typography>
-            <Typography type="body-xs" muted className="text-center">
+            <Typography type="body-xs" muted align="center">
               {t("productForm.noAddOnsDescription")}
             </Typography>
           </View>

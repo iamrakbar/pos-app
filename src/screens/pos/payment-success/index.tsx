@@ -1,4 +1,13 @@
-import { Surface , Typography , Spinner , Separator, Button as PanelButton, Dialog as PanelDialog, Switch, cn } from "panelui-native";
+import {
+  Surface,
+  Typography,
+  Spinner,
+  Separator,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  Switch,
+  cn,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useReceiptPrinter } from "@/hooks/printer/use-receipt-printer";
@@ -89,7 +98,7 @@ function PaymentSuccessSummary({
             <Typography type="body-sm" muted>
               {t("paymentSuccess.dateTime")}
             </Typography>
-            <Typography type="body-sm" weight="semibold" className="text-right">
+            <Typography type="body-sm" weight="semibold" align="right">
               {formatDateTime(paidAt)}
             </Typography>
           </View>
@@ -154,9 +163,7 @@ function PaymentSuccessActions({
           <Switch
             value={receiptSettings.autoPrintOnSuccess}
             label={t("paymentSuccess.autoPrint")}
-            onValueChange={(enabled) =>
-              updateReceiptSettings({ autoPrintOnSuccess: enabled })
-            }
+            onValueChange={(enabled) => updateReceiptSettings({ autoPrintOnSuccess: enabled })}
           />
         </View>
         <View className={cn("gap-3", !isCompact && "flex-row")}>

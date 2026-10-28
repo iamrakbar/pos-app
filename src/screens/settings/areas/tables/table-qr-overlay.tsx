@@ -280,7 +280,7 @@ export default function TableQrOverlay({
                 </QRCode.Panel>
               </QRCode>
             </View>
-            <Typography type="h6" weight="bold" className="text-center text-black">
+            <Typography type="h6" weight="bold" className="text-black" align="center">
               {tableNumberLabel}
             </Typography>
           </View>

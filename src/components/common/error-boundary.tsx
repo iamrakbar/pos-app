@@ -29,10 +29,10 @@ export class ErrorBoundary extends Component<Props, State> {
             size={40}
             color={Uniwind.getCSSVariable("--color-destructive") as string}
           />
-          <Typography className="text-base font-semibold text-foreground text-center">
+          <Typography className="text-foreground" type="body" weight="semibold" align="center">
             {t("errors.unexpected")}
           </Typography>
-          <Typography className="text-sm text-muted-foreground text-center">
+          <Typography type="body-sm" align="center" muted>
             {this.state.error.message}
           </Typography>
           <Button variant="outline" onPress={() => this.setState({ error: null })}>

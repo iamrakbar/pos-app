@@ -1,10 +1,15 @@
-import { Typography , Separator ,
+import {
+  Typography,
+  Separator,
   Fab,
   PlusIcon,
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
   Skeleton as PanelListSkeleton,
- EmptyState, cn, Chip } from "panelui-native";
+  EmptyState,
+  cn,
+  Chip,
+} from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
@@ -193,10 +198,7 @@ export default function ProductsScreen(): React.JSX.Element {
                           >
                             {product.name}
                           </Typography>
-                          <Chip
-                            variant={product.is_active ? "success" : "default"}
-                            size="sm"
-                          >
+                          <Chip variant={product.is_active ? "success" : "default"} size="sm">
                             <Chip.Label>
                               {product.is_active ? t("common.active") : t("common.inactive")}
                             </Chip.Label>
@@ -228,7 +230,7 @@ export default function ProductsScreen(): React.JSX.Element {
 
                         <View className="flex-row items-center gap-2">
                           {isDiscounted && (
-                            <Typography type="body-xs" muted className="line-through">
+                            <Typography type="body-xs" muted strike>
                               {formatRupiah(product.price)}
                             </Typography>
                           )}

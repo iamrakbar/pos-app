@@ -67,7 +67,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
               </Typography>
             )} */}
             {isDiscounted && (
-              <Typography type="body-xs" muted className="line-through">
+              <Typography type="body-xs" muted strike>
                 {formatRupiah(product.price)}
               </Typography>
             )}

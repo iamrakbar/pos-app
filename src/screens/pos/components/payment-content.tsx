@@ -1,10 +1,17 @@
-import { Surface , Typography , Separator ,
+import {
+  Surface,
+  Typography,
+  Separator,
   Button as PanelDialogButton,
   Dialog,
   Accordion,
   Countdown,
   Typography as PanelTypography,
-  useToast, Card, cn, Chip as PanelChip } from "panelui-native";
+  useToast,
+  Card,
+  cn,
+  Chip as PanelChip,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { usePaymentStatus } from "@/hooks/db/use-payment-status";
@@ -133,7 +140,7 @@ function PaymentQrPanel({
             isWide ? "h-72 w-72" : "h-64 w-64"
           )}
         >
-          <Typography type="body-sm" muted className="mt-3 text-center">
+          <Typography type="body-sm" muted className="mt-3" align="center">
             {sessionExpired ? t("payment.qrExpired") : t("payment.qrUnavailable")}
           </Typography>
         </View>
@@ -206,7 +213,7 @@ function PaymentInfoPanel({
             <Typography type="body-sm" muted>
               {t("payment.method")}
             </Typography>
-            <Typography type="body-sm" weight="semibold" className="flex-1 text-right">
+            <Typography type="body-sm" weight="semibold" className="flex-1" align="right">
               {paymentSession.payment_type}
             </Typography>
           </View>
@@ -214,7 +221,7 @@ function PaymentInfoPanel({
             <Typography type="body-sm" muted>
               {t("payment.transaction")}
             </Typography>
-            <Typography type="body-xs" weight="semibold" className="flex-1 text-right font-mono">
+            <Typography type="body-xs" weight="semibold" className="flex-1 font-mono" align="right">
               {paymentSession.transaction_id}
             </Typography>
           </View>
@@ -223,7 +230,12 @@ function PaymentInfoPanel({
               <Typography type="body-sm" muted>
                 {t("payment.reference")}
               </Typography>
-              <Typography type="body-xs" weight="semibold" className="flex-1 text-right font-mono">
+              <Typography
+                type="body-xs"
+                weight="semibold"
+                className="flex-1 font-mono"
+                align="right"
+              >
                 {paymentSession.reference}
               </Typography>
             </View>
@@ -453,24 +465,24 @@ export function PaymentContent({
           <Dialog.Title>{t("payment.cancelTitle")}</Dialog.Title>
           <Dialog.Description>{t("payment.cancelDescription")}</Dialog.Description>
           <Dialog.Footer>
-              <PanelDialogButton
-                variant="ghost"
-                size="sm"
-                onPress={() => setIsCancelDialogOpen(false)}
-              >
-                {t("common.cancel")}
-              </PanelDialogButton>
-              <PanelDialogButton
-                variant="destructive"
-                size="sm"
-                className="flex-1"
-                onPress={() => {
-                  setIsCancelDialogOpen(false);
-                  onClose?.();
-                }}
-              >
-                {t("payment.leave")}
-              </PanelDialogButton>
+            <PanelDialogButton
+              variant="ghost"
+              size="sm"
+              onPress={() => setIsCancelDialogOpen(false)}
+            >
+              {t("common.cancel")}
+            </PanelDialogButton>
+            <PanelDialogButton
+              variant="destructive"
+              size="sm"
+              className="flex-1"
+              onPress={() => {
+                setIsCancelDialogOpen(false);
+                onClose?.();
+              }}
+            >
+              {t("payment.leave")}
+            </PanelDialogButton>
           </Dialog.Footer>
         </Dialog.Content>
       </Dialog>

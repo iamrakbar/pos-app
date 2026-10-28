@@ -144,7 +144,7 @@ function ReceiptPreviewSection({
       >
         <ScrollView showsVerticalScrollIndicator={false}>
           <View className="flex-row items-center justify-between gap-3 p-4">
-            <Typography className="text-sm font-semibold text-foreground">
+            <Typography className="text-foreground" type="body-sm" weight="semibold">
               {t("receiptSettings.preview")}
             </Typography>
             <PanelSelect
@@ -338,7 +338,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                 showsVerticalScrollIndicator={false}
               >
                 <View className="gap-1">
-                  <Typography className="text-lg font-semibold text-foreground">
+                  <Typography className="text-foreground" type="large" weight="semibold">
                     {t("receiptSettings.details")}
                   </Typography>
                   <Typography type="body-sm" muted>

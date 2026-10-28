@@ -1,4 +1,4 @@
-import { Typography , Separator, Card, Button as PanelButton } from "panelui-native";
+import { Typography, Separator, Card, Button as PanelButton } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -47,7 +47,7 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
             <Typography type="body-sm" weight="semibold">
               {t("productForm.noAddOns")}
             </Typography>
-            <Typography type="body-xs" muted className="text-center">
+            <Typography type="body-xs" muted align="center">
               {t("productForm.noAddOnsDescription")}
             </Typography>
           </View>
