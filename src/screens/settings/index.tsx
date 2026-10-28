@@ -1,8 +1,9 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import SettingsMenuRow from "@/components/common/settings-menu-row";
 import { useRouter } from "expo-router";
-import { Button, ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
+import { Button, ListGroup, Separator, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { useAuth } from "@/stores/use-auth";
@@ -23,10 +24,10 @@ type SettingsItem = {
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  const [themeColorMuted, themeColorDangerSoftForeground] = useThemeColor([
-    "muted",
-    "danger-soft-foreground",
-  ]);
+  const [themeColorMuted, themeColorDangerSoftForeground] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-destructive",
+  ]) as [string, string];
   const logout = useAuth((s) => s.logout);
   const activeMerchant = useAuth((s) => s.activeMerchant);
   const { data: merchantProfile } = useMerchantProfile();

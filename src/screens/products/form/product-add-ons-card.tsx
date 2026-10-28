@@ -1,6 +1,7 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { Button, Card, Separator, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, Separator, Typography } from "heroui-native";
 import { Pressable, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
@@ -29,7 +30,7 @@ function selectionRule(addOn: ProductAddOn, t: Translate): string {
 
 export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddOnsCardProps) {
   const { t } = useTranslation();
-  const mutedColor = useThemeColor("muted");
+  const mutedColor = useCSSVariable("--color-muted-foreground") as string;
 
   return (
     <Card className="gap-3 overflow-hidden">

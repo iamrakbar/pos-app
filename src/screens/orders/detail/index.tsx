@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { useOrder, useUpdateOrderStatus } from "@/hooks/db/use-orders";
 import { usePaymentStatus } from "@/hooks/db/use-payment-status";
 import { useTables } from "@/hooks/db/use-tables";
@@ -52,8 +54,6 @@ import {
   TextArea,
   TextField,
   Typography,
-  useThemeColor,
-  useToast,
 } from "heroui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
@@ -157,7 +157,7 @@ function OrderCancelAction({
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelReasonInvalid, setIsCancelReasonInvalid] = useState(false);
-  const themeColorDanger = useThemeColor("danger");
+  const themeColorDanger = useCSSVariable("--color-destructive") as string;
   if (status !== "open" || !canCancel) return null;
 
   const handleCancel = () => {
@@ -306,7 +306,7 @@ function ReceiptPreviewSheet({
   const { toast } = useToast();
   const receiptSettings = useReceiptStore((state) => state.settings);
   const printerSettings = usePrinterStore((state) => state.settings);
-  const themeColorForeground = useThemeColor("foreground");
+  const themeColorForeground = useCSSVariable("--color-foreground") as string;
   const sheetRef = useRef<TrueSheet | null>(null);
   const sheetLifecycle = useRef<ReceiptSheetLifecycle>("closed");
   const receiptRef = useRef<ViewType | null>(null);
@@ -379,7 +379,7 @@ function ReceiptPreviewSheet({
               ? "orders.detail.receiptSharingUnavailable"
               : "orders.detail.receiptExportFailed";
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t(key),
         description: error instanceof Error ? error.message : undefined,
       });
@@ -1123,7 +1123,7 @@ export default function OrderDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const { data: order, isLoading, isError, error, refetch } = useOrder(id);
 
   if (isLoading) return <LoadingState message={t("orders.detail.loading")} />;
@@ -1139,7 +1139,7 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
   const { t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const [isReceiptPreviewOpen, setIsReceiptPreviewOpen] = useState(false);
-  const themeColorForeground = useThemeColor("foreground");
+  const themeColorForeground = useCSSVariable("--color-foreground") as string;
   const { isPrinting, prompt, setPrompt, handlePromptAction, printReceipt } = useReceiptPrinter();
 
   const { data: tables } = useTables();

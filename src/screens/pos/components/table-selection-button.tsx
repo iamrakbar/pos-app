@@ -1,8 +1,9 @@
+import { useCSSVariable } from "uniwind";
 import type { POSTable } from "@/types/pos";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button, useThemeColor } from "heroui-native";
+import { Button } from "heroui-native";
 import type { JSX } from "react";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -15,7 +16,7 @@ export default function TableSelectionButton({
 }: TableSelectionButtonProps): JSX.Element {
   const router = useRouter();
   const { t } = useTranslation();
-  const colorAccent = useThemeColor("accent");
+  const colorAccent = useCSSVariable("--color-primary") as string;
 
   return (
     <Button

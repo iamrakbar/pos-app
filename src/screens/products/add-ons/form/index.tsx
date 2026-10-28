@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
@@ -11,7 +13,7 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Card, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, Card, Typography } from "heroui-native";
 import React from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { View } from "react-native";
@@ -32,7 +34,10 @@ export default function AddOnFormScreen(): React.JSX.Element {
   }>();
   const router = useRouter();
   const { toast } = useToast();
-  const [foregroundColor, dangerColor] = useThemeColor(["foreground", "danger"]);
+  const [foregroundColor, dangerColor] = useCSSVariable([
+    "--color-foreground",
+    "--color-destructive",
+  ]) as [string, string];
   const isNew = addOnId === "new";
   const addOnQuery = useAddOn(productId, addOnId);
   const createMutation = useCreateAddOn(productId);
@@ -116,7 +121,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
       const message = getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("addOnManagement.saveFailed"),
         description: message,
       });
@@ -131,7 +136,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
       router.back();
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("addOnManagement.deleteFailed"),
         description: getErrorMessage(error),
       });

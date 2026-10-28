@@ -1,10 +1,11 @@
+import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSAddOnSheet } from "@/hooks/use-pos-add-on-sheet";
 import type { CartItem } from "@/types/cart";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { getCartItemSubtotal } from "@/utils/cart-pricing";
-import { Button, cn, Typography, useThemeColor } from "heroui-native";
+import { Button, cn, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
@@ -18,10 +19,10 @@ type Props = {
 
 export default function CartItemRow({ item, product }: Props): JSX.Element {
   const { t } = useTranslation();
-  const [themeColorForeground, themeColorDangerSoftForeground] = useThemeColor([
-    "foreground",
-    "danger-soft-foreground",
-  ]);
+  const [themeColorForeground, themeColorDangerSoftForeground] = useCSSVariable([
+    "--color-foreground",
+    "--color-destructive",
+  ]) as [string, string];
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQty = useCartStore((s) => s.updateQty);
   const openAddOnSheet = usePOSAddOnSheet();

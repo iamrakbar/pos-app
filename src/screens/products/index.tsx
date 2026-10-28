@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import { useManagementProducts } from "@/hooks/db/use-products";
 import { useCategories } from "@/hooks/db/use-categories";
 import { ListSkeleton } from "@/components/common/list-skeleton";
@@ -8,7 +9,7 @@ import { useNavigationTheme } from "@/utils/navigation-theme";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { Chip, cn, Separator, Typography, useThemeColor } from "heroui-native";
+import { Chip, cn, Separator, Typography } from "heroui-native";
 import { Image } from "expo-image";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -19,7 +20,7 @@ import { useTranslation } from "@/stores/use-locale";
 export default function ProductsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const theme = useNavigationTheme();
   const [search, setSearch] = React.useState("");
   const deferredSearch = React.useDeferredValue(search.trim());

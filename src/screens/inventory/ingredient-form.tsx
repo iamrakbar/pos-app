@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
@@ -23,17 +25,7 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { createOperationId } from "@/utils/operation-id";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  Select,
-  TextField,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Card, Input, Label, Select, TextField, Typography } from "heroui-native";
 import React from "react";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
@@ -388,7 +380,7 @@ export default function IngredientFormScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
-  const dangerColor = useThemeColor("danger");
+  const dangerColor = useCSSVariable("--color-destructive") as string;
   const isNew = id === "new";
   const ingredientQuery = useIngredient(id);
   const ingredient = ingredientQuery.data;
@@ -462,7 +454,7 @@ export default function IngredientFormScreen(): React.JSX.Element {
       const message = hasFieldErrors ? t("ingredients.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("ingredients.saveFailed"),
         description: message,
       });
@@ -477,7 +469,7 @@ export default function IngredientFormScreen(): React.JSX.Element {
       router.back();
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("ingredients.deleteFailed"),
         description: getErrorMessage(error),
       });

@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { usePaymentStatus } from "@/hooks/db/use-payment-status";
 import { formatRupiah } from "@/utils/format";
@@ -7,17 +9,7 @@ import { getPaymentStatus } from "@/api/mappers/order";
 import ActionDialog from "@/components/common/action-dialog";
 import Countdown from "@/components/common/countdown";
 import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
-import {
-  Button,
-  Card,
-  Chip,
-  cn,
-  Separator,
-  Surface,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Card, Chip, cn, Separator, Surface, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
 import { Image } from "expo-image";
@@ -298,7 +290,7 @@ export function PaymentContent({
   const { toast } = useToast();
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const { isWide } = useResponsiveLayout();
   const [expiredSessionKey, setExpiredSessionKey] = useState<string | null>(null);
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
@@ -340,12 +332,12 @@ export function PaymentContent({
         ].includes(status.value);
 
         toast.show({
-          variant: isTerminalFailure ? "danger" : "warning",
+          variant: isTerminalFailure ? "destructive" : "warning",
           label: isPending ? t("payment.stillPending") : getLocalizedPaymentStatus(status, t),
         });
       },
       onError: () => {
-        toast.show({ variant: "danger", label: t("payment.checkFailed") });
+        toast.show({ variant: "destructive", label: t("payment.checkFailed") });
       },
     });
   };

@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { usePaymentGroups } from "@/hooks/db/use-payments";
@@ -30,7 +31,6 @@ import {
   Input,
   Label,
   Typography,
-  useThemeColor,
 } from "heroui-native";
 import { SlideButton } from "heroui-native-pro";
 import { Image } from "expo-image";
@@ -1235,11 +1235,11 @@ export function CheckoutContent({
   const { locale, t } = useTranslation();
   const { resize } = useTrueSheet();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const [backgroundColor, borderColor, accentColor] = useThemeColor([
-    "background",
-    "border",
-    "accent",
-  ]);
+  const [backgroundColor, borderColor, accentColor] = useCSSVariable([
+    "--color-background",
+    "--color-border",
+    "--color-primary",
+  ]) as [string, string, string];
   const checkoutForm = usePOSStore((s) => s.checkoutForm);
 
   const cartProducts = useCartStore((s) => s.products);

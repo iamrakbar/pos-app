@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/receipt-paper";
 import { useAuth } from "@/stores/use-auth";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
@@ -11,16 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import {
-  Button,
-  Input,
-  ScrollShadow,
-  Select,
-  Separator,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Input, ScrollShadow, Select, Separator, Typography } from "heroui-native";
 import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
@@ -252,11 +245,11 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const configuredLogoWidthDots = usePrinterStore((state) => state.settings.logoWidthDots);
   const { isPortrait } = useResponsiveLayout();
   const { choicePresentation } = useOverlayPresentation();
-  const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useThemeColor([
-    "muted",
-    "foreground",
-    "surface-secondary",
-  ]);
+  const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-foreground",
+    "--color-surface-secondary",
+  ]) as [string, string, string];
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
   const [previewPaperWidth, setPreviewPaperWidth] = useState<PaperWidth>(configuredPaperWidth);
   const receiptLayouts = RECEIPT_LAYOUTS.map((item) => ({
@@ -328,7 +321,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
         },
         (error: unknown) => {
           toast.show({
-            variant: "danger",
+            variant: "destructive",
             label: t("receiptSettings.logoFailed"),
             description:
               error instanceof Error ? error.message : t("receiptSettings.logoFailedDescription"),

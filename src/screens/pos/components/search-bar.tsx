@@ -1,15 +1,8 @@
+import { useCSSVariable } from "uniwind";
 import { usePOSStore, type ProductSort } from "@/stores/use-pos-store";
 import { useCategories } from "@/hooks/db/use-categories";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
-import {
-  Button,
-  Chip,
-  ScrollShadow,
-  SearchField,
-  Select,
-  Skeleton,
-  useThemeColor,
-} from "heroui-native";
+import { Button, Chip, ScrollShadow, SearchField, Select, Skeleton } from "heroui-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { View } from "react-native";
@@ -28,7 +21,10 @@ const CATEGORY_SKELETON_WIDTHS = [64, 88, 72, 104, 80];
 export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.Element {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
-  const [themeColorForeground, themeColorAccent] = useThemeColor(["foreground", "accent"]);
+  const [themeColorForeground, themeColorAccent] = useCSSVariable([
+    "--color-foreground",
+    "--color-primary",
+  ]) as [string, string];
   const searchQuery = usePOSStore((s) => s.searchQuery);
   const categoryId = usePOSStore((s) => s.categoryId);
   const productSort = usePOSStore((s) => s.productSort);

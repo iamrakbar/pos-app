@@ -1,3 +1,4 @@
+import { useToast } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
@@ -16,7 +17,7 @@ import {
 import { useTranslation } from "@/stores/use-locale";
 import { createOperationId } from "@/utils/operation-id";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Typography, useToast } from "heroui-native";
+import { Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -98,7 +99,7 @@ export function ProductOpeningBalanceOverlay({
       const message = hasFieldError ? t("productForm.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("productForm.stockActionFailed"),
         description: message,
       });
@@ -234,7 +235,7 @@ export function ProductAdjustStockOverlay({
       const message = hasFieldError ? t("productForm.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("productForm.stockActionFailed"),
         description: message,
       });

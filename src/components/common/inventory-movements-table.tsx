@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import type { InventoryMovementType } from "@/api/endpoints/inventory-audit";
@@ -9,7 +10,7 @@ import {
   formatRupiah,
   normalizeInventorySource,
 } from "@/utils/format";
-import { Chip, useThemeColor } from "heroui-native";
+import { Chip } from "heroui-native";
 import { EmptyState, Table } from "heroui-native-pro";
 import React from "react";
 
@@ -65,7 +66,7 @@ export default function InventoryMovementsTable({
   variant?: "secondary";
 }): React.JSX.Element {
   const { t } = useTranslation();
-  const [themeColorMuted] = useThemeColor(["muted"]);
+  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
     <Table variant={variant}>

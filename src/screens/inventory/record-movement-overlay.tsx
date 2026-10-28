@@ -1,3 +1,4 @@
+import { useToast } from "panelui-native";
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
 } from "@/components/common/adaptive-form-overlay";
@@ -15,7 +16,7 @@ import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 import { createOperationId } from "@/utils/operation-id";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Label, Select, Typography, useToast } from "heroui-native";
+import { Label, Select, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -86,7 +87,7 @@ export default function RecordMovementOverlay({
       const message = hasFieldError ? t("ingredients.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("ingredients.stockActionFailed"),
         description: message,
       });

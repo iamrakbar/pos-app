@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import ErrorState from "@/components/common/error-state";
 import { ListSkeleton } from "@/components/common/list-skeleton";
@@ -8,17 +10,7 @@ import { formatDate, formatDateTime, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import DatePickerField from "@/components/common/date-picker-field";
-import {
-  Button,
-  Chip,
-  cn,
-  Description,
-  Select,
-  Separator,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Chip, cn, Description, Select, Separator, Typography } from "heroui-native";
 import { EmptyState, Widget, type DatePickerOption } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -38,10 +30,10 @@ type DateRangeOption = { value: DateRangeValue; label: string };
 type AppliedDateRange = { dateFrom: string; dateTo: string };
 
 const SUMMARY_STYLES = {
-  accent: { background: "bg-accent-soft", token: "accent-soft-foreground" },
-  success: { background: "bg-success-soft", token: "success-soft-foreground" },
-  warning: { background: "bg-warning-soft", token: "warning-soft-foreground" },
-  default: { background: "bg-default", token: "foreground" },
+  accent: { background: "bg-accent-soft", token: "--color-secondary-foreground" },
+  success: { background: "bg-success-soft", token: "--color-success-foreground" },
+  warning: { background: "bg-warning-soft", token: "--color-warning-foreground" },
+  default: { background: "bg-default", token: "--color-foreground" },
 } as const;
 
 function toDateParam(date: Date): string {
@@ -117,7 +109,7 @@ function SummaryWidget({
   isSingleColumn: boolean;
 }) {
   const style = SUMMARY_STYLES[color];
-  const iconColor = useThemeColor(style.token);
+  const iconColor = useCSSVariable(style.token) as string;
 
   return (
     <Widget className={isSingleColumn ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
@@ -442,9 +434,9 @@ export default function EarningsScreen(): React.JSX.Element {
     refetch,
     isRefetching,
   } = useEarnings(dateFrom, dateTo);
-  const mutedColor = useThemeColor("muted");
-  const successColor = useThemeColor("success");
-  const accentSoftForeground = useThemeColor("accent-soft-foreground");
+  const mutedColor = useCSSVariable("--color-muted-foreground") as string;
+  const successColor = useCSSVariable("--color-success") as string;
+  const accentSoftForeground = useCSSVariable("--color-secondary-foreground") as string;
 
   const totalEarnings = data.reduce((total, entry) => total + entry.total_price, 0);
   const itemCount = data.reduce((total, entry) => total + entry.items_count, 0);

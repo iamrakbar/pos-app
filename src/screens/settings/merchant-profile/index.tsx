@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { MerchantImageAsset } from "@/api/endpoints/merchant";
 import AppIcon from "@/components/common/app-icon";
@@ -32,8 +34,6 @@ import {
   TextArea,
   TextField,
   Typography,
-  useThemeColor,
-  useToast,
 } from "heroui-native";
 import React from "react";
 import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
@@ -118,7 +118,7 @@ async function uploadMerchantImage({
     }
   } catch (error) {
     toast.show({
-      variant: "danger",
+      variant: "destructive",
       label:
         kind === "logo"
           ? t("merchantProfile.logoUpdateFailed")
@@ -230,7 +230,7 @@ async function saveMerchantProfile({
     const message = fieldMessage ?? getErrorMessage(error);
     setError("root.server", { type: "server", message });
     toast.show({
-      variant: "danger",
+      variant: "destructive",
       label: t("merchantProfile.updateFailed"),
       description: message,
     });
@@ -736,7 +736,10 @@ function MerchantProfileContent({
 export default function MerchantProfileScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [accentColor, foregroundColor] = useThemeColor(["accent", "foreground"]);
+  const [accentColor, foregroundColor] = useCSSVariable([
+    "--color-primary",
+    "--color-foreground",
+  ]) as [string, string];
   const profileQuery = useMerchantProfile();
   const updateProfile = useUpdateMerchantProfile();
   const uploadLogo = useUploadMerchantLogo();

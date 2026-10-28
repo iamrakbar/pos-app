@@ -1,9 +1,10 @@
+import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { formatRupiah } from "@/utils/format";
 import { useProducts } from "@/hooks/db/use-products";
 import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
-import { Button, Select, Separator, Skeleton, Typography, useThemeColor } from "heroui-native";
+import { Button, Select, Separator, Skeleton, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, Text, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
@@ -358,7 +359,11 @@ export default function CartContent(): JSX.Element {
   const { isCompact, isPortrait } = useResponsiveLayout();
   const { locale, t } = useTranslation();
   const { choicePresentation, pickerPresentation } = useOverlayPresentation();
-  const [colorAccent, colorMuted, colorDanger] = useThemeColor(["accent", "muted", "danger"]);
+  const [colorAccent, colorMuted, colorDanger] = useCSSVariable([
+    "--color-primary",
+    "--color-muted-foreground",
+    "--color-destructive",
+  ]) as [string, string, string];
   const cartProducts = useCartStore((s) => s.products);
   const itemCount = useCartStore((s) =>
     s.products.reduce((total, product) => total + product.qty, 0)

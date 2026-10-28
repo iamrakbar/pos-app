@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { ListSkeleton } from "@/components/common/list-skeleton";
@@ -17,7 +18,6 @@ import {
   SearchField,
   Separator,
   Typography,
-  useThemeColor,
 } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
@@ -26,7 +26,7 @@ import { Pressable, ScrollView, View } from "react-native";
 export default function DiscountProductsScreen(): React.JSX.Element {
   const router = useRouter();
   const { t } = useTranslation();
-  const muted = useThemeColor("muted");
+  const muted = useCSSVariable("--color-muted-foreground") as string;
   const [search, setSearch] = React.useState("");
   const deferredSearch = React.useDeferredValue(search.trim());
   const [categoryId, setCategoryId] = React.useState<string | null>(null);

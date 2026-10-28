@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
 import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -7,7 +8,7 @@ import { AppIcons } from "@/components/common/app-icons";
 import { GridSkeleton } from "@/components/common/list-skeleton";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
-import { Button, Card, Chip, ScrollShadow, useThemeColor } from "heroui-native";
+import { Button, Card, Chip, ScrollShadow } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -43,12 +44,12 @@ export default function TableSelectionScreen(): JSX.Element {
   const { width } = useWindowDimensions();
   const [activeAreaId, setActiveAreaId] = useState("");
   const [gridWidth, setGridWidth] = useState(0);
-  const [accent, muted, accentSoft] = useThemeColor([
-    "accent",
-    "muted",
-    "accent-soft",
-    "foreground",
-  ]);
+  const [accent, muted, accentSoft] = useCSSVariable([
+    "--color-primary",
+    "--color-muted-foreground",
+    "--color-secondary",
+    "--color-foreground",
+  ]) as [string, string, string, string];
   const { data: tables = [], isLoading } = useTables();
   const selectedTableId = usePOSStore((state) => state.checkoutForm.table_id);
   const updateCheckoutForm = usePOSStore((state) => state.updateCheckoutForm);

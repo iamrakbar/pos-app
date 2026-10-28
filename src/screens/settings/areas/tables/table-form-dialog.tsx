@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay, {
@@ -10,7 +12,7 @@ import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-t
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { createTableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, cn, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, cn, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -39,7 +41,11 @@ export default function TableFormDialog({
 }: TableFormDialogProps): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { toast } = useToast();
-  const [mutedColor, accentColor, accentSoft] = useThemeColor(["muted", "accent", "accent-soft"]);
+  const [mutedColor, accentColor, accentSoft] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-primary",
+    "--color-secondary",
+  ]) as [string, string, string];
   const { isPhonePortrait } = useOverlayPresentation();
   const createMutation = useCreateTable(areaId);
   const updateMutation = useUpdateTable(areaId, table?.id ?? "");
@@ -90,7 +96,7 @@ export default function TableFormDialog({
         }
       }
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("areasManagement.tableSaveFailed"),
         description: getErrorMessage(error),
       });
@@ -106,7 +112,7 @@ export default function TableFormDialog({
       toast.show({ variant: "success", label: t("areasManagement.tableDeleted") });
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("areasManagement.tableDeleteFailed"),
         description: getErrorMessage(error),
       });

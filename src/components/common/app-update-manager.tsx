@@ -1,14 +1,8 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import * as Updates from "expo-updates";
-import {
-  Alert as HeroAlert,
-  Button,
-  Card,
-  Spinner,
-  Typography,
-  useThemeColor,
-} from "heroui-native";
+import { Alert as HeroAlert, Button, Card, Spinner, Typography } from "heroui-native";
 import { useState, type JSX } from "react";
 import { Alert as NativeAlert, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -28,7 +22,10 @@ function shortId(value: string | null | undefined, fallback: string): string {
 export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.Element | null {
   const { t } = useTranslation();
   const updates = Updates.useUpdates();
-  const [themeColorAccent, themeColorBackground] = useThemeColor(["accent", "background"]);
+  const [themeColorAccent, themeColorBackground] = useCSSVariable([
+    "--color-primary",
+    "--color-background",
+  ]) as [string, string];
   const [actionStatus, setActionStatus] = useState<UpdateActionStatus>("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [dismissedUpdateId, setDismissedUpdateId] = useState<string | null>(null);

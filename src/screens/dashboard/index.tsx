@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import ErrorState from "@/components/common/error-state";
 import LoadingAnimation from "@/components/common/loading-animation";
 import { useDashboard } from "@/hooks/db/use-dashboard";
@@ -5,7 +6,7 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { Chip, cn, Separator, Typography, useThemeColor } from "heroui-native";
+import { Chip, cn, Separator, Typography } from "heroui-native";
 import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -38,7 +39,9 @@ function SummaryWidget({
   icon: React.ComponentProps<typeof AppIcon>["icon"];
   color?: "accent" | "warning" | "success";
 }) {
-  const iconColor = useThemeColor(`${color}-soft-foreground`);
+  const iconColor = useCSSVariable(
+    `--color-${color === "accent" ? "secondary" : color}-foreground`
+  ) as string;
 
   return (
     <Widget className="grow shrink basis-2/5 landscape:basis-1/5">
@@ -172,7 +175,7 @@ export default function DashboardScreen(): React.JSX.Element {
   const [period, setPeriod] = React.useState<Period>("today");
   const appliedRange = getPeriodRange(period);
   const dashboard = useDashboard(appliedRange.startDate, appliedRange.endDate);
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
 
   const chart = normalizeChartRange(
     (dashboard.data?.orders_chart ?? []).map((point) => ({

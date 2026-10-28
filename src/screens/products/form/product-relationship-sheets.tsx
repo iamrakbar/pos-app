@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import InventoryMovementsTable from "@/components/common/inventory-movements-table";
@@ -18,7 +20,7 @@ import { useTranslation } from "@/stores/use-locale";
 import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import type { TranslationKey } from "@/locales";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { Button, Label, Spinner, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, Label, Spinner, Typography } from "heroui-native";
 import { EmptyState, Table } from "heroui-native-pro";
 import React from "react";
 import { FlatList, ScrollView, View } from "react-native";
@@ -44,7 +46,7 @@ function SheetHeader({
   description: string;
   onClose: () => void;
 }): React.JSX.Element {
-  const [themeColorForeground] = useThemeColor(["foreground"]);
+  const [themeColorForeground] = useCSSVariable(["--color-foreground"]) as [string];
   const { t } = useTranslation();
 
   return (
@@ -79,7 +81,7 @@ function SheetLoading(): React.JSX.Element {
 
 function RecipeTable({ ingredients }: { ingredients: RecipeIngredient[] }): React.JSX.Element {
   const { t } = useTranslation();
-  const [themeColorMuted] = useThemeColor(["muted"]);
+  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
     <Table variant="secondary">
@@ -157,7 +159,7 @@ function RecipeEditor({
   onOpenPicker: (kind: RecipePickerKind, index: number) => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
-  const [themeColorDanger] = useThemeColor(["danger"]);
+  const [themeColorDanger] = useCSSVariable(["--color-destructive"]) as [string];
   const ingredientOptions = ingredients.map((ingredient) => ({
     value: ingredient.id,
     label: ingredient.name,
@@ -253,7 +255,7 @@ function RecipePickerTrigger({
   isDisabled?: boolean;
   children: string;
 }): React.JSX.Element {
-  const [themeColorMuted] = useThemeColor(["muted"]);
+  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
     <Button
@@ -288,7 +290,7 @@ function RecipePickerSheet({
   onSelect: (value: string) => void;
   onDidDismiss: () => void;
 }): React.JSX.Element {
-  const [themeColorAccent] = useThemeColor(["accent"]);
+  const [themeColorAccent] = useCSSVariable(["--color-primary"]) as [string];
 
   return (
     <TrueSheet
@@ -498,7 +500,7 @@ function useProductRecipeEditor(
       setIsEditing(false);
     } catch (error) {
       setRecipeError(error instanceof Error ? error.message : t("productForm.recipeSaveFailed"));
-      toast.show({ variant: "danger", label: t("productForm.recipeSaveFailed") });
+      toast.show({ variant: "destructive", label: t("productForm.recipeSaveFailed") });
     }
   };
 

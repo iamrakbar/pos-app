@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import CreateFAB from "@/components/common/create-fab";
@@ -8,7 +9,7 @@ import { useDiscounts } from "@/hooks/db/use-discounts";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { formatDate, formatRupiah } from "@/utils/format";
 import { Stack, useRouter } from "expo-router";
-import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { Chip, Separator, Typography } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -16,7 +17,7 @@ import { useTranslation } from "@/stores/use-locale";
 export default function DiscountsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
-  const muted = useThemeColor("muted");
+  const muted = useCSSVariable("--color-muted-foreground") as string;
   const [search, setSearch] = React.useState("");
   const [active, setActive] = React.useState<"all" | "active" | "inactive">("all");
   const query = useDiscounts(

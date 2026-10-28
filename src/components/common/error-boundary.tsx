@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from "react";
-import { Pressable, View } from "react-native";
-import { Typography } from "heroui-native";
+import { View } from "react-native";
+import { Button, Typography } from "panelui-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { t } from "@/locales";
@@ -30,12 +30,9 @@ export class ErrorBoundary extends Component<Props, State> {
           <Typography className="text-sm text-muted-foreground text-center">
             {this.state.error.message}
           </Typography>
-          <Pressable
-            onPress={() => this.setState({ error: null })}
-            className="mt-2 px-4 py-2 rounded-full border border-border active:opacity-70"
-          >
-            <Typography className="text-sm text-foreground">{t("errors.reload")}</Typography>
-          </Pressable>
+          <Button variant="outline" onPress={() => this.setState({ error: null })}>
+            {t("errors.reload")}
+          </Button>
         </View>
       );
     }

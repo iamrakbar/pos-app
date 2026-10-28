@@ -1,6 +1,7 @@
+import { useCSSVariable } from "uniwind";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
-import { Card, cn, Typography, useThemeColor } from "heroui-native";
+import { Card, cn, Typography } from "heroui-native";
 import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
@@ -17,7 +18,7 @@ type Props = {
 
 function ProductCard({ product, onPress, width }: Props): JSX.Element {
   const { t } = useTranslation();
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const isDiscounted = product.discount !== null;
   const isOutOfStock = product.stock?.enabled && (product.stock.qty ?? 0) <= 0;
   const effectivePrice = getProductSellingPrice(product);

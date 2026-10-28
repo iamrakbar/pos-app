@@ -46,7 +46,7 @@ type InventoryMutation = {
 
 type Toast = {
   show: (options: {
-    variant: "success" | "warning" | "danger";
+    variant: "success" | "warning" | "destructive";
     label: string;
     description?: string;
   }) => void;
@@ -122,7 +122,7 @@ export async function saveProduct({
     const message = hasFieldErrors ? t("productForm.checkFields") : getErrorMessage(error);
     setError("root.server", { type: "server", message });
     toast.show({
-      variant: "danger",
+      variant: "destructive",
       label: savedProduct
         ? t("productForm.inventoryUpdateFailed")
         : isNew

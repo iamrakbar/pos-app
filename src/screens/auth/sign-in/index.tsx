@@ -1,5 +1,6 @@
+import { useCSSVariable } from "uniwind";
 import Logo from "@/components/common/logo";
-import { Button, Card, cn, InputGroup, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, cn, InputGroup, Typography } from "heroui-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useEffect, useState, type JSX } from "react";
@@ -16,7 +17,7 @@ import { useTranslation } from "@/stores/use-locale";
 export default function SignInScreen(): JSX.Element {
   const { locale, t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
-  const themeColorAccent = useThemeColor("accent");
+  const themeColorAccent = useCSSVariable("--color-primary") as string;
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const login = useLogin();
   const loginSchema = createLoginSchema(t);

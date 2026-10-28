@@ -1,8 +1,9 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import SettingsMenuRow from "@/components/common/settings-menu-row";
 import { useRouter } from "expo-router";
-import { ListGroup, Separator, Typography, useThemeColor } from "heroui-native";
+import { ListGroup, Separator, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -21,7 +22,7 @@ type InventoryMenuItem = {
 export default function InventoryOverviewScreen(): JSX.Element {
   const router = useRouter();
   const { t } = useTranslation();
-  const [themeColorMuted] = useThemeColor(["muted"]);
+  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
   const activeMerchant = useAuth((state) => state.activeMerchant);
   const { data: merchantProfile } = useMerchantProfile();
   const recipeInventoryEnabled = hasMerchantFeature(

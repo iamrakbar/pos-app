@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import AppIcon from "@/components/common/app-icon";
@@ -8,7 +10,7 @@ import { getMerchantOrderUrl } from "@/utils/merchant-order-url";
 import { EncodingType, File as ExpoFile, Paths } from "expo-file-system";
 import * as Linking from "expo-linking";
 import { Asset, requestPermissionsAsync } from "expo-media-library";
-import { Button, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, Typography } from "heroui-native";
 import React from "react";
 import { Platform, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -60,7 +62,7 @@ async function downloadMerchantQr({
     });
   } catch (error) {
     toast.show({
-      variant: "danger",
+      variant: "destructive",
       label: t("merchantProfile.saveFailed"),
       description: getErrorMessage(error),
     });
@@ -74,7 +76,7 @@ export default function MerchantQrOverlay({
 }: MerchantQrOverlayProps): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [foregroundColor] = useThemeColor(["foreground"]);
+  const [foregroundColor] = useCSSVariable(["--color-foreground"]) as [string];
   const [isDownloading, setIsDownloading] = React.useState(false);
   const qrRef = React.useRef<QrSvgRef | null>(null);
   const orderUrl = getMerchantOrderUrl(slug);
@@ -100,7 +102,7 @@ export default function MerchantQrOverlay({
     if (!orderUrl) return;
     await Linking.openURL(orderUrl).catch((error: unknown) => {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("merchantProfile.previewFailed"),
         description: error instanceof Error ? error.message : undefined,
       });

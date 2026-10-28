@@ -1,7 +1,8 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useNavigation } from "expo-router";
-import { Button, useThemeColor } from "heroui-native";
+import { Button } from "heroui-native";
 import type { JSX } from "react";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -18,7 +19,7 @@ export default function DrawerMenuButton({
 }: DrawerMenuButtonProps): JSX.Element {
   const { t } = useTranslation();
   const navigation = useNavigation<DrawerNavigation>();
-  const themeColorForeground = useThemeColor("foreground");
+  const themeColorForeground = useCSSVariable("--color-foreground") as string;
 
   return (
     <Button

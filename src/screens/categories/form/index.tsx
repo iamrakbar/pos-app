@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
@@ -18,17 +20,7 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Card, Input, Label, TextArea, TextField, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -62,7 +54,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
-  const dangerColor = useThemeColor("danger");
+  const dangerColor = useCSSVariable("--color-destructive") as string;
   const isNew = id === "new";
   const categoryQuery = useCategory(id);
   const category = categoryQuery.data;
@@ -141,7 +133,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
       const message = hasFieldErrors ? t("categories.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("categories.saveFailed"),
         description: message,
       });
@@ -156,7 +148,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
       router.back();
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("categories.deleteFailed"),
         description: getErrorMessage(error),
       });

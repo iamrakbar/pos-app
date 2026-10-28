@@ -1,3 +1,4 @@
+import { useToast } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
@@ -7,7 +8,7 @@ import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import { Button, Card, Input, Label, Select, TextField, Typography, useToast } from "heroui-native";
+import { Button, Card, Input, Label, Select, TextField, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
 import { View } from "react-native";
@@ -95,7 +96,7 @@ export default function AccountScreen(): React.JSX.Element {
       const message = fieldMessage ?? getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("profile.updateFailed"),
         description: message,
       });

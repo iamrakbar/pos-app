@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import { useOrders } from "@/hooks/db/use-orders";
 import { extractPaymentExpiry } from "@/api/mappers/checkout";
 import {
@@ -16,7 +17,7 @@ import { formatDateTime, formatRupiah, formatTime } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
-import { Chip, Separator, Typography, useThemeColor } from "heroui-native";
+import { Chip, Separator, Typography } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { Stack, useRouter } from "expo-router";
@@ -47,7 +48,7 @@ function formatPickupTime(value: string | null): string | null {
 export default function OrdersScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all");
   const { data: tables } = useTables();
 
@@ -145,7 +146,7 @@ function OrderRow({
   onPress: () => void;
 }) {
   const { t } = useTranslation();
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const orderStatus = getOrderStatus(order.order_status);
   const paymentStatus = getPaymentStatus(order.payment_status, {
     expiresAt: extractPaymentExpiry(order.payment),

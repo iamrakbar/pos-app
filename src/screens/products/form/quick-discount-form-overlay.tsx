@@ -1,3 +1,4 @@
+import { useToast } from "panelui-native";
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
 } from "@/components/common/adaptive-form-overlay";
@@ -11,7 +12,7 @@ import {
 } from "@/schemas/discount";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Label, TextField, Typography, useToast } from "heroui-native";
+import { Button, Input, Label, TextField, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { View } from "react-native";
@@ -106,7 +107,7 @@ export default function QuickDiscountFormOverlay({
         : t("discounts.saveFailedDescription");
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("discounts.saveFailed"),
         description: message,
       });

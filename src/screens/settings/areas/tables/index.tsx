@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import { GridSkeleton } from "@/components/common/list-skeleton";
@@ -8,7 +9,7 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { Button, Card, Chip, useThemeColor } from "heroui-native";
+import { Button, Card, Chip } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { FlatList, View } from "react-native";
@@ -26,7 +27,11 @@ export default function AreaTablesScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { id: areaId } = useLocalSearchParams<{ id: string }>();
   const { width, isCompact, isMedium, isPortrait, horizontalPagePadding } = useResponsiveLayout();
-  const [mutedColor, accentColor, accentSoft] = useThemeColor(["muted", "accent", "accent-soft"]);
+  const [mutedColor, accentColor, accentSoft] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-primary",
+    "--color-secondary",
+  ]) as [string, string, string];
   const areaQuery = useArea(areaId);
   const tablesQuery = useAreaTables(areaId);
   const [editingTable, setEditingTable] = React.useState<TableData | null>(null);

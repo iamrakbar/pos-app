@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import {
@@ -8,17 +9,7 @@ import {
 } from "@haroldtran/react-native-thermal-printer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  cn,
-  Input,
-  Separator,
-  Spinner,
-  Switch,
-  Typography,
-  useThemeColor,
-} from "heroui-native";
+import { Button, Card, cn, Input, Separator, Spinner, Switch, Typography } from "heroui-native";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
@@ -833,9 +824,13 @@ export default function PrinterFormScreen(): React.JSX.Element {
   const selectPrinter = usePrinterStore((state) => state.selectPrinter);
   const hasHydrated = usePrinterStore((state) => state.hasHydrated);
   const printer = printers.find((item) => item.id === id);
-  const [themeColorMuted, themeColorForeground, themeColorAccent, themeColorDanger] = useThemeColor(
-    ["muted", "foreground", "accent", "danger"]
-  );
+  const [themeColorMuted, themeColorForeground, themeColorAccent, themeColorDanger] =
+    useCSSVariable([
+      "--color-muted-foreground",
+      "--color-foreground",
+      "--color-primary",
+      "--color-destructive",
+    ]) as [string, string, string, string];
 
   const [devices, setDevices] = React.useState<DiscoveredDevice[]>([]);
   const [scanning, setScanning] = React.useState(false);

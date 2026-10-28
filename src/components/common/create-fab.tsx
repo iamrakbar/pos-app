@@ -1,6 +1,7 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { useThemeColor } from "heroui-native";
+
 import { FAB } from "heroui-native-pro";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,7 +16,7 @@ export default function CreateFAB({
   onPress,
 }: CreateFABProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
-  const accentForeground = useThemeColor("accent-foreground");
+  const accentForeground = useCSSVariable("--color-primary-foreground") as string;
 
   return (
     <FAB

@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import { POS_ADD_ON_SHEET_NAME } from "@/hooks/use-pos-add-on-sheet";
 import { createAddOnSchema, type AddOnFormValues } from "@/schemas/addon";
 import { useCartStore } from "@/stores/use-cart-store";
@@ -19,7 +20,6 @@ import {
   Surface,
   TextArea,
   Typography,
-  useThemeColor,
 } from "heroui-native";
 import React from "react";
 import { Controller, type Control, useForm, useWatch } from "react-hook-form";
@@ -188,7 +188,10 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { dismiss, resize } = useTrueSheet();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const [backgroundColor, borderColor] = useThemeColor(["background", "border"]);
+  const [backgroundColor, borderColor] = useCSSVariable([
+    "--color-background",
+    "--color-border",
+  ]) as [string, string];
   const product = usePOSStore((state) => state.selectedProduct);
   const editingCartItemId = usePOSStore((state) => state.editingCartItemId);
   const clearAddonSelection = usePOSStore((state) => state.clearAddonSelection);

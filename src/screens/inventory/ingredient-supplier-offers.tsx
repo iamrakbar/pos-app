@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import ErrorState from "@/components/common/error-state";
@@ -5,7 +6,7 @@ import CreateFAB from "@/components/common/create-fab";
 import { useIngredientSupplierOffers } from "@/hooks/db/use-supplier-offers";
 import { useTranslation } from "@/stores/use-locale";
 import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
-import { Chip, Typography, useThemeColor } from "heroui-native";
+import { Chip, Typography } from "heroui-native";
 import { EmptyState, Table } from "heroui-native-pro";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -80,7 +81,7 @@ function SupplierOffersTable({
   onEdit: (offer: SupplierOffer) => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
-  const [themeColorMuted] = useThemeColor(["muted"]);
+  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
     <Table>

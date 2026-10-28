@@ -1,3 +1,4 @@
+import { useToast } from "panelui-native";
 import {
   PrintError,
   printReceipt as runPrintReceipt,
@@ -5,7 +6,7 @@ import {
 } from "@/services/printer/print-service";
 import { usePrinterStore } from "@/stores/use-printer-store";
 import { useRouter } from "expo-router";
-import { useToast } from "heroui-native";
+
 import { useState } from "react";
 import { Linking, Platform } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -100,14 +101,14 @@ export function useReceiptPrinter() {
         case "CONNECTION_TIMEOUT":
         case "CONNECTION_FAILED":
           toast.show({
-            variant: "danger",
+            variant: "destructive",
             label: t("printer.cannotConnect"),
             description: t("printer.cannotConnectDescription"),
           });
           break;
         default:
           toast.show({
-            variant: "danger",
+            variant: "destructive",
             label: t("printer.printFailed"),
             description: t("printer.genericPrintFailure"),
           });

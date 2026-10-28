@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import CreateFAB from "@/components/common/create-fab";
@@ -9,7 +10,7 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { formatDateTime, formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack, useRouter } from "expo-router";
-import { Button, Chip, Typography, useThemeColor } from "heroui-native";
+import { Button, Chip, Typography } from "heroui-native";
 import { EmptyState, Table, type TableSortDescriptor } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -314,7 +315,7 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
   const theme = useNavigationTheme();
-  const [themeColorMuted] = useThemeColor(["muted"]);
+  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
   const [search, setSearch] = React.useState("");
   const deferredSearch = React.useDeferredValue(search.trim());
   const [filter, setFilter] = React.useState<IngredientFilter>("all");

@@ -2,7 +2,7 @@
 
 Replace HeroUI Native, HeroUI Native Pro, and generic custom controls with stock PanelUI components. Retain TrueSheet for existing sheet presentation and orchestration. Preserve business behavior, localization, navigation, and responsive layouts while adopting PanelUI defaults.
 
-Tasks are ordered by priority and dependency. Change `- [ ]` to `- [x]` only after the task and its verification are complete. No implementation task is complete yet. This is one atomic migration delivered through ordered work stages: intermediate stages may not run while HeroUI consumers remain. Do not release or claim a runnable checkpoint until all source consumers and theme dependencies are converted.
+Tasks are ordered by priority and dependency. Change `- [ ]` to `- [x]` only after the task and its verification are complete. P0 implementation and evidence are recorded in [the validation log](panelui-p0-validation.md). This is one atomic migration delivered through ordered work stages: intermediate stages may not run while HeroUI consumers remain. Do not release or claim a runnable checkpoint until all source consumers and theme dependencies are converted.
 
 ## Audit baseline
 
@@ -13,19 +13,30 @@ Tasks are ordered by priority and dependency. Change `- [ ]` to `- [x]` only aft
 - Expo 57, React Native 0.86.3, and Reanimated 4.5.1 match the supplied PanelUI compatibility requirements.
 - Use installed source/types as the contract; consult the [official catalog](https://panelui.dev/llms.txt) and local PanelUI skill references. Do not silently upgrade.
 
+## P0 decision — retain TrueSheet
+
+TrueSheet remains the sheet presentation and orchestration library, including the POS add-on flow. Preserve its existing virtualized lists, detents, refs, named methods, lifecycle, and nested interactions. Replacing it with PanelUI or Software Mansion sheets is out of scope for this migration.
+
+- [ ] Resolve Android PanelUI overlay and toast stacking above TrueSheet using the user-authorized native overlay host spike; retain stock PanelUI controls and TrueSheet. Verify nonblocking toasts, queue ownership and timers, Select, DatePicker, Dialog, accessibility, keyboard, and Android back before adoption.
+- [ ] Baseline and validate long add-on lists and nested selection changes on an Android device; preserve FlatList virtualization, selection rules and response time. Optimize nonvisual state and row rendering only where measurement demonstrates a regression; avoid custom UI controls.
+
+### Overlay acceptance update
+
+The user accepts the native Modal host direction for non-toast overlays, subject to confirming that one overlay renders once and remains usable on Android. Toast remains a separate unresolved issue: do not mark its stacking, timing, or accessibility complete until a single nonblocking viewport is verified. Keep the Modal host as a development spike until its lifecycle and interaction checks pass.
+
 ## P0 — Migration rules and infrastructure
 
 - [ ] Capture baseline typecheck, lint, tests, screenshots, and representative workflow results; record unrelated failures and preserve existing uncommitted work.
-- [ ] Enforce direct `panelui-native` imports: no copied components, forks, compatibility wrappers, new custom controls, or library patches.
-- [ ] Add the missing direct required peer `@react-native-masked-view/masked-view` through Expo-compatible installation; retain the existing Bun package workflow.
-- [ ] Replace HeroUI CSS imports/vendor scanning in `src/global.css` with `panelui-native/theme.css` and `@source "../node_modules/panelui-native/src"`.
-- [ ] Adopt the default Panel family with device light/dark mode; remove the HeroUI cyan accent override.
-- [ ] Install exactly one PanelUIProvider above QueryClientProvider and TrueSheetProvider in the root layout, with all application screens beneath them. Remove HeroUI provider/toast wrapper and the outer gesture/keyboard providers supplied by PanelUI; preserve Android window/inset flags through supported PanelUIProvider props.
+- [x] Enforce direct `panelui-native` imports: no copied components, forks, compatibility wrappers, new custom controls, or library patches.
+- [x] Add the missing direct required peer `@react-native-masked-view/masked-view` through Expo-compatible installation; retain the existing Bun package workflow.
+- [x] Replace HeroUI CSS imports/vendor scanning in `src/global.css` with `panelui-native/theme.css` and `@source "../node_modules/panelui-native/src"`.
+- [x] Adopt the default Panel family with device light/dark mode; remove the HeroUI cyan accent override.
+- [x] Install exactly one PanelUIProvider above QueryClientProvider and TrueSheetProvider in the root layout, with all application screens beneath them. Remove HeroUI provider/toast wrapper and the outer gesture/keyboard providers supplied by PanelUI; preserve Android window/inset flags through supported PanelUIProvider props.
 - [ ] Preserve authentication, React Query, Observe, splash readiness, notifications, update handling, and error boundaries.
-- [ ] Replace useThemeColor with Uniwind useCSSVariable; retain the nonvisual navigation-theme adapter using resolved PanelUI tokens.
-- [ ] Verify surface→card, muted text→muted-foreground, accent→primary, and danger→destructive translations against installed tokens, including status/surface variants.
-- [ ] Replace toast calls with PanelUI useToast, preserving severity, actions, duration, and dismissal.
-- [ ] Before broad screen conversion, run a minimal integration spike using the existing root and a representative TrueSheet: verify PanelUI controls, keyboard, Select/DatePicker/Dialog, and toast stacking above the native sheet on Android. Treat invisible or untouchable portals as a migration blocker, not something provider reordering alone is assumed to fix. Do not add custom portals or patch either library.
+- [x] Replace useThemeColor with Uniwind useCSSVariable; retain the nonvisual navigation-theme adapter using resolved PanelUI tokens.
+- [x] Verify surface→card, muted text→muted-foreground, accent→primary, and danger→destructive translations against installed tokens, including status/surface variants.
+- [x] Replace toast calls with PanelUI useToast, preserving severity, actions, duration, and dismissal.
+- [ ] Before broad screen conversion, run a minimal integration spike using the existing root and a representative TrueSheet: verify PanelUI controls, keyboard, Select/DatePicker/Dialog, and toast stacking above the native sheet on Android. Treat invisible or untouchable portals as a migration blocker, not something provider reordering alone is assumed to fix. A native overlay host spike is authorized; do not patch either library without a further decision.
 
 ## P1 — Shared controls and behavior contracts
 
@@ -33,40 +44,40 @@ Tasks are ordered by priority and dependency. Change `- [ ]` to `- [x]` only aft
 
 The component category can usually map 1:1; props and compound anatomy must be adapted.
 
-| Existing component/pattern | PanelUI replacement | Adaptation |
-| --- | --- | --- |
-| Button | Button | Variants, loading, disabled state, size, icon slots |
-| Card | Card | Body→Content; use slot padding |
-| Typography, Surface, Separator | Same-named components | Supported presets, variants, orientation |
-| Chip, Avatar, Accordion | Same-named components | Status semantics and compound parts |
-| Checkbox, Switch | Same-named components | Controlled state and callbacks |
-| Radio + RadioGroup | RadioGroup parts | Values and accessibility |
-| Tabs | Tabs | In-screen state; keep Expo Router routes |
-| ListGroup | Item / Item.Group | Frame rows for settings |
-| ControlField | Field / Frame.Row | Documented labels and controls |
-| TextField | Field + Input | Labels, errors, descriptions, refs |
-| TextArea | Textarea | Multiline and keyboard behavior |
-| InputGroup | InputGroup | Documented adornments |
-| SearchField/custom search | SearchBar | Query, clear, debounce, filtering |
-| Label/Description/FieldError | Label / Field parts | No duplicate announcements |
-| Select | Select | Value shape, items, trigger, presentation |
-| Dialog, Popover | Same-named components | Controlled state and anatomy |
-| HeroUI BottomSheet | TrueSheet | Use existing sheet conventions and PanelUI content |
-| Existing TrueSheet | Retain TrueSheet | Preserve provider, refs, names, detents, and lifecycle |
-| ScrollShadow | ScrollFade | Preserve native scroll and compatible handlers |
-| Skeleton, Spinner, Alert | Same-named components | Loading geometry and status |
-| EmptyState | EmptyState | Localized content and recovery |
-| FAB/custom create FAB | Fab | Action, placement, spoken name |
-| SlideButton | SlideButton | Pending state and repeat protection |
-| NumberField/custom stepper | NumberInput | Numeric values, bounds, step, callbacks |
-| Calendar/DatePicker | Calendar/DatePicker | Date selections instead of HeroUI options |
-| TimePicker | TimePicker | Convert to `{ hour, minute }` |
-| Table | Table | Composition and controlled sorting |
-| Widget / summary metric | Frame / Kpi | Titles, panels, values, comparisons |
-| AreaChart | AreaChart | Data-key series instead of geometry render props |
-| SplitView | SplitView | Top, Bottom, DragArea, Handle |
-| Custom countdown | Countdown | Stable timestamp and onComplete |
-| QR renderer/disclosure | QRCode | Encoded value, disclosure, sharing/export |
+| Existing component/pattern     | PanelUI replacement   | Adaptation                                             |
+| ------------------------------ | --------------------- | ------------------------------------------------------ |
+| Button                         | Button                | Variants, loading, disabled state, size, icon slots    |
+| Card                           | Card                  | Body→Content; use slot padding                         |
+| Typography, Surface, Separator | Same-named components | Supported presets, variants, orientation               |
+| Chip, Avatar, Accordion        | Same-named components | Status semantics and compound parts                    |
+| Checkbox, Switch               | Same-named components | Controlled state and callbacks                         |
+| Radio + RadioGroup             | RadioGroup parts      | Values and accessibility                               |
+| Tabs                           | Tabs                  | In-screen state; keep Expo Router routes               |
+| ListGroup                      | Item / Item.Group     | Frame rows for settings                                |
+| ControlField                   | Field / Frame.Row     | Documented labels and controls                         |
+| TextField                      | Field + Input         | Labels, errors, descriptions, refs                     |
+| TextArea                       | Textarea              | Multiline and keyboard behavior                        |
+| InputGroup                     | InputGroup            | Documented adornments                                  |
+| SearchField/custom search      | SearchBar             | Query, clear, debounce, filtering                      |
+| Label/Description/FieldError   | Label / Field parts   | No duplicate announcements                             |
+| Select                         | Select                | Value shape, items, trigger, presentation              |
+| Dialog, Popover                | Same-named components | Controlled state and anatomy                           |
+| HeroUI BottomSheet             | TrueSheet             | Use existing sheet conventions and PanelUI content     |
+| Existing TrueSheet             | Retain TrueSheet      | Preserve provider, refs, names, detents, and lifecycle |
+| ScrollShadow                   | ScrollFade            | Preserve native scroll and compatible handlers         |
+| Skeleton, Spinner, Alert       | Same-named components | Loading geometry and status                            |
+| EmptyState                     | EmptyState            | Localized content and recovery                         |
+| FAB/custom create FAB          | Fab                   | Action, placement, spoken name                         |
+| SlideButton                    | SlideButton           | Pending state and repeat protection                    |
+| NumberField/custom stepper     | NumberInput           | Numeric values, bounds, step, callbacks                |
+| Calendar/DatePicker            | Calendar/DatePicker   | Date selections instead of HeroUI options              |
+| TimePicker                     | TimePicker            | Convert to `{ hour, minute }`                          |
+| Table                          | Table                 | Composition and controlled sorting                     |
+| Widget / summary metric        | Frame / Kpi           | Titles, panels, values, comparisons                    |
+| AreaChart                      | AreaChart             | Data-key series instead of geometry render props       |
+| SplitView                      | SplitView             | Top, Bottom, DragArea, Handle                          |
+| Custom countdown               | Countdown             | Stable timestamp and onComplete                        |
+| QR renderer/disclosure         | QRCode                | Encoded value, disclosure, sharing/export              |
 
 - [ ] Read each replacement's local reference and installed types before editing its consumers; adapt semantic variants rather than mechanically renaming imports.
 - [ ] Replace generic action dialogs, fields, close buttons, loading/error displays, settings rows, skeleton wrappers, FABs, countdowns, and QR disclosures with direct PanelUI composition; delete unused helper files.

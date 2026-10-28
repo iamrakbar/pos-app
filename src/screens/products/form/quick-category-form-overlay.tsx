@@ -1,3 +1,4 @@
+import { useToast } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import AdaptiveFormOverlay, {
   AdaptiveFormKeyboardHandlers,
@@ -12,7 +13,7 @@ import {
 } from "@/schemas/category";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Label, TextArea, TextField, Typography, useToast } from "heroui-native";
+import { Button, Label, TextArea, TextField, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -85,7 +86,7 @@ export default function QuickCategoryFormOverlay({
       const message = hasFieldError ? t("categories.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("categories.saveFailed"),
         description: message,
       });

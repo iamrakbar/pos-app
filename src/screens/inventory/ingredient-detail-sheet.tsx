@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import AdjustStockOverlay from "@/screens/inventory/adjust-stock-overlay";
@@ -5,7 +6,7 @@ import RecordMovementOverlay from "@/screens/inventory/record-movement-overlay";
 import type { Ingredient } from "@/screens/inventory/ingredient-stock-overlay-utils";
 import { formatDateTime, formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { Button, Card, Chip, Typography, useThemeColor } from "heroui-native";
+import { Button, Card, Chip, Typography } from "heroui-native";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -64,7 +65,7 @@ function DetailAction({
   label: string;
   onPress: () => void;
 }): React.JSX.Element {
-  const [themeColorAccent] = useThemeColor(["accent"]);
+  const [themeColorAccent] = useCSSVariable(["--color-primary"]) as [string];
 
   return (
     <Button
@@ -88,7 +89,7 @@ export default function IngredientDetailSheet({
   onShowMovements,
 }: IngredientDetailSheetProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [themeColorForeground] = useThemeColor(["foreground"]);
+  const [themeColorForeground] = useCSSVariable(["--color-foreground"]) as [string];
   const [isAdjustStockOpen, setIsAdjustStockOpen] = React.useState(false);
   const [isRecordMovementOpen, setIsRecordMovementOpen] = React.useState(false);
 

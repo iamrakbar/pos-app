@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import Logo from "@/components/common/logo";
 import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { useAccountProfile } from "@/hooks/db/use-account-profile";
@@ -10,16 +11,7 @@ import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
-import {
-  Avatar,
-  Button,
-  cn,
-  Popover,
-  ScrollShadow,
-  Surface,
-  Typography,
-  useThemeColor,
-} from "heroui-native";
+import { Avatar, Button, cn, Popover, ScrollShadow, Surface, Typography } from "heroui-native";
 import type { ComponentProps, JSX } from "react";
 import { Fragment, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -70,7 +62,13 @@ export default function AppDrawerContent({
     themeColorMuted,
     themeColorAccentSoftForeground,
     themeColorDanger,
-  ] = useThemeColor(["accent", "accent-foreground", "muted", "accent-soft-foreground", "danger"]);
+  ] = useCSSVariable([
+    "--color-primary",
+    "--color-primary-foreground",
+    "--color-muted-foreground",
+    "--color-secondary-foreground",
+    "--color-destructive",
+  ]) as [string, string, string, string, string];
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const { data: user } = useAccountProfile();

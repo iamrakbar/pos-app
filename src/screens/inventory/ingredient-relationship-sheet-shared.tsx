@@ -1,7 +1,8 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useTranslation } from "@/stores/use-locale";
-import { Button, Spinner, Typography, useThemeColor } from "heroui-native";
+import { Button, Spinner, Typography } from "heroui-native";
 import React from "react";
 import { View } from "react-native";
 
@@ -16,7 +17,7 @@ export function SheetHeader({
   action?: React.ReactNode;
   onClose: () => void;
 }): React.JSX.Element {
-  const [themeColorForeground] = useThemeColor(["foreground"]);
+  const [themeColorForeground] = useCSSVariable(["--color-foreground"]) as [string];
   const { t } = useTranslation();
 
   return (

@@ -1,9 +1,10 @@
+import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button, useThemeColor } from "heroui-native";
+import { Button } from "heroui-native";
 import type { JSX } from "react";
 import { useEffect, useRef } from "react";
 import { View } from "react-native";
@@ -24,7 +25,7 @@ export default function FloatingCartButton(): JSX.Element | null {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const foreground = useThemeColor("accent-foreground");
+  const foreground = useCSSVariable("--color-primary-foreground") as string;
   const products = useCartStore((state) => state.products);
   const itemCount = products.reduce((total, product) => total + product.qty, 0);
   const subtotal = products.reduce((total, product) => total + product.subtotal, 0);

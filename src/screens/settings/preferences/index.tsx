@@ -1,7 +1,8 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { ListGroup, Select, Separator, useThemeColor } from "heroui-native";
+import { ListGroup, Select, Separator } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import type { Locale } from "@/locales";
@@ -14,7 +15,7 @@ export default function PreferencesScreen(): JSX.Element {
   const router = useRouter();
   const { isCompact } = useResponsiveLayout();
   const { choicePresentation } = useOverlayPresentation();
-  const mutedColor = useThemeColor("muted");
+  const mutedColor = useCSSVariable("--color-muted-foreground") as string;
   const themeMode = useThemeStore((state) => state.mode);
   const setThemeMode = useThemeStore((state) => state.setMode);
   const setLocale = useLocale((state) => state.setLocale);

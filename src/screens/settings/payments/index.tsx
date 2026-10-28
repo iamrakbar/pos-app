@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import ErrorState from "@/components/common/error-state";
 import { ListSkeleton } from "@/components/common/list-skeleton";
@@ -8,15 +10,7 @@ import { useMerchantPayments, useReorderMerchantPayments } from "@/hooks/db/use-
 import { useTranslation } from "@/stores/use-locale";
 import { useFocusEffect } from "expo-router";
 import { Image } from "expo-image";
-import {
-  Button,
-  ListGroup,
-  Separator,
-  Switch,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, ListGroup, Separator, Switch, Typography } from "heroui-native";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
@@ -88,7 +82,7 @@ function PaymentSettingsRow({
   onToggle: (paymentId: string, active: boolean) => void;
 }) {
   const { t } = useTranslation();
-  const [mutedColor] = useThemeColor(["muted"]);
+  const [mutedColor] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
     <ListGroup.Item>
@@ -190,7 +184,7 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
       toast.show({ variant: "success", label: t("paymentSettings.changesSaved") });
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("paymentSettings.saveFailed"),
         description: getErrorMessage(error),
       });

@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import { Drawer } from "expo-router/drawer";
 import AppDrawerContent from "@/components/navigation/app-drawer-content";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
@@ -6,7 +7,7 @@ import { useNavigationTheme } from "@/utils/navigation-theme";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button, useThemeColor } from "heroui-native";
+import { Button } from "heroui-native";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
@@ -16,7 +17,7 @@ export default function AppLayout() {
   const { data: merchantProfile } = useMerchantProfile();
 
   const theme = useNavigationTheme();
-  const accentForeground = useThemeColor("accent-foreground");
+  const accentForeground = useCSSVariable("--color-primary-foreground") as string;
   const { t } = useTranslation();
   const router = useRouter();
   const activeMerchant = useAuth((state) => state.activeMerchant);

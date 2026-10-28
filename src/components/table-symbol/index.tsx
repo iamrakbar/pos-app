@@ -1,4 +1,5 @@
-import { useThemeColor } from "heroui-native";
+import { useCSSVariable } from "uniwind";
+
 import Svg, { Circle, G, Rect, type SvgProps } from "react-native-svg";
 
 export type TableSeatCount = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -135,11 +136,11 @@ export default function TableSymbol({
   accessibilityLabel,
   ...svgProps
 }: TableSymbolProps) {
-  const [foreground, surface, surfaceSecondary] = useThemeColor([
-    "foreground",
-    "surface",
-    "surface-secondary",
-  ]);
+  const [foreground, surface, surfaceSecondary] = useCSSVariable([
+    "--color-foreground",
+    "--color-card",
+    "--color-surface-secondary",
+  ]) as [string, string, string];
   const config = TABLE_SYMBOLS[seats];
   const stroke = color ?? foreground;
   const tableFill = tableColor ?? surfaceSecondary;

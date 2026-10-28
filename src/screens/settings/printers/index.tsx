@@ -1,7 +1,8 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Separator, Typography, useThemeColor } from "heroui-native";
+import { Separator, Typography } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { ListSkeleton } from "@/components/common/list-skeleton";
@@ -28,7 +29,10 @@ export default function PrintersScreen(): React.JSX.Element {
   const selectedPrinterId = usePrinterStore((state) => state.selectedPrinterId);
   const hasHydrated = usePrinterStore((state) => state.hasHydrated);
   const selectPrinter = usePrinterStore((state) => state.selectPrinter);
-  const [themeColorMuted, themeColorAccent] = useThemeColor(["muted", "accent"]);
+  const [themeColorMuted, themeColorAccent] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-primary",
+  ]) as [string, string];
 
   return (
     <View className="flex-1 bg-background">

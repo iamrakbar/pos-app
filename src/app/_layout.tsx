@@ -3,12 +3,11 @@ import { ObserveRoot, useObserve } from "expo-observe";
 import * as SplashScreen from "expo-splash-screen";
 import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { KeyboardProvider } from "react-native-keyboard-controller";
 
-import { HeroUINativeProvider } from "heroui-native";
-import { useEffect, type JSX, type ReactNode } from "react";
-import { Platform, StatusBar as NativeStatusBar, View, useColorScheme } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PanelUIProvider } from "panelui-native";
+import { useEffect, type JSX } from "react";
+import { Platform, StatusBar as NativeStatusBar, View } from "react-native";
+import { useUniwind } from "uniwind";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuth, setQueryClientRef } from "@/stores/use-auth";
 import { isApiError } from "@/api/api-error";
@@ -18,6 +17,7 @@ import OfflineBanner from "@/components/common/offline-banner";
 import AppUpdateManager from "@/components/common/app-update-manager";
 import POSAddOnSheet from "@/screens/pos/add-ons";
 import { TrueSheetProvider } from "@lodev09/react-native-true-sheet";
+import PanelUIIntegrationScreen from "./panelui-integration";
 import NotificationManager from "@/components/common/notification-manager";
 
 import "../global.css";
@@ -33,18 +33,11 @@ const queryClient = new QueryClient({
   },
 });
 
-function wrapToastContent(children: ReactNode): JSX.Element {
-  return (
-    <View pointerEvents="box-none" className="w-full max-w-md flex-1 self-center">
-      {children}
-    </View>
-  );
-}
-
 function RootLayout(): JSX.Element {
   const token = useAuth((s) => s.token);
   const hasHydrated = useAuth((s) => s.hasHydrated);
-  const isDarkMode = useColorScheme() === "dark";
+  const { theme } = useUniwind();
+  const isDarkMode = theme === "dark";
   const session = !!token;
   const navigationTheme = useNavigationTheme();
   const isAppReady = hasHydrated;
@@ -68,37 +61,50 @@ function RootLayout(): JSX.Element {
     }
   }, [navigationTheme.background]);
 
-  return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: navigationTheme.background }}>
-      <KeyboardProvider>
+  if (__DEV__ && process.env.EXPO_PUBLIC_PANELUI_SPIKE === "1") {
+    return (
+      <PanelUIProvider>
         <QueryClientProvider client={queryClient}>
           <TrueSheetProvider>
-            <HeroUINativeProvider config={{ toast: { contentWrapper: wrapToastContent } }}>
-              {Platform.OS === "android" && <NavigationBar style="auto" hidden={false} />}
-              <ExpoStatusBar style={isDarkMode ? "light" : "dark"} />
-              <ErrorBoundary>
-                {isAppReady && (
-                  <View className="flex-1" onLayout={handleAppLayout}>
-                    <Stack screenOptions={{ headerShown: false }}>
-                      <Stack.Protected guard={session}>
-                        <Stack.Screen name="(app)" />
-                      </Stack.Protected>
-                      <Stack.Protected guard={!session}>
-                        <Stack.Screen name="(auth)" />
-                      </Stack.Protected>
-                    </Stack>
-                    {session ? <POSAddOnSheet /> : null}
-                    <NotificationManager />
-                  </View>
-                )}
-                <OfflineBanner />
-                <AppUpdateManager mode="banner" />
-              </ErrorBoundary>
-            </HeroUINativeProvider>
+            <View className="flex-1" onLayout={handleAppLayout}>
+              <PanelUIIntegrationScreen standalone />
+            </View>
           </TrueSheetProvider>
         </QueryClientProvider>
-      </KeyboardProvider>
-    </GestureHandlerRootView>
+      </PanelUIProvider>
+    );
+  }
+
+  return (
+    <PanelUIProvider>
+      <QueryClientProvider client={queryClient}>
+        <TrueSheetProvider>
+          {Platform.OS === "android" && <NavigationBar style="auto" hidden={false} />}
+          <ExpoStatusBar style={isDarkMode ? "light" : "dark"} />
+          <ErrorBoundary>
+            {isAppReady && (
+              <View className="flex-1" onLayout={handleAppLayout}>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Protected guard={__DEV__}>
+                    <Stack.Screen name="panelui-integration" />
+                  </Stack.Protected>
+                  <Stack.Protected guard={session}>
+                    <Stack.Screen name="(app)" />
+                  </Stack.Protected>
+                  <Stack.Protected guard={!session}>
+                    <Stack.Screen name="(auth)" />
+                  </Stack.Protected>
+                </Stack>
+                {session ? <POSAddOnSheet /> : null}
+                <NotificationManager />
+              </View>
+            )}
+            <OfflineBanner />
+            <AppUpdateManager mode="banner" />
+          </ErrorBoundary>
+        </TrueSheetProvider>
+      </QueryClientProvider>
+    </PanelUIProvider>
   );
 }
 

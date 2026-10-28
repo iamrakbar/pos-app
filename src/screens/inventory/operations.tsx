@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import ErrorState from "@/components/common/error-state";
@@ -10,7 +11,7 @@ import { formatDateTime, formatInventoryQuantity, normalizeInventorySource } fro
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
-import { Button, Chip, Typography, useThemeColor } from "heroui-native";
+import { Button, Chip, Typography } from "heroui-native";
 import { EmptyState, Table, type TableSortDescriptor } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -136,7 +137,7 @@ function formatOptionalDate(value: string | null): string {
 export default function InventoryOperationsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const theme = useNavigationTheme();
-  const [themeColorMuted] = useThemeColor(["muted"]);
+  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
   const [status, setStatus] = React.useState<OperationFilter>("all");
   const [sortDescriptor, setSortDescriptor] = React.useState<TableSortDescriptor>({
     column: "created_at",

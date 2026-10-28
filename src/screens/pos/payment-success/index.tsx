@@ -1,17 +1,9 @@
+import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useReceiptPrinter } from "@/hooks/printer/use-receipt-printer";
 import { useReceiptStore } from "@/stores/use-receipt-store";
 import { formatDateTime, formatRupiah } from "@/utils/format";
-import {
-  Button,
-  cn,
-  Separator,
-  Spinner,
-  Surface,
-  Switch,
-  Typography,
-  useThemeColor,
-} from "heroui-native";
+import { Button, cn, Separator, Spinner, Surface, Switch, Typography } from "heroui-native";
 import { useEffect, useRef, useState, type JSX } from "react";
 import { ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
@@ -198,7 +190,7 @@ function PaymentSuccessActions({
 export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps): JSX.Element {
   const { t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
-  const themeColorForeground = useThemeColor("foreground");
+  const themeColorForeground = useCSSVariable("--color-foreground") as string;
   const paymentSession = usePOSStore((s) => s.paymentSession);
   const checkoutResult = usePOSStore((s) => s.checkoutResult);
   const receiptSettings = useReceiptStore((state) => state.settings);

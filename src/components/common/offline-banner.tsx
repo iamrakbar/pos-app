@@ -1,12 +1,13 @@
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { Typography, useThemeColor } from "heroui-native";
+import { Typography } from "heroui-native";
 import { View } from "react-native";
 import { useNetworkStore } from "@/stores/use-network-store";
 import { useTranslation } from "@/stores/use-locale";
 
 export default function OfflineBanner() {
-  const themeColorWarningSoftForeground = useThemeColor("warning-soft-foreground");
+  const themeColorWarningSoftForeground = useCSSVariable("--color-warning-foreground") as string;
   const { t } = useTranslation();
   const isOffline = useNetworkStore((s) => s.isOffline);
 

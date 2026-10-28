@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import { ListSkeleton } from "@/components/common/list-skeleton";
@@ -6,7 +7,7 @@ import { formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Separator, Typography, useThemeColor } from "heroui-native";
+import { Separator, Typography } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -16,7 +17,10 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { id: productId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
+  const [mutedColor, accentColor] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-primary",
+  ]) as [string, string];
   const addOnsQuery = useAddOns(productId);
 
   if (addOnsQuery.isLoading) return <ListSkeleton />;

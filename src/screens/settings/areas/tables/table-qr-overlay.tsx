@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -7,7 +9,7 @@ import { Asset, requestPermissionsAsync } from "expo-media-library";
 import { EncodingType, File as ExpoFile, Paths } from "expo-file-system";
 import * as Linking from "expo-linking";
 import * as Sharing from "expo-sharing";
-import { Button, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, Typography } from "heroui-native";
 import React from "react";
 import { Platform, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -101,11 +103,11 @@ export default function TableQrOverlay({
 }: TableQrOverlayProps): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [foregroundColor, mutedColor, accentForegroundColor] = useThemeColor([
-    "foreground",
-    "muted",
-    "accent-foreground",
-  ]);
+  const [foregroundColor, mutedColor, accentForegroundColor] = useCSSVariable([
+    "--color-foreground",
+    "--color-muted-foreground",
+    "--color-primary-foreground",
+  ]) as [string, string, string];
   const [activeAction, setActiveAction] = React.useState<QrAction>(null);
   const qrRef = React.useRef<QrSvgRef | null>(null);
   const orderUrl = table ? getTableOrderUrl(table.id) : null;
@@ -159,7 +161,7 @@ export default function TableQrOverlay({
         }),
       (error) =>
         toast.show({
-          variant: "danger",
+          variant: "destructive",
           label: t("areasManagement.tableQrSaveFailed"),
           description: error instanceof Error ? error.message : undefined,
         }),
@@ -192,7 +194,7 @@ export default function TableQrOverlay({
       () => toast.show({ variant: "success", label: t("areasManagement.tableQrShared") }),
       (error) =>
         toast.show({
-          variant: "danger",
+          variant: "destructive",
           label: t("areasManagement.tableQrShareFailed"),
           description: error instanceof Error ? error.message : undefined,
         }),
@@ -204,7 +206,7 @@ export default function TableQrOverlay({
     if (!orderUrl) return;
     await Linking.openURL(orderUrl).catch((error: unknown) => {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("areasManagement.tableQrPreviewFailed"),
         description: error instanceof Error ? error.message : undefined,
       });

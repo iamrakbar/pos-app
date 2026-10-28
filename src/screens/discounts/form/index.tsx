@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
 import LoadingState from "@/components/common/loading-state";
@@ -20,7 +22,7 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button, useThemeColor, useToast } from "heroui-native";
+import { Button } from "heroui-native";
 import { useForm } from "react-hook-form";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import React from "react";
@@ -38,8 +40,8 @@ export default function DiscountFormScreen(): React.JSX.Element {
   const { locale, t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
-  const muted = useThemeColor("muted");
-  const danger = useThemeColor("danger");
+  const muted = useCSSVariable("--color-muted-foreground") as string;
+  const danger = useCSSVariable("--color-destructive") as string;
   const localeTag = getLocaleTag(locale);
   const { pickerPresentation } = useOverlayPresentation();
   const discountQuery = useDiscount(id);
@@ -128,7 +130,7 @@ export default function DiscountFormScreen(): React.JSX.Element {
         }
       }
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("discounts.saveFailed"),
         description: hasFieldErrors
           ? t("discounts.checkFields")
@@ -144,7 +146,7 @@ export default function DiscountFormScreen(): React.JSX.Element {
       router.back();
     } catch {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("discounts.deleteFailed"),
         description: t("discounts.deleteFailedDescription"),
       });

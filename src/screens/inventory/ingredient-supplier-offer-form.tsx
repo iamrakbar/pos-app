@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import { AdaptiveFormKeyboardHandlers } from "@/components/common/adaptive-form-overlay";
 import ActionDialog from "@/components/common/action-dialog";
@@ -20,17 +22,7 @@ import {
 import { useTranslation } from "@/stores/use-locale";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  Select,
-  TextField,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Card, Input, Label, Select, TextField, Typography } from "heroui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm, type Control, type FieldErrors } from "react-hook-form";
@@ -487,7 +479,7 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
   const isPending = createMutation.isPending || updateMutation.isPending;
   const deleteMutation = useDeleteIngredientSupplierOffer(ingredientId);
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
-  const dangerColor = useThemeColor("danger");
+  const dangerColor = useCSSVariable("--color-destructive") as string;
   const suppliers = suppliersQuery.data?.pages.flatMap((page) => page.data) ?? [];
   const supplierOptions = getSupplierOptions(suppliers, offer);
   const schema = createSupplierOfferSchema(t);
@@ -536,7 +528,7 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
       router.back();
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("ingredients.supplierOfferDeleteFailed"),
         description: getErrorMessage(error),
       });
@@ -577,7 +569,7 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
       const message = hasFieldErrors ? t("ingredients.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("ingredients.supplierOfferSaveFailed"),
         description: message,
       });

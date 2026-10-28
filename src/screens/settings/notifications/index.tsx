@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useNotificationPermission } from "@/hooks/use-notification-permission";
@@ -8,7 +10,7 @@ import {
   scheduleTestNotification,
 } from "@/services/notifications";
 import { useTranslation } from "@/stores/use-locale";
-import { Alert, Button, Card, Chip, Typography, useThemeColor, useToast } from "heroui-native";
+import { Alert, Button, Card, Chip, Typography } from "heroui-native";
 import Constants from "expo-constants";
 import React from "react";
 import { Linking, ScrollView, View } from "react-native";
@@ -25,7 +27,7 @@ async function sendTestNotification(
     toast.show({ variant: "success", label: t("notifications.testScheduled") });
   } catch (error) {
     toast.show({
-      variant: "danger",
+      variant: "destructive",
       label: t("notifications.testFailed"),
       description: error instanceof Error ? error.message : undefined,
     });
@@ -35,7 +37,7 @@ async function sendTestNotification(
 export default function NotificationsSettingsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [accentColor] = useThemeColor(["accent"]);
+  const [accentColor] = useCSSVariable(["--color-primary"]) as [string];
   const permission = useNotificationPermission();
   const isProduction = Constants.expoConfig?.extra?.buildVariant === "production";
   const [isSendingTest, setIsSendingTest] = React.useState(false);
@@ -65,7 +67,7 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
       }
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("notifications.permissionRequestFailed"),
         description: error instanceof Error ? error.message : undefined,
       });
@@ -82,7 +84,7 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
       await Linking.openSettings();
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("notifications.openSettingsFailed"),
         description: error instanceof Error ? error.message : undefined,
       });
@@ -96,7 +98,7 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
       toast.show({ variant: "success", label: t("notifications.tokenReady") });
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("notifications.tokenFailed"),
         description: error instanceof Error ? error.message : undefined,
       });

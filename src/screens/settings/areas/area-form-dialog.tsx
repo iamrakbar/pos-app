@@ -1,3 +1,4 @@
+import { useToast } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
@@ -5,7 +6,7 @@ import AdaptiveTextFieldController from "@/components/common/adaptive-text-field
 import { useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
 import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, cn, Typography, useToast } from "heroui-native";
+import { Button, cn, Typography } from "heroui-native";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -70,7 +71,7 @@ export default function AreaFormDialog({
       const message = fieldMessage ?? getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("areasManagement.areaSaveFailed"),
         description: message,
       });
@@ -86,7 +87,7 @@ export default function AreaFormDialog({
       toast.show({ variant: "success", label: t("areasManagement.areaDeleted") });
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("areasManagement.areaDeleteFailed"),
         description: getErrorMessage(error),
       });

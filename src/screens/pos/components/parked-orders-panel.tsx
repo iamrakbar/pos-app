@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import ActionDialog from "@/components/common/action-dialog";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -9,16 +10,7 @@ import { usePOSStore } from "@/stores/use-pos-store";
 import { resetCurrentOrder } from "@/stores/reset-current-order";
 import { formatTime } from "@/utils/format";
 import type { ParkedOrder } from "@/types/parked-order";
-import {
-  Button,
-  Dialog,
-  Input,
-  Label,
-  Surface,
-  TextField,
-  Typography,
-  useThemeColor,
-} from "heroui-native";
+import { Button, Dialog, Input, Label, Surface, TextField, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
 import { View } from "react-native";
@@ -55,7 +47,11 @@ export default function ParkedOrdersPanel({
   const [label, setLabel] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<ParkedOrder | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<ParkedOrder | null>(null);
-  const [colorAcent, colorMuted, colorDanger] = useThemeColor(["accent", "muted", "danger"]);
+  const [colorAcent, colorMuted, colorDanger] = useCSSVariable([
+    "--color-primary",
+    "--color-muted-foreground",
+    "--color-destructive",
+  ]) as [string, string, string];
 
   const merchantDrafts = drafts
     .filter((draft) => draft.merchant_id === merchantId)

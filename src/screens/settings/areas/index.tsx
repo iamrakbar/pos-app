@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import { GridSkeleton } from "@/components/common/list-skeleton";
@@ -6,7 +7,7 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button, Card, useThemeColor } from "heroui-native";
+import { Button, Card } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { FlatList, View } from "react-native";
@@ -19,7 +20,10 @@ export default function AreasScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
   const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
-  const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
+  const [mutedColor, accentColor] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-primary",
+  ]) as [string, string];
   const areasQuery = useAreas();
   const [editingArea, setEditingArea] = React.useState<AreaData | null>(null);
   const [isFormOpen, setIsFormOpen] = React.useState(false);

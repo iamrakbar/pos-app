@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import { useKitchenTickets, useUpdateKitchenTicketStatus } from "@/hooks/db/use-kitchen-tickets";
 import type { KitchenTicketData, KitchenTicketOrderType } from "@/api/endpoints/kitchen-tickets";
 import { extractStatusValue, normalizeStatusColor } from "@/api/mappers/order";
@@ -8,7 +9,7 @@ import ErrorState from "@/components/common/error-state";
 import { GridSkeleton, ListSkeleton } from "@/components/common/list-skeleton";
 import { formatTime } from "@/utils/format";
 import { EmptyState } from "heroui-native-pro";
-import { Button, Chip, cn, ScrollShadow, Surface, Typography, useThemeColor } from "heroui-native";
+import { Button, Chip, cn, ScrollShadow, Surface, Typography } from "heroui-native";
 import React from "react";
 import { FlatList, RefreshControl, useWindowDimensions, View } from "react-native";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
@@ -64,7 +65,7 @@ function TicketCard({
   error: unknown;
 }) {
   const { t } = useTranslation();
-  const [mutedColor] = useThemeColor(["muted"]);
+  const [mutedColor] = useCSSVariable(["--color-muted-foreground"]) as [string];
   const order = ticket.order;
   const statusColor = normalizeStatusColor(ticket.status);
   const statusBackground = KDS_STATUS_HEADER_BACKGROUNDS[ticketStatus(ticket)] ?? "bg-default";
@@ -169,7 +170,7 @@ export default function KdsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
   const { width } = useWindowDimensions();
-  const mutedColor = useThemeColor("muted");
+  const mutedColor = useCSSVariable("--color-muted-foreground") as string;
   const gridColumns = isCompact ? 1 : isMedium ? 2 : 4;
   const gridGap = 12;
   const availableWidth = Math.max(width - horizontalPagePadding * 2, 0);

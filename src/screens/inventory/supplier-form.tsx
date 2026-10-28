@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import ActionDialog from "@/components/common/action-dialog";
 import ErrorState from "@/components/common/error-state";
@@ -18,16 +20,7 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  TextField,
-  Typography,
-  useThemeColor,
-  useToast,
-} from "heroui-native";
+import { Button, Card, Input, Label, TextField, Typography } from "heroui-native";
 import React from "react";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
@@ -222,7 +215,7 @@ export default function SupplierFormScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
-  const dangerColor = useThemeColor("danger");
+  const dangerColor = useCSSVariable("--color-destructive") as string;
   const isNew = id === "new";
   const supplierQuery = useSupplier(id);
   const supplier = supplierQuery.data;
@@ -312,7 +305,7 @@ export default function SupplierFormScreen(): React.JSX.Element {
       const message = hasFieldErrors ? t("suppliers.checkFields") : getErrorMessage(error);
       setError("root.server", { type: "server", message });
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("suppliers.saveFailed"),
         description: message,
       });
@@ -329,7 +322,7 @@ export default function SupplierFormScreen(): React.JSX.Element {
       router.back();
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("suppliers.deleteFailed"),
         description: getErrorMessage(error),
       });

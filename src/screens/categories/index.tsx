@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import CreateFAB from "@/components/common/create-fab";
 import ErrorState from "@/components/common/error-state";
 import { ListSkeleton } from "@/components/common/list-skeleton";
@@ -9,7 +11,7 @@ import { useNavigationTheme } from "@/utils/navigation-theme";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
-import { Button, Chip, Separator, Typography, useThemeColor, useToast } from "heroui-native";
+import { Button, Chip, Separator, Typography } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -30,7 +32,10 @@ export default function CategoriesScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
   const theme = useNavigationTheme();
-  const [mutedColor, accentColor] = useThemeColor(["muted", "accent"]);
+  const [mutedColor, accentColor] = useCSSVariable([
+    "--color-muted-foreground",
+    "--color-primary",
+  ]) as [string, string];
   const [search, setSearch] = React.useState("");
   const deferredSearch = React.useDeferredValue(search.trim());
   const [activeFilter, setActiveFilter] = React.useState<ActiveFilter>("all");
@@ -69,7 +74,7 @@ export default function CategoriesScreen(): React.JSX.Element {
       toast.show({ variant: "success", label: t("categories.orderSaved") });
     } catch (error) {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("categories.reorderFailed"),
         description: getErrorMessage(error),
       });

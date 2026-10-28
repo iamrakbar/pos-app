@@ -1,3 +1,4 @@
+import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useProducts } from "@/hooks/db/use-products";
 import ErrorState from "@/components/common/error-state";
@@ -6,7 +7,7 @@ import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
-import { Card, ScrollShadow, Skeleton, useThemeColor } from "heroui-native";
+import { Card, ScrollShadow, Skeleton } from "heroui-native";
 import { EmptyState } from "heroui-native-pro";
 import { useState } from "react";
 import { FlatList, Platform, RefreshControl, View } from "react-native";
@@ -47,7 +48,7 @@ function ProductCardSkeleton({ width }: { width: number }): JSX.Element {
 export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props): JSX.Element {
   const { locale, t } = useTranslation();
   const [containerWidth, setContainerWidth] = useState(0);
-  const themeColorMuted = useThemeColor("muted");
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
 
   const searchQuery = usePOSStore((s) => s.searchQuery);
   const categoryId = usePOSStore((s) => s.categoryId);

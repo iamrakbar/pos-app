@@ -1,3 +1,5 @@
+import { useToast } from "panelui-native";
+import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { File } from "expo-file-system";
@@ -17,8 +19,6 @@ import {
   TextArea,
   TextField,
   Typography,
-  useThemeColor,
-  useToast,
 } from "heroui-native";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
@@ -159,7 +159,7 @@ async function selectProductImage({
     });
   } catch (error: unknown) {
     toast.show({
-      variant: "danger",
+      variant: "destructive",
       label: t("productForm.imagePreparationFailed"),
       description: getErrorMessage(error),
     });
@@ -186,7 +186,7 @@ async function removeProduct({
     router.back();
   } catch (error: unknown) {
     toast.show({
-      variant: "danger",
+      variant: "destructive",
       label: t("productForm.deleteFailed"),
       description: getErrorMessage(error),
     });
@@ -412,7 +412,7 @@ function ProductDetailsCard({
 }) {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
-  const [themeColorForeground] = useThemeColor(["foreground"]);
+  const [themeColorForeground] = useCSSVariable(["--color-foreground"]) as [string];
 
   return (
     <Card className="gap-3 overflow-hidden">
@@ -572,7 +572,11 @@ function ProductInventoryFields({
               presentation={choicePresentation}
               value={modeOptions.find((option) => option.value === value)}
               onValueChange={(option) => {
-                if (option?.value === "recipe" && !inventoryRecipeEnabled && inventoryMode !== "recipe") {
+                if (
+                  option?.value === "recipe" &&
+                  !inventoryRecipeEnabled &&
+                  inventoryMode !== "recipe"
+                ) {
                   return;
                 }
                 onChange(option?.value ?? "unlimited");
@@ -687,7 +691,7 @@ function ProductInventoryActions({
   onShowAdjustment?: () => void;
 }): React.JSX.Element | null {
   const { t } = useTranslation();
-  const [themeColorForeground] = useThemeColor(["foreground"]);
+  const [themeColorForeground] = useCSSVariable(["--color-foreground"]) as [string];
   const inventoryMode = useWatch({ control, name: "inventory_mode" });
   const actions = getProductInventoryActions({
     inventoryMode,
@@ -861,16 +865,18 @@ function InventoryCard({
           inventoryRecipeEnabled={inventoryRecipeEnabled}
         />
       </Card.Body>
-      {inventoryEnabled ? <ProductInventoryActions
-        control={control}
-        isNew={isNew}
-        inventoryRecipeEnabled={inventoryRecipeEnabled}
-        canShowOpeningBalance={canShowOpeningBalance}
-        onShowMovements={onShowMovements}
-        onShowRecipe={inventoryRecipeEnabled ? onShowRecipe : undefined}
-        onShowOpeningBalance={onShowOpeningBalance}
-        onShowAdjustment={onShowAdjustment}
-      /> : null}
+      {inventoryEnabled ? (
+        <ProductInventoryActions
+          control={control}
+          isNew={isNew}
+          inventoryRecipeEnabled={inventoryRecipeEnabled}
+          canShowOpeningBalance={canShowOpeningBalance}
+          onShowMovements={onShowMovements}
+          onShowRecipe={inventoryRecipeEnabled ? onShowRecipe : undefined}
+          onShowOpeningBalance={onShowOpeningBalance}
+          onShowAdjustment={onShowAdjustment}
+        />
+      ) : null}
     </Card>
   );
 }
@@ -982,7 +988,10 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
   const { toast } = useToast();
-  const [themeColorForeground, themeColorMuted] = useThemeColor(["foreground", "muted"]);
+  const [themeColorForeground, themeColorMuted] = useCSSVariable([
+    "--color-foreground",
+    "--color-muted-foreground",
+  ]) as [string, string];
   const discountsQuery = useDiscounts();
   const setProductDiscount = useSetProductDiscount(productId);
   const discounts = discountsQuery.data ?? [];
@@ -1010,7 +1019,7 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
       toast.show({ variant: "success", label: t("productForm.discountUpdated") });
     } catch {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("productForm.discountUpdateFailed"),
         description: t("productForm.discountUpdateFailedDescription"),
       });
@@ -1025,7 +1034,7 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
       toast.show({ variant: "success", label: t("productForm.discountRemoved") });
     } catch {
       toast.show({
-        variant: "danger",
+        variant: "destructive",
         label: t("productForm.discountUpdateFailed"),
         description: t("productForm.discountUpdateFailedDescription"),
       });
@@ -1257,7 +1266,8 @@ function ProductInventorySheets({
   if (isNew || !product || !inventoryState.inventoryEnabled) return null;
 
   const capabilities = getProductInventoryCapabilities(inventoryState.mode, isNew);
-  const showMovements = capabilities.showMovements &&
+  const showMovements =
+    capabilities.showMovements &&
     (inventoryState.inventoryRecipeEnabled || inventoryState.mode !== "recipe");
   const showRecipe = inventoryState.inventoryRecipeEnabled && capabilities.showRecipe;
   if (!showMovements && !showRecipe) return null;
@@ -1371,7 +1381,7 @@ function ProductFormContent({
   const isQuickDiscountOpen = quickDiscountState === "open";
   const isDeleteOpen = deleteState !== "closed";
   const isDeleting = deleteState === "deleting";
-  const themeColorDanger = useThemeColor("danger");
+  const themeColorDanger = useCSSVariable("--color-destructive") as string;
 
   return (
     <>
@@ -1583,7 +1593,7 @@ export default function ProductFormScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
-  const themeColorAccent = useThemeColor("accent");
+  const themeColorAccent = useCSSVariable("--color-primary") as string;
   const [createdProductId, setCreatedProductId] = React.useState<string | null>(null);
   const productId = createdProductId ?? id;
   const isNew = id === "new" && createdProductId === null;
@@ -1659,7 +1669,13 @@ export default function ProductFormScreen(): React.JSX.Element {
   React.useEffect(() => {
     const product = productQuery.data;
     const inventory = productInventoryQuery.data;
-    if (isNew || !product || (inventoryEnabled && !inventory) || hydratedProductId.current === product.id) return;
+    if (
+      isNew ||
+      !product ||
+      (inventoryEnabled && !inventory) ||
+      hydratedProductId.current === product.id
+    )
+      return;
 
     reset({
       category_id: product.category?.id ?? "",

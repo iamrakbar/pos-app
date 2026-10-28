@@ -1,5 +1,6 @@
+import { useCSSVariable } from "uniwind";
 import { Pressable, View } from "react-native";
-import { Typography, useThemeColor } from "heroui-native";
+import { Typography } from "heroui-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import type { JSX } from "react";
@@ -13,7 +14,7 @@ export default function ErrorState({
   error: unknown;
   onRetry?: () => void;
 }): JSX.Element {
-  const themeColorDanger = useThemeColor("danger");
+  const themeColorDanger = useCSSVariable("--color-destructive") as string;
   const { t } = useTranslation();
 
   return (

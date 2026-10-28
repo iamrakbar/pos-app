@@ -1,8 +1,9 @@
+import { useCSSVariable } from "uniwind";
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import { RupiahField } from "@/components/common/form-number-field";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { Button, Input, Label, Surface, TextField, Typography, useThemeColor } from "heroui-native";
+import { Button, Input, Label, Surface, TextField, Typography } from "heroui-native";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { View } from "react-native";
@@ -28,7 +29,7 @@ export default function OptionRow({
   onRestore,
 }: OptionRowProps) {
   const { t } = useTranslation();
-  const dangerSoftForeground = useThemeColor("danger-soft-foreground");
+  const dangerSoftForeground = useCSSVariable("--color-destructive") as string;
 
   if (isDestroyed) {
     return (
