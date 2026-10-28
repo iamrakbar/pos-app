@@ -7,7 +7,7 @@ import {
   Frame,
   Chip as PanelChip,
   EmptyState,
-  GridItem,
+  Kpi,
   Spinner,
 } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
@@ -56,7 +56,7 @@ function getPeriodRange(period: Period): AppliedDateRange {
 
 export default function DashboardScreen(): React.JSX.Element {
   const { t } = useTranslation();
-  const { width, isCompact, isWide, horizontalPagePadding } = useResponsiveLayout();
+  const { width, isCompact, horizontalPagePadding } = useResponsiveLayout();
   const [period, setPeriod] = React.useState<Period>("today");
   const appliedRange = getPeriodRange(period);
   const dashboard = useDashboard(appliedRange.startDate, appliedRange.endDate);
@@ -144,78 +144,96 @@ export default function DashboardScreen(): React.JSX.Element {
           </View>
         ) : (
           <>
-            <GridItem.Group
-              className="w-full"
-              columns={isWide ? 4 : 2}
-              gap={16}
-              rowHeight={isCompact ? 120 : 136}
-              size={isCompact ? "sm" : "default"}
-            >
-              <GridItem variant="outline">
-                <View className="flex-row items-center justify-between gap-2">
-                  <GridItem.Title numberOfLines={1}>{t("dashboard.revenue")}</GridItem.Title>
-                  <GridItem.Media variant="icon">
-                    <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
-                  </GridItem.Media>
-                </View>
-                <GridItem.Value
-                  className="tabular-nums"
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.72}
-                >
-                  {formatRupiah(dashboard.data?.revenue_today ?? 0)}
-                </GridItem.Value>
-              </GridItem>
-              <GridItem variant="outline">
-                <View className="flex-row items-center justify-between gap-2">
-                  <GridItem.Title numberOfLines={1}>{t("dashboard.orders")}</GridItem.Title>
-                  <GridItem.Media variant="icon">
-                    <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
-                  </GridItem.Media>
-                </View>
-                <GridItem.Value
-                  className="tabular-nums"
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.72}
-                >
-                  {String(dashboard.data?.orders_today ?? 0)}
-                </GridItem.Value>
-              </GridItem>
-              <GridItem variant="outline">
-                <View className="flex-row items-center justify-between gap-2">
-                  <GridItem.Title numberOfLines={1}>{t("dashboard.pending")}</GridItem.Title>
-                  <GridItem.Media variant="icon">
-                    <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
-                  </GridItem.Media>
-                </View>
-                <GridItem.Value
-                  className="tabular-nums"
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.72}
-                >
-                  {String(dashboard.data?.pending_orders ?? 0)}
-                </GridItem.Value>
-              </GridItem>
-              <GridItem variant="outline">
-                <View className="flex-row items-center justify-between gap-2">
-                  <GridItem.Title numberOfLines={1}>{t("dashboard.completed")}</GridItem.Title>
-                  <GridItem.Media variant="icon">
-                    <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
-                  </GridItem.Media>
-                </View>
-                <GridItem.Value
-                  className="tabular-nums"
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.72}
-                >
-                  {String(dashboard.data?.completed_orders ?? 0)}
-                </GridItem.Value>
-              </GridItem>
-            </GridItem.Group>
+            <View className={isCompact ? "gap-4" : "flex-row flex-wrap gap-4"}>
+              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                <Kpi>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("dashboard.revenue")}</Kpi.Title>
+                    <Kpi.Icon tone="good">
+                      <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <Typography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {formatRupiah(dashboard.data?.revenue_today ?? 0)}
+                    </Typography>
+                  </Kpi.Content>
+                </Kpi>
+              </View>
+              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                <Kpi>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("dashboard.orders")}</Kpi.Title>
+                    <Kpi.Icon tone="neutral">
+                      <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <Typography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {String(dashboard.data?.orders_today ?? 0)}
+                    </Typography>
+                  </Kpi.Content>
+                </Kpi>
+              </View>
+              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                <Kpi>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("dashboard.pending")}</Kpi.Title>
+                    <Kpi.Icon tone="flat">
+                      <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <Typography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {String(dashboard.data?.pending_orders ?? 0)}
+                    </Typography>
+                  </Kpi.Content>
+                </Kpi>
+              </View>
+              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                <Kpi>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("dashboard.completed")}</Kpi.Title>
+                    <Kpi.Icon tone="good">
+                      <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <Typography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {String(dashboard.data?.completed_orders ?? 0)}
+                    </Typography>
+                  </Kpi.Content>
+                </Kpi>
+              </View>
+            </View>
 
             <Frame className="w-full">
               <Frame.Header>

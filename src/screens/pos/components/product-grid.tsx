@@ -61,10 +61,10 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
       return right.price - left.price;
     });
 
-  const renderProduct = ({ item }: { item: POSProduct }) => (
-    <ProductCard product={item} onPress={onSelectProduct} width={cardWidth} />
+  const productRows = Array.from({ length: Math.ceil(filtered.length / numColumns) }, (_, index) =>
+    filtered.slice(index * numColumns, (index + 1) * numColumns)
   );
-  const skeletonItems = Array.from({ length: numColumns * 3 }, (_, index) => index);
+  const skeletonRows = Array.from({ length: 3 }, (_, row) => row);
 
   return (
     <View
@@ -74,26 +74,29 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
       {containerWidth > GRID_HORIZONTAL_PADDING ? (
         isLoading ? (
           <FlatList
-            data={skeletonItems}
-            key={`product-grid-skeleton-${numColumns}`}
-            numColumns={numColumns}
-            keyExtractor={(item) => `product-skeleton-${item}`}
+            data={skeletonRows}
+            keyExtractor={(row) => `product-skeleton-row-${row}`}
             renderItem={() => (
-              <View
-                style={{ width: cardWidth - 12 }}
-                className="m-1.5"
-                accessibilityLabel={t("pos.loadingProduct")}
-              >
-                <PanelCard className="overflow-hidden rounded-3xl p-0">
-                  <PanelSkeleton className="aspect-square w-full rounded-t-3xl" />
-                  <PanelCard.Content className="min-h-20 justify-between gap-3 px-3.5 py-3">
-                    <PanelSkeleton className="h-4 w-3/4 rounded-md" />
-                    <View className="gap-1.5">
-                      <PanelSkeleton className="h-3 w-2/5 rounded-md" />
-                      <PanelSkeleton className="h-4 w-3/5 rounded-md" />
-                    </View>
-                  </PanelCard.Content>
-                </PanelCard>
+              <View className="flex-row">
+                {Array.from({ length: numColumns }, (_, column) => (
+                  <View
+                    key={column}
+                    style={{ width: cardWidth - 12 }}
+                    className="m-1.5"
+                    accessibilityLabel={t("pos.loadingProduct")}
+                  >
+                    <PanelCard className="overflow-hidden rounded-3xl p-0">
+                      <PanelSkeleton className="aspect-square w-full rounded-t-3xl" />
+                      <PanelCard.Content className="min-h-20 justify-between gap-3 px-3.5 py-3">
+                        <PanelSkeleton className="h-4 w-3/4 rounded-md" />
+                        <View className="gap-1.5">
+                          <PanelSkeleton className="h-3 w-2/5 rounded-md" />
+                          <PanelSkeleton className="h-4 w-3/5 rounded-md" />
+                        </View>
+                      </PanelCard.Content>
+                    </PanelCard>
+                  </View>
+                ))}
               </View>
             )}
             contentContainerClassName="gap-2 px-3"
@@ -104,11 +107,20 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
         ) : (
           <ScrollFade className="flex-1">
             <FlatList
-              data={isError ? [] : filtered}
-              key={`product-grid-${numColumns}`}
-              numColumns={numColumns}
-              keyExtractor={(item) => item.id}
-              renderItem={renderProduct}
+              data={isError ? [] : productRows}
+              keyExtractor={(row) => row[0].id}
+              renderItem={({ item: row }) => (
+                <View className="flex-row">
+                  {row.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onPress={onSelectProduct}
+                      width={cardWidth}
+                    />
+                  ))}
+                </View>
+              )}
               contentContainerClassName="flex-grow gap-2 px-3"
               contentInset={{ bottom: listBottomInset }}
               refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
