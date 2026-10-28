@@ -131,7 +131,6 @@ export default function QuickCategoryFormOverlay({
             value={value}
             onChangeText={onChange}
             placeholder={t("categories.descriptionPlaceholder")}
-            variant="filled"
             errorMessage={errors.description?.message}
           />
         )}

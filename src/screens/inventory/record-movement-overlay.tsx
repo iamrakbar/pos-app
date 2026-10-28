@@ -213,7 +213,7 @@ export default function RecordMovementOverlay({
         label={t("ingredients.movementCostPerUnit")}
         placeholder={t("ingredients.movementCostPerUnitPlaceholder")}
         errorMessage={errors.cost_per_unit?.message}
-        variant="filled"
+
         keyboardType="numeric"
         startContent={
           <PanelTypography type="body-sm" weight="medium" muted>

@@ -167,7 +167,7 @@ export default function AreaFormScreen(): React.JSX.Element {
                   onChangeText={onChange}
                   onBlur={onBlur}
                   placeholder={t("areasManagement.areaNamePlaceholder")}
-                  variant="filled"
+
                   isRequired
                   errorMessage={errors.name?.message}
                 />

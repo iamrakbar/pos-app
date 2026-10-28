@@ -413,7 +413,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       value={settings.storeName}
                       onChangeText={(storeName) => updateSettings({ storeName })}
                       placeholder={t("receiptSettings.storeName")}
-                      variant="filled"
                     />
                   </View>
 
@@ -423,7 +422,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       value={settings.header}
                       onChangeText={(header) => updateSettings({ header })}
                       placeholder={t("receiptSettings.headerPlaceholder")}
-                      variant="filled"
                       rows={3}
                     />
                   </View>
@@ -434,7 +432,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       value={settings.footer}
                       onChangeText={(footer) => updateSettings({ footer })}
                       placeholder={t("receiptSettings.footerPlaceholder")}
-                      variant="filled"
                       rows={2}
                     />
                   </View>

@@ -160,7 +160,7 @@ export default function QuickDiscountFormOverlay({
             value={value}
             onChangeText={onChange}
             placeholder={t("discounts.namePlaceholder")}
-            variant="filled"
+
             errorMessage={errors.name?.message}
             isRequired
           />
@@ -193,7 +193,7 @@ export default function QuickDiscountFormOverlay({
         ref={discountRef}
         label={t("discounts.value")}
         placeholder="0"
-        variant="filled"
+
         isRequired
         errorMessage={errors.value?.message}
         keyboardType="numeric"

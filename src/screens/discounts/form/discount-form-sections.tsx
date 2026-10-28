@@ -100,7 +100,7 @@ export function DiscountDetailsCard({
           ref={discountValueRef}
           label={t("discounts.value")}
           placeholder="0"
-          variant="filled"
+
           isRequired
           errorMessage={errors.value?.message}
           keyboardType="numeric"

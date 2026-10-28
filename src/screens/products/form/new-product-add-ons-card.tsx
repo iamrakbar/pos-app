@@ -4,15 +4,13 @@ import {
   Input as PanelInput,
   Typography as PanelTypography,
   Card,
+  NumberInput,
   Switch as PanelSwitch,
   Button as PanelButton,
 } from "panelui-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import {
-  useLocalizedNumberInput,
-  useLocalizedNumberInputList,
-} from "@/hooks/use-localized-number-input";
+import { useLocalizedNumberInputList } from "@/hooks/use-localized-number-input";
 import { IDR_NUMBER_FIELD_FORMAT_OPTIONS, RUPIAH_PREFIX } from "@/utils/format";
 import type { ProductFormValues } from "@/schemas/product";
 import { Controller, useController, useFieldArray, useWatch } from "react-hook-form";
@@ -45,26 +43,11 @@ function NewProductAddOnGroup({
   const minimum = useWatch({ control, name: `add_ons.${index}.min` });
   const maximum = useWatch({ control, name: `add_ons.${index}.max` });
   const {
-    field: { value: minValue, onChange: changeMin, onBlur: blurMin, ref: minRef },
+    field: { value: minValue, onChange: changeMin, onBlur: blurMin },
   } = useController({ control, name: `add_ons.${index}.min` });
   const {
-    field: { value: maxValue, onChange: changeMax, onBlur: blurMax, ref: maxRef },
+    field: { value: maxValue, onChange: changeMax, onBlur: blurMax },
   } = useController({ control, name: `add_ons.${index}.max` });
-  const { localizedInputProps: minInput } = useLocalizedNumberInput({
-    value: minValue,
-    onChange: changeMin,
-    formatOptions: { useGrouping: false, maximumFractionDigits: 0 },
-    minValue: 1,
-    maxValue: Number(maximum) || undefined,
-    inputProps: { onBlur: blurMin },
-  });
-  const { localizedInputProps: maxInput } = useLocalizedNumberInput({
-    value: maxValue,
-    onChange: changeMax,
-    formatOptions: { useGrouping: false, maximumFractionDigits: 0 },
-    minValue: Math.max(2, Number(minimum) || 2),
-    inputProps: { onBlur: blurMax },
-  });
   const { fields, append, remove } = useFieldArray({
     control,
     name: `add_ons.${index}.options`,
@@ -92,7 +75,7 @@ function NewProductAddOnGroup({
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder={t("addOnManagement.groupNamePlaceholder")}
-              variant="filled"
+
               isRequired
               errorMessage={groupErrors?.name?.message}
             />
@@ -172,82 +155,28 @@ function NewProductAddOnGroup({
       {multiple ? (
         <View className="flex-row gap-3">
           {required ? (
-            <View className="flex-1 gap-2">
-              <View className="flex-row items-end gap-2">
-                <PanelButton
-                  variant="outline"
-                  size="icon"
-                  disabled={Number(minValue || 0) <= 1}
-                  accessibilityLabel={t("productForm.decreaseAccessibility", {
-                    field: t("addOnManagement.minimum"),
-                  })}
-                  onPress={() => changeMin(String(Math.max(1, Number(minValue || 1) - 1)))}
-                >
-                  -
-                </PanelButton>
-                <PanelInput
-                  className="flex-1"
-                  label={t("addOnManagement.minimum")}
-                  keyboardType="number-pad"
-                  {...minInput}
-                  errorMessage={groupErrors?.min?.message}
-                  ref={minRef}
-                />
-                <PanelButton
-                  variant="outline"
-                  size="icon"
-                  disabled={Number(minValue || 0) >= Number(maximum || Infinity)}
-                  accessibilityLabel={t("productForm.increaseAccessibility", {
-                    field: t("addOnManagement.minimum"),
-                  })}
-                  onPress={() =>
-                    changeMin(
-                      String(Math.min(Number(maximum || Infinity), Number(minValue || 0) + 1))
-                    )
-                  }
-                >
-                  +
-                </PanelButton>
-              </View>
-            </View>
+            <NumberInput
+              containerClassName="flex-1"
+              label={t("addOnManagement.minimum")}
+              value={Number(minValue || 1)}
+              min={1}
+              max={Number(maximum) || undefined}
+              step={1}
+              onValueChange={(value) => changeMin(String(value))}
+              onBlur={blurMin}
+              errorMessage={groupErrors?.min?.message}
+            />
           ) : null}
-          <View className="flex-1 gap-2">
-            <View className="flex-row items-end gap-2">
-              <PanelButton
-                variant="outline"
-                size="icon"
-                disabled={Number(maxValue || 0) <= Math.max(2, Number(minimum) || 2)}
-                accessibilityLabel={t("productForm.decreaseAccessibility", {
-                  field: t("addOnManagement.maximum"),
-                })}
-                onPress={() =>
-                  changeMax(
-                    String(Math.max(Math.max(2, Number(minimum) || 2), Number(maxValue || 0) - 1))
-                  )
-                }
-              >
-                -
-              </PanelButton>
-              <PanelInput
-                className="flex-1"
-                label={t("addOnManagement.maximum")}
-                keyboardType="number-pad"
-                {...maxInput}
-                errorMessage={groupErrors?.max?.message}
-                ref={maxRef}
-              />
-              <PanelButton
-                variant="outline"
-                size="icon"
-                accessibilityLabel={t("productForm.increaseAccessibility", {
-                  field: t("addOnManagement.maximum"),
-                })}
-                onPress={() => changeMax(String(Number(maxValue || 0) + 1))}
-              >
-                +
-              </PanelButton>
-            </View>
-          </View>
+          <NumberInput
+            containerClassName="flex-1"
+            label={t("addOnManagement.maximum")}
+            value={Number(maxValue || 2)}
+            min={Math.max(2, Number(minimum) || 2)}
+            step={1}
+            onValueChange={(value) => changeMax(String(value))}
+            onBlur={blurMax}
+            errorMessage={groupErrors?.max?.message}
+          />
         </View>
       ) : (
         <Typography type="body-xs" muted>
@@ -273,7 +202,7 @@ function NewProductAddOnGroup({
                   onChangeText={onChange}
                   onBlur={onBlur}
                   placeholder={t("addOnManagement.optionPlaceholder")}
-                  variant="filled"
+
                   isRequired
                   errorMessage={groupErrors?.options?.[optionIndex]?.name?.message}
                 />
@@ -288,7 +217,7 @@ function NewProductAddOnGroup({
                   containerClassName="flex-1"
                   label={t("addOnManagement.price")}
                   errorMessage={groupErrors?.options?.[optionIndex]?.price?.message}
-                  variant="filled"
+
                   isRequired
                   keyboardType="numeric"
                   startContent={

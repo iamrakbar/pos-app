@@ -3,9 +3,8 @@ import {
   Input as PanelInput,
   Switch as PanelSwitch,
   Card,
-  Button as PanelButton,
+  NumberInput,
 } from "panelui-native";
-import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import { Controller, useController, useWatch } from "react-hook-form";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
@@ -25,26 +24,11 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
   const minimum = useWatch({ control, name: "min" });
   const maximum = useWatch({ control, name: "max" });
   const {
-    field: { value: minValue, onChange: changeMin, onBlur: blurMin, ref: minRef },
+    field: { value: minValue, onChange: changeMin, onBlur: blurMin },
   } = useController({ control, name: "min" });
   const {
-    field: { value: maxValue, onChange: changeMax, onBlur: blurMax, ref: maxRef },
+    field: { value: maxValue, onChange: changeMax, onBlur: blurMax },
   } = useController({ control, name: "max" });
-  const { localizedInputProps: minInput } = useLocalizedNumberInput({
-    value: minValue,
-    onChange: changeMin,
-    formatOptions: { useGrouping: false, maximumFractionDigits: 0 },
-    minValue: 1,
-    maxValue: Number(maximum) || undefined,
-    inputProps: { onBlur: blurMin },
-  });
-  const { localizedInputProps: maxInput } = useLocalizedNumberInput({
-    value: maxValue,
-    onChange: changeMax,
-    formatOptions: { useGrouping: false, maximumFractionDigits: 0 },
-    minValue: Math.max(2, Number(minimum) || 2),
-    inputProps: { onBlur: blurMax },
-  });
 
   return (
     <Card className="gap-3 p-4">
@@ -132,82 +116,28 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
         {multiple ? (
           <View className="flex-row gap-3">
             {required ? (
-              <View className="flex-1 gap-2">
-                <View className="flex-row items-end gap-2">
-                  <PanelButton
-                    variant="outline"
-                    size="icon"
-                    disabled={Number(minValue || 0) <= 1}
-                    accessibilityLabel={t("productForm.decreaseAccessibility", {
-                      field: t("addOnManagement.minimum"),
-                    })}
-                    onPress={() => changeMin(String(Math.max(1, Number(minValue || 1) - 1)))}
-                  >
-                    -
-                  </PanelButton>
-                  <PanelInput
-                    className="flex-1"
-                    label={t("addOnManagement.minimum")}
-                    keyboardType="number-pad"
-                    {...minInput}
-                    errorMessage={errors.min?.message}
-                    ref={minRef}
-                  />
-                  <PanelButton
-                    variant="outline"
-                    size="icon"
-                    disabled={Number(minValue || 0) >= Number(maximum || Infinity)}
-                    accessibilityLabel={t("productForm.increaseAccessibility", {
-                      field: t("addOnManagement.minimum"),
-                    })}
-                    onPress={() =>
-                      changeMin(
-                        String(Math.min(Number(maximum || Infinity), Number(minValue || 0) + 1))
-                      )
-                    }
-                  >
-                    +
-                  </PanelButton>
-                </View>
-              </View>
+              <NumberInput
+                containerClassName="flex-1"
+                label={t("addOnManagement.minimum")}
+                value={Number(minValue || 1)}
+                min={1}
+                max={Number(maximum) || undefined}
+                step={1}
+                onValueChange={(value) => changeMin(String(value))}
+                onBlur={blurMin}
+                errorMessage={errors.min?.message}
+              />
             ) : null}
-            <View className="flex-1 gap-2">
-              <View className="flex-row items-end gap-2">
-                <PanelButton
-                  variant="outline"
-                  size="icon"
-                  disabled={Number(maxValue || 0) <= Math.max(2, Number(minimum) || 2)}
-                  accessibilityLabel={t("productForm.decreaseAccessibility", {
-                    field: t("addOnManagement.maximum"),
-                  })}
-                  onPress={() =>
-                    changeMax(
-                      String(Math.max(Math.max(2, Number(minimum) || 2), Number(maxValue || 0) - 1))
-                    )
-                  }
-                >
-                  -
-                </PanelButton>
-                <PanelInput
-                  className="flex-1"
-                  label={t("addOnManagement.maximum")}
-                  keyboardType="number-pad"
-                  {...maxInput}
-                  errorMessage={errors.max?.message}
-                  ref={maxRef}
-                />
-                <PanelButton
-                  variant="outline"
-                  size="icon"
-                  accessibilityLabel={t("productForm.increaseAccessibility", {
-                    field: t("addOnManagement.maximum"),
-                  })}
-                  onPress={() => changeMax(String(Number(maxValue || 0) + 1))}
-                >
-                  +
-                </PanelButton>
-              </View>
-            </View>
+            <NumberInput
+              containerClassName="flex-1"
+              label={t("addOnManagement.maximum")}
+              value={Number(maxValue || 2)}
+              min={Math.max(2, Number(minimum) || 2)}
+              step={1}
+              onValueChange={(value) => changeMax(String(value))}
+              onBlur={blurMax}
+              errorMessage={errors.max?.message}
+            />
           </View>
         ) : (
           <Typography type="body-xs" muted>

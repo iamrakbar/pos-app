@@ -193,7 +193,7 @@ export function ProductOpeningBalanceOverlay({
         label={t("productForm.inventoryCost")}
         placeholder={t("productForm.inventoryCostPlaceholder")}
         errorMessage={errors.cost_per_unit?.message}
-        variant="filled"
+
         keyboardType="numeric"
         startContent={
           <PanelTypography type="body-sm" weight="medium" muted>

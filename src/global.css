@@ -7,9 +7,10 @@
 @layer theme {
   :root {
     @variant light {
-      --color-primary: #087f9e;
-      --color-primary-foreground: #ffffff;
-      --color-ring: #087f9e;
+      --color-primary: oklch(71.4% 0.122 209.33);
+      --color-primary-foreground: #07313d;
+      --color-ring: oklch(71.4% 0.122 209.33);
+      --color-chart-1: oklch(71.4% 0.122 209.33);
 
       /* shape */
       --radius-xs: 6px;
@@ -21,9 +22,10 @@
       --radius-3xl: 28px;
     }
     @variant dark {
-      --color-primary: #4fc3e2;
+      --color-primary: oklch(71.4% 0.122 209.33);
       --color-primary-foreground: #07313d;
-      --color-ring: #4fc3e2;
+      --color-ring: oklch(71.4% 0.122 209.33);
+      --color-chart-1: oklch(71.4% 0.122 209.33);
 
       /* shape */
       --radius-xs: 6px;

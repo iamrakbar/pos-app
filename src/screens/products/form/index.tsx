@@ -7,6 +7,7 @@ import {
   Label as PanelLabel,
   Dialog as PanelDialog,
   Input as PanelInput,
+  NumberInput,
   Select as PanelSelect,
   Textarea as PanelTextarea,
   Typography as PanelTypography,
@@ -384,7 +385,7 @@ function ProductDetailsCard({
               ref={ref}
               label={t("productForm.name")}
               placeholder={t("productForm.namePlaceholder")}
-              variant="filled"
+
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -401,7 +402,7 @@ function ProductDetailsCard({
               ref={ref}
               label={t("productForm.description")}
               placeholder={t("productForm.descriptionPlaceholder")}
-              variant="filled"
+
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -445,15 +446,8 @@ function ProductInventoryFields({
     inputProps: { onBlur: costBlur },
   });
   const {
-    field: { value: alertValue, onChange: changeAlert, onBlur: blurAlert, ref: alertRef },
+    field: { value: alertValue, onChange: changeAlert, onBlur: blurAlert },
   } = useController({ control, name: "stock_alert" });
-  const { localizedInputProps: alertInput } = useLocalizedNumberInput({
-    value: alertValue,
-    onChange: changeAlert,
-    formatOptions: { useGrouping: false, maximumFractionDigits: 0 },
-    minValue: 0,
-    inputProps: { onBlur: blurAlert },
-  });
   if (!inventoryEnabled) return <></>;
   const capabilities = getProductInventoryCapabilities(inventoryMode, isNew);
   const hideRecipeStock = inventoryMode === "recipe" && !inventoryRecipeEnabled;
@@ -505,7 +499,7 @@ function ProductInventoryFields({
             placeholder={t("productForm.inventoryCostPlaceholder")}
             description={t("productForm.inventoryCostDescription")}
             errorMessage={errors.inventory_cost?.message}
-            variant="filled"
+
             keyboardType="numeric"
             startContent={
               <PanelTypography type="body-sm" weight="medium" muted>
@@ -516,44 +510,17 @@ function ProductInventoryFields({
             {...costInput}
           />
           {capabilities.showStockAlert ? (
-            <View className="flex-1 gap-2">
-              <View className="flex-row items-end gap-2">
-                <PanelButton
-                  variant="outline"
-                  size="icon"
-                  disabled={Number(alertValue || 0) <= 0}
-                  accessibilityLabel={t("productForm.decreaseAccessibility", {
-                    field: t("productForm.lowStockAlert"),
-                  })}
-                  onPress={() => changeAlert(String(Math.max(0, Number(alertValue || 0) - 1)))}
-                >
-                  -
-                </PanelButton>
-                <PanelInput
-                  className="flex-1"
-                  label={t("productForm.lowStockAlert")}
-                  keyboardType="number-pad"
-                  {...alertInput}
-                  errorMessage={errors.stock_alert?.message}
-                  ref={alertRef}
-                />
-                <PanelButton
-                  variant="outline"
-                  size="icon"
-                  accessibilityLabel={t("productForm.increaseAccessibility", {
-                    field: t("productForm.lowStockAlert"),
-                  })}
-                  onPress={() => changeAlert(String(Number(alertValue || 0) + 1))}
-                >
-                  +
-                </PanelButton>
-              </View>
-              {!errors.stock_alert?.message ? (
-                <PanelTypography type="body-xs" muted>
-                  {t("productForm.lowStockDescription")}
-                </PanelTypography>
-              ) : null}
-            </View>
+            <NumberInput
+              containerClassName="flex-1"
+              label={t("productForm.lowStockAlert")}
+              description={t("productForm.lowStockDescription")}
+              value={Number(alertValue || 0)}
+              min={0}
+              step={1}
+              onValueChange={(value) => changeAlert(String(value))}
+              onBlur={blurAlert}
+              errorMessage={errors.stock_alert?.message}
+            />
           ) : null}
         </View>
       ) : null}
@@ -756,7 +723,7 @@ function InventoryCard({
               ref={ref}
               label={t("productForm.code")}
               placeholder={t("productForm.codePlaceholder")}
-              variant="filled"
+
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -841,7 +808,7 @@ function PricingCard({
             label={t("productForm.price")}
             placeholder="0"
             errorMessage={error}
-            variant="filled"
+
             isRequired
             keyboardType="numeric"
             startContent={

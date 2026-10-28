@@ -130,7 +130,7 @@ function PrinterDetailsCard({
                 value={value}
                 onChangeText={onChange}
                 placeholder={t("printerForm.namePlaceholder")}
-                variant="filled"
+
               />
             )}
           />
@@ -300,7 +300,7 @@ function PrinterConnectionCard({
                     onChangeText={onChange}
                     placeholder="00:00:00:00:00:00"
                     autoCapitalize="characters"
-                    variant="filled"
+
                   />
                 )}
               />
@@ -321,7 +321,7 @@ function PrinterConnectionCard({
                     onChangeText={onChange}
                     placeholder="192.168.1.100"
                     keyboardType="decimal-pad"
-                    variant="filled"
+
                   />
                 )}
               />
@@ -332,7 +332,7 @@ function PrinterConnectionCard({
                 ref={portFieldRef}
                 label={t("printerForm.port")}
                 placeholder={PORT}
-                variant="filled"
+
                 isRequired
                 errorMessage={errors.port?.message}
                 keyboardType="numeric"
@@ -435,7 +435,7 @@ function ReceiptSetupCard({
             description={t("printerForm.charactersRecommendation")}
             errorMessage={errors.charactersPerLine?.message}
             placeholder={paperWidth === "80mm" ? "46" : "32"}
-            variant="filled"
+
             isRequired
             keyboardType="numeric"
             {...charactersInput}
@@ -449,7 +449,7 @@ function ReceiptSetupCard({
             description={t("printerForm.logoRecommendation")}
             errorMessage={errors.logoWidthDots?.message}
             placeholder={paperWidth === "80mm" ? "280" : "200"}
-            variant="filled"
+
             isRequired
             keyboardType="numeric"
             {...logoWidthInput}

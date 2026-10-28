@@ -90,7 +90,7 @@ export default function OptionRow({
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder={t("addOnManagement.optionPlaceholder")}
-              variant="filled"
+
               isRequired
               errorMessage={errors.options?.[index]?.name?.message}
             />
@@ -101,7 +101,7 @@ export default function OptionRow({
           containerClassName="flex-1 w-full"
           label={t("addOnManagement.price")}
           errorMessage={errors.options?.[index]?.price?.message}
-          variant="filled"
+
           isRequired
           keyboardType="numeric"
           startContent={

@@ -2,6 +2,7 @@ import {
   Button as PanelDialogButton,
   Dialog as PanelDialog,
   Input as PanelInput,
+  NumberInput,
   Switch as PanelSwitch,
   Typography as PanelTypography,
   useToast,
@@ -11,7 +12,6 @@ import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { useCreateTable, useDeleteTable, useUpdateTable } from "@/hooks/db/use-tables";
 import { createTableSchema, toTableRequest, type TableFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,20 +63,8 @@ export default function TableFormDialog({
     defaultValues: { name: "", pax: "1", active: true },
   });
   const {
-    field: {
-      value: capacityValue,
-      onChange: capacityChange,
-      onBlur: capacityBlur,
-      ref: capacityRef,
-    },
+    field: { value: capacityValue, onChange: capacityChange, onBlur: capacityBlur },
   } = useController({ control, name: "pax" });
-  const { localizedInputProps: capacityInput } = useLocalizedNumberInput({
-    value: capacityValue,
-    onChange: capacityChange,
-    formatOptions: { useGrouping: false, minimumFractionDigits: 0, maximumFractionDigits: 0 },
-    minValue: 1,
-    inputProps: { onBlur: capacityBlur },
-  });
 
   React.useEffect(() => {
     clearErrors();
@@ -181,18 +169,15 @@ export default function TableFormDialog({
             color={accentColor}
           />
         </Animated.View>
-        <PanelInput
-          ref={capacityRef}
+        <NumberInput
           label={t("areasManagement.capacity")}
           errorMessage={errors.pax?.message}
-          variant="filled"
           isRequired
-          keyboardType="numeric"
-
-          {...capacityInput}
-          onBlur={(event) => {
-            capacityInput.onBlur(event);
-          }}
+          value={Number(capacityValue || 1)}
+          min={1}
+          step={1}
+          onValueChange={(value) => capacityChange(String(value))}
+          onBlur={capacityBlur}
         />
       </View>
 

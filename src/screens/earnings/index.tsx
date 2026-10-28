@@ -576,108 +576,96 @@ export default function EarningsScreen(): React.JSX.Element {
             </View>
           ) : (
             <>
-              <Frame variant="plain">
-                <Frame.Panel className="p-4">
-                  <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
-                    <View
-                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
-                    >
-                      <Kpi>
-                        <Kpi.Header>
-                          <Kpi.Title>{t("earnings.settledEarnings")}</Kpi.Title>
-                          <Kpi.Icon tone="good">
-                            <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
-                          </Kpi.Icon>
-                        </Kpi.Header>
-                        <Kpi.Content>
-                          <PanelTypography
-                            type="h4"
-                            weight="bold"
-                            className="tabular-nums"
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.72}
-                          >
-                            {formatRupiah(totalEarnings)}
-                          </PanelTypography>
-                        </Kpi.Content>
-                      </Kpi>
-                    </View>
-                    <View
-                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
-                    >
-                      <Kpi>
-                        <Kpi.Header>
-                          <Kpi.Title>{t("earnings.settledOrders")}</Kpi.Title>
-                          <Kpi.Icon tone="neutral">
-                            <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
-                          </Kpi.Icon>
-                        </Kpi.Header>
-                        <Kpi.Content>
-                          <PanelTypography
-                            type="h4"
-                            weight="bold"
-                            className="tabular-nums"
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.72}
-                          >
-                            {String(data.length)}
-                          </PanelTypography>
-                        </Kpi.Content>
-                      </Kpi>
-                    </View>
-                    <View
-                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
-                    >
-                      <Kpi>
-                        <Kpi.Header>
-                          <Kpi.Title>{t("earnings.averageOrder")}</Kpi.Title>
-                          <Kpi.Icon tone="flat">
-                            <AppIcon icon={AppIcons.analytics} size={18} color={metricWarning} />
-                          </Kpi.Icon>
-                        </Kpi.Header>
-                        <Kpi.Content>
-                          <PanelTypography
-                            type="h4"
-                            weight="bold"
-                            className="tabular-nums"
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.72}
-                          >
-                            {formatRupiah(averageOrder)}
-                          </PanelTypography>
-                        </Kpi.Content>
-                      </Kpi>
-                    </View>
-                    <View
-                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
-                    >
-                      <Kpi>
-                        <Kpi.Header>
-                          <Kpi.Title>{t("earnings.itemsSold")}</Kpi.Title>
-                          <Kpi.Icon tone="neutral">
-                            <AppIcon icon={AppIcons.bag} size={18} color={metricDefault} />
-                          </Kpi.Icon>
-                        </Kpi.Header>
-                        <Kpi.Content>
-                          <PanelTypography
-                            type="h4"
-                            weight="bold"
-                            className="tabular-nums"
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.72}
-                          >
-                            {String(itemCount)}
-                          </PanelTypography>
-                        </Kpi.Content>
-                      </Kpi>
-                    </View>
-                  </View>
-                </Frame.Panel>
-              </Frame>
+              <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
+                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi>
+                    <Kpi.Header>
+                      <Kpi.Title>{t("earnings.settledEarnings")}</Kpi.Title>
+                      <Kpi.Icon tone="good">
+                        <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+                      </Kpi.Icon>
+                    </Kpi.Header>
+                    <Kpi.Content>
+                      <PanelTypography
+                        type="h4"
+                        weight="bold"
+                        className="tabular-nums"
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.72}
+                      >
+                        {formatRupiah(totalEarnings)}
+                      </PanelTypography>
+                    </Kpi.Content>
+                  </Kpi>
+                </View>
+                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi>
+                    <Kpi.Header>
+                      <Kpi.Title>{t("earnings.settledOrders")}</Kpi.Title>
+                      <Kpi.Icon tone="neutral">
+                        <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+                      </Kpi.Icon>
+                    </Kpi.Header>
+                    <Kpi.Content>
+                      <PanelTypography
+                        type="h4"
+                        weight="bold"
+                        className="tabular-nums"
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.72}
+                      >
+                        {String(data.length)}
+                      </PanelTypography>
+                    </Kpi.Content>
+                  </Kpi>
+                </View>
+                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi>
+                    <Kpi.Header>
+                      <Kpi.Title>{t("earnings.averageOrder")}</Kpi.Title>
+                      <Kpi.Icon tone="flat">
+                        <AppIcon icon={AppIcons.analytics} size={18} color={metricWarning} />
+                      </Kpi.Icon>
+                    </Kpi.Header>
+                    <Kpi.Content>
+                      <PanelTypography
+                        type="h4"
+                        weight="bold"
+                        className="tabular-nums"
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.72}
+                      >
+                        {formatRupiah(averageOrder)}
+                      </PanelTypography>
+                    </Kpi.Content>
+                  </Kpi>
+                </View>
+                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi>
+                    <Kpi.Header>
+                      <Kpi.Title>{t("earnings.itemsSold")}</Kpi.Title>
+                      <Kpi.Icon tone="neutral">
+                        <AppIcon icon={AppIcons.bag} size={18} color={metricDefault} />
+                      </Kpi.Icon>
+                    </Kpi.Header>
+                    <Kpi.Content>
+                      <PanelTypography
+                        type="h4"
+                        weight="bold"
+                        className="tabular-nums"
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.72}
+                      >
+                        {String(itemCount)}
+                      </PanelTypography>
+                    </Kpi.Content>
+                  </Kpi>
+                </View>
+              </View>
 
               {data.length === 0 ? (
                 <EmptyState className="py-16">

@@ -144,82 +144,78 @@ export default function DashboardScreen(): React.JSX.Element {
           </View>
         ) : (
           <>
-            <Frame variant="plain" className="w-full">
-              <Frame.Panel className="p-4">
-                <GridItem.Group
-                  className="w-full"
-                  columns={isWide ? 4 : 2}
-                  gap={16}
-                  rowHeight={isCompact ? 120 : 136}
-                  size={isCompact ? "sm" : "default"}
+            <GridItem.Group
+              className="w-full"
+              columns={isWide ? 4 : 2}
+              gap={16}
+              rowHeight={isCompact ? 120 : 136}
+              size={isCompact ? "sm" : "default"}
+            >
+              <GridItem variant="outline">
+                <View className="flex-row items-center justify-between gap-2">
+                  <GridItem.Title numberOfLines={1}>{t("dashboard.revenue")}</GridItem.Title>
+                  <GridItem.Media variant="icon">
+                    <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+                  </GridItem.Media>
+                </View>
+                <GridItem.Value
+                  className="tabular-nums"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
                 >
-                  <GridItem variant="outline">
-                    <View className="flex-row items-center justify-between gap-2">
-                      <GridItem.Title numberOfLines={1}>{t("dashboard.revenue")}</GridItem.Title>
-                      <GridItem.Media variant="icon">
-                        <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
-                      </GridItem.Media>
-                    </View>
-                    <GridItem.Value
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {formatRupiah(dashboard.data?.revenue_today ?? 0)}
-                    </GridItem.Value>
-                  </GridItem>
-                  <GridItem variant="outline">
-                    <View className="flex-row items-center justify-between gap-2">
-                      <GridItem.Title numberOfLines={1}>{t("dashboard.orders")}</GridItem.Title>
-                      <GridItem.Media variant="icon">
-                        <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
-                      </GridItem.Media>
-                    </View>
-                    <GridItem.Value
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {String(dashboard.data?.orders_today ?? 0)}
-                    </GridItem.Value>
-                  </GridItem>
-                  <GridItem variant="outline">
-                    <View className="flex-row items-center justify-between gap-2">
-                      <GridItem.Title numberOfLines={1}>{t("dashboard.pending")}</GridItem.Title>
-                      <GridItem.Media variant="icon">
-                        <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
-                      </GridItem.Media>
-                    </View>
-                    <GridItem.Value
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {String(dashboard.data?.pending_orders ?? 0)}
-                    </GridItem.Value>
-                  </GridItem>
-                  <GridItem variant="outline">
-                    <View className="flex-row items-center justify-between gap-2">
-                      <GridItem.Title numberOfLines={1}>{t("dashboard.completed")}</GridItem.Title>
-                      <GridItem.Media variant="icon">
-                        <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
-                      </GridItem.Media>
-                    </View>
-                    <GridItem.Value
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {String(dashboard.data?.completed_orders ?? 0)}
-                    </GridItem.Value>
-                  </GridItem>
-                </GridItem.Group>
-              </Frame.Panel>
-            </Frame>
+                  {formatRupiah(dashboard.data?.revenue_today ?? 0)}
+                </GridItem.Value>
+              </GridItem>
+              <GridItem variant="outline">
+                <View className="flex-row items-center justify-between gap-2">
+                  <GridItem.Title numberOfLines={1}>{t("dashboard.orders")}</GridItem.Title>
+                  <GridItem.Media variant="icon">
+                    <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+                  </GridItem.Media>
+                </View>
+                <GridItem.Value
+                  className="tabular-nums"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
+                >
+                  {String(dashboard.data?.orders_today ?? 0)}
+                </GridItem.Value>
+              </GridItem>
+              <GridItem variant="outline">
+                <View className="flex-row items-center justify-between gap-2">
+                  <GridItem.Title numberOfLines={1}>{t("dashboard.pending")}</GridItem.Title>
+                  <GridItem.Media variant="icon">
+                    <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
+                  </GridItem.Media>
+                </View>
+                <GridItem.Value
+                  className="tabular-nums"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
+                >
+                  {String(dashboard.data?.pending_orders ?? 0)}
+                </GridItem.Value>
+              </GridItem>
+              <GridItem variant="outline">
+                <View className="flex-row items-center justify-between gap-2">
+                  <GridItem.Title numberOfLines={1}>{t("dashboard.completed")}</GridItem.Title>
+                  <GridItem.Media variant="icon">
+                    <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
+                  </GridItem.Media>
+                </View>
+                <GridItem.Value
+                  className="tabular-nums"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
+                >
+                  {String(dashboard.data?.completed_orders ?? 0)}
+                </GridItem.Value>
+              </GridItem>
+            </GridItem.Group>
 
             <Frame className="w-full">
               <Frame.Header>

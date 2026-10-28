@@ -336,7 +336,7 @@ function SupplierOfferFormCard({
               <PanelInput
                 ref={ref}
                 containerClassName="w-full md:flex-1"
-                variant="filled"
+
                 label={t("ingredients.supplierOfferPurchaseUnit")}
                 placeholder={t("ingredients.supplierOfferPurchaseUnitPlaceholder")}
                 value={value}
@@ -354,7 +354,7 @@ function SupplierOfferFormCard({
               <PanelInput
                 ref={ref}
                 containerClassName="w-full md:flex-1"
-                variant="filled"
+
                 label={t("ingredients.supplierOfferSku")}
                 placeholder={t("ingredients.supplierOfferSku")}
                 value={value}
@@ -443,7 +443,7 @@ function SupplierOfferFormCard({
             label={t("ingredients.supplierOfferLastPurchasePrice")}
             placeholder={t("ingredients.supplierOfferLastPurchasePricePlaceholder")}
             errorMessage={errors.last_purchase_price?.message}
-            variant="filled"
+
             keyboardType="numeric"
             startContent={
               <PanelTypography type="body-sm" weight="medium" muted>
