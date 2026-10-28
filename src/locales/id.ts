@@ -28,7 +28,11 @@ export const id: TranslationSchema = {
   },
   errors: {
     unexpected: "Terjadi kesalahan",
-    reload: "Muat ulang",
+    recoveryDescription: "Layar ini tidak dapat dimuat. Coba lagi untuk melanjutkan.",
+    reload: "Coba lagi",
+    serviceUnavailable: "Layanan sedang tidak tersedia. Coba lagi sebentar lagi.",
+    serverError: "Layanan tidak dapat menyelesaikan permintaan ini. Coba lagi.",
+    tooManyRequests: "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.",
   },
   products: {
     search: "Cari produk",

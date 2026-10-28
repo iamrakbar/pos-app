@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from "react";
 import { View } from "react-native";
-import { Button, Typography } from "panelui-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button, EmptyState, Typography } from "panelui-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { t } from "@/locales";
@@ -23,22 +24,33 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.error) {
       return (
-        <View className="flex-1 items-center justify-center gap-3 bg-background px-6">
-          <AppIcon
-            icon={AppIcons.warning}
-            size={40}
-            color={Uniwind.getCSSVariable("--color-destructive") as string}
-          />
-          <Typography type="body" weight="semibold" align="center">
-            {t("errors.unexpected")}
-          </Typography>
-          <Typography type="body-sm" align="center" muted>
-            {this.state.error.message}
-          </Typography>
-          <Button variant="outline" onPress={() => this.setState({ error: null })}>
-            {t("errors.reload")}
-          </Button>
-        </View>
+        <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom", "left", "right"]}>
+          <View className="flex-1 items-center justify-center px-6 py-8">
+            <EmptyState className="w-full max-w-md">
+              <EmptyState.Header>
+                <EmptyState.Media variant="icon">
+                  <AppIcon
+                    icon={AppIcons.warning}
+                    size={22}
+                    color={Uniwind.getCSSVariable("--color-destructive") as string}
+                  />
+                </EmptyState.Media>
+                <EmptyState.Title>{t("errors.unexpected")}</EmptyState.Title>
+                <EmptyState.Description>{t("errors.recoveryDescription")}</EmptyState.Description>
+              </EmptyState.Header>
+              <EmptyState.Content>
+                <Button fullWidth onPress={() => this.setState({ error: null })}>
+                  {t("errors.reload")}
+                </Button>
+                {__DEV__ ? (
+                  <Typography type="body-xs" muted align="center" selectable>
+                    {this.state.error.message}
+                  </Typography>
+                ) : null}
+              </EmptyState.Content>
+            </EmptyState>
+          </View>
+        </SafeAreaView>
       );
     }
     return this.props.children;

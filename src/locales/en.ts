@@ -26,7 +26,11 @@ export const en = {
   },
   errors: {
     unexpected: "Something went wrong",
-    reload: "Reload",
+    recoveryDescription: "This screen could not load. Try again to continue.",
+    reload: "Try again",
+    serviceUnavailable: "The service is temporarily unavailable. Please try again shortly.",
+    serverError: "The service could not complete this request. Please try again.",
+    tooManyRequests: "Too many requests. Please wait a moment and try again.",
   },
   products: {
     search: "Search products",
