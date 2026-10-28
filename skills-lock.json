@@ -145,6 +145,12 @@
       "skillPath": "plugins/expo/skills/expo-upgrade/SKILL.md",
       "computedHash": "77aea7026b8cfc732fd09587a9ee612d4abe5c7c82d00b0370f1079b9f3c59ce"
     },
+    "panelui": {
+      "source": "panel-ui/PanelUI",
+      "sourceType": "github",
+      "skillPath": "skills/panelui/SKILL.md",
+      "computedHash": "bafbae5a3751025c78e77adaaab1befbd5b7a8a4569db85b6bd8a9cbc21962c2"
+    },
     "truesheet-usage": {
       "source": "lodev09/react-native-true-sheet",
       "sourceType": "github",
