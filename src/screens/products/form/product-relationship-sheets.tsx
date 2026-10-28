@@ -778,7 +778,7 @@ function RecipeSheetBody({
                 onOpenPicker={onOpenPicker}
               />
               {recipeError ? (
-                <Typography className="text-destructive-foreground">{recipeError}</Typography>
+                <Typography className="text-destructive">{recipeError}</Typography>
               ) : null}
             </>
           ) : (

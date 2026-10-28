@@ -252,7 +252,7 @@ The component category can usually map 1:1; props and compound anatomy must be a
 - [ ] Preserve time values, locale, hour cycle, and min/max restrictions through TimePicker conversions.
 - [ ] Keep sorting in screen state/pure utilities; preserve server sorting, pagination, selection, row actions, and virtualization for large tables.
 - [ ] Replace charts with PanelUI series/axes/tooltips/legends while preserving aggregation, ranges, labels, values, and currency formatting.
-- [ ] Apply PanelUI typography and semantic tokens; keep className chiefly for layout, persistent labels, readable numeric alignment, and accessible icon actions.
+- [x] Apply PanelUI typography and semantic tokens; keep className chiefly for layout, persistent labels, readable numeric alignment, and accessible icon actions. Sign-in uses persistent PanelUI Field labels and errors; checkout uses Field.Error and Alert; status text uses destructive theme tokens, redundant foreground overrides are removed, numeric tabular alignment is retained, and the text cancel action uses text-button sizing. Typecheck, localization parity, and targeted ESLint pass; device visual and TalkBack review remain open.
 
 ## P1 — Overlay orchestration
 

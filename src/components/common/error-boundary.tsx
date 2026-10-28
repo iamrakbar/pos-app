@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
             size={40}
             color={Uniwind.getCSSVariable("--color-destructive") as string}
           />
-          <Typography className="text-foreground" type="body" weight="semibold" align="center">
+          <Typography type="body" weight="semibold" align="center">
             {t("errors.unexpected")}
           </Typography>
           <Typography type="body-sm" align="center" muted>

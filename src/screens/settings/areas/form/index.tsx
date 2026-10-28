@@ -174,7 +174,7 @@ export default function AreaFormScreen(): React.JSX.Element {
               )}
             />
             {errors.root?.server?.message ? (
-              <Typography type="body-sm" className="text-destructive-foreground">
+              <Typography type="body-sm" className="text-destructive">
                 {errors.root.server.message}
               </Typography>
             ) : null}

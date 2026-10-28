@@ -353,7 +353,7 @@ function ProductDetailsCard({
               </View>
               {didCategoriesFail ? (
                 <View className="flex-row items-center justify-between gap-3">
-                  <PanelTypography type="body-xs" className="flex-1 text-destructive-foreground">
+                  <PanelTypography type="body-xs" className="flex-1 text-destructive">
                     {t("productForm.categoriesFailed")}
                   </PanelTypography>
                   <PanelButton size="sm" variant="ghost" onPress={onRetryCategories}>
@@ -361,7 +361,7 @@ function ProductDetailsCard({
                   </PanelButton>
                 </View>
               ) : errors.category_id?.message ? (
-                <PanelTypography type="body-xs" className="text-destructive-foreground">
+                <PanelTypography type="body-xs" className="text-destructive">
                   {errors.category_id.message}
                 </PanelTypography>
               ) : areCategoriesLoading ? (
@@ -1074,7 +1074,7 @@ function SaveProductCard({
   return (
     <View className="flex-1 gap-3 pt-2">
       {serverError ? (
-        <Typography type="body-xs" className="text-destructive-foreground">
+        <Typography type="body-xs" className="text-destructive">
           {serverError}
         </Typography>
       ) : null}

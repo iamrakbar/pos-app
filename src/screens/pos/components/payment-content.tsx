@@ -242,7 +242,7 @@ function PaymentInfoPanel({
           ) : null}
         </View>
         {paymentStatus.isError ? (
-          <Typography type="body-xs" className="text-destructive-foreground">
+          <Typography type="body-xs" className="text-destructive">
             {getErrorMessage(paymentStatus.error)}
           </Typography>
         ) : null}

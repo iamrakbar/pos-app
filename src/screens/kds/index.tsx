@@ -146,7 +146,7 @@ function TicketCard({
       </ScrollFade>
 
       {error ? (
-        <Typography type="body-xs" className="text-destructive-foreground">
+        <Typography type="body-xs" className="text-destructive">
           {getErrorMessage(error)}
         </Typography>
       ) : null}

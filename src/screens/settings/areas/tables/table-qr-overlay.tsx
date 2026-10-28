@@ -287,7 +287,7 @@ export default function TableQrOverlay({
         </View>
       ) : (
         <View className="w-full rounded-2xl border border-destructive/30 bg-destructive-soft p-4">
-          <Typography type="body-sm" className="text-destructive-foreground">
+          <Typography type="body-sm" className="text-destructive">
             {t("areasManagement.tableQrUnavailable")}
           </Typography>
         </View>
@@ -298,7 +298,7 @@ export default function TableQrOverlay({
         </Typography>
         <View className="flex-row justify-center items-center w-full rounded-lg bg-surface-secondary ">
           <View className="flex-1 py-2 px-3 overflow-hidden">
-            <Typography type="body-sm" selectable className="text-foreground">
+            <Typography type="body-sm" selectable>
               {orderUrl ?? t("areasManagement.tableQrUnavailable")}
             </Typography>
           </View>

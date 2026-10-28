@@ -1311,6 +1311,8 @@ export const id: TranslationSchema = {
     },
   },
   auth: {
+    email: "Email",
+    password: "Kata sandi",
     emailPlaceholder: "Masukkan email Anda",
     passwordPlaceholder: "Masukkan kata sandi Anda",
     showPassword: "Tampilkan kata sandi",

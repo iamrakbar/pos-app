@@ -69,7 +69,7 @@ function SupplierOfferSaveActions({
   return (
     <View className="gap-3 pt-2">
       {serverError ? (
-        <Typography type="body-xs" className="text-destructive-foreground">
+        <Typography type="body-xs" className="text-destructive">
           {serverError}
         </Typography>
       ) : null}

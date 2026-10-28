@@ -157,7 +157,7 @@ export default function MerchantQrOverlay({
         </View>
       ) : (
         <View className="w-full rounded-2xl border border-destructive/30 bg-destructive-soft p-4">
-          <Typography type="body-sm" className="text-destructive-foreground">
+          <Typography type="body-sm" className="text-destructive">
             {t("merchantProfile.urlUnavailable")}
           </Typography>
         </View>

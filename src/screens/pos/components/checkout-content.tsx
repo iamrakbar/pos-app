@@ -1,5 +1,7 @@
 import {
   Surface,
+  Alert,
+  Field,
   Typography,
   Input as PanelInput,
   SearchBar,
@@ -553,9 +555,7 @@ function PaymentFields({
           </PanelRadioGroup>
         )}
         {errors.payment_id ? (
-          <Typography type="body-xs" className="text-destructive-foreground">
-            {errors.payment_id.message}
-          </Typography>
+          <Field.Error>{errors.payment_id.message}</Field.Error>
         ) : null}
       </View>
 
@@ -617,9 +617,7 @@ function PaymentFields({
             </View>
           </View>
           {errors.tender_value ? (
-            <Typography type="body-xs" className="text-destructive-foreground">
-              {errors.tender_value.message}
-            </Typography>
+            <Field.Error>{errors.tender_value.message}</Field.Error>
           ) : null}
         </View>
       ) : null}
@@ -705,9 +703,7 @@ function CustomerFields({
             ))}
           </PanelSelect>
           {errors.guest_id ? (
-            <Typography type="body-xs" className="text-destructive-foreground">
-              {errors.guest_id.message}
-            </Typography>
+            <Field.Error>{errors.guest_id.message}</Field.Error>
           ) : null}
         </View>
       ) : null}
@@ -749,9 +745,7 @@ function CustomerFields({
             </Pressable>
           ))}
           {errors.customer_id ? (
-            <Typography type="body-xs" className="text-destructive-foreground">
-              {errors.customer_id.message}
-            </Typography>
+            <Field.Error>{errors.customer_id.message}</Field.Error>
           ) : null}
         </View>
       ) : null}
@@ -809,11 +803,12 @@ function CheckoutFormScrollContent({
     >
       <View className="w-full max-w-3xl gap-4">
         {cartError ? (
-          <View className="rounded-lg bg-destructive-soft px-3 py-2.5">
-            <Typography type="body-sm" className="text-destructive-foreground">
-              {cartError}
-            </Typography>
-          </View>
+          <Alert variant="destructive">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>{cartError}</Alert.Title>
+            </Alert.Content>
+          </Alert>
         ) : null}
 
         <PaymentFields {...paymentFields} />

@@ -845,7 +845,7 @@ function PrinterFormView(props: PrinterFormViewProps) {
             />
             <View className="gap-3 pt-2">
               {errors.root?.server?.message ? (
-                <Typography type="body-xs" className="text-destructive-foreground mt-1">
+                <Typography type="body-xs" className="text-destructive mt-1">
                   {errors.root.server.message}
                 </Typography>
               ) : null}

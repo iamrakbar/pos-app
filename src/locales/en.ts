@@ -1304,6 +1304,8 @@ export const en = {
     },
   },
   auth: {
+    email: "Email",
+    password: "Password",
     emailPlaceholder: "Enter your email",
     passwordPlaceholder: "Enter your password",
     showPassword: "Show password",

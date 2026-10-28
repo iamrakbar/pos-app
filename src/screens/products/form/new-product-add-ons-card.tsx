@@ -313,7 +313,7 @@ function NewProductAddOnGroup({
           </View>
         ))}
         {optionsMessage ? (
-          <Typography type="body-xs" className="text-destructive-foreground">
+          <Typography type="body-xs" className="text-destructive">
             {optionsMessage}
           </Typography>
         ) : null}

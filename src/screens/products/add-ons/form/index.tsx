@@ -218,7 +218,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
                 />
               ))}
               {errors.options?.root?.message ? (
-                <Typography type="body-xs" className="text-destructive-foreground">
+                <Typography type="body-xs" className="text-destructive">
                   {errors.options.root.message}
                 </Typography>
               ) : null}
@@ -231,7 +231,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
 
           <View className="flex-1 gap-3">
             {errors.root?.server?.message ? (
-              <Typography type="body-sm" className="text-destructive-foreground">
+              <Typography type="body-sm" className="text-destructive">
                 {errors.root.server.message}
               </Typography>
             ) : null}

@@ -59,7 +59,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
               <Typography
                 type="body-xs"
                 muted={!isOutOfStock}
-                className={isOutOfStock ? "text-destructive-foreground" : undefined}
+                className={isOutOfStock ? "text-destructive" : undefined}
               >
                 {isOutOfStock
                   ? t("pos.outOfStock")

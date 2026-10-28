@@ -178,7 +178,7 @@ function CustomDateRangeDialog({
         ))}
       </View>
       {error ? (
-        <Typography type="body-xs" className="text-destructive-foreground">
+        <Typography type="body-xs" className="text-destructive">
           {error}
         </Typography>
       ) : (

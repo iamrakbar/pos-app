@@ -231,7 +231,7 @@ function AccountForm({
 
         <View className="flex-1 gap-3">
           {errors.root?.server?.message ? (
-            <Typography type="body-sm" className="text-destructive-foreground">
+            <Typography type="body-sm" className="text-destructive">
               {errors.root.server.message}
             </Typography>
           ) : null}

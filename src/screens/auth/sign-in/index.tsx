@@ -1,4 +1,4 @@
-import { Button, Card, InputGroup, Typography, cn } from "panelui-native";
+import { Alert, Button, Card, Field, InputGroup, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import Logo from "@/components/common/logo";
 import AppIcon from "@/components/common/app-icon";
@@ -56,7 +56,8 @@ export default function SignInScreen(): JSX.Element {
           >
             <Logo tintColor={themeColorAccent} />
 
-            <View className="w-full gap-1 mt-5">
+            <Field className="w-full gap-1 mt-5" invalid={!!errors.email} required>
+              <Field.Label>{t("auth.email")}</Field.Label>
               <Controller
                 control={control}
                 name="email"
@@ -75,14 +76,11 @@ export default function SignInScreen(): JSX.Element {
                   </InputGroup>
                 )}
               />
-              {errors.email && (
-                <Typography className="text-destructive-foreground" type="body-xs">
-                  {errors.email.message}
-                </Typography>
-              )}
-            </View>
+              {errors.email && <Field.Error>{errors.email.message}</Field.Error>}
+            </Field>
 
-            <View className="w-full gap-1">
+            <Field className="w-full gap-1" invalid={!!errors.password} required>
+              <Field.Label>{t("auth.password")}</Field.Label>
               <Controller
                 control={control}
                 name="password"
@@ -117,17 +115,16 @@ export default function SignInScreen(): JSX.Element {
                   </InputGroup>
                 )}
               />
-              {errors.password && (
-                <Typography className="text-destructive-foreground" type="body-xs">
-                  {errors.password.message}
-                </Typography>
-              )}
-            </View>
+              {errors.password && <Field.Error>{errors.password.message}</Field.Error>}
+            </Field>
 
             {login.isError && (
-              <Typography className="text-destructive-foreground" type="body-sm" align="center">
-                {getErrorMessage(login.error)}
-              </Typography>
+              <Alert variant="destructive">
+                <Alert.Indicator />
+                <Alert.Content>
+                  <Alert.Title>{getErrorMessage(login.error)}</Alert.Title>
+                </Alert.Content>
+              </Alert>
             )}
 
             <Button

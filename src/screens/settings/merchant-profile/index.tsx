@@ -714,7 +714,7 @@ function MerchantProfileContent({
           {activeTab !== "images" ? (
             <View className="gap-3">
               {errors.root?.server?.message ? (
-                <Typography type="body-sm" className="text-destructive-foreground">
+                <Typography type="body-sm" className="text-destructive">
                   {errors.root.server.message}
                 </Typography>
               ) : null}

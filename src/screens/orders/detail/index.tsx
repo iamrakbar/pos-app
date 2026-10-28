@@ -189,7 +189,7 @@ function OrderCancelAction({
         {t("orders.detail.cancelOrder")}
       </PanelButton>
       {error ? (
-        <Typography className="text-destructive-foreground" type="body-xs">
+        <Typography className="text-destructive" type="body-xs">
           {getErrorMessage(error)}
         </Typography>
       ) : null}
@@ -259,7 +259,7 @@ function PaymentQrDialog({
         <View className="h-64 w-64 items-center justify-center rounded-lg border border-border bg-white">
           <Image source={{ uri: qrUrl }} style={{ width: 240, height: 240 }} contentFit="contain" />
         </View>
-        <Typography className="text-foreground" type="body" weight="semibold">
+        <Typography type="body" weight="semibold">
           {formatRupiah(total)}
         </Typography>
         {target !== null ? (
@@ -1040,7 +1040,7 @@ function OrderPaymentRefresh({
   const { t } = useTranslation();
   if (!isVisible)
     return isError ? (
-      <Typography type="body-xs" className="text-destructive-foreground">
+      <Typography type="body-xs" className="text-destructive">
         {getErrorMessage(error)}
       </Typography>
     ) : null;
@@ -1056,7 +1056,7 @@ function OrderPaymentRefresh({
         {t("orders.detail.refreshStatus")}
       </PanelButton>
       {isError ? (
-        <Typography type="body-xs" className="text-destructive-foreground">
+        <Typography type="body-xs" className="text-destructive">
           {getErrorMessage(error)}
         </Typography>
       ) : null}
