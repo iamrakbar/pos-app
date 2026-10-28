@@ -1,4 +1,6 @@
-import { Typography , Separator ,
+import {
+  Typography,
+  Separator,
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
   AreaChart,
@@ -268,12 +270,13 @@ export default function DashboardScreen(): React.JSX.Element {
                         }
                       >
                         <AreaChart.Grid rows={5} />
-                        <AreaChart.Area dataKey="count" />
+                        <AreaChart.Area dataKey="count" colorIndex={1} />
                         <AreaChart.XAxis
                           ticks={Math.min(chart.length, isCompact ? 4 : 8)}
                           format={(point) => formatChartDate(String(point.date))}
                         />
                         <AreaChart.YAxis ticks={5} format={(value) => String(Math.round(value))} />
+                        <AreaChart.Legend labels={{ count: t("dashboard.orders") }} />
                         <AreaChart.Tooltip
                           formatX={(point) => formatChartDate(String(point.date))}
                           formatValue={(value) => String(Math.round(value))}
