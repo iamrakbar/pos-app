@@ -1,7 +1,18 @@
+import { getErrorMessage } from "@/api/api-error";
+import {
+  Fab,
+  PlusIcon,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Button as PanelButton,
+  Chip as PanelChip,
+  Typography as PanelTypography,
+  Skeleton as PanelGridSkeleton,
+  EmptyState,
+  Card,
+} from "panelui-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
-import CreateFAB from "@/components/common/create-fab";
-import ErrorState from "@/components/common/error-state";
-import { GridSkeleton } from "@/components/common/list-skeleton";
 import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
 import { useArea } from "@/hooks/db/use-areas";
 import { useAreaTables } from "@/hooks/db/use-tables";
@@ -9,8 +20,6 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { Button, Card, Chip } from "heroui-native";
-import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { FlatList, View } from "react-native";
 import TableFormDialog from "./table-form-dialog";
@@ -24,6 +33,7 @@ function getTableSeatCount(pax: number): TableSeatCount {
 }
 
 export default function AreaTablesScreen(): React.JSX.Element {
+  const fabInsets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { id: areaId } = useLocalSearchParams<{ id: string }>();
   const { width, isCompact, isMedium, isPortrait, horizontalPagePadding } = useResponsiveLayout();
@@ -58,18 +68,46 @@ export default function AreaTablesScreen(): React.JSX.Element {
   if (tablesQuery.isLoading) {
     return (
       <View className="flex-1 bg-background">
-        <GridSkeleton
-          columns={columnCount}
-          width={width}
-          horizontalPadding={horizontalPagePadding - 6}
-          gap={12}
-          aspectRatio={0.68}
-        />
+        <View
+          className="flex-1 flex-row flex-wrap content-start gap-y-4 py-6"
+          style={{ paddingHorizontal: horizontalPagePadding - 6, columnGap: 12 }}
+          accessibilityRole="progressbar"
+        >
+          {Array.from({ length: columnCount * 2 }, (_, index) => (
+            <View
+              key={`loading-grid-${index}`}
+              style={{
+                width: Math.max(
+                  0,
+                  (width - (horizontalPagePadding - 6) * 2 - 12 * (columnCount - 1)) / columnCount
+                ),
+                aspectRatio: 0.68,
+              }}
+              className="overflow-hidden rounded-2xl"
+            >
+              <PanelGridSkeleton className="h-full w-full rounded-2xl" />
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
   if (tablesQuery.isError) {
-    return <ErrorState error={tablesQuery.error} onRetry={tablesQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(tablesQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void tablesQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   const tables = tablesQuery.data ?? [];
@@ -100,11 +138,15 @@ export default function AreaTablesScreen(): React.JSX.Element {
             const status = table.active ? t("common.active") : t("common.inactive");
 
             return (
-              <Card className="m-2 min-h-40 gap-4 overflow-hidden" style={{ width: cardWidth }}>
-                <Card.Body className="flex-1 items-center justify-between gap-2 p-4 active:bg-surface-tertiary">
-                  <Chip color="default">
-                    <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
-                  </Chip>
+              <Card className="m-2 min-h-40 gap-4 overflow-hidden p-4" style={{ width: cardWidth }}>
+                <Card.Content className="flex-1 items-center justify-between gap-2 p-4 active:bg-surface-tertiary">
+                  <PanelChip variant="default">
+                    <PanelChip.Label>
+                      <PanelTypography type="body-xs" numberOfLines={1}>
+                        {table.name}
+                      </PanelTypography>
+                    </PanelChip.Label>
+                  </PanelChip>
                   <TableSymbol
                     seats={getTableSeatCount(Number(table.pax))}
                     scale={0.5}
@@ -112,16 +154,16 @@ export default function AreaTablesScreen(): React.JSX.Element {
                     tableColor={table.active ? accentSoft : undefined}
                   />
                   <View className="w-full flex-row flex-wrap items-center justify-between gap-2">
-                    <Chip size="sm" color="default" variant="soft">
-                      <Chip.Label numberOfLines={1}>{seats}</Chip.Label>
-                    </Chip>
-                    <Chip size="sm" color={table.active ? "success" : "default"} variant="soft">
-                      <Chip.Label>{status}</Chip.Label>
-                    </Chip>
+                    <PanelChip size="sm" variant="default">
+                      {seats}
+                    </PanelChip>
+                    <PanelChip size="sm" variant={table.active ? "success" : "default"}>
+                      {status}
+                    </PanelChip>
                   </View>
-                </Card.Body>
-                <Card.Footer className="flex-row gap-4">
-                  <Button
+                </Card.Content>
+                <Card.Footer className="flex-row gap-4 p-0">
+                  <PanelButton
                     size="sm"
                     variant="outline"
                     accessibilityLabel={t("areasManagement.tableQrAccessibility", {
@@ -129,13 +171,11 @@ export default function AreaTablesScreen(): React.JSX.Element {
                     })}
                     onPress={() => openQr(table)}
                     className="flex-1"
+                    startContent={<AppIcon icon={AppIcons.qrCode} size={16} color={mutedColor} />}
                   >
-                    <AppIcon icon={AppIcons.qrCode} size={16} color={mutedColor} />
-                    <Button.Label className="ml-2">
-                      {t("areasManagement.tableQrAction")}
-                    </Button.Label>
-                  </Button>
-                  <Button
+                    {t("areasManagement.tableQrAction")}
+                  </PanelButton>
+                  <PanelButton
                     size="sm"
                     variant="outline"
                     accessibilityLabel={t("areasManagement.editTableAccessibility", {
@@ -145,12 +185,10 @@ export default function AreaTablesScreen(): React.JSX.Element {
                     })}
                     onPress={() => openEdit(table)}
                     className="flex-1"
+                    startContent={<AppIcon icon={AppIcons.pencil} size={18} color={mutedColor} />}
                   >
-                    <AppIcon icon={AppIcons.pencil} size={18} color={mutedColor} />
-                    <Button.Label className="ml-2">
-                      {t("areasManagement.editTableAction")}
-                    </Button.Label>
-                  </Button>
+                    {t("areasManagement.editTableAction")}
+                  </PanelButton>
                 </Card.Footer>
               </Card>
             );
@@ -169,7 +207,10 @@ export default function AreaTablesScreen(): React.JSX.Element {
             </EmptyState>
           }
         />
-        <CreateFAB
+        <Fab
+          icon={<PlusIcon size={22} />}
+          placement="bottom-right"
+          style={{ bottom: Math.max(fabInsets.bottom, 24), right: 24, zIndex: 50 }}
           accessibilityLabel={t("areasManagement.addTableAccessibility")}
           onPress={openCreate}
         />

@@ -1,27 +1,28 @@
+import {
+  Button as PanelButton,
+  Chip as PanelChip,
+  Typography,
+  Separator,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Skeleton as PanelListSkeleton,
+  SearchBar as PanelSearchBar,
+  Checkbox as PanelCheckbox,
+  EmptyState,
+  Card,
+} from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { ListSkeleton } from "@/components/common/list-skeleton";
-import ErrorState from "@/components/common/error-state";
 import { useManagementProducts } from "@/hooks/db/use-products";
 import { useDiscountProductDraft } from "@/stores/use-discount-product-draft-store";
 import { useCategories } from "@/hooks/db/use-categories";
 import { useTranslation } from "@/stores/use-locale";
 import { formatRupiah } from "@/utils/format";
 import { Stack, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Checkbox,
-  Chip,
-  cn,
-  SearchField,
-  Separator,
-  Typography,
-} from "heroui-native";
-import { EmptyState } from "heroui-native-pro";
 import React from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 export default function DiscountProductsScreen(): React.JSX.Element {
   const router = useRouter();
@@ -61,21 +62,21 @@ export default function DiscountProductsScreen(): React.JSX.Element {
               <Typography type="body" weight="semibold">
                 {t("discounts.productsTitle")}
               </Typography>
-              <Typography type="body-sm" color="muted">
+              <Typography type="body-sm" muted>
                 {t("discounts.selectionSpecificDescription")}
               </Typography>
             </View>
 
-            <SearchField value={search} onChange={setSearch}>
-              <SearchField.Group>
-                <SearchField.SearchIcon />
-                <SearchField.Input placeholder={t("discounts.searchProductsPlaceholder")} />
-                <SearchField.ClearButton />
-              </SearchField.Group>
-            </SearchField>
+            <PanelSearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t("discounts.searchProductsPlaceholder")}
+              clearLabel={t("common.clear")}
+              panel="never"
+            />
 
             <View className="gap-2">
-              <Typography type="body-xs" color="muted" weight="semibold">
+              <Typography type="body-xs" muted weight="semibold">
                 {t("products.filterByCategory")}
               </Typography>
               <ScrollView
@@ -83,28 +84,57 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                 showsHorizontalScrollIndicator={false}
                 contentContainerClassName="gap-2"
               >
-                <Chip
-                  variant={categoryId === null ? "primary" : "secondary"}
+                <PanelChip
+                  variant={categoryId === null ? "primary" : "default"}
+                  selected={categoryId === null}
                   onPress={() => setCategoryId(null)}
                 >
-                  <Chip.Label>{t("common.all")}</Chip.Label>
-                </Chip>
+                  {t("common.all")}
+                </PanelChip>
                 {categories.map((category) => (
-                  <Chip
+                  <PanelChip
                     key={category.id}
-                    variant={categoryId === category.id ? "primary" : "secondary"}
+                    variant={categoryId === category.id ? "primary" : "default"}
+                    selected={categoryId === category.id}
                     onPress={() => setCategoryId(category.id)}
                   >
-                    <Chip.Label>{category.name}</Chip.Label>
-                  </Chip>
+                    {category.name}
+                  </PanelChip>
                 ))}
               </ScrollView>
             </View>
 
             {productsQuery.isLoading ? (
-              <ListSkeleton rows={5} />
+              <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <View
+                    key={`loading-row-${index}`}
+                    className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+                  >
+                    <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                    <View className="flex-1 gap-2">
+                      <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+                      <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+                      <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                    </View>
+                    <PanelListSkeleton className="size-4 rounded-full" />
+                  </View>
+                ))}
+              </View>
             ) : productsQuery.isError ? (
-              <ErrorState error={productsQuery.error} onRetry={productsQuery.refetch} />
+              <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+                <PanelErrorAlert variant="destructive">
+                  <PanelErrorAlert.Indicator />
+                  <PanelErrorAlert.Content>
+                    <PanelErrorAlert.Description>
+                      {getErrorMessage(productsQuery.error)}
+                    </PanelErrorAlert.Description>
+                  </PanelErrorAlert.Content>
+                </PanelErrorAlert>
+                <PanelErrorButton variant="outline" onPress={() => void productsQuery.refetch()}>
+                  {t("common.retry")}
+                </PanelErrorButton>
+              </View>
             ) : products.length === 0 ? (
               <EmptyState className="py-12">
                 <EmptyState.Header>
@@ -117,42 +147,27 @@ export default function DiscountProductsScreen(): React.JSX.Element {
               </EmptyState>
             ) : (
               <Card className="overflow-hidden p-0">
-                <Card.Body className="p-0">
+                <Card.Content className="p-0">
                   {products.map((product, index) => {
                     const selected = selectedProductIdSet.has(product.id);
                     return (
                       <View key={product.id}>
-                        <Pressable
-                          accessibilityRole="checkbox"
-                          accessibilityLabel={product.name}
-                          accessibilityState={{ checked: selected }}
-                          onPress={() => toggleProduct(product.id)}
-                          className={cn(
-                            "min-h-16 flex-row items-center gap-3 px-4 py-3 active:bg-surface-secondary",
-                            selected && "bg-accent-soft"
-                          )}
-                        >
-                          <Checkbox
-                            isSelected={selected}
-                            accessible={false}
-                            pointerEvents="none"
-                            className="shrink-0"
-                          />
-                          <View className="flex-1 gap-0.5">
-                            <Typography type="body-sm" weight={selected ? "semibold" : undefined}>
-                              {product.name}
-                            </Typography>
-                            <Typography type="body-xs" color="muted" className="tabular-nums">
-                              {formatRupiah(product.price)} ·{" "}
-                              {product.category?.name ?? t("navigation.category")}
-                            </Typography>
-                          </View>
-                        </Pressable>
+                        <PanelCheckbox
+                          checked={selected}
+                          onCheckedChange={() => toggleProduct(product.id)}
+                          label={product.name}
+                          description={`${formatRupiah(product.price)} · ${product.category?.name ?? t("navigation.category")}`}
+                          className={
+                            selected ? "min-h-16 px-4 py-3 bg-accent" : "min-h-16 px-4 py-3"
+                          }
+                          labelClassName={selected ? "font-semibold" : undefined}
+                          descriptionClassName="tabular-nums"
+                        />
                         {index < products.length - 1 ? <Separator className="mx-4" /> : null}
                       </View>
                     );
                   })}
-                </Card.Body>
+                </Card.Content>
               </Card>
             )}
           </View>
@@ -168,13 +183,13 @@ export default function DiscountProductsScreen(): React.JSX.Element {
               </Typography>
             </View>
             {productIds.length ? (
-              <Button variant="ghost" size="sm" onPress={() => setProductIds([])}>
-                <Button.Label>{t("common.clear")}</Button.Label>
-              </Button>
+              <PanelButton variant="ghost" size="sm" onPress={() => setProductIds([])}>
+                {t("common.clear")}
+              </PanelButton>
             ) : null}
-            <Button size="sm" isDisabled={!productIds.length} onPress={() => router.back()}>
-              <Button.Label>{t("common.apply")}</Button.Label>
-            </Button>
+            <PanelButton size="sm" disabled={!productIds.length} onPress={() => router.back()}>
+              {t("common.apply")}
+            </PanelButton>
           </View>
         </View>
       </View>

@@ -1,14 +1,19 @@
+import {
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Card as PanelCard,
+  Skeleton as PanelSkeleton,
+  ScrollFade,
+  EmptyState,
+} from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useProducts } from "@/hooks/db/use-products";
-import ErrorState from "@/components/common/error-state";
 import type { POSProduct } from "@/types/pos";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
-import { Card, ScrollShadow, Skeleton } from "heroui-native";
-import { EmptyState } from "heroui-native-pro";
 import { useState } from "react";
 import { FlatList, Platform, RefreshControl, View } from "react-native";
 import ProductCard from "./product-card";
@@ -22,28 +27,6 @@ type Props = {
   onSelectProduct: (product: POSProduct) => void;
   bottomInset?: number;
 };
-
-function ProductCardSkeleton({ width }: { width: number }): JSX.Element {
-  const { t } = useTranslation();
-  return (
-    <View
-      style={{ width: width - 12 }}
-      className="m-1.5"
-      accessibilityLabel={t("pos.loadingProduct")}
-    >
-      <Card className="overflow-hidden rounded-3xl p-0">
-        <Skeleton className="aspect-square w-full rounded-t-3xl" />
-        <Card.Body className="min-h-20 justify-between gap-3 px-3.5 py-3">
-          <Skeleton className="h-4 w-3/4 rounded-md" />
-          <View className="gap-1.5">
-            <Skeleton className="h-3 w-2/5 rounded-md" />
-            <Skeleton className="h-4 w-3/5 rounded-md" />
-          </View>
-        </Card.Body>
-      </Card>
-    </View>
-  );
-}
 
 export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props): JSX.Element {
   const { locale, t } = useTranslation();
@@ -84,26 +67,42 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
   const skeletonItems = Array.from({ length: numColumns * 3 }, (_, index) => index);
 
   return (
-    <ScrollShadow
+    <View
       className="flex-1"
-      LinearGradientComponent={LinearGradient}
       onLayout={(event) => setContainerWidth(Math.floor(event.nativeEvent.layout.width))}
     >
-      <View className="flex-1">
-        {containerWidth > GRID_HORIZONTAL_PADDING ? (
-          isLoading ? (
-            <FlatList
-              data={skeletonItems}
-              key={`product-grid-skeleton-${numColumns}`}
-              numColumns={numColumns}
-              keyExtractor={(item) => `product-skeleton-${item}`}
-              renderItem={() => <ProductCardSkeleton width={cardWidth} />}
-              contentContainerClassName="gap-2 px-3"
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={false}
-              accessibilityLabel={t("pos.loadingProducts")}
-            />
-          ) : (
+      {containerWidth > GRID_HORIZONTAL_PADDING ? (
+        isLoading ? (
+          <FlatList
+            data={skeletonItems}
+            key={`product-grid-skeleton-${numColumns}`}
+            numColumns={numColumns}
+            keyExtractor={(item) => `product-skeleton-${item}`}
+            renderItem={() => (
+              <View
+                style={{ width: cardWidth - 12 }}
+                className="m-1.5"
+                accessibilityLabel={t("pos.loadingProduct")}
+              >
+                <PanelCard className="overflow-hidden rounded-3xl p-0">
+                  <PanelSkeleton className="aspect-square w-full rounded-t-3xl" />
+                  <PanelCard.Content className="min-h-20 justify-between gap-3 px-3.5 py-3">
+                    <PanelSkeleton className="h-4 w-3/4 rounded-md" />
+                    <View className="gap-1.5">
+                      <PanelSkeleton className="h-3 w-2/5 rounded-md" />
+                      <PanelSkeleton className="h-4 w-3/5 rounded-md" />
+                    </View>
+                  </PanelCard.Content>
+                </PanelCard>
+              </View>
+            )}
+            contentContainerClassName="gap-2 px-3"
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={false}
+            accessibilityLabel={t("pos.loadingProducts")}
+          />
+        ) : (
+          <ScrollFade className="flex-1">
             <FlatList
               data={isError ? [] : filtered}
               key={`product-grid-${numColumns}`}
@@ -119,7 +118,19 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
               }
               ListEmptyComponent={
                 isError ? (
-                  <ErrorState error={error} onRetry={refetch} />
+                  <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+                    <PanelErrorAlert variant="destructive">
+                      <PanelErrorAlert.Indicator />
+                      <PanelErrorAlert.Content>
+                        <PanelErrorAlert.Description>
+                          {getErrorMessage(error)}
+                        </PanelErrorAlert.Description>
+                      </PanelErrorAlert.Content>
+                    </PanelErrorAlert>
+                    <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+                      {t("common.retry")}
+                    </PanelErrorButton>
+                  </View>
                 ) : (
                   <EmptyState className="py-20">
                     <EmptyState.Header>
@@ -135,9 +146,9 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
                 )
               }
             />
-          )
-        ) : null}
-      </View>
-    </ScrollShadow>
+          </ScrollFade>
+        )
+      ) : null}
+    </View>
   );
 }

@@ -1,8 +1,19 @@
+import {
+  Button as PanelButton,
+  Typography,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Chip,
+  EmptyState,
+  Table,
+  Typography as PanelTypography,
+  Skeleton as PanelTableSkeleton,
+} from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
+import { compareTableValues } from "@/utils/table-sort";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import ErrorState from "@/components/common/error-state";
-import TableSkeleton from "@/components/common/table-skeleton";
 import { useInventoryMovements } from "@/hooks/db/use-inventory-audit";
 import type { InventoryMovementType } from "@/api/endpoints/inventory-audit";
 import type { TranslationKey } from "@/locales";
@@ -16,12 +27,11 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
-import { Button, Chip, Typography } from "heroui-native";
-import { EmptyState, Table, type TableSortDescriptor } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 
 type Movement = App.Data.Merchant.Inventory.InventoryMovementData;
+type TableSortDescriptor = { column: string; direction: "ascending" | "descending" };
 type MovementFilter = "all" | InventoryMovementType;
 type MovementSortColumn =
   | "type"
@@ -59,17 +69,43 @@ const SORTABLE_COLUMNS = new Set<MovementSortColumn>([
   "moved_at",
 ]);
 const SERVER_SORT_COLUMNS = new Set(["moved_at"]);
+const TABLE_COLUMNS = [
+  { id: "type", width: 150, label: "movements.type" },
+  { id: "item", width: 220, label: "movements.item" },
+  { id: "quantity", width: 150, label: "movements.quantity" },
+  { id: "balance_after", width: 150, label: "movements.balanceAfter" },
+  { id: "cost_per_unit", width: 150, label: "movements.costPerUnit" },
+  { id: "total_cost", width: 150, label: "movements.totalCost" },
+  { id: "source", width: 150, label: "movements.source" },
+  { id: "reason", width: 220, label: "movements.reason" },
+  { id: "actor", width: 170, label: "movements.actor" },
+  { id: "moved_at", width: 180, label: "movements.movedAt" },
+] as const;
+const SKELETON_COLUMN_WIDTHS = [150, 220, 150, 150, 150, 150, 150, 220, 170, 180];
+const SKELETON_CELL_WIDTHS = [
+  "w-32",
+  "w-16",
+  "w-20",
+  "w-20",
+  "w-24",
+  "w-32",
+  "w-20",
+  "w-28",
+  "w-28",
+];
+const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
+const TABLE_WIDTH = TABLE_COLUMNS.reduce((sum, column) => sum + column.width, 0);
 const MOVEMENT_TYPE_COLORS: Record<
   InventoryMovementType,
-  "accent" | "success" | "warning" | "danger"
+  "primary" | "success" | "warning" | "destructive"
 > = {
   opening: "success",
   purchase: "success",
-  sale: "accent",
+  sale: "primary",
   reversal: "warning",
-  adjustment: "accent",
-  waste: "danger",
-  damage: "danger",
+  adjustment: "primary",
+  waste: "destructive",
+  damage: "destructive",
   return: "warning",
 };
 const MOVEMENT_SOURCE_TRANSLATIONS: Partial<Record<string, TranslationKey>> = {
@@ -95,14 +131,6 @@ function getMovementSort(descriptor: TableSortDescriptor): "moved_at" | "-moved_
   const column = String(descriptor.column);
   if (!SERVER_SORT_COLUMNS.has(column)) return "-moved_at";
   return descriptor.direction === "descending" ? "-moved_at" : "moved_at";
-}
-
-function compareValues(a: string | number | null, b: string | number | null): number {
-  if (a === null && b === null) return 0;
-  if (a === null) return 1;
-  if (b === null) return -1;
-  if (typeof a === "number" && typeof b === "number") return a - b;
-  return String(a).localeCompare(String(b));
 }
 
 function getMovementItem(movement: Movement): string {
@@ -133,19 +161,19 @@ function sortMovements(items: Movement[], descriptor: TableSortDescriptor): Move
         comparison = a.balance_after - b.balance_after;
         break;
       case "cost_per_unit":
-        comparison = compareValues(a.cost_per_unit, b.cost_per_unit);
+        comparison = compareTableValues(a.cost_per_unit, b.cost_per_unit);
         break;
       case "total_cost":
-        comparison = compareValues(a.total_cost, b.total_cost);
+        comparison = compareTableValues(a.total_cost, b.total_cost);
         break;
       case "source":
         comparison = a.source.localeCompare(b.source);
         break;
       case "reason":
-        comparison = compareValues(a.reason, b.reason);
+        comparison = compareTableValues(a.reason, b.reason);
         break;
       case "actor":
-        comparison = compareValues(a.actor?.name ?? null, b.actor?.name ?? null);
+        comparison = compareTableValues(a.actor?.name ?? null, b.actor?.name ?? null);
         break;
       case "moved_at":
         comparison = Date.parse(a.moved_at) - Date.parse(b.moved_at);
@@ -153,30 +181,6 @@ function sortMovements(items: Movement[], descriptor: TableSortDescriptor): Move
     }
     return comparison === 0 ? a.id.localeCompare(b.id) : comparison * direction;
   });
-}
-
-function MovementTypeChip({ type }: { type: InventoryMovementType }): React.JSX.Element {
-  const { t } = useTranslation();
-  return (
-    <Chip color={MOVEMENT_TYPE_COLORS[type]} size="sm" variant="soft">
-      <Chip.Label>{t(`movements.types.${type}` as TranslationKey)}</Chip.Label>
-    </Chip>
-  );
-}
-
-function MovementSourceChip({ source }: { source: string }): React.JSX.Element {
-  const { t } = useTranslation();
-  const normalizedSource = source.trim().toLowerCase().replace(/[_-]+/g, " ");
-  const translationKey = MOVEMENT_SOURCE_TRANSLATIONS[normalizedSource];
-  const label = translationKey ? t(translationKey) : normalizeInventorySource(source);
-
-  return (
-    <Chip color="default" size="sm" variant="soft">
-      <Chip.Label numberOfLines={1} ellipsizeMode="tail">
-        {label}
-      </Chip.Label>
-    </Chip>
-  );
 }
 
 export default function InventoryMovementsScreen(): React.JSX.Element {
@@ -218,9 +222,57 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {query.isLoading ? (
-          <TableSkeleton columnWidths={[150, 220, 150, 150, 150, 150, 150, 220, 170, 180]} />
+          <ScrollView className="flex-1" contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6">
+            <ScrollView horizontal>
+              <View
+                style={{ width: SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) }}
+                accessibilityRole="progressbar"
+              >
+                <Table columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
+                  <Table.Header>
+                    <Table.Row>
+                      {SKELETON_COLUMN_WIDTHS.map((_, index) => (
+                        <Table.Head key={`heading-${index}`}>
+                          <PanelTableSkeleton className="h-3 w-20 rounded-md" />
+                        </Table.Head>
+                      ))}
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {Array.from({ length: 6 }, (_, rowIndex) => (
+                      <Table.Row key={`row-${rowIndex}`}>
+                        {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
+                          <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
+                            <PanelTableSkeleton
+                              className={
+                                columnIndex === 6
+                                  ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
+                                  : `h-4 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-md`
+                              }
+                            />
+                          </Table.Cell>
+                        ))}
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              </View>
+            </ScrollView>
+          </ScrollView>
         ) : query.isError ? (
-          <ErrorState error={query.error} onRetry={query.refetch} />
+          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+            <PanelErrorAlert variant="destructive">
+              <PanelErrorAlert.Indicator />
+              <PanelErrorAlert.Content>
+                <PanelErrorAlert.Description>
+                  {getErrorMessage(query.error)}
+                </PanelErrorAlert.Description>
+              </PanelErrorAlert.Content>
+            </PanelErrorAlert>
+            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+              {t("common.retry")}
+            </PanelErrorButton>
+          </View>
         ) : (
           <ScrollView
             className="flex-1"
@@ -230,45 +282,113 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
             }
           >
             <View className="flex-1 items-center w-full">
-              <Table sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor}>
-                <Table.ScrollContainer className="w-full self-center">
-                  <Table.Content className="w-full">
+              <ScrollView horizontal showsHorizontalScrollIndicator className="w-full">
+                <View style={{ width: TABLE_WIDTH }}>
+                  <Table columns={COLUMN_LAYOUT}>
                     <Table.Header>
-                      <Table.Column id="type" width={150} allowsSorting>
-                        {t("movements.type")}
-                      </Table.Column>
-                      <Table.Column id="item" width={220} allowsSorting>
-                        {t("movements.item")}
-                      </Table.Column>
-                      <Table.Column id="quantity" width={150} allowsSorting>
-                        {t("movements.quantity")}
-                      </Table.Column>
-                      <Table.Column id="balance_after" width={150} allowsSorting>
-                        {t("movements.balanceAfter")}
-                      </Table.Column>
-                      <Table.Column id="cost_per_unit" width={150} allowsSorting>
-                        {t("movements.costPerUnit")}
-                      </Table.Column>
-                      <Table.Column id="total_cost" width={150} allowsSorting>
-                        {t("movements.totalCost")}
-                      </Table.Column>
-                      <Table.Column id="source" width={150} allowsSorting>
-                        {t("movements.source")}
-                      </Table.Column>
-                      <Table.Column id="reason" width={220} allowsSorting>
-                        {t("movements.reason")}
-                      </Table.Column>
-                      <Table.Column id="actor" width={170} allowsSorting>
-                        {t("movements.actor")}
-                      </Table.Column>
-                      <Table.Column id="moved_at" width={180} allowsSorting>
-                        {t("movements.movedAt")}
-                      </Table.Column>
+                      <Table.Row>
+                        {TABLE_COLUMNS.map((column) => (
+                          <Table.Head
+                            key={column.id}
+                            sortable
+                            sortDirection={
+                              sortDescriptor.column === column.id
+                                ? sortDescriptor.direction === "ascending"
+                                  ? "asc"
+                                  : "desc"
+                                : undefined
+                            }
+                            onPress={() =>
+                              setSortDescriptor((previous) => ({
+                                column: column.id,
+                                direction:
+                                  previous.column === column.id &&
+                                  previous.direction === "ascending"
+                                    ? "descending"
+                                    : "ascending",
+                              }))
+                            }
+                          >
+                            {t(column.label)}
+                          </Table.Head>
+                        ))}
+                      </Table.Row>
                     </Table.Header>
-                    <Table.Body
-                      items={sortedMovements}
-                      keyExtractor={(movement) => movement.id}
-                      renderEmptyState={() => (
+                    {sortedMovements.length ? (
+                      <Table.Body>
+                        {sortedMovements.map((movement) => {
+                          const normalizedSource = movement.source
+                            ?.trim()
+                            .toLowerCase()
+                            .replace(/[_-]+/g, " ");
+                          const sourceKey = normalizedSource
+                            ? MOVEMENT_SOURCE_TRANSLATIONS[normalizedSource]
+                            : undefined;
+                          return (
+                            <Table.Row key={movement.id}>
+                              <Table.Cell>
+                                <Chip size="sm" variant={MOVEMENT_TYPE_COLORS[movement.type]}>
+                                  {t(`movements.types.${movement.type}` as TranslationKey)}
+                                </Chip>
+                              </Table.Cell>
+                              <Table.Cell>
+                                <PanelTypography type="body-sm" weight="semibold" numberOfLines={1}>
+                                  {getMovementItem(movement)}
+                                </PanelTypography>
+                              </Table.Cell>
+                              <Table.Cell>
+                                <View className="flex-row items-center gap-2">
+                                  <PanelTypography type="body-sm" className="tabular-nums">
+                                    {formatSignedQuantity(movement.quantity)}
+                                  </PanelTypography>
+                                  {movement.ingredient?.base_unit ? (
+                                    <Chip size="sm">{movement.ingredient.base_unit}</Chip>
+                                  ) : null}
+                                </View>
+                              </Table.Cell>
+                              <Table.Cell labelClassName="tabular-nums">
+                                {formatInventoryQuantity(movement.balance_after)}
+                              </Table.Cell>
+                              <Table.Cell labelClassName="tabular-nums">
+                                {movement.cost_per_unit === null
+                                  ? "—"
+                                  : formatRupiah(movement.cost_per_unit)}
+                              </Table.Cell>
+                              <Table.Cell labelClassName="tabular-nums">
+                                {movement.total_cost === null
+                                  ? "—"
+                                  : formatRupiah(movement.total_cost)}
+                              </Table.Cell>
+                              <Table.Cell>
+                                {movement.source ? (
+                                  <Chip size="sm">
+                                    {sourceKey
+                                      ? t(sourceKey)
+                                      : normalizeInventorySource(movement.source)}
+                                  </Chip>
+                                ) : (
+                                  "—"
+                                )}
+                              </Table.Cell>
+                              <Table.Cell>
+                                <PanelTypography type="body-sm" numberOfLines={1}>
+                                  {movement.reason ?? "—"}
+                                </PanelTypography>
+                              </Table.Cell>
+                              <Table.Cell>
+                                <PanelTypography type="body-sm" numberOfLines={1}>
+                                  {movement.actor?.name ?? "—"}
+                                </PanelTypography>
+                              </Table.Cell>
+                              <Table.Cell labelClassName="tabular-nums">
+                                {formatDateTime(movement.moved_at)}
+                              </Table.Cell>
+                            </Table.Row>
+                          );
+                        })}
+                      </Table.Body>
+                    ) : (
+                      <Table.Empty>
                         <EmptyState className="py-16">
                           <EmptyState.Header>
                             <EmptyState.Media variant="icon">
@@ -284,82 +404,28 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                             </EmptyState.Description>
                           </EmptyState.Header>
                         </EmptyState>
-                      )}
-                    >
-                      {(movement) => (
-                        <Table.Row id={movement.id}>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            <MovementTypeChip type={movement.type} />
-                          </Table.Cell>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            <Typography weight="semibold" numberOfLines={1}>
-                              {getMovementItem(movement)}
-                            </Typography>
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            <View className="flex-row items-center gap-2">
-                              <Typography className="tabular-nums">
-                                {formatSignedQuantity(movement.quantity)}
-                              </Typography>
-                              {movement.ingredient?.base_unit ? (
-                                <Chip size="sm" color="default" variant="soft">
-                                  <Chip.Label>{movement.ingredient.base_unit}</Chip.Label>
-                                </Chip>
-                              ) : null}
-                            </View>
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatInventoryQuantity(movement.balance_after)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {movement.cost_per_unit === null
-                              ? "—"
-                              : formatRupiah(movement.cost_per_unit)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {movement.total_cost === null ? "—" : formatRupiah(movement.total_cost)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            {movement.source ? (
-                              <MovementSourceChip source={movement.source} />
-                            ) : (
-                              "—"
-                            )}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            {movement.reason ?? "—"}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            {movement.actor?.name ?? "—"}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatDateTime(movement.moved_at)}
-                          </Table.Cell>
-                        </Table.Row>
-                      )}
-                    </Table.Body>
-                  </Table.Content>
-                </Table.ScrollContainer>
-                {query.hasNextPage ? (
-                  <Table.Footer className="flex-row items-center justify-between gap-3">
-                    <Typography type="body-xs" color="muted">
-                      {t("movements.loadedCount", { count: sortedMovements.length })}
-                    </Typography>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => query.fetchNextPage()}
-                      isDisabled={query.isFetchingNextPage}
-                    >
-                      <Button.Label>
-                        {query.isFetchingNextPage
-                          ? t("movements.loadingMore")
-                          : t("movements.loadMore")}
-                      </Button.Label>
-                    </Button>
-                  </Table.Footer>
-                ) : null}
-              </Table>
+                      </Table.Empty>
+                    )}
+                  </Table>
+                </View>
+              </ScrollView>
+              {query.hasNextPage ? (
+                <View className="w-full flex-row items-center justify-between gap-3 p-4">
+                  <Typography type="body-xs" muted>
+                    {t("movements.loadedCount", { count: sortedMovements.length })}
+                  </Typography>
+                  <PanelButton
+                    size="sm"
+                    variant="ghost"
+                    onPress={() => query.fetchNextPage()}
+                    disabled={query.isFetchingNextPage}
+                  >
+                    {query.isFetchingNextPage
+                      ? t("movements.loadingMore")
+                      : t("movements.loadMore")}
+                  </PanelButton>
+                </View>
+              ) : null}
             </View>
           </ScrollView>
         )}

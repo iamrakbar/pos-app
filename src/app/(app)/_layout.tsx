@@ -7,7 +7,7 @@ import { useNavigationTheme } from "@/utils/navigation-theme";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button } from "heroui-native";
+import { Button } from "panelui-native";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
@@ -71,7 +71,7 @@ export default function AppLayout() {
               accessibilityLabel={t("navigation.openPosAccessibility")}
             >
               <AppIcon icon={AppIcons.cashier} size={16} color={accentForeground} />
-              <Button.Label>{t("navigation.openPos")}</Button.Label>
+              {t("navigation.openPos")}
             </Button>
           ),
         }}

@@ -1,20 +1,25 @@
+import { Typography , Separator ,
+  Fab,
+  PlusIcon,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Skeleton as PanelListSkeleton,
+ EmptyState, Chip } from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import CreateFAB from "@/components/common/create-fab";
-import { EmptyState } from "heroui-native-pro";
-import ErrorState from "@/components/common/error-state";
-import { ListSkeleton } from "@/components/common/list-skeleton";
 import { useDiscounts } from "@/hooks/db/use-discounts";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { formatDate, formatRupiah } from "@/utils/format";
 import { Stack, useRouter } from "expo-router";
-import { Chip, Separator, Typography } from "heroui-native";
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 
 export default function DiscountsScreen(): React.JSX.Element {
+  const fabInsets = useSafeAreaInsets();
   const { t } = useTranslation();
   const router = useRouter();
   const muted = useCSSVariable("--color-muted-foreground") as string;
@@ -57,9 +62,36 @@ export default function DiscountsScreen(): React.JSX.Element {
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
         {query.isLoading ? (
-          <ListSkeleton />
+          <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
+            {Array.from({ length: 6 }, (_, index) => (
+              <View
+                key={`loading-row-${index}`}
+                className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+              >
+                <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                <View className="flex-1 gap-2">
+                  <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+                  <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+                  <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                </View>
+                <PanelListSkeleton className="size-4 rounded-full" />
+              </View>
+            ))}
+          </View>
         ) : query.isError ? (
-          <ErrorState error={query.error} onRetry={query.refetch} />
+          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+            <PanelErrorAlert variant="destructive">
+              <PanelErrorAlert.Indicator />
+              <PanelErrorAlert.Content>
+                <PanelErrorAlert.Description>
+                  {getErrorMessage(query.error)}
+                </PanelErrorAlert.Description>
+              </PanelErrorAlert.Content>
+            </PanelErrorAlert>
+            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+              {t("common.retry")}
+            </PanelErrorButton>
+          </View>
         ) : query.data?.length === 0 ? (
           <View className="flex-1">
             <EmptyState className="py-20">
@@ -87,7 +119,7 @@ export default function DiscountsScreen(): React.JSX.Element {
                 className="flex-row items-center gap-3 px-4 py-4 active:bg-surface-secondary md:px-6"
                 onPress={() => router.push(`/settings/discounts/${discount.id}` as never)}
               >
-                <View className="h-11 w-11 items-center justify-center rounded-full bg-accent-soft">
+                <View className="h-11 w-11 items-center justify-center rounded-full bg-accent">
                   <AppIcon icon={AppIcons.priceTag} size={20} color={muted} />
                 </View>
                 <View className="flex-1 gap-1">
@@ -100,13 +132,13 @@ export default function DiscountsScreen(): React.JSX.Element {
                     >
                       {discount.name}
                     </Typography>
-                    <Chip color={discount.active ? "success" : "default"} size="sm" variant="soft">
+                    <Chip variant={discount.active ? "success" : "default"} size="sm">
                       <Chip.Label>
                         {discount.active ? t("common.active") : t("common.inactive")}
                       </Chip.Label>
                     </Chip>
                   </View>
-                  <Typography type="body-xs" color="muted">
+                  <Typography type="body-xs" muted>
                     {discount.unit === "percentage"
                       ? `${discount.value}%`
                       : formatRupiah(discount.value)}
@@ -115,7 +147,7 @@ export default function DiscountsScreen(): React.JSX.Element {
                       : ` · ${t("discounts.noProductsSelected")}`}
                   </Typography>
                   {discount.start || discount.end ? (
-                    <Typography type="body-xs" color="muted">
+                    <Typography type="body-xs" muted>
                       {discount.start
                         ? formatDate(new Date(`${discount.start}T00:00:00`))
                         : t("discounts.noStart")}{" "}
@@ -131,7 +163,10 @@ export default function DiscountsScreen(): React.JSX.Element {
             )}
           />
         )}
-        <CreateFAB
+        <Fab
+          icon={<PlusIcon size={22} />}
+          placement="bottom-right"
+          style={{ bottom: Math.max(fabInsets.bottom, 24), right: 24, zIndex: 50 }}
           accessibilityLabel={t("discounts.addAccessibility")}
           onPress={() => router.push("/settings/discounts/new" as never)}
         />

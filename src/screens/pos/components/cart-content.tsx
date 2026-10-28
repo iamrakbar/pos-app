@@ -1,15 +1,28 @@
+import {
+  Typography,
+  Separator,
+  EmptyState,
+  Skeleton,
+  TimePicker as PanelTimePicker,
+  Button as PanelButton,
+  Select as PanelSelect,
+} from "panelui-native";
+import {
+  TIME_PICKER_INTERVAL_MINUTES,
+  formatTimeValue,
+  getNextPickupTime,
+  isPastPickupTime,
+} from "@/utils/pickup-time";
 import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { formatRupiah } from "@/utils/format";
 import { useProducts } from "@/hooks/db/use-products";
 import { useTables } from "@/hooks/db/use-tables";
 import { usePOSStore } from "@/stores/use-pos-store";
-import { Button, Select, Separator, Skeleton, Typography } from "heroui-native";
 import type { JSX } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { EmptyState, TimePicker } from "heroui-native-pro";
 import { useTrueSheet } from "@lodev09/react-native-true-sheet";
 import CartItemRow from "./cart-item-row";
 import CheckoutSheet, { POS_CHECKOUT_SHEET_NAME } from "./checkout-sheet";
@@ -27,69 +40,6 @@ import Animated from "react-native-reanimated";
 import ParkedOrdersPanel from "./parked-orders-panel";
 import type { CartItem } from "@/types/cart";
 import type { CheckoutFormState, POSProduct, POSTable } from "@/types/pos";
-
-const TIME_PICKER_INTERVAL_MINUTES = 5;
-
-function formatTimeValue(hour: number, minute: number): string {
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
-function getNextPickupTime(): string | null {
-  const now = new Date();
-  const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes() + 1;
-  const roundedMinutes =
-    Math.ceil(minutesSinceMidnight / TIME_PICKER_INTERVAL_MINUTES) * TIME_PICKER_INTERVAL_MINUTES;
-
-  if (roundedMinutes >= 24 * 60) return null;
-
-  return formatTimeValue(Math.floor(roundedMinutes / 60), roundedMinutes % 60);
-}
-
-function isPastPickupTime(value: string): boolean {
-  const [hour, minute] = value.split(":").map(Number);
-  const now = new Date();
-
-  return hour * 60 + minute <= now.getHours() * 60 + now.getMinutes();
-}
-
-function CartItemSkeleton(): JSX.Element {
-  return (
-    <View className="gap-3 border-b border-border py-3">
-      <View className="flex-row items-center justify-between gap-3">
-        <Skeleton className="h-5 w-3/5 rounded-md" />
-        <Skeleton className="h-4 w-1/4 rounded-md" />
-      </View>
-      <Skeleton className="h-4 w-2/5 rounded-md" />
-      <View className="flex-row items-center justify-between gap-4">
-        <Skeleton className="h-10 w-10 rounded-md" />
-        <Skeleton className="h-10 w-32 rounded-full" />
-      </View>
-    </View>
-  );
-}
-
-function CartControlsSkeleton({
-  orderType,
-  showClearCart,
-}: {
-  orderType: "dine-in" | "takeaway";
-  showClearCart: boolean;
-}): JSX.Element {
-  return (
-    <>
-      <View className="h-12 flex-row items-center gap-2">
-        <Skeleton className="h-10 w-24 rounded-md" />
-        <Skeleton
-          className={
-            orderType === "dine-in" ? "h-10 min-w-20 flex-1 rounded-md" : "h-10 w-28 rounded-full"
-          }
-        />
-        <Skeleton className="h-10 w-10 rounded-md" />
-      </View>
-      {showClearCart && <Skeleton className="h-10 w-10 rounded-md" />}
-    </>
-  );
-}
 
 function CartOrderControls({
   checkoutForm,
@@ -110,17 +60,29 @@ function CartOrderControls({
   colorAccent: string;
   updateCheckoutForm: (patch: Partial<CheckoutFormState>) => void;
 }): JSX.Element {
+  const nextPickupTime = getNextPickupTime();
+  const pickupValue = checkoutForm.pickup_time
+    ? {
+        hour: Number(checkoutForm.pickup_time.slice(0, 2)),
+        minute: Number(checkoutForm.pickup_time.slice(3, 5)),
+      }
+    : undefined;
+  const minimumPickupValue = nextPickupTime
+    ? {
+        hour: Number(nextPickupTime.slice(0, 2)),
+        minute: Number(nextPickupTime.slice(3, 5)),
+      }
+    : undefined;
+
   return (
     <View className="h-12 flex-row items-center gap-2">
-      <Select
-        presentation={choicePresentation}
-        value={{
-          value: checkoutForm.order_type,
-          label: checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway"),
-        }}
-        onValueChange={(option) => {
-          if (!option) return;
-          const orderType = option.value as "dine-in" | "takeaway";
+      <PanelSelect
+        presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+        value={checkoutForm.order_type}
+        size="sm"
+        title={t("orders.detail.orderType")}
+        onValueChange={(value) => {
+          const orderType = value as "dine-in" | "takeaway";
           updateCheckoutForm({
             order_type: orderType,
             table_id: orderType === "dine-in" ? checkoutForm.table_id : null,
@@ -133,59 +95,36 @@ function CartOrderControls({
           });
         }}
       >
-        <Select.Trigger asChild variant="unstyled">
-          <Button variant="secondary" size="sm">
-            <Button.Label className="text-sm" numberOfLines={1}>
-              {checkoutForm.order_type === "dine-in" ? t("pos.dineIn") : t("pos.takeaway")}
-            </Button.Label>
-          </Button>
-        </Select.Trigger>
-        <Select.Portal>
-          <Select.Overlay />
-          <Select.Content
-            presentation={choicePresentation}
-            width={choicePresentation === "popover" ? 220 : undefined}
-          >
-            <Select.Item value="dine-in" label={t("pos.dineIn")} />
-            <Select.Item value="takeaway" label={t("pos.takeaway")} />
-          </Select.Content>
-        </Select.Portal>
-      </Select>
+        <PanelSelect.Item value="dine-in" label={t("pos.dineIn")} />
+        <PanelSelect.Item value="takeaway" label={t("pos.takeaway")} />
+      </PanelSelect>
 
       {checkoutForm.order_type === "dine-in" ? (
         <TableSelectionButton selectedTable={selectedTable} />
       ) : (
-        <TimePicker
-          hourFormat={24}
-          minuteInterval={TIME_PICKER_INTERVAL_MINUTES}
+        <PanelTimePicker
+          hourCycle={24}
+          minuteStep={TIME_PICKER_INTERVAL_MINUTES}
           locale={getLocaleTag(locale)}
-          value={
-            checkoutForm.pickup_time
-              ? { value: `${checkoutForm.pickup_time}:00`, label: checkoutForm.pickup_time }
-              : undefined
-          }
-          onValueChange={(option) =>
-            updateCheckoutForm({ pickup_time: option?.value.slice(0, 5) ?? null })
-          }
+          presentation={pickerPresentation}
+          value={pickupValue}
+          minTime={minimumPickupValue}
+          disabled={!nextPickupTime}
+          onValueChange={(value) => {
+            const selectedTime = formatTimeValue(value.hour, value.minute);
+            updateCheckoutForm({
+              pickup_time: isPastPickupTime(selectedTime) ? getNextPickupTime() : selectedTime,
+            });
+          }}
         >
-          <TimePicker.Select presentation={pickerPresentation}>
-            <TimePicker.Trigger className="h-10 py-0 items-center bg-background-secondary rounded-full shadow-none">
-              <Text className="text-accent size-sm">
-                {checkoutForm.pickup_time ?? t("pos.pickupTime")}
-              </Text>
-              <AppIcon icon={AppIcons.time} size={12} color={colorAccent} />
-            </TimePicker.Trigger>
-            <TimePicker.Portal>
-              <TimePicker.Overlay />
-              <TimePicker.Content
-                presentation={pickerPresentation}
-                width={pickerPresentation === "popover" ? 160 : undefined}
-              >
-                <TimePicker.Wheel />
-              </TimePicker.Content>
-            </TimePicker.Portal>
-          </TimePicker.Select>
-        </TimePicker>
+          <PanelButton
+            variant="secondary"
+            size="sm"
+            endContent={<AppIcon icon={AppIcons.time} size={12} color={colorAccent} />}
+          >
+            {checkoutForm.pickup_time ?? t("pos.pickupTime")}
+          </PanelButton>
+        </PanelTimePicker>
       )}
       <ParkedOrdersPanel mode="list" />
     </View>
@@ -220,10 +159,20 @@ function CartHeader({
   return (
     <View className="flex-row items-center justify-between gap-2 px-4 py-4">
       {isLoading ? (
-        <CartControlsSkeleton
-          orderType={checkoutForm.order_type}
-          showClearCart={cartProducts.length > 0}
-        />
+        <>
+          <View className="h-12 flex-row items-center gap-2">
+            <Skeleton className="h-10 w-24 rounded-md" />
+            <Skeleton
+              className={
+                checkoutForm.order_type === "dine-in"
+                  ? "h-10 min-w-20 flex-1 rounded-md"
+                  : "h-10 w-28 rounded-full"
+              }
+            />
+            <Skeleton className="h-10 w-10 rounded-md" />
+          </View>
+          {cartProducts.length > 0 ? <Skeleton className="h-10 w-10 rounded-md" /> : null}
+        </>
       ) : (
         <>
           <CartOrderControls
@@ -237,9 +186,14 @@ function CartHeader({
             updateCheckoutForm={updateCheckoutForm}
           />
           {cartProducts.length > 0 ? (
-            <Button variant="ghost" isIconOnly onPress={resetCurrentOrder}>
+            <PanelButton
+              variant="ghost"
+              size="icon"
+              accessibilityLabel={t("pos.clearCart")}
+              onPress={resetCurrentOrder}
+            >
               <AppIcon icon={AppIcons.trash} size={16} color={colorDanger} />
-            </Button>
+            </PanelButton>
           ) : null}
         </>
       )}
@@ -274,7 +228,17 @@ function CartItems({
           accessibilityState={{ busy: true }}
         >
           {[0, 1].map((item) => (
-            <CartItemSkeleton key={item} />
+            <View key={item} className="gap-3 border-b border-border py-3">
+              <View className="flex-row items-center justify-between gap-3">
+                <Skeleton className="h-5 w-3/5 rounded-md" />
+                <Skeleton className="h-4 w-1/4 rounded-md" />
+              </View>
+              <Skeleton className="h-4 w-2/5 rounded-md" />
+              <View className="flex-row items-center justify-between gap-4">
+                <Skeleton className="h-10 w-10 rounded-md" />
+                <Skeleton className="h-10 w-32 rounded-full" />
+              </View>
+            </View>
           ))}
         </View>
       ) : cartProducts.length === 0 ? (
@@ -323,7 +287,7 @@ function CartFooter({
           </>
         ) : (
           <>
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-sm" muted>
               {t(itemCount === 1 ? "pos.subtotalItemsOne" : "pos.subtotalItemsOther", {
                 count: itemCount,
               })}
@@ -343,9 +307,13 @@ function CartFooter({
         ) : (
           <>
             <ParkedOrdersPanel mode="park" isDisabled={cartProducts.length === 0} />
-            <Button className="flex-1" onPress={onCheckout} isDisabled={cartProducts.length === 0}>
+            <PanelButton
+              className="flex-1"
+              onPress={onCheckout}
+              disabled={cartProducts.length === 0}
+            >
               {t("navigation.checkout")}
-            </Button>
+            </PanelButton>
           </>
         )}
       </View>

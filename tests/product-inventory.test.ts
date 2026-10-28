@@ -237,6 +237,8 @@ function saveTestInput(
     createMutation,
     updateMutation,
     updateInventoryMutation,
+    inventoryEnabled: true,
+    inventoryRecipeEnabled: true,
     inventoryValues: { inventory_mode: "unlimited", cost: null, stock_alert: null },
     applyServerErrors: () => false,
     setError: ((field: keyof ProductFormValues, error: unknown) =>

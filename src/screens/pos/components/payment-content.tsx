@@ -1,4 +1,10 @@
-import { useToast } from "panelui-native";
+import { Surface , Typography , Separator ,
+  Button as PanelDialogButton,
+  Dialog,
+  Accordion,
+  Countdown,
+  Typography as PanelTypography,
+  useToast, Card, cn, Chip as PanelChip } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { usePaymentStatus } from "@/hooks/db/use-payment-status";
@@ -6,12 +12,10 @@ import { formatRupiah } from "@/utils/format";
 import { getErrorMessage } from "@/api/api-error";
 import { isExpired } from "@/api/mappers/checkout";
 import { getPaymentStatus } from "@/api/mappers/order";
-import ActionDialog from "@/components/common/action-dialog";
-import Countdown from "@/components/common/countdown";
-import QrUrlDisclosure from "@/components/common/qr-url-disclosure";
-import { Button, Card, Chip, cn, Separator, Surface, Typography } from "heroui-native";
+import { countdownTimestamp, useCountdownLabel } from "@/hooks/use-countdown-label";
+import { statusChipVariant } from "@/utils/status-chip-variant";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
@@ -89,6 +93,8 @@ function PaymentQrPanel({
   onExpire: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
+  const target = countdownTimestamp(paymentSession.expires_at);
+  const countdownLabel = useCountdownLabel(target, t("payment.timeRemaining"));
 
   return (
     <Surface
@@ -100,7 +106,7 @@ function PaymentQrPanel({
           <Typography type="body-sm" weight="semibold">
             {t("payment.scanTitle")}
           </Typography>
-          <Typography type="body-xs" color="muted">
+          <Typography type="body-xs" muted>
             {t("payment.scanInstruction")}
           </Typography>
         </View>
@@ -127,19 +133,32 @@ function PaymentQrPanel({
             isWide ? "h-72 w-72" : "h-64 w-64"
           )}
         >
-          <Typography type="body-sm" color="muted" className="mt-3 text-center">
+          <Typography type="body-sm" muted className="mt-3 text-center">
             {sessionExpired ? t("payment.qrExpired") : t("payment.qrUnavailable")}
           </Typography>
         </View>
       )}
 
-      {canShowQr ? (
-        <Countdown
-          expiresAt={paymentSession.expires_at}
-          prefix={t("payment.timeRemaining")}
-          prominent
-          onExpire={onExpire}
-        />
+      {canShowQr && target !== null ? (
+        <View className="flex-row items-center gap-2 rounded-full bg-warning/10 px-3 py-1">
+          <PanelTypography
+            type="body-sm"
+            weight="semibold"
+            className="text-warning"
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          >
+            {t("payment.timeRemaining")}
+          </PanelTypography>
+          <Countdown
+            to={target}
+            variant="inline"
+            size="sm"
+            units={["hours", "minutes", "seconds"]}
+            onComplete={onExpire}
+            {...countdownLabel}
+          />
+        </View>
       ) : null}
     </Surface>
   );
@@ -166,7 +185,7 @@ function PaymentInfoPanel({
     <View className={isWide ? "flex-1 gap-5" : "w-full gap-5"}>
       <Surface className={cn("gap-5 p-5", isWide && "flex-1 h-full")}>
         <View className="gap-1">
-          <Typography type="body-sm" color="muted">
+          <Typography type="body-sm" muted>
             {t("payment.total")}
           </Typography>
           <Typography type="h2" weight="bold" className="tabular-nums">
@@ -176,15 +195,15 @@ function PaymentInfoPanel({
         <Separator />
         <View className="gap-3">
           <View className="flex-row items-center justify-between gap-3">
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-sm" muted>
               {t("payment.status")}
             </Typography>
-            <Chip color={status.color} size="sm" variant="soft">
-              <Chip.Label>{status.label}</Chip.Label>
-            </Chip>
+            <PanelChip variant={statusChipVariant(status.color)} size="sm">
+              <PanelChip.Label>{status.label}</PanelChip.Label>
+            </PanelChip>
           </View>
           <View className="flex-row items-start justify-between gap-4">
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-sm" muted>
               {t("payment.method")}
             </Typography>
             <Typography type="body-sm" weight="semibold" className="flex-1 text-right">
@@ -192,7 +211,7 @@ function PaymentInfoPanel({
             </Typography>
           </View>
           <View className="flex-row items-start justify-between gap-4">
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-sm" muted>
               {t("payment.transaction")}
             </Typography>
             <Typography type="body-xs" weight="semibold" className="flex-1 text-right font-mono">
@@ -201,7 +220,7 @@ function PaymentInfoPanel({
           </View>
           {paymentSession.reference ? (
             <View className="flex-row items-start justify-between gap-4">
-              <Typography type="body-sm" color="muted">
+              <Typography type="body-sm" muted>
                 {t("payment.reference")}
               </Typography>
               <Typography type="body-xs" weight="semibold" className="flex-1 text-right font-mono">
@@ -211,22 +230,22 @@ function PaymentInfoPanel({
           ) : null}
         </View>
         {paymentStatus.isError ? (
-          <Typography type="body-xs" className="text-danger">
+          <Typography type="body-xs" className="text-destructive-foreground">
             {getErrorMessage(paymentStatus.error)}
           </Typography>
         ) : null}
       </Surface>
       {paymentDetails?.code || paymentDetails?.extra ? (
-        <Card className="gap-2">
-          <Card.Header>
+        <Card className="gap-2 p-4">
+          <Card.Header className="p-0">
             <Typography type="body-sm" weight="semibold">
               {t("payment.details")}
             </Typography>
           </Card.Header>
-          <Card.Body>
+          <Card.Content className="p-0">
             {paymentDetails.code ? (
               <Surface variant="secondary">
-                <Typography type="body-xs" color="muted">
+                <Typography type="body-xs" muted>
                   {t("payment.code")}
                 </Typography>
                 <Typography type="body-xs" weight="semibold" className="font-mono" selectable>
@@ -234,9 +253,9 @@ function PaymentInfoPanel({
                 </Typography>
               </Surface>
             ) : null}
-          </Card.Body>
+          </Card.Content>
           {paymentDetails.extra ? (
-            <Card.Footer>
+            <Card.Footer className="p-0">
               <Typography type="body-xs" selectable>
                 {paymentDetails.extra}
               </Typography>
@@ -245,7 +264,23 @@ function PaymentInfoPanel({
         </Card>
       ) : null}
 
-      {showQrUrl ? <QrUrlDisclosure url={paymentSession.qr_url!} /> : null}
+      {showQrUrl ? (
+        <Accordion hideSeparator className="rounded-lg bg-secondary px-3">
+          <Accordion.Item value="qr-image-url">
+            <Accordion.Trigger className="py-2.5">
+              <PanelTypography type="body-xs" weight="semibold" muted className="flex-1">
+                {t("payment.qrImageUrl")}
+              </PanelTypography>
+              <Accordion.Indicator />
+            </Accordion.Trigger>
+            <Accordion.Content className="pb-3">
+              <PanelTypography selectable type="body-xs">
+                {paymentSession.qr_url!}
+              </PanelTypography>
+            </Accordion.Content>
+          </Accordion.Item>
+        </Accordion>
+      ) : null}
     </View>
   );
 }
@@ -260,23 +295,24 @@ function PaymentContentFooter({
   onCheck: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
+  const primaryForegroundColor = useCSSVariable("--color-primary-foreground") as string;
 
   return (
     <View className="border-t border-border bg-surface px-safe pb-safe">
       <View className="w-full max-w-5xl self-center flex-row gap-3 px-5 py-4">
-        <Button variant="outline" onPress={onClose}>
-          <Button.Label>{t("common.close")}</Button.Label>
-        </Button>
-        <Button className="flex-1" onPress={onCheck} isDisabled={paymentStatus.isPending}>
+        <PanelDialogButton variant="outline" onPress={onClose}>
+          {t("common.close")}
+        </PanelDialogButton>
+        <PanelDialogButton className="flex-1" onPress={onCheck} disabled={paymentStatus.isPending}>
           {paymentStatus.isPending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={primaryForegroundColor} />
           ) : (
             <>
-              <AppIcon icon={AppIcons.refresh} size={16} color="white" />
-              <Button.Label className="ml-2">{t("payment.checkStatus")}</Button.Label>
+              <AppIcon icon={AppIcons.refresh} size={16} color={primaryForegroundColor} />
+              {t("payment.checkStatus")}
             </>
           )}
-        </Button>
+        </PanelDialogButton>
       </View>
     </View>
   );
@@ -293,6 +329,7 @@ export function PaymentContent({
   const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const { isWide } = useResponsiveLayout();
   const [expiredSessionKey, setExpiredSessionKey] = useState<string | null>(null);
+  const completedOrderRef = useRef<string | null>(null);
   const buildVariant = Constants.expoConfig?.extra?.buildVariant;
   const showQrUrl =
     (buildVariant === "development" || buildVariant === "preview") && !!paymentSession?.qr_url;
@@ -313,6 +350,8 @@ export function PaymentContent({
         const status = getPaymentStatus(data.payment_status);
 
         if (data.is_successful) {
+          if (completedOrderRef.current === paymentSession.order_id) return;
+          completedOrderRef.current = paymentSession.order_id;
           toast.show({ variant: "success", label: t("payment.confirmed") });
           onPaymentSuccess?.();
           return;
@@ -356,19 +395,18 @@ export function PaymentContent({
             <Typography type="h4" weight="bold">
               {t("navigation.payment")}
             </Typography>
-            <Typography type="body-xs" color="muted" numberOfLines={1}>
+            <Typography type="body-xs" muted numberOfLines={1}>
               {t("payment.order")}: {checkoutResult?.code ?? paymentSession.order_id}
             </Typography>
           </View>
-          <Button
+          <PanelDialogButton
             variant="outline"
             size="sm"
-            isIconOnly
             accessibilityLabel={t("common.close")}
             onPress={requestClose}
           >
             <AppIcon icon={AppIcons.close} size={20} color={themeColorMuted} />
-          </Button>
+          </PanelDialogButton>
         </View>
       </View>
 
@@ -410,18 +448,32 @@ export function PaymentContent({
         onCheck={handleCheckPayment}
       />
 
-      <ActionDialog
-        isOpen={isCancelDialogOpen}
-        onOpenChange={setIsCancelDialogOpen}
-        title={t("payment.cancelTitle")}
-        description={t("payment.cancelDescription")}
-        actionLabel={t("payment.leave")}
-        actionVariant="danger"
-        onAction={() => {
-          setIsCancelDialogOpen(false);
-          onClose?.();
-        }}
-      />
+      <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+        <Dialog.Content className="w-full max-w-md self-center">
+          <Dialog.Title>{t("payment.cancelTitle")}</Dialog.Title>
+          <Dialog.Description>{t("payment.cancelDescription")}</Dialog.Description>
+          <Dialog.Footer>
+              <PanelDialogButton
+                variant="ghost"
+                size="sm"
+                onPress={() => setIsCancelDialogOpen(false)}
+              >
+                {t("common.cancel")}
+              </PanelDialogButton>
+              <PanelDialogButton
+                variant="destructive"
+                size="sm"
+                className="flex-1"
+                onPress={() => {
+                  setIsCancelDialogOpen(false);
+                  onClose?.();
+                }}
+              >
+                {t("payment.leave")}
+              </PanelDialogButton>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </View>
   );
 }

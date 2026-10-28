@@ -1,17 +1,33 @@
-import { useToast } from "panelui-native";
+import {
+  Typography,
+  Separator,
+  Card as PanelCard,
+  Chip as PanelChip,
+  EmptyState,
+  Kpi,
+  Typography as PanelTypography,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Skeleton as PanelListSkeleton,
+  cn,
+  DatePicker as PanelDatePicker,
+  Label as PanelLabel,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  Select as PanelSelect,
+} from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
+import { formatLocalDate, inclusiveLocalCalendarDays, parseLocalDate } from "@/utils/local-date";
 import { useCSSVariable } from "uniwind";
-import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
-import ErrorState from "@/components/common/error-state";
-import { ListSkeleton } from "@/components/common/list-skeleton";
+import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useEarnings } from "@/hooks/db/use-earnings";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatDateTime, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import DatePickerField from "@/components/common/date-picker-field";
-import { Button, Chip, cn, Description, Select, Separator, Typography } from "heroui-native";
-import { EmptyState, Widget, type DatePickerOption } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { getLocaleTag, type Translate } from "@/locales";
@@ -28,20 +44,6 @@ const DATE_RANGE_VALUES = [
 type DateRangeValue = (typeof DATE_RANGE_VALUES)[number];
 type DateRangeOption = { value: DateRangeValue; label: string };
 type AppliedDateRange = { dateFrom: string; dateTo: string };
-
-const SUMMARY_STYLES = {
-  accent: { background: "bg-accent-soft", token: "--color-secondary-foreground" },
-  success: { background: "bg-success-soft", token: "--color-success-foreground" },
-  warning: { background: "bg-warning-soft", token: "--color-warning-foreground" },
-  default: { background: "bg-default", token: "--color-foreground" },
-} as const;
-
-function toDateParam(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 function startOfToday(): Date {
   const today = new Date();
@@ -61,13 +63,13 @@ function getPresetRange(value: Exclude<DateRangeValue, "custom">): AppliedDateRa
   }
   if (value === "this-month") from.setDate(1);
 
-  return { dateFrom: toDateParam(from), dateTo: toDateParam(to) };
+  return { dateFrom: formatLocalDate(from), dateTo: formatLocalDate(to) };
 }
 
-function toDateOption(value: string): NonNullable<DatePickerOption> {
+function toDateOption(value: string): { value: string; label: string } {
   return {
     value,
-    label: formatDate(new Date(`${value}T00:00:00`), {
+    label: formatDate(parseLocalDate(value), {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -76,8 +78,8 @@ function toDateOption(value: string): NonNullable<DatePickerOption> {
 }
 
 function formatPeriodLabel(dateFrom: string, dateTo: string): string {
-  const from = new Date(`${dateFrom}T00:00:00`);
-  const to = new Date(`${dateTo}T00:00:00`);
+  const from = parseLocalDate(dateFrom);
+  const to = parseLocalDate(dateTo);
   const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
   if (dateFrom === dateTo) {
     return formatDate(to, { ...options, year: "numeric" });
@@ -95,77 +97,6 @@ function formatOrderType(value: string, t: Translate): string {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function SummaryWidget({
-  label,
-  value,
-  icon,
-  color,
-  isSingleColumn,
-}: {
-  label: string;
-  value: string;
-  icon: React.ComponentProps<typeof AppIcon>["icon"];
-  color: keyof typeof SUMMARY_STYLES;
-  isSingleColumn: boolean;
-}) {
-  const style = SUMMARY_STYLES[color];
-  const iconColor = useCSSVariable(style.token) as string;
-
-  return (
-    <Widget className={isSingleColumn ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-      <Widget.Header>
-        <Widget.Title>{label}</Widget.Title>
-        <View
-          className={cn("size-9 items-center justify-center rounded-panel-inner", style.background)}
-        >
-          <AppIcon icon={icon} size={18} color={iconColor} />
-        </View>
-      </Widget.Header>
-      <Widget.Content className="p-4">
-        <Typography
-          type="h4"
-          weight="bold"
-          className="tabular-nums"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.72}
-        >
-          {value}
-        </Typography>
-      </Widget.Content>
-    </Widget>
-  );
-}
-
-function EarningsDatePicker({
-  label,
-  value,
-  onValueChange,
-  isInvalid,
-  presentation,
-  localeTag,
-}: {
-  label: string;
-  value: NonNullable<DatePickerOption>;
-  onValueChange: (value: DatePickerOption | undefined) => void;
-  isInvalid?: boolean;
-  presentation: "dialog" | "popover";
-  localeTag: string;
-}) {
-  return (
-    <DatePickerField
-      className="min-w-55 flex-1"
-      label={label}
-      value={value}
-      onValueChange={onValueChange}
-      isRequired
-      isInvalid={isInvalid}
-      locale={localeTag}
-      presentation={presentation}
-    />
-  );
-}
-
 function CustomDateRangeDialog({
   isOpen,
   onOpenChange,
@@ -180,10 +111,10 @@ function CustomDateRangeDialog({
 }: {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  start: NonNullable<DatePickerOption>;
-  end: NonNullable<DatePickerOption>;
-  onStartChange: (value: DatePickerOption | undefined) => void;
-  onEndChange: (value: DatePickerOption | undefined) => void;
+  start: string;
+  end: string;
+  onStartChange: (value: string | undefined) => void;
+  onEndChange: (value: string | undefined) => void;
   error: string | null;
   onApply: () => void;
   onCancel: () => void;
@@ -191,70 +122,134 @@ function CustomDateRangeDialog({
 }) {
   const { locale, t } = useTranslation();
   const localeTag = getLocaleTag(locale);
-  const { isPhonePortrait } = useOverlayPresentation();
-  const pickerPresentation = isPhonePortrait ? "dialog" : "popover";
+  const { isPhonePortrait, sheetRef, handleDidDismiss } = useAdaptiveOverlayPresentation(
+    isOpen,
+    onOpenChange
+  );
+  const pickerPresentation = isPhonePortrait ? "bottom-sheet" : "popover";
+
+  const footer = (
+    <View
+      className={cn(
+        "gap-3 px-5 pb-5 pt-4",
+        isPhonePortrait ? "items-stretch" : "flex-row justify-end"
+      )}
+    >
+      <PanelButton
+        variant="ghost"
+        size="sm"
+        className={isPhonePortrait ? "w-full" : undefined}
+        onPress={onCancel}
+      >
+        {t("common.cancel")}
+      </PanelButton>
+      <PanelButton
+        size="sm"
+        className={isPhonePortrait ? "w-full" : undefined}
+        onPress={onApply}
+        disabled={isApplying}
+      >
+        {isApplying ? t("earnings.applying") : t("common.apply")}
+      </PanelButton>
+    </View>
+  );
+  const content = (
+    <View className="gap-4 px-5">
+      <View className={isPhonePortrait ? "gap-4" : "flex-row flex-wrap items-start gap-4"}>
+        {[
+          { key: "start", label: t("earnings.from"), value: start, onChange: onStartChange },
+          { key: "end", label: t("earnings.to"), value: end, onChange: onEndChange },
+        ].map((field) => (
+          <View key={field.key} className="min-w-55 flex-1 gap-1.5">
+            <PanelLabel isRequired isInvalid={error !== null}>
+              {field.label}
+            </PanelLabel>
+            <PanelDatePicker
+              className="w-full"
+              selected={field.value ? parseLocalDate(field.value) : undefined}
+              onSelect={(date) => field.onChange(date ? formatLocalDate(date) : undefined)}
+              format={(date) => (date ? toDateOption(formatLocalDate(date)).label : "")}
+              presentation={pickerPresentation}
+              maxDate={startOfToday()}
+              weekStartsOn={1}
+              locale={localeTag}
+            />
+          </View>
+        ))}
+      </View>
+      {error ? (
+        <Typography type="body-xs" className="text-destructive-foreground">
+          {error}
+        </Typography>
+      ) : (
+        <PanelTypography type="body-xs" muted>
+          {t("earnings.rangeGuidance")}
+        </PanelTypography>
+      )}
+    </View>
+  );
+  const title = t("earnings.customDateRange");
+  const description = t("earnings.customDateRangeDescription");
+
+  if (isPhonePortrait) {
+    return (
+      <TrueSheet
+        ref={sheetRef}
+        detents={[0.9]}
+        scrollable
+        cornerRadius={24}
+        grabber
+        dimmed
+        onDidDismiss={handleDidDismiss}
+        header={
+          <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+            <Typography type="h4" weight="semibold">
+              {title}
+            </Typography>
+            <Typography type="body-sm" muted>
+              {description}
+            </Typography>
+            <PanelButton
+              variant="ghost"
+              size="sm"
+              accessibilityLabel={t("common.close")}
+              className="absolute right-3 top-3"
+              onPress={() => onOpenChange(false)}
+            >
+              {t("common.close")}
+            </PanelButton>
+          </View>
+        }
+        footer={<View className="bg-surface">{footer}</View>}
+      >
+        {content}
+      </TrueSheet>
+    );
+  }
 
   return (
-    <AdaptiveFormOverlay
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      title={t("earnings.customDateRange")}
-      description={t("earnings.customDateRangeDescription")}
-      maxWidthClassName="max-w-lg"
-      footer={
-        <View
-          className={cn(
-            "gap-3 px-5 pb-5 pt-4",
-            isPhonePortrait ? "items-stretch" : "flex-row justify-end"
-          )}
+    <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
+      <PanelDialog.Content
+        dismissible={false}
+        className="w-full max-w-lg self-center overflow-hidden p-0"
+      >
+        <PanelButton
+          variant="ghost"
+          size="sm"
+          accessibilityLabel={t("common.close")}
+          className="absolute right-3 top-3 z-50"
+          onPress={() => onOpenChange(false)}
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            className={isPhonePortrait ? "w-full" : undefined}
-            onPress={onCancel}
-          >
-            <Button.Label>{t("common.cancel")}</Button.Label>
-          </Button>
-          <Button
-            size="sm"
-            className={isPhonePortrait ? "w-full" : undefined}
-            onPress={onApply}
-            isDisabled={isApplying}
-          >
-            <Button.Label>{isApplying ? t("earnings.applying") : t("common.apply")}</Button.Label>
-          </Button>
+          {t("common.close")}
+        </PanelButton>
+        <View className="gap-1.5 px-5 pb-4 pr-14 pt-5">
+          <PanelDialog.Title>{title}</PanelDialog.Title>
+          <PanelDialog.Description>{description}</PanelDialog.Description>
         </View>
-      }
-    >
-      <View className="gap-4 px-5">
-        <View className={isPhonePortrait ? "gap-4" : "flex-row flex-wrap items-start gap-4"}>
-          <EarningsDatePicker
-            label={t("earnings.from")}
-            value={start}
-            onValueChange={onStartChange}
-            isInvalid={error !== null}
-            presentation={pickerPresentation}
-            localeTag={localeTag}
-          />
-          <EarningsDatePicker
-            label={t("earnings.to")}
-            value={end}
-            onValueChange={onEndChange}
-            isInvalid={error !== null}
-            presentation={pickerPresentation}
-            localeTag={localeTag}
-          />
-        </View>
-        {error ? (
-          <Typography type="body-xs" className="text-danger">
-            {error}
-          </Typography>
-        ) : (
-          <Description>{t("earnings.rangeGuidance")}</Description>
-        )}
-      </View>
-    </AdaptiveFormOverlay>
+        {content}
+        {footer}
+      </PanelDialog.Content>
+    </PanelDialog>
   );
 }
 
@@ -279,21 +274,21 @@ function OrderTypesWidget({
 }) {
   const { t } = useTranslation();
   return (
-    <Widget>
-      <Widget.Header>
+    <PanelCard>
+      <PanelCard.Header>
         <View>
-          <Widget.Title>{t("earnings.salesByOrderType")}</Widget.Title>
-          <Widget.Description>{t("earnings.salesByOrderTypeDescription")}</Widget.Description>
+          <PanelCard.Title>{t("earnings.salesByOrderType")}</PanelCard.Title>
+          <PanelCard.Description>{t("earnings.salesByOrderTypeDescription")}</PanelCard.Description>
         </View>
-      </Widget.Header>
-      <Widget.Content className="overflow-hidden p-0">
+      </PanelCard.Header>
+      <PanelCard.Content className="overflow-hidden p-0">
         {orderTypes.map((orderType, index) => {
           const share = totalEarnings > 0 ? orderType.amount / totalEarnings : 0;
           return (
             <View key={orderType.name}>
               <View className="gap-3 p-4">
                 <View className={cn("gap-3", isCompact ? "items-start" : "flex-row items-center")}>
-                  <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
+                  <View className="size-10 items-center justify-center rounded-xl bg-accent">
                     <AppIcon
                       icon={orderType.name === "Dine-in" ? AppIcons.restaurant : AppIcons.bag}
                       size={18}
@@ -304,7 +299,7 @@ function OrderTypesWidget({
                     <Typography type="body-sm" weight="semibold">
                       {orderType.name}
                     </Typography>
-                    <Typography type="body-xs" color="muted">
+                    <Typography type="body-xs" muted>
                       {t(
                         orderType.count === 1
                           ? "earnings.orderShareOne"
@@ -317,7 +312,7 @@ function OrderTypesWidget({
                     {formatRupiah(orderType.amount)}
                   </Typography>
                 </View>
-                <View className="h-1.5 overflow-hidden rounded-full bg-default">
+                <View className="h-1.5 overflow-hidden rounded-full bg-secondary">
                   <View
                     className="h-full rounded-full bg-accent"
                     style={{ width: `${Math.max(share * 100, 2)}%` }}
@@ -328,11 +323,11 @@ function OrderTypesWidget({
             </View>
           );
         })}
-      </Widget.Content>
-      <Widget.Footer>
-        <Widget.Description>{periodLabel}</Widget.Description>
-      </Widget.Footer>
-    </Widget>
+      </PanelCard.Content>
+      <PanelCard.Footer>
+        <PanelCard.Description>{periodLabel}</PanelCard.Description>
+      </PanelCard.Footer>
+    </PanelCard>
   );
 }
 
@@ -347,21 +342,24 @@ function RecentEarningsWidget({
 }) {
   const { t } = useTranslation();
   return (
-    <Widget>
-      <Widget.Header>
+    <PanelCard>
+      <PanelCard.Header>
         <View>
-          <Widget.Title>{t("earnings.recent")}</Widget.Title>
-          <Widget.Description>{t("earnings.recentDescription")}</Widget.Description>
+          <PanelCard.Title>{t("earnings.recent")}</PanelCard.Title>
+          <PanelCard.Description>{t("earnings.recentDescription")}</PanelCard.Description>
         </View>
-        <Widget.Legend>
-          <Widget.LegendItem colorClassName="bg-success">{t("earnings.settled")}</Widget.LegendItem>
-        </Widget.Legend>
-      </Widget.Header>
-      <Widget.Content className="overflow-hidden p-0">
+        <View className="flex-row items-center gap-2">
+          <View className="size-2 rounded-full bg-success" />
+          <PanelTypography type="body-xs" muted>
+            {t("earnings.settled")}
+          </PanelTypography>
+        </View>
+      </PanelCard.Header>
+      <PanelCard.Content className="overflow-hidden p-0">
         {entries.map((entry, index) => (
           <View key={entry.id}>
             <View className="flex-row gap-3 px-4 py-3.5">
-              <View className="size-10 mt-1 items-center justify-center rounded-panel-inner bg-success-soft">
+              <View className="size-10 mt-1 items-center justify-center rounded-xl bg-success-soft">
                 <AppIcon icon={AppIcons.checkmark} size={18} color={successColor} />
               </View>
               <View className={cn("flex-1 gap-3", isCompact ? "flex-col" : "flex-row")}>
@@ -370,11 +368,11 @@ function RecentEarningsWidget({
                     <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
                       {entry.code}
                     </Typography>
-                    <Chip color="success" size="sm" variant="soft">
-                      <Chip.Label>{t("earnings.settled")}</Chip.Label>
-                    </Chip>
+                    <PanelChip variant="success" size="sm">
+                      <PanelChip.Label>{t("earnings.settled")}</PanelChip.Label>
+                    </PanelChip>
                   </View>
-                  <Typography type="body-xs" color="muted">
+                  <Typography type="body-xs" muted>
                     {formatOrderType(entry.order_type, t)} ·{" "}
                     {t(entry.items_count === 1 ? "orders.itemOne" : "orders.itemOther", {
                       count: entry.items_count,
@@ -398,8 +396,8 @@ function RecentEarningsWidget({
             </View>
           </View>
         ))}
-      </Widget.Content>
-    </Widget>
+      </PanelCard.Content>
+    </PanelCard>
   );
 }
 
@@ -417,11 +415,11 @@ export default function EarningsScreen(): React.JSX.Element {
   const [appliedRange, setAppliedRange] = React.useState<AppliedDateRange>(() =>
     getPresetRange("last-7-days")
   );
-  const [customStart, setCustomStart] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").dateFrom)
+  const [customStart, setCustomStart] = React.useState<string>(
+    () => getPresetRange("last-7-days").dateFrom
   );
-  const [customEnd, setCustomEnd] = React.useState<NonNullable<DatePickerOption>>(() =>
-    toDateOption(getPresetRange("last-7-days").dateTo)
+  const [customEnd, setCustomEnd] = React.useState<string>(
+    () => getPresetRange("last-7-days").dateTo
   );
   const [customRangeError, setCustomRangeError] = React.useState<string | null>(null);
   const [isCustomRangeOpen, setIsCustomRangeOpen] = React.useState(false);
@@ -435,6 +433,12 @@ export default function EarningsScreen(): React.JSX.Element {
     isRefetching,
   } = useEarnings(dateFrom, dateTo);
   const mutedColor = useCSSVariable("--color-muted-foreground") as string;
+  const [metricAccent, metricSuccess, metricWarning, metricDefault] = useCSSVariable([
+    "--color-secondary-foreground",
+    "--color-success-foreground",
+    "--color-warning-foreground",
+    "--color-foreground",
+  ]) as [string, string, string, string];
   const successColor = useCSSVariable("--color-success") as string;
   const accentSoftForeground = useCSSVariable("--color-secondary-foreground") as string;
 
@@ -463,9 +467,8 @@ export default function EarningsScreen(): React.JSX.Element {
       ? `${toDateOption(dateFrom).label} – ${toDateOption(dateTo).label}`
       : dateRange.label;
 
-  const handleRangeChange = (option: { value: string; label: string } | undefined) => {
-    if (!option) return;
-    const nextOption = dateRangeOptions.find((item) => item.value === option.value);
+  const handleRangeChange = (value: string) => {
+    const nextOption = dateRangeOptions.find((item) => item.value === value);
     if (!nextOption) return;
 
     setCustomRangeError(null);
@@ -479,8 +482,8 @@ export default function EarningsScreen(): React.JSX.Element {
   };
 
   const handleApplyCustomRange = () => {
-    const start = new Date(`${customStart.value}T00:00:00`);
-    const end = new Date(`${customEnd.value}T00:00:00`);
+    const start = parseLocalDate(customStart);
+    const end = parseLocalDate(customEnd);
     const today = startOfToday();
     let rangeError: string | null = null;
 
@@ -491,7 +494,7 @@ export default function EarningsScreen(): React.JSX.Element {
     } else if (end > today) {
       rangeError = t("earnings.errors.future");
     } else {
-      const inclusiveDays = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
+      const inclusiveDays = inclusiveLocalCalendarDays(start, end);
       if (inclusiveDays > 366) rangeError = t("earnings.errors.tooLong");
     }
 
@@ -506,7 +509,7 @@ export default function EarningsScreen(): React.JSX.Element {
     }
 
     setDateRangeValue("custom");
-    setAppliedRange({ dateFrom: customStart.value, dateTo: customEnd.value });
+    setAppliedRange({ dateFrom: customStart, dateTo: customEnd });
     setIsCustomRangeOpen(false);
   };
 
@@ -523,71 +526,136 @@ export default function EarningsScreen(): React.JSX.Element {
             <Typography type="body-sm">
               {t("earnings.settledSalesFor", { period: periodLabel })}
             </Typography>
-            <Select
-              presentation={choicePresentation}
-              value={dateRange}
+            <PanelSelect
+              presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+              value={dateRangeValue}
+              valueLabel={dateRangeLabel}
               onValueChange={handleRangeChange}
+              title={t("earnings.dateRange")}
+              placeholder={t("earnings.dateRange")}
+              size="sm"
+              className={isCompact ? "min-w-40" : undefined}
             >
-              <Select.Trigger asChild variant="unstyled">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className={isCompact ? "min-w-40 bg-surface" : undefined}
-                >
-                  <Button.Label numberOfLines={1}>{dateRangeLabel}</Button.Label>
-                  <Select.TriggerIndicator />
-                </Button>
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Overlay />
-                <Select.Content
-                  presentation={choicePresentation}
-                  width={choicePresentation === "popover" ? 200 : undefined}
-                >
-                  <Select.ListLabel>{t("earnings.dateRange")}</Select.ListLabel>
-                  {dateRangeOptions.map((option) => (
-                    <Select.Item key={option.value} value={option.value} label={option.label} />
-                  ))}
-                </Select.Content>
-              </Select.Portal>
-            </Select>
+              {dateRangeOptions.map((option) => (
+                <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
+              ))}
+            </PanelSelect>
           </View>
 
           {isLoading ? (
-            <ListSkeleton rows={5} fill={false} />
+            <View className="gap-px py-2" accessibilityRole="progressbar">
+              {Array.from({ length: 5 }, (_, index) => (
+                <View
+                  key={`loading-row-${index}`}
+                  className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+                >
+                  <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                  <View className="flex-1 gap-2">
+                    <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+                    <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+                    <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                  </View>
+                  <PanelListSkeleton className="size-4 rounded-full" />
+                </View>
+              ))}
+            </View>
           ) : isError ? (
-            <ErrorState error={error} onRetry={refetch} />
+            <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+              <PanelErrorAlert variant="destructive">
+                <PanelErrorAlert.Indicator />
+                <PanelErrorAlert.Content>
+                  <PanelErrorAlert.Description>
+                    {getErrorMessage(error)}
+                  </PanelErrorAlert.Description>
+                </PanelErrorAlert.Content>
+              </PanelErrorAlert>
+              <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+                {t("common.retry")}
+              </PanelErrorButton>
+            </View>
           ) : (
             <>
               <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
-                <SummaryWidget
-                  label={t("earnings.settledEarnings")}
-                  value={formatRupiah(totalEarnings)}
-                  icon={AppIcons.wallet}
-                  color="success"
-                  isSingleColumn={isPhone}
-                />
-                <SummaryWidget
-                  label={t("earnings.settledOrders")}
-                  value={String(data.length)}
-                  icon={AppIcons.receipt}
-                  color="accent"
-                  isSingleColumn={isPhone}
-                />
-                <SummaryWidget
-                  label={t("earnings.averageOrder")}
-                  value={formatRupiah(averageOrder)}
-                  icon={AppIcons.analytics}
-                  color="warning"
-                  isSingleColumn={isPhone}
-                />
-                <SummaryWidget
-                  label={t("earnings.itemsSold")}
-                  value={String(itemCount)}
-                  icon={AppIcons.bag}
-                  color="default"
-                  isSingleColumn={isPhone}
-                />
+                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("earnings.settledEarnings")}</Kpi.Title>
+                    <Kpi.Icon tone="good">
+                      <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <PanelTypography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {formatRupiah(totalEarnings)}
+                    </PanelTypography>
+                  </Kpi.Content>
+                </Kpi>
+                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("earnings.settledOrders")}</Kpi.Title>
+                    <Kpi.Icon tone="neutral">
+                      <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <PanelTypography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {String(data.length)}
+                    </PanelTypography>
+                  </Kpi.Content>
+                </Kpi>
+                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("earnings.averageOrder")}</Kpi.Title>
+                    <Kpi.Icon tone="flat">
+                      <AppIcon icon={AppIcons.analytics} size={18} color={metricWarning} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <PanelTypography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {formatRupiah(averageOrder)}
+                    </PanelTypography>
+                  </Kpi.Content>
+                </Kpi>
+                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+                  <Kpi.Header>
+                    <Kpi.Title>{t("earnings.itemsSold")}</Kpi.Title>
+                    <Kpi.Icon tone="neutral">
+                      <AppIcon icon={AppIcons.bag} size={18} color={metricDefault} />
+                    </Kpi.Icon>
+                  </Kpi.Header>
+                  <Kpi.Content>
+                    <PanelTypography
+                      type="h4"
+                      weight="bold"
+                      className="tabular-nums"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.72}
+                    >
+                      {String(itemCount)}
+                    </PanelTypography>
+                  </Kpi.Content>
+                </Kpi>
               </View>
 
               {data.length === 0 ? (

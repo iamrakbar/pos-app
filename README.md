@@ -1,13 +1,13 @@
 # Soeat POS
 
-Soeat POS is an Expo React Native point-of-sale app for Android and iOS. It uses Expo Router, HeroUI Native, Uniwind, local SQLite storage, and thermal printer integration for receipt printing.
+Soeat POS is an Expo React Native point-of-sale app for Android and iOS. It uses Expo Router, PanelUI, TrueSheet, Uniwind, local SQLite storage, and thermal printer integration for receipt printing.
 
 ## Stack
 
 - Expo SDK 57 with development client builds
 - React 19 and React Native 0.86
 - Expo Router for file-based navigation
-- HeroUI Native and HeroUI Native Pro for app UI
+- PanelUI for app controls and TrueSheet for sheet presentation
 - Uniwind and Tailwind CSS for styling
 - Drizzle ORM with Expo SQLite
 - Zustand for local state
@@ -126,7 +126,7 @@ directories contain the previously generated variant until they are regenerated.
 The printer settings screen supports:
 
 - BLE, USB, and network printer modes
-- Permission request and recovery flows through HeroUI Native dialogs
+- Permission request and recovery flows through PanelUI dialogs
 - Bluetooth settings deep link on Android through `expo-intent-launcher`
 - Saved printer selection and paper width
 - Test printing from settings

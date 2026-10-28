@@ -3,7 +3,7 @@ import type { POSTable } from "@/types/pos";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button } from "heroui-native";
+import { Button, Typography } from "panelui-native";
 import type { JSX } from "react";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -31,9 +31,9 @@ export default function TableSelectionButton({
       }
     >
       <AppIcon icon={AppIcons.diningTable} size={18} color={colorAccent} />
-      <Button.Label className="text-sm" numberOfLines={1}>
+      <Typography type="body-sm" className="text-secondary-foreground" numberOfLines={1}>
         {selectedTable?.name ?? t("pos.table")}
-      </Button.Label>
+      </Typography>
     </Button>
   );
 }

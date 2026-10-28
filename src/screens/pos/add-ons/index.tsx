@@ -1,26 +1,23 @@
+import { buildCartAddOns } from "@/utils/add-on-selection";
+import {
+  Checkbox as PanelCheckbox,
+  Textarea as PanelTextarea,
+  Typography as PanelTypography,
+  Chip as PanelChip,
+  Button,
+  Surface,
+  Separator,
+  RadioGroup as PanelRadioGroup,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { POS_ADD_ON_SHEET_NAME } from "@/hooks/use-pos-add-on-sheet";
 import { createAddOnSchema, type AddOnFormValues } from "@/schemas/addon";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
-import type { AddOnGroup, AddOnOption, POSProduct } from "@/types/pos";
+import type { AddOnGroup } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TrueSheet, useTrueSheet } from "@lodev09/react-native-true-sheet";
-import {
-  Button,
-  Checkbox,
-  Chip,
-  cn,
-  ControlField,
-  Description,
-  FieldError,
-  Radio,
-  Separator,
-  Surface,
-  TextArea,
-  Typography,
-} from "heroui-native";
 import React from "react";
 import { Controller, type Control, useForm, useWatch } from "react-hook-form";
 import { FlatList, View, useWindowDimensions } from "react-native";
@@ -43,101 +40,38 @@ function constraintLabel(group: AddOnGroup, t: Translate): string {
   return t("addOns.chooseRange", { min: group.min, max: group.max });
 }
 
-function selectedOptionIds(group: AddOnGroup, values: AddOnFormValues): Set<string> {
-  const radioSelection = values.radioSelections?.[group.id];
-  const ids = group.multiple
-    ? (values.checkboxSelections?.[group.id] ?? [])
-    : radioSelection
-      ? [radioSelection]
-      : [];
-  return new Set(ids);
-}
-
-function buildCartAddOns(product: POSProduct, values: AddOnFormValues) {
-  return product.add_ons.flatMap((group) => {
-    const selectedIds = selectedOptionIds(group, values);
-    const options = group.options.filter((option) => selectedIds.has(option.id));
-    return options.length > 0 ? [{ id: group.id, name: group.name, options }] : [];
-  });
-}
-
-type OptionRowProps = {
-  option: AddOnOption;
-  isSelected: boolean;
-  isDisabled?: boolean;
-  type: "radio" | "checkbox";
-  onSelect: (isSelected: boolean) => void;
-};
-
-function OptionRow({
-  option,
-  isSelected,
-  isDisabled = false,
-  type,
-  onSelect,
-}: OptionRowProps): React.JSX.Element {
-  const { t } = useTranslation();
-  const accessibilityLabel =
-    option.price > 0
-      ? t("addOns.optionAccessibilityWithPrice", {
-          option: option.name,
-          price: formatRupiah(option.price),
-        })
-      : t("addOns.optionAccessibilityNoCharge", { option: option.name });
-
-  return (
-    <ControlField
-      accessibilityRole={type}
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ checked: isSelected, disabled: isDisabled }}
-      isSelected={isSelected}
-      isDisabled={isDisabled}
-      onSelectedChange={onSelect}
-      className={cn(
-        "min-h-15 flex-row items-center gap-4 px-4 py-3",
-        isSelected && "bg-accent-soft"
-      )}
-    >
-      <View className="min-w-0 flex-1 gap-0.5">
-        <Typography type="body-sm" weight="semibold" numberOfLines={2}>
-          {option.name}
-        </Typography>
-        <Typography type="body-xs" color="muted" className="tabular-nums">
-          {option.price > 0 ? `+${formatRupiah(option.price)}` : t("addOns.noAdditionalCharge")}
-        </Typography>
-      </View>
-      <ControlField.Indicator variant={type}>
-        {type === "radio" ? <Radio /> : <Checkbox />}
-      </ControlField.Indicator>
-    </ControlField>
-  );
-}
-
 type AddOnSelectionProps = {
   control: Control<AddOnFormValues>;
   group: AddOnGroup;
 };
 
 function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Element {
+  const { t } = useTranslation();
   if (!group.multiple) {
     return (
       <Controller
         control={control}
         name={`radioSelections.${group.id}`}
         render={({ field }) => (
-          <Surface className="w-full overflow-hidden p-0">
-            {group.options.map((option, index) => (
-              <React.Fragment key={option.id}>
-                {index > 0 ? <Separator /> : null}
-                <OptionRow
-                  option={option}
-                  type="radio"
-                  isSelected={field.value === option.id}
-                  onSelect={(isSelected) => field.onChange(isSelected ? option.id : undefined)}
-                />
-              </React.Fragment>
+          <PanelRadioGroup
+            value={field.value}
+            onValueChange={field.onChange}
+            variant="card"
+            className="gap-2"
+          >
+            {group.options.map((option) => (
+              <PanelRadioGroup.Item
+                key={option.id}
+                value={option.id}
+                label={`${option.name} · ${
+                  option.price > 0
+                    ? `+${formatRupiah(option.price)}`
+                    : t("addOns.noAdditionalCharge")
+                }`}
+                className="min-h-15 px-4 py-3"
+              />
             ))}
-          </Surface>
+          </PanelRadioGroup>
         )}
       />
     );
@@ -153,7 +87,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
         const hasLimit = group.max > 0;
 
         return (
-          <Surface className="w-full overflow-hidden p-0">
+          <Surface padding="none" className="w-full overflow-hidden">
             {group.options.map((option, index) => {
               const isSelected = selectedIds.has(option.id);
               const isDisabled = !isSelected && hasLimit && selected.length >= group.max;
@@ -161,18 +95,25 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
               return (
                 <React.Fragment key={option.id}>
                   {index > 0 ? <Separator /> : null}
-                  <OptionRow
-                    option={option}
-                    type="checkbox"
-                    isSelected={isSelected}
-                    isDisabled={isDisabled}
-                    onSelect={() => {
+                  <PanelCheckbox
+                    checked={isSelected}
+                    disabled={isDisabled}
+                    onCheckedChange={() =>
                       field.onChange(
                         isSelected
                           ? selected.filter((id) => id !== option.id)
                           : [...selected, option.id]
-                      );
-                    }}
+                      )
+                    }
+                    label={option.name}
+                    description={
+                      option.price > 0
+                        ? `+${formatRupiah(option.price)}`
+                        : t("addOns.noAdditionalCharge")
+                    }
+                    className={isSelected ? "min-h-15 bg-accent px-4 py-3" : "min-h-15 px-4 py-3"}
+                    labelClassName="font-semibold"
+                    descriptionClassName="tabular-nums"
                   />
                 </React.Fragment>
               );
@@ -303,12 +244,12 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const header = (
     <View className="bg-surface">
       <View className="gap-1 px-5 pb-4 pt-safe">
-        <Typography type="h4" weight="semibold" numberOfLines={1}>
+        <PanelTypography type="h4" weight="semibold" numberOfLines={1}>
           {product?.name ?? t("addOns.customizeProduct")}
-        </Typography>
-        <Typography type="body-sm" color="muted" className="tabular-nums">
+        </PanelTypography>
+        <PanelTypography type="body-sm" muted className="tabular-nums">
           {t("addOns.basePrice", { price: formatRupiah(product?.price ?? 0) })}
-        </Typography>
+        </PanelTypography>
       </View>
       <Separator />
     </View>
@@ -327,23 +268,21 @@ export default function POSAddOnSheet(): React.JSX.Element {
       <Separator />
       <View className="gap-3 px-5 pb-4 pt-3">
         <View className="flex-row items-center justify-between gap-4">
-          <Typography type="body-xs" color="muted">
+          <PanelTypography type="body-xs" muted>
             {t(selectedOptionCount === 1 ? "addOns.selectedOne" : "addOns.selectedOther", {
               count: selectedOptionCount,
             })}
-          </Typography>
-          <Typography type="body-sm" weight="semibold" className="tabular-nums">
+          </PanelTypography>
+          <PanelTypography type="body-sm" weight="semibold" className="tabular-nums">
             {formatRupiah(configuredPrice)}
-          </Typography>
+          </PanelTypography>
         </View>
         <View className="flex-row gap-3">
           <Button variant="ghost" onPress={closeSheet}>
-            <Button.Label>{t("common.cancel")}</Button.Label>
+            {t("common.cancel")}
           </Button>
           <Button className="flex-1" onPress={handleSave}>
-            <Button.Label>
-              {editingCartItemId ? t("addOns.saveChanges") : t("addOns.addToCart")}
-            </Button.Label>
+            {editingCartItemId ? t("addOns.saveChanges") : t("addOns.addToCart")}
           </Button>
         </View>
       </View>
@@ -383,10 +322,10 @@ export default function POSAddOnSheet(): React.JSX.Element {
         }}
         ListHeaderComponent={
           hasSubmitError ? (
-            <Surface variant="secondary" className="bg-danger-soft p-3">
-              <Typography type="body-sm" className="text-danger-soft-foreground">
+            <Surface variant="secondary" padding="none" className="bg-destructive-soft p-3">
+              <PanelTypography type="body-sm" className="text-destructive-foreground">
                 {t("addOns.completeRequired")}
-              </Typography>
+              </PanelTypography>
             </Surface>
           ) : null
         }
@@ -399,40 +338,43 @@ export default function POSAddOnSheet(): React.JSX.Element {
             <View className="gap-3">
               <View className="flex-row items-start justify-between gap-3">
                 <View className="min-w-0 flex-1 gap-1">
-                  <Typography type="body-sm" weight="semibold">
+                  <PanelTypography type="body-sm" weight="semibold">
                     {group.name}
-                  </Typography>
-                  <Description>{constraintLabel(group, t)}</Description>
+                  </PanelTypography>
+                  <PanelTypography type="body-xs" muted>
+                    {constraintLabel(group, t)}
+                  </PanelTypography>
                 </View>
-                <Chip size="sm" color={group.required ? "accent" : "default"} variant="soft">
-                  <Chip.Label>
-                    {group.required ? t("addOns.required") : t("addOns.optional")}
-                  </Chip.Label>
-                </Chip>
+                <PanelChip size="sm" variant={group.required ? "primary" : "default"}>
+                  {group.required ? t("addOns.required") : t("addOns.optional")}
+                </PanelChip>
               </View>
               <AddOnSelection control={control} group={group} />
-              <FieldError isInvalid={Boolean(error)}>{error}</FieldError>
+              {error ? (
+                <PanelTypography type="body-xs" className="text-destructive">
+                  {error}
+                </PanelTypography>
+              ) : null}
             </View>
           );
         }}
         ListFooterComponent={
           <View className="gap-2 pb-2">
-            <Typography type="body-sm" weight="semibold">
-              {t("addOns.notes")}
-            </Typography>
             <Controller
               control={control}
               name="notes"
               render={({ field }) => (
-                <TextArea
+                <PanelTextarea
+                  ref={field.ref}
+                  label={t("addOns.notes")}
                   value={field.value}
                   onChangeText={field.onChange}
+                  onBlur={field.onBlur}
                   onFocus={() => {
                     void resize(POS_ADD_ON_SHEET_NAME, 1).then(scrollToNotes);
                   }}
                   placeholder={t("addOns.specialInstructions")}
-                  numberOfLines={2}
-                  className="h-16"
+                  rows={2}
                 />
               )}
             />

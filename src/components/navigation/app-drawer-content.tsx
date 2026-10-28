@@ -1,6 +1,6 @@
+import { Surface , Typography , Button as PanelButton, Dialog as PanelDialog, ScrollFade, Avatar as PanelAvatar, Popover as PanelPopover, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import Logo from "@/components/common/logo";
-import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { useAccountProfile } from "@/hooks/db/use-account-profile";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
 import type { Translate } from "@/locales";
@@ -9,9 +9,7 @@ import { useTranslation } from "@/stores/use-locale";
 import { useThemeStore, type ThemeMode } from "@/stores/use-theme-store";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import type { DrawerContentComponentProps } from "expo-router/drawer";
-import { Avatar, Button, cn, Popover, ScrollShadow, Surface, Typography } from "heroui-native";
 import type { ComponentProps, JSX } from "react";
 import { Fragment, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
@@ -108,7 +106,7 @@ export default function AppDrawerContent({
         <Logo tintColor={themeColorAccent} />
       </View>
 
-      <ScrollShadow size={16} LinearGradientComponent={LinearGradient} className="flex-1">
+      <ScrollFade size={16} className="flex-1">
         <ScrollView contentContainerClassName="gap-0.5 px-3" showsVerticalScrollIndicator={false}>
           {DRAWER_ROUTE_ORDER.map((routeName) => {
             if (routeName === "kds" && !kdsEnabled) return null;
@@ -157,7 +155,7 @@ export default function AppDrawerContent({
                       variant="transparent"
                       className={cn(
                         "h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0",
-                        focused ? "bg-accent-soft" : "bg-transparent"
+                        focused ? "bg-accent" : "bg-transparent"
                       )}
                     >
                       <AppIcon
@@ -168,7 +166,7 @@ export default function AppDrawerContent({
                     </Surface>
                     <View className="flex-1">
                       <Typography weight={focused ? "semibold" : "medium"}>{label}</Typography>
-                      <Typography type="body-sm" color="muted" numberOfLines={1}>
+                      <Typography type="body-sm" muted numberOfLines={1}>
                         {drawerDescriptions[routeName] ?? ""}
                       </Typography>
                     </View>
@@ -178,15 +176,15 @@ export default function AppDrawerContent({
             );
           })}
         </ScrollView>
-      </ScrollShadow>
+      </ScrollFade>
 
       <View className="gap-4 p-3 pt-0">
-        <Popover
+        <PanelPopover
           presentation={choicePresentation}
-          isOpen={isProfileOpen}
+          open={isProfileOpen}
           onOpenChange={setIsProfileOpen}
         >
-          <Popover.Trigger asChild>
+          <PanelPopover.Trigger>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t("profile.openMenu")}
@@ -196,16 +194,12 @@ export default function AppDrawerContent({
                 variant={isProfileOpen ? "default" : "transparent"}
                 className="min-h-12 flex-row items-center gap-3 px-3 py-2"
               >
-                <Avatar variant="soft">
-                  <Avatar.Fallback>
-                    {(user?.name || activeMerchant?.name || "SO").slice(0, 2).toUpperCase()}
-                  </Avatar.Fallback>
-                </Avatar>
+                <PanelAvatar fallback={(user?.name || activeMerchant?.name || "SO").slice(0, 2).toUpperCase()} />
                 <View className="flex-1">
                   <Typography weight="semibold" numberOfLines={1}>
                     {user?.name ?? t("profile.account")}
                   </Typography>
-                  <Typography type="body-sm" color="muted" numberOfLines={1}>
+                  <Typography type="body-sm" muted numberOfLines={1}>
                     {activeMerchant?.name ?? t("profile.merchantWorkspace")}
                   </Typography>
                 </View>
@@ -216,20 +210,14 @@ export default function AppDrawerContent({
                 />
               </Surface>
             </Pressable>
-          </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Overlay />
-            <Popover.Content
-              presentation={choicePresentation}
+          </PanelPopover.Trigger>
+            <PanelPopover.Content
               placement="top"
               align="center"
               width={choicePresentation === "popover" ? "trigger" : undefined}
-              className={choicePresentation === "popover" ? "gap-2 p-2" : undefined}
-              contentContainerClassName={
-                choicePresentation === "bottom-sheet" ? "gap-2 px-4 pb-safe pt-2" : undefined
-              }
+              className={choicePresentation === "popover" ? "gap-2 p-2" : "gap-2 px-4 pb-safe pt-2"}
             >
-              <Button
+              <PanelButton
                 variant="ghost"
                 onPress={() => {
                   setIsProfileOpen(false);
@@ -238,52 +226,60 @@ export default function AppDrawerContent({
                 }}
                 className="flex-1 items-center justify-between"
               >
-                <Button.Label>{t("profile.account")}</Button.Label>
+                {t("profile.account")}
                 <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />
-              </Button>
+              </PanelButton>
 
               <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">
                 {themeActions.map((action) => {
                   const isSelected = themeMode === action.value;
                   return (
-                    <Pressable
+                    <PanelButton
                       key={action.value}
-                      accessibilityRole="button"
+                      size="sm"
+                      variant={isSelected ? "primary" : "ghost"}
                       accessibilityLabel={action.label}
                       accessibilityState={{ selected: isSelected }}
                       onPress={() => setThemeMode(action.value)}
-                      className={cn(
-                        "h-9 flex-1 items-center justify-center rounded-full",
-                        isSelected ? "bg-accent" : "active:bg-surface-tertiary"
-                      )}
+                      className="h-9 flex-1"
                     >
                       <AppIcon
                         icon={action.icon}
                         size={19}
                         color={isSelected ? themeColorAccentForeground : themeColorMuted}
                       />
-                    </Pressable>
+                    </PanelButton>
                   );
                 })}
               </View>
-              <Button
-                variant="danger-soft"
+              <PanelButton
+                variant="destructive"
                 onPress={() => {
                   setIsProfileOpen(false);
                   setIsLogoutOpen(true);
                 }}
               >
                 <AppIcon icon={AppIcons.logout} size={18} color={themeColorDanger} />
-                <Button.Label>{t("settings.logout")}</Button.Label>
-              </Button>
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover>
-        <LogoutConfirmationDialog
-          isOpen={isLogoutOpen}
-          onOpenChange={setIsLogoutOpen}
-          onConfirm={logout}
-        />
+                {t("settings.logout")}
+              </PanelButton>
+            </PanelPopover.Content>
+        </PanelPopover>
+        <PanelDialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
+          <PanelDialog.Content>
+            <PanelDialog.Title>{t("logout.title")}</PanelDialog.Title>
+            <PanelDialog.Description>{t("logout.description")}</PanelDialog.Description>
+            <PanelDialog.Footer>
+              <PanelDialog.Close>
+                <PanelButton variant="ghost" size="sm">
+                  {t("common.cancel")}
+                </PanelButton>
+              </PanelDialog.Close>
+              <PanelButton variant="destructive" size="sm" onPress={logout}>
+                {t("logout.confirm")}
+              </PanelButton>
+            </PanelDialog.Footer>
+          </PanelDialog.Content>
+        </PanelDialog>
       </View>
     </View>
   );

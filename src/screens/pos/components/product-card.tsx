@@ -1,7 +1,8 @@
+import { Card, Typography, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
-import { Card, cn, Typography } from "heroui-native";
+
 import { Image } from "expo-image";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
@@ -49,16 +50,16 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
             <AppIcon icon={AppIcons.food} size={30} color={themeColorMuted} />
           )}
         </View>
-        <Card.Body className="min-h-20 justify-between px-3.5 py-3">
-          <Typography weight="medium" truncate>
+        <Card.Content className="min-h-20 justify-between px-3.5 py-3">
+          <Typography weight="medium" numberOfLines={1}>
             {product.name}
           </Typography>
           <View className="gap-0.5">
             {/* {product.stock_enabled && (
               <Typography
                 type="body-xs"
-                color={isOutOfStock ? undefined : "muted"}
-                className={isOutOfStock ? "text-danger" : undefined}
+                muted={!isOutOfStock}
+                className={isOutOfStock ? "text-destructive-foreground" : undefined}
               >
                 {isOutOfStock
                   ? t("pos.outOfStock")
@@ -66,7 +67,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
               </Typography>
             )} */}
             {isDiscounted && (
-              <Typography type="body-xs" color="muted" className="line-through">
+              <Typography type="body-xs" muted className="line-through">
                 {formatRupiah(product.price)}
               </Typography>
             )}
@@ -78,7 +79,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
               {formatRupiah(effectivePrice)}
             </Typography>
           </View>
-        </Card.Body>
+        </Card.Content>
       </Card>
     </Pressable>
   );

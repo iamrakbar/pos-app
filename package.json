@@ -36,7 +36,6 @@
   "dependencies": {
     "@expo/metro-runtime": "~57.0.17",
     "@expo/ui": "~57.0.26",
-    "@gorhom/bottom-sheet": "^5.2.14",
     "@haroldtran/react-native-thermal-printer": "^1.2.0",
     "@hookform/resolvers": "^5.4.0",
     "@hugeicons/core-free-icons": "^4.3.2",
@@ -70,8 +69,6 @@
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
     "expo-updates": "~57.0.26",
-    "heroui-native": "^1.0.8",
-    "heroui-native-pro": "file:vendor/heroui-native-pro",
     "panelui-native": "^0.115.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -81,7 +78,6 @@
     "react-native-keyboard-controller": "1.21.9",
     "react-native-mmkv": "^4.3.2",
     "react-native-nitro-modules": "^0.36.5",
-    "react-native-qrcode-svg": "^6.3.21",
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
@@ -92,7 +88,6 @@
     "tailwind-variants": "^3.2.2",
     "tailwindcss": "^4.3.2",
     "uniwind": "^1.10.0",
-    "victory-native": "^41.26.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },

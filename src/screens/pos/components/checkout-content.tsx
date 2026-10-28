@@ -1,3 +1,15 @@
+import { Surface , Typography ,
+  Input as PanelInput,
+  SearchBar,
+  SlideButton,
+  Textarea as PanelTextarea,
+  Typography as PanelTypography,
+  ScrollFade,
+  RadioGroup as PanelRadioGroup,
+  Button as PanelButton,
+  Chip as PanelChip,
+  Select as PanelSelect,
+  cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -7,7 +19,7 @@ import { useCustomerSearch } from "@/hooks/db/use-customers";
 import { buildCartProducts, useValidateCart } from "@/hooks/db/use-cart";
 import { useCheckout } from "@/hooks/db/use-checkout";
 import { createCheckoutSchema, type CheckoutFormValues } from "@/schemas/checkout";
-import { formatRupiah } from "@/utils/format";
+import { formatRupiah, IDR_NUMBER_FIELD_FORMAT_OPTIONS, RUPIAH_PREFIX } from "@/utils/format";
 import { computePricing } from "@/utils/pricing";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import {
@@ -17,26 +29,9 @@ import {
 } from "@/api/mappers/checkout";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TrueSheet, useTrueSheet } from "@lodev09/react-native-true-sheet";
-import {
-  Button,
-  Chip,
-  cn,
-  RadioGroup,
-  ScrollShadow,
-  SearchField,
-  Select,
-  Surface,
-  TextArea,
-  TextField,
-  Input,
-  Label,
-  Typography,
-} from "heroui-native";
-import { SlideButton } from "heroui-native-pro";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import type { ComponentProps, JSX, ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -60,7 +55,7 @@ import {
 } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import { RupiahField } from "@/components/common/form-number-field";
+import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
 
@@ -118,12 +113,12 @@ async function submitCheckout({
   checkout: ReturnType<typeof useCheckout>;
   setIsCompleting: React.Dispatch<React.SetStateAction<boolean>>;
   onPaymentReady: CheckoutContentProps["onPaymentReady"];
-}): Promise<void> {
+}): Promise<boolean> {
   setCheckoutError(null);
 
   if (isAmountTender && cashReceivedAmount < total) {
     setCheckoutError({ key: "checkout.cashInsufficient" });
-    return;
+    return false;
   }
 
   if (selectedPayment?.tender_input.required && !values.tender_value?.trim()) {
@@ -131,7 +126,7 @@ async function submitCheckout({
       type: "required",
       message: selectedPayment.tender_input.label ?? t("checkout.completeRequired"),
     });
-    return;
+    return false;
   }
 
   try {
@@ -142,7 +137,7 @@ async function submitCheckout({
     } else {
       setCheckoutError({ message: getErrorMessage(error) });
     }
-    return;
+    return false;
   }
 
   try {
@@ -163,6 +158,7 @@ async function submitCheckout({
     };
     setIsCompleting(true);
     onPaymentReady(session, result, { processingMode: paymentSnapshot.processing_mode });
+    return true;
   } catch (error) {
     if (isApiError(error) && error.errors?.tender_value?.[0]) {
       setError("tender_value", { type: "server", message: error.errors.tender_value[0] });
@@ -171,6 +167,7 @@ async function submitCheckout({
     } else {
       setCheckoutError({ message: getErrorMessage(error) });
     }
+    return false;
   }
 }
 
@@ -297,7 +294,7 @@ function CheckoutCostSummary({
   return (
     <Surface variant="secondary" className="gap-2 p-3">
       <View className="flex-row justify-between">
-        <Typography type="body-xs" color="muted">
+        <Typography type="body-xs" muted>
           {t("checkout.subtotal")}
         </Typography>
         <Typography type="body-xs" className="tabular-nums">
@@ -306,7 +303,7 @@ function CheckoutCostSummary({
       </View>
       {taxIsEnabled ? (
         <View className="flex-row justify-between">
-          <Typography type="body-xs" color="muted">
+          <Typography type="body-xs" muted>
             {taxName}
           </Typography>
           <Typography type="body-xs" className="tabular-nums">
@@ -316,7 +313,7 @@ function CheckoutCostSummary({
       ) : null}
       {paymentFee > 0 ? (
         <View className="flex-row justify-between">
-          <Typography type="body-xs" color="muted">
+          <Typography type="body-xs" muted>
             {feeUnit === "percentage"
               ? t("checkout.paymentFeePercentage", { value: feeValue ?? 0 })
               : t("checkout.paymentFee")}
@@ -387,25 +384,22 @@ function CheckoutActions({
             total={total}
           />
           <SlideButton
-            variant="accent"
-            className="w-full"
-            classNames={{ container: "h-12" }}
-            isDisabled={isDisabled}
+            size="sm"
+            fullWidth
+            disabled={isDisabled || isPending}
             autoReset
             autoResetDelay={600}
             onComplete={onComplete}
+            accessibilityActionLabel={t("checkout.pay")}
           >
-            <SlideButton.UnderlayContent>
-              <SlideButton.Label>
-                {isPending ? t("checkout.processing") : t("checkout.slideToPay")}
-              </SlideButton.Label>
-            </SlideButton.UnderlayContent>
-            <SlideButton.OverlayContent>
-              <SlideButton.Label>{t("checkout.pay")}</SlideButton.Label>
-            </SlideButton.OverlayContent>
-            <SlideButton.Thumb>
-              {isPending ? <ActivityIndicator size="small" /> : null}
-            </SlideButton.Thumb>
+            <SlideButton.Label>
+              {isPending ? t("checkout.processing") : t("checkout.slideToPay")}
+            </SlideButton.Label>
+            {isPending ? (
+              <SlideButton.Thumb>
+                <ActivityIndicator size="small" />
+              </SlideButton.Thumb>
+            ) : null}
           </SlideButton>
         </View>
       </View>
@@ -447,6 +441,12 @@ function PaymentFields({
   chargeAppPaymentFeeToCustomer: boolean | undefined;
 }) {
   const { t } = useTranslation();
+  const { localizedInputProps: tenderInput } = useLocalizedNumberInput({
+    value: tenderValue,
+    onChange: (value) => setValue("tender_value", value, { shouldValidate: true }),
+    formatOptions: IDR_NUMBER_FIELD_FORMAT_OPTIONS,
+    minValue: 0,
+  });
 
   return (
     <>
@@ -464,9 +464,9 @@ function PaymentFields({
             showsHorizontalScrollIndicator={false}
             contentContainerClassName="gap-2"
             renderItem={({ item: group }) => (
-              <Button
+              <PanelButton
                 size="sm"
-                variant={paymentGroup === group.group_type ? "primary" : "secondary"}
+                variant={paymentGroup === group.group_type ? "primary" : "outline"}
                 onPress={() => {
                   const firstPayment = group.payments[0];
                   const { total: previewTotal } = computePricing({
@@ -486,8 +486,8 @@ function PaymentFields({
                   );
                 }}
               >
-                <Button.Label className="text-center">{group.group_label}</Button.Label>
-              </Button>
+                {group.group_label}
+              </PanelButton>
             )}
           />
         )}
@@ -500,7 +500,8 @@ function PaymentFields({
         {isPending ? (
           <PaymentButtonSkeleton widths={[96, 120, 88]} />
         ) : (
-          <RadioGroup
+          <PanelRadioGroup
+            variant="card"
             value={paymentId}
             onValueChange={(id) => {
               const payment = paymentGroups
@@ -519,33 +520,37 @@ function PaymentFields({
               {paymentGroups
                 .find((group) => group.group_type === paymentGroup)
                 ?.payments.map((payment) => (
-                  <RadioGroup.Item key={payment.id} value={payment.id}>
-                    {({ isSelected }) => (
-                      <View
-                        className={cn(
-                          "w-32 h-24 px-2 justify-center items-center gap-1 rounded-2xl border-2",
-                          isSelected
-                            ? "border-accent bg-surface"
-                            : "border-border bg-surface-secondary"
-                        )}
-                      >
-                        {payment.image ? (
-                          <Image
-                            source={{ uri: payment.image }}
-                            style={{ width: 24, height: 24 }}
-                            contentFit="contain"
-                          />
-                        ) : null}
-                        <Typography className="text-center text-sm">{payment.name}</Typography>
-                      </View>
+                  <PanelRadioGroup.Item
+                    key={payment.id}
+                    value={payment.id}
+                    hideIndicator
+                    className={cn(
+                      "w-32 min-h-24 justify-center",
+                      paymentId === payment.id
+                        ? "border-primary bg-surface"
+                        : "border-border bg-surface-secondary"
                     )}
-                  </RadioGroup.Item>
+                  >
+                    <View className="items-center justify-center gap-1">
+                      {payment.image ? (
+                        <Image
+                          source={{ uri: payment.image }}
+                          style={{ width: 24, height: 24 }}
+                          contentFit="contain"
+                          accessible={false}
+                        />
+                      ) : null}
+                      <PanelTypography className="text-center text-sm">
+                        {payment.name}
+                      </PanelTypography>
+                    </View>
+                  </PanelRadioGroup.Item>
                 ))}
             </View>
-          </RadioGroup>
+          </PanelRadioGroup>
         )}
         {errors.payment_id ? (
-          <Typography type="body-xs" className="text-danger">
+          <Typography type="body-xs" className="text-destructive-foreground">
             {errors.payment_id.message}
           </Typography>
         ) : null}
@@ -553,22 +558,14 @@ function PaymentFields({
 
       {selectedPayment?.tender_input.type === "reference" ? (
         <View className="gap-2">
-          <TextField
+          <PanelInput
             isRequired={selectedPayment.tender_input.required}
-            isInvalid={Boolean(errors.tender_value)}
-          >
-            <Label>{selectedPayment.tender_input.label ?? t("checkout.paymentReference")}</Label>
-            <Input
-              value={tenderValue}
-              onChangeText={(value) => setValue("tender_value", value, { shouldValidate: true })}
-              placeholder={selectedPayment.tender_input.placeholder ?? t("checkout.optional")}
-            />
-            {errors.tender_value ? (
-              <Typography type="body-xs" className="text-danger">
-                {errors.tender_value.message}
-              </Typography>
-            ) : null}
-          </TextField>
+            label={selectedPayment.tender_input.label ?? t("checkout.paymentReference")}
+            value={tenderValue}
+            onChangeText={(value) => setValue("tender_value", value, { shouldValidate: true })}
+            placeholder={selectedPayment.tender_input.placeholder ?? t("checkout.optional")}
+            errorMessage={errors.tender_value?.message}
+          />
         </View>
       ) : selectedPayment?.tender_input.type === "amount" ? (
         <View className="gap-3">
@@ -578,33 +575,37 @@ function PaymentFields({
             </Typography>
             <View className="flex-row flex-wrap gap-2">
               {cashPresets.map((amount, index) => (
-                <Button
+                <PanelButton
                   key={amount}
                   size="sm"
-                  variant={cashReceivedAmount === amount ? "primary" : "secondary"}
+                  variant={cashReceivedAmount === amount ? "primary" : "outline"}
                   onPress={() => setValue("tender_value", String(amount), { shouldValidate: true })}
                 >
-                  <Button.Label>
+                  <>
                     {index === 0
                       ? t("checkout.exactCash", { amount: formatRupiah(amount) })
                       : formatRupiah(amount)}
-                  </Button.Label>
-                </Button>
+                  </>
+                </PanelButton>
               ))}
             </View>
           </View>
           <View className="flex-row items-end gap-4">
-            <RupiahField
-              className="flex-1"
+            <PanelInput
+              containerClassName="flex-1"
               label={t("checkout.otherAmount")}
-              value={tenderValue}
-              onChange={(value) => setValue("tender_value", value, { shouldValidate: true })}
               placeholder={selectedPayment.tender_input.placeholder ?? "Rp0"}
-              minValue={0}
-              step={1000}
+              keyboardType="numeric"
+              startContent={
+                <PanelTypography type="body-sm" weight="medium" muted>
+                  {RUPIAH_PREFIX}
+                </PanelTypography>
+              }
+              interactiveContent={false}
+              {...tenderInput}
             />
             <View className="min-w-32 gap-1">
-              <Typography type="body-xs" color="muted">
+              <Typography type="body-xs" muted>
                 {t("checkout.change")}
               </Typography>
               <Typography weight="semibold" className="tabular-nums">
@@ -613,7 +614,7 @@ function PaymentFields({
             </View>
           </View>
           {errors.tender_value ? (
-            <Typography type="body-xs" className="text-danger">
+            <Typography type="body-xs" className="text-destructive-foreground">
               {errors.tender_value.message}
             </Typography>
           ) : null}
@@ -656,66 +657,52 @@ function CustomerFields({
       <Typography type="body-sm" weight="semibold">
         {t("checkout.customer")}
       </Typography>
-      <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
+      <ScrollFade orientation="horizontal" size={32}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerClassName="gap-2 pb-1"
         >
-          <Chip
-            variant={customerType === "guest" ? "primary" : "secondary"}
+          <PanelChip
+            variant={customerType === "guest" ? "primary" : "default"}
+            selected={customerType === "guest"}
             onPress={() => selectCustomerType("guest")}
           >
-            <Chip.Label>{t("checkout.merchant")}</Chip.Label>
-          </Chip>
-          <Chip
-            variant={customerType === "customer" ? "primary" : "secondary"}
+            {t("checkout.merchant")}
+          </PanelChip>
+          <PanelChip
+            variant={customerType === "customer" ? "primary" : "default"}
+            selected={customerType === "customer"}
             onPress={() => selectCustomerType("customer")}
           >
-            <Chip.Label>{t("checkout.registeredCustomer")}</Chip.Label>
-          </Chip>
-          <Chip
-            variant={customerType === "anonymous" ? "primary" : "secondary"}
+            {t("checkout.registeredCustomer")}
+          </PanelChip>
+          <PanelChip
+            variant={customerType === "anonymous" ? "primary" : "default"}
+            selected={customerType === "anonymous"}
             onPress={() => selectCustomerType("anonymous")}
           >
-            <Chip.Label>{t("checkout.walkIn")}</Chip.Label>
-          </Chip>
+            {t("checkout.walkIn")}
+          </PanelChip>
         </ScrollView>
-      </ScrollShadow>
+      </ScrollFade>
 
       {customerType === "guest" ? (
         <View className="gap-2">
-          <Select
-            presentation={choicePresentation}
-            value={
-              guestId
-                ? {
-                    value: guestId,
-                    label:
-                      guests.find((guest) => guest.id === guestId)?.name ?? t("checkout.merchant"),
-                  }
-                : undefined
-            }
-            onValueChange={(option) => setValue("guest_id", option?.value || null)}
+          <PanelSelect
+            presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+            value={guestId ?? undefined}
+            valueLabel={guests.find((guest) => guest.id === guestId)?.name}
+            onValueChange={(value) => setValue("guest_id", value || null)}
+            title={t("checkout.selectMerchantCustomer")}
+            placeholder={t("checkout.selectMerchantCustomer")}
           >
-            <Select.Trigger>
-              <Select.Value placeholder={t("checkout.selectMerchantCustomer")} />
-              <Select.TriggerIndicator />
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Overlay />
-              <Select.Content
-                presentation={choicePresentation}
-                width={choicePresentation === "popover" ? "trigger" : undefined}
-              >
-                {guests.map((guest) => (
-                  <Select.Item key={guest.id} value={guest.id} label={guest.name} />
-                ))}
-              </Select.Content>
-            </Select.Portal>
-          </Select>
+            {guests.map((guest) => (
+              <PanelSelect.Item key={guest.id} value={guest.id} label={guest.name} />
+            ))}
+          </PanelSelect>
           {errors.guest_id ? (
-            <Typography type="body-xs" className="text-danger">
+            <Typography type="body-xs" className="text-destructive-foreground">
               {errors.guest_id.message}
             </Typography>
           ) : null}
@@ -728,13 +715,15 @@ function CustomerFields({
             control={control}
             name="customer_search"
             render={({ field }) => (
-              <SearchField value={field.value} onChange={field.onChange}>
-                <SearchField.Group>
-                  <SearchField.SearchIcon />
-                  <SearchField.Input placeholder={t("checkout.searchCustomerEmail")} />
-                  <SearchField.ClearButton />
-                </SearchField.Group>
-              </SearchField>
+              <SearchBar
+                value={field.value}
+                onChangeText={field.onChange}
+                onBlur={field.onBlur}
+                ref={field.ref}
+                placeholder={t("checkout.searchCustomerEmail")}
+                clearLabel={t("common.clear")}
+                panel="never"
+              />
             )}
           />
           {customerResults.map((customer) => (
@@ -750,14 +739,14 @@ function CustomerFields({
                 {customer.name}
               </Typography>
               {customer.email || customer.phone ? (
-                <Typography type="body-xs" color="muted">
+                <Typography type="body-xs" muted>
                   {[customer.email, customer.phone].filter(Boolean).join(" · ")}
                 </Typography>
               ) : null}
             </Pressable>
           ))}
           {errors.customer_id ? (
-            <Typography type="body-xs" className="text-danger">
+            <Typography type="body-xs" className="text-destructive-foreground">
               {errors.customer_id.message}
             </Typography>
           ) : null}
@@ -777,7 +766,7 @@ function CheckoutProcessingState({ accentColor }: { accentColor: string }) {
         <Typography type="h4" weight="semibold" className="text-center">
           {t("checkout.processingPayment")}
         </Typography>
-        <Typography type="body-sm" color="muted" className="max-w-sm text-center">
+        <Typography type="body-sm" muted className="max-w-sm text-center">
           {t("checkout.processingDescription")}
         </Typography>
       </View>
@@ -817,8 +806,8 @@ function CheckoutFormScrollContent({
     >
       <View className="w-full max-w-3xl gap-4">
         {cartError ? (
-          <View className="rounded-lg bg-danger/10 px-3 py-2.5">
-            <Typography type="body-sm" className="text-danger">
+          <View className="rounded-lg bg-destructive-soft px-3 py-2.5">
+            <Typography type="body-sm" className="text-destructive-foreground">
               {cartError}
             </Typography>
           </View>
@@ -835,12 +824,13 @@ function CheckoutFormScrollContent({
             control={control}
             name="notes"
             render={({ field }) => (
-              <TextArea
+              <PanelTextarea
+                ref={field.ref}
+                onBlur={field.onBlur}
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder={t("checkout.optional")}
-                numberOfLines={2}
-                className="h-16"
+                rows={2}
               />
             )}
           />
@@ -1094,6 +1084,7 @@ function CheckoutContentBody({
   const { t } = useTranslation();
   const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
+  const submissionInFlightRef = useRef(false);
   const [sheetFooterHeight, setSheetFooterHeight] = useState(0);
   const paymentGroup = useWatch({ control, name: "payment_group" });
   const paymentId = useWatch({ control, name: "payment_id" });
@@ -1148,7 +1139,9 @@ function CheckoutContentBody({
   });
 
   const onSubmit = async (values: CheckoutFormValues) => {
-    await submitCheckout({
+    if (submissionInFlightRef.current) return;
+    submissionInFlightRef.current = true;
+    const completed = await submitCheckout({
       values,
       isAmountTender,
       cashReceivedAmount,
@@ -1163,6 +1156,7 @@ function CheckoutContentBody({
       setIsCompleting,
       onPaymentReady,
     });
+    if (!completed) submissionInFlightRef.current = false;
   };
   const onInvalid = () => setCheckoutError({ key: "checkout.completeRequired" });
   return (
@@ -1219,7 +1213,9 @@ function CheckoutContentBody({
         taxAmount: taxAmount ?? 0,
         total,
         isDisabled: isCheckoutDisabled,
-        onComplete: handleSubmit(onSubmit, onInvalid),
+        onComplete: () => {
+          void handleSubmit(onSubmit, onInvalid)();
+        },
         onHeightChange: setSheetFooterHeight,
       }}
     />

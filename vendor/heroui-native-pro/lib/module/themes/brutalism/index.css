@@ -1,7 +1,0 @@
-/* HeroUI Native Pro - Brutalism Theme */
-
-/* Theme variables (colors, radii, shadows, etc.) */
-@import './brutalism.css';
-
-/* Component overrides (unlayered so they win over heroui-native component styles) */
-@import './components/index.css';

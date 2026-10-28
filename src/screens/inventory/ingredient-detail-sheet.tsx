@@ -1,3 +1,4 @@
+import { Button as PanelButton, Typography, Card, Chip as PanelChip } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -6,7 +7,6 @@ import RecordMovementOverlay from "@/screens/inventory/record-movement-overlay";
 import type { Ingredient } from "@/screens/inventory/ingredient-stock-overlay-utils";
 import { formatDateTime, formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { Button, Card, Chip, Typography } from "heroui-native";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -31,22 +31,25 @@ function IngredientStatus({ ingredient }: { ingredient: Ingredient }): React.JSX
   )[status];
 
   return (
-    <Chip color={statusPresentation} size="sm" variant="soft">
-      <Chip.Label>
+    <PanelChip
+      variant={statusPresentation === "danger" ? "destructive" : statusPresentation}
+      size="sm"
+    >
+      <PanelChip.Label>
         {status === "inactive"
           ? t("common.inactive")
           : status === "lowStock"
             ? t("ingredients.lowStock")
             : t("common.active")}
-      </Chip.Label>
-    </Chip>
+      </PanelChip.Label>
+    </PanelChip>
   );
 }
 
 function DetailMetric({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
     <View className="min-w-0 flex-1 rounded-2xl bg-surface-secondary p-4">
-      <Typography type="body-xs" color="muted" numberOfLines={1}>
+      <Typography type="body-xs" muted numberOfLines={1}>
         {label}
       </Typography>
       <Typography type="body-sm" weight="semibold" className="mt-1" numberOfLines={1}>
@@ -68,7 +71,7 @@ function DetailAction({
   const [themeColorAccent] = useCSSVariable(["--color-primary"]) as [string];
 
   return (
-    <Button
+    <PanelButton
       variant="outline"
       size="sm"
       className="min-w-0 flex-1"
@@ -76,8 +79,10 @@ function DetailAction({
       accessibilityLabel={label}
     >
       <AppIcon icon={icon} size={17} color={themeColorAccent} />
-      <Button.Label numberOfLines={1}>{label}</Button.Label>
-    </Button>
+      <Typography type="body-sm" numberOfLines={1}>
+        {label}
+      </Typography>
+    </PanelButton>
   );
 }
 
@@ -141,8 +146,8 @@ export default function IngredientDetailSheet({
           contentContainerClassName="gap-4 px-5 pb-20 pt-5"
           showsVerticalScrollIndicator={false}
         >
-          <Card className="gap-3">
-            <Card.Header>
+          <Card className="gap-3 p-4">
+            <Card.Header className="p-0">
               <View className="flex-row items-center justify-between gap-3">
                 <View className="gap-2 flex-1">
                   <Card.Title>{t("ingredients.inventoryDetails")}</Card.Title>
@@ -153,9 +158,9 @@ export default function IngredientDetailSheet({
                 <IngredientStatus ingredient={ingredient} />
               </View>
             </Card.Header>
-            <Card.Body className="gap-3">
-              <View className="gap-1 rounded-2xl bg-accent-soft p-4">
-                <Typography type="body-xs" color="muted">
+            <Card.Content className="gap-3 p-0">
+              <View className="gap-1 rounded-2xl bg-accent p-4">
+                <Typography type="body-xs" muted>
                   {t("ingredients.currentStock")}
                 </Typography>
                 <Typography type="h2" weight="bold" className="tabular-nums">
@@ -169,14 +174,14 @@ export default function IngredientDetailSheet({
                 />
                 <DetailMetric label={t("ingredients.unit")} value={ingredient.base_unit} />
               </View>
-            </Card.Body>
+            </Card.Content>
           </Card>
 
-          <Card className="gap-3">
-            <Card.Header>
+          <Card className="gap-3 p-4">
+            <Card.Header className="p-0">
               <Card.Title>{t("ingredients.detailsTitle")}</Card.Title>
             </Card.Header>
-            <Card.Body className="gap-3">
+            <Card.Content className="gap-3 p-0">
               <View className="flex-row gap-3">
                 <DetailMetric
                   label={t("ingredients.costPerUnit")}
@@ -190,29 +195,33 @@ export default function IngredientDetailSheet({
                 />
               </View>
               <View className="flex-row gap-2">
-                <Button
+                <PanelButton
                   variant="outline"
                   className="min-w-0 flex-1"
                   onPress={() => void dismissThen(onShowMovements)}
+                  accessibilityLabel={t("ingredients.inventoryMovements")}
                 >
                   <AppIcon icon={AppIcons.swapVertical} size={18} color={themeColorForeground} />
-                  <Button.Label numberOfLines={1}>
+                  <Typography type="body-sm" numberOfLines={1}>
                     {t("ingredients.inventoryMovements")}
-                  </Button.Label>
-                </Button>
-                <Button
+                  </Typography>
+                </PanelButton>
+                <PanelButton
                   variant="outline"
                   className="min-w-0 flex-1"
                   onPress={() => void dismissThen(onShowSupplierOffers)}
+                  accessibilityLabel={t("ingredients.supplierOffers")}
                 >
                   <AppIcon icon={AppIcons.people} size={18} color={themeColorForeground} />
-                  <Button.Label numberOfLines={1}>{t("ingredients.supplierOffers")}</Button.Label>
-                </Button>
+                  <Typography type="body-sm" numberOfLines={1}>
+                    {t("ingredients.supplierOffers")}
+                  </Typography>
+                </PanelButton>
               </View>
-              <Typography type="body-xs" color="muted" className="px-3 pt-2">
+              <Typography type="body-xs" muted className="px-3 pt-2">
                 {t("ingredients.updatedAt")}: {formatDateTime(ingredient.updated_at)}
               </Typography>
-            </Card.Body>
+            </Card.Content>
           </Card>
         </ScrollView>
       </TrueSheet>

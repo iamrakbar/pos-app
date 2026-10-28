@@ -1,12 +1,24 @@
-import { useToast } from "panelui-native";
+import {
+  Button as PanelButton,
+  Label as PanelLabel,
+  Tabs as PanelTabs,
+  Typography,
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  Input as PanelInput,
+  Textarea as PanelTextarea,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Card,
+  Switch as PanelSwitch,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import type { MerchantImageAsset } from "@/api/endpoints/merchant";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import ErrorState from "@/components/common/error-state";
-import { FormNumberField } from "@/components/common/form-number-field";
-import LoadingState from "@/components/common/loading-state";
+import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import {
   useMerchantProfile,
   useUpdateMerchantProfile,
@@ -24,19 +36,15 @@ import { Image } from "expo-image";
 import { File as ExpoFile } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
-import {
-  Button,
-  Card,
-  Input,
-  Label,
-  Switch,
-  Tabs,
-  TextArea,
-  TextField,
-  Typography,
-} from "heroui-native";
 import React from "react";
-import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
+import {
+  Controller,
+  useController,
+  useForm,
+  useWatch,
+  type Control,
+  type FieldErrors,
+} from "react-hook-form";
 import { Platform, Pressable, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { router, Stack } from "expo-router";
@@ -239,7 +247,7 @@ async function saveMerchantProfile({
 
 function SectionHeading({ title, description }: { title: string; description?: string }) {
   return (
-    <Card.Header className="pb-2">
+    <Card.Header className="pb-2 p-0">
       <View className="gap-1">
         <Card.Title>{title}</Card.Title>
         {description ? <Card.Description>{description}</Card.Description> : null}
@@ -267,13 +275,13 @@ function MerchantImageSlot({
 
   return (
     <View className="gap-2">
-      <Label>{title}</Label>
+      <PanelLabel>{title}</PanelLabel>
       <Pressable
         accessibilityRole="button"
         onPress={onSelect}
         disabled={isUploading}
         style={{ aspectRatio }}
-        className="w-full items-center justify-center gap-2 overflow-hidden rounded-panel-inner bg-surface-secondary active:opacity-80"
+        className="w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-surface-secondary active:opacity-80"
       >
         {imageUri ? (
           <Image
@@ -283,7 +291,7 @@ function MerchantImageSlot({
           />
         ) : (
           <>
-            <View className="size-12 items-center justify-center rounded-full bg-accent-soft">
+            <View className="size-12 items-center justify-center rounded-full bg-accent">
               <AppIcon icon={AppIcons.image} size={22} color={accentColor} />
             </View>
             <Typography type="body-sm" weight="semibold">
@@ -292,7 +300,7 @@ function MerchantImageSlot({
           </>
         )}
       </Pressable>
-      <Typography type="body-xs" color="muted">
+      <Typography type="body-xs" muted>
         {t("merchantProfile.imageRequirements")}
       </Typography>
     </View>
@@ -309,41 +317,41 @@ function GeneralTab({
   const { t } = useTranslation();
 
   return (
-    <Card className="gap-3">
+    <Card className="gap-3 p-4">
       <SectionHeading
         title={t("merchantProfile.generalTitle")}
         description={t("merchantProfile.generalDescription")}
       />
-      <Card.Body className="gap-5">
+      <Card.Content className="gap-5 p-0">
         <Controller
           control={control}
           name="name"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextField isRequired isInvalid={Boolean(errors.name)}>
-              <Label>{t("merchantProfile.name")}</Label>
-              <Input value={value} onChangeText={onChange} onBlur={onBlur} />
-              {errors.name?.message ? (
-                <Typography type="body-xs" className="text-danger">
-                  {errors.name.message}
-                </Typography>
-              ) : null}
-            </TextField>
+          render={({ field: { value, onChange, onBlur, ref } }) => (
+            <PanelInput
+              ref={ref}
+              label={t("merchantProfile.name")}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              errorMessage={errors.name?.message}
+              isRequired
+            />
           )}
         />
 
         <Controller
           control={control}
           name="description"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextField isInvalid={Boolean(errors.description)}>
-              <Label>{t("merchantProfile.description")}</Label>
-              <TextArea value={value} onChangeText={onChange} onBlur={onBlur} numberOfLines={3} />
-              {errors.description?.message ? (
-                <Typography type="body-xs" className="text-danger">
-                  {errors.description.message}
-                </Typography>
-              ) : null}
-            </TextField>
+          render={({ field: { value, onChange, onBlur, ref } }) => (
+            <PanelTextarea
+              ref={ref}
+              label={t("merchantProfile.description")}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              errorMessage={errors.description?.message}
+              rows={3}
+            />
           )}
         />
 
@@ -351,43 +359,35 @@ function GeneralTab({
           <Controller
             control={control}
             name="phone"
-            render={({ field: { value, onChange, onBlur } }) => (
-              <TextField className="flex-1" isInvalid={Boolean(errors.phone)}>
-                <Label>{t("merchantProfile.phone")}</Label>
-                <Input
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  keyboardType="phone-pad"
-                />
-                {errors.phone?.message ? (
-                  <Typography type="body-xs" className="text-danger">
-                    {errors.phone.message}
-                  </Typography>
-                ) : null}
-              </TextField>
+            render={({ field: { value, onChange, onBlur, ref } }) => (
+              <PanelInput
+                ref={ref}
+                label={t("merchantProfile.phone")}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                errorMessage={errors.phone?.message}
+                containerClassName="flex-1"
+                keyboardType="phone-pad"
+              />
             )}
           />
 
           <Controller
             control={control}
             name="email"
-            render={({ field: { value, onChange, onBlur } }) => (
-              <TextField className="flex-1" isInvalid={Boolean(errors.email)}>
-                <Label>{t("merchantProfile.email")}</Label>
-                <Input
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-                {errors.email?.message ? (
-                  <Typography type="body-xs" className="text-danger">
-                    {errors.email.message}
-                  </Typography>
-                ) : null}
-              </TextField>
+            render={({ field: { value, onChange, onBlur, ref } }) => (
+              <PanelInput
+                ref={ref}
+                label={t("merchantProfile.email")}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                errorMessage={errors.email?.message}
+                containerClassName="flex-1"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
             )}
           />
         </View>
@@ -395,39 +395,37 @@ function GeneralTab({
         <Controller
           control={control}
           name="website"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextField isInvalid={Boolean(errors.website)}>
-              <Label>{t("merchantProfile.website")}</Label>
-              <Input
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                autoCapitalize="none"
-                keyboardType="url"
-              />
-              {errors.website?.message ? (
-                <Typography type="body-xs" className="text-danger">
-                  {errors.website.message}
-                </Typography>
-              ) : null}
-            </TextField>
+          render={({ field: { value, onChange, onBlur, ref } }) => (
+            <PanelInput
+              ref={ref}
+              label={t("merchantProfile.website")}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              errorMessage={errors.website?.message}
+              keyboardType="url"
+              autoCapitalize="none"
+            />
           )}
         />
 
         <Controller
           control={control}
           name="terms"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextField isInvalid={Boolean(errors.terms)}>
-              <Label>{t("merchantProfile.terms")}</Label>
-              <TextArea value={value} onChangeText={onChange} onBlur={onBlur} numberOfLines={3} />
-              <Typography type="body-xs" color="muted">
-                {t("merchantProfile.termsHint")}
-              </Typography>
-            </TextField>
+          render={({ field: { value, onChange, onBlur, ref } }) => (
+            <PanelTextarea
+              ref={ref}
+              label={t("merchantProfile.terms")}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              errorMessage={errors.terms?.message}
+              rows={3}
+              description={t("merchantProfile.termsHint")}
+            />
           )}
         />
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -450,12 +448,12 @@ function ImagesTab({
   const { t } = useTranslation();
 
   return (
-    <Card className="gap-3">
+    <Card className="gap-3 p-4">
       <SectionHeading
         title={t("merchantProfile.imagesTitle")}
         description={t("merchantProfile.imagesDescription")}
       />
-      <Card.Body className="gap-5">
+      <Card.Content className="gap-5 p-0">
         <MerchantImageSlot
           title={t("merchantProfile.logo")}
           imageUri={logoUri}
@@ -472,7 +470,7 @@ function ImagesTab({
           isUploading={uploadingKind === "cover"}
           onSelect={onSelectCover}
         />
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -486,12 +484,12 @@ function TypeTab({ control }: { control: Control<MerchantProfileFormValues> }) {
   ];
 
   return (
-    <Card className="gap-3">
+    <Card className="gap-3 p-4">
       <SectionHeading
         title={t("merchantProfile.typeTitle")}
         description={t("merchantProfile.typeDescription")}
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         {rows.map((row) => (
           <Controller
             key={row.name}
@@ -502,12 +500,12 @@ function TypeTab({ control }: { control: Control<MerchantProfileFormValues> }) {
                 <Typography type="body-sm" weight="semibold">
                   {row.label}
                 </Typography>
-                <Switch isSelected={value} onSelectedChange={onChange} />
+                <PanelSwitch value={value} onValueChange={onChange} label={row.label} />
               </View>
             )}
           />
         ))}
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -521,12 +519,27 @@ function TaxTab({
 }) {
   const { t } = useTranslation();
   const taxEnabled = useWatch({ control, name: "tax_is_enable" });
+  const {
+    field: {
+      value: taxFieldValue,
+      onChange: taxFieldChange,
+      onBlur: taxFieldBlur,
+      ref: taxFieldRef,
+    },
+  } = useController({ control, name: "tax_value" });
+  const { localizedInputProps: taxInput } = useLocalizedNumberInput({
+    value: taxFieldValue,
+    onChange: taxFieldChange,
+    formatOptions: { useGrouping: false, minimumFractionDigits: 0, maximumFractionDigits: 2 },
+    minValue: 0,
+    inputProps: { onBlur: taxFieldBlur },
+  });
 
   return (
     <View className="gap-6">
-      <Card className="gap-3">
+      <Card className="gap-3 p-4">
         <SectionHeading title={t("merchantProfile.taxCalculationTitle")} />
-        <Card.Body className="gap-4">
+        <Card.Content className="gap-4 p-0">
           <Controller
             control={control}
             name="tax_is_enable"
@@ -535,7 +548,11 @@ function TaxTab({
                 <Typography type="body-sm" weight="semibold">
                   {t("merchantProfile.taxEnable")}
                 </Typography>
-                <Switch isSelected={value} onSelectedChange={onChange} />
+                <PanelSwitch
+                  value={value}
+                  onValueChange={onChange}
+                  label={t("merchantProfile.taxEnable")}
+                />
               </View>
             )}
           />
@@ -545,49 +562,36 @@ function TaxTab({
               <Controller
                 control={control}
                 name="tax_name"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <TextField className="flex-1" isRequired isInvalid={Boolean(errors.tax_name)}>
-                    <Label>{t("merchantProfile.taxName")}</Label>
-                    <Input value={value} onChangeText={onChange} onBlur={onBlur} />
-                    {errors.tax_name?.message ? (
-                      <Typography type="body-xs" className="text-danger">
-                        {errors.tax_name.message}
-                      </Typography>
-                    ) : null}
-                  </TextField>
+                render={({ field: { value, onChange, onBlur, ref } }) => (
+                  <PanelInput
+                    ref={ref}
+                    label={t("merchantProfile.taxName")}
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    errorMessage={errors.tax_name?.message}
+                    containerClassName="flex-1"
+                    isRequired
+                  />
                 )}
               />
-              <Controller
-                control={control}
-                name="tax_value"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <FormNumberField
-                    className="flex-1"
-                    label={t("merchantProfile.taxValue")}
-                    value={value}
-                    onChange={onChange}
-                    minValue={0}
-                    formatOptions={{ maximumFractionDigits: 2 }}
-                    inputProps={{ onBlur }}
-                    isRequired
-                    isInvalid={Boolean(errors.tax_value)}
-                  >
-                    {errors.tax_value?.message ? (
-                      <Typography type="body-xs" className="text-danger">
-                        {errors.tax_value.message}
-                      </Typography>
-                    ) : null}
-                  </FormNumberField>
-                )}
+              <PanelInput
+                ref={taxFieldRef}
+                containerClassName="flex-1"
+                label={t("merchantProfile.taxValue")}
+                errorMessage={errors.tax_value?.message}
+                isRequired
+                keyboardType="decimal-pad"
+                {...taxInput}
               />
             </View>
           ) : null}
-        </Card.Body>
+        </Card.Content>
       </Card>
 
-      <Card className="gap-3">
+      <Card className="gap-3 p-4">
         <SectionHeading title={t("merchantProfile.feesTitle")} />
-        <Card.Body>
+        <Card.Content className="p-0">
           <Controller
             control={control}
             name="charge_app_payment_fee_to_customer"
@@ -596,11 +600,15 @@ function TaxTab({
                 <Typography type="body-sm" weight="semibold">
                   {t("merchantProfile.chargeFeeToCustomer")}
                 </Typography>
-                <Switch isSelected={value} onSelectedChange={onChange} />
+                <PanelSwitch
+                  value={value}
+                  onValueChange={onChange}
+                  label={t("merchantProfile.chargeFeeToCustomer")}
+                />
               </View>
             )}
           />
-        </Card.Body>
+        </Card.Content>
       </Card>
     </View>
   );
@@ -653,43 +661,39 @@ function MerchantProfileContent({
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Button
+            <PanelButton
               variant="ghost"
-              isIconOnly
+              size="icon"
               onPress={() => onQrChange(true)}
               accessibilityLabel={t("merchantProfile.qrTitle")}
             >
               <AppIcon icon={AppIcons.qrCode} size={20} color={foregroundColor} />
-            </Button>
+            </PanelButton>
           ),
         }}
       />
       <MerchantQrOverlay slug={profile.slug} isOpen={isQrOpen} onOpenChange={onQrChange} />
       <View className="w-full max-w-3xl gap-6">
         <View className="flex-1 gap-6">
-          <Tabs value={activeTab} onValueChange={onTabChange}>
-            <Tabs.List>
-              <Tabs.ScrollView>
-                <Tabs.Indicator />
-                <Tabs.Trigger value="general">
-                  <Tabs.Label>{t("merchantProfile.tabGeneral")}</Tabs.Label>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="images">
-                  <Tabs.Label>{t("merchantProfile.tabImages")}</Tabs.Label>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="type">
-                  <Tabs.Label>{t("merchantProfile.tabType")}</Tabs.Label>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="tax">
-                  <Tabs.Label>{t("merchantProfile.tabTax")}</Tabs.Label>
-                </Tabs.Trigger>
-              </Tabs.ScrollView>
-            </Tabs.List>
+          <PanelTabs
+            defaultValue="general"
+            value={activeTab}
+            onValueChange={onTabChange}
+            keepMounted
+          >
+            <PanelTabs.List scrollable>
+              <PanelTabs.Trigger value="general">
+                {t("merchantProfile.tabGeneral")}
+              </PanelTabs.Trigger>
+              <PanelTabs.Trigger value="images">{t("merchantProfile.tabImages")}</PanelTabs.Trigger>
+              <PanelTabs.Trigger value="type">{t("merchantProfile.tabType")}</PanelTabs.Trigger>
+              <PanelTabs.Trigger value="tax">{t("merchantProfile.tabTax")}</PanelTabs.Trigger>
+            </PanelTabs.List>
 
-            <Tabs.Content value="general" className="pt-4">
+            <PanelTabs.Content value="general" className="pt-4">
               <GeneralTab control={control} errors={errors} />
-            </Tabs.Content>
-            <Tabs.Content value="images" className="pt-4">
+            </PanelTabs.Content>
+            <PanelTabs.Content value="images" className="pt-4">
               <ImagesTab
                 logoUri={profile.logo_url}
                 coverUri={profile.cover_url}
@@ -698,32 +702,30 @@ function MerchantProfileContent({
                 onSelectLogo={onSelectLogo}
                 onSelectCover={onSelectCover}
               />
-            </Tabs.Content>
-            <Tabs.Content value="type" className="pt-4">
+            </PanelTabs.Content>
+            <PanelTabs.Content value="type" className="pt-4">
               <TypeTab control={control} />
-            </Tabs.Content>
-            <Tabs.Content value="tax" className="pt-4">
+            </PanelTabs.Content>
+            <PanelTabs.Content value="tax" className="pt-4">
               <TaxTab control={control} errors={errors} />
-            </Tabs.Content>
-          </Tabs>
+            </PanelTabs.Content>
+          </PanelTabs>
 
           {activeTab !== "images" ? (
             <View className="gap-3">
               {errors.root?.server?.message ? (
-                <Typography type="body-sm" className="text-danger">
+                <Typography type="body-sm" className="text-destructive-foreground">
                   {errors.root.server.message}
                 </Typography>
               ) : null}
 
               <View className="flex-col gap-3 md:flex-row">
-                <Button variant="ghost" onPress={onCancel} isDisabled={isSaving}>
-                  <Button.Label>{t("common.cancel")}</Button.Label>
-                </Button>
-                <Button className="flex-1" onPress={onSubmit} isDisabled={!isDirty || isSaving}>
-                  <Button.Label>
-                    {isSaving ? t("common.saving") : t("merchantProfile.saveChanges")}
-                  </Button.Label>
-                </Button>
+                <PanelButton variant="ghost" onPress={onCancel} disabled={isSaving}>
+                  {t("common.cancel")}
+                </PanelButton>
+                <PanelButton className="flex-1" onPress={onSubmit} disabled={!isDirty || isSaving}>
+                  {isSaving ? t("common.saving") : t("merchantProfile.saveChanges")}
+                </PanelButton>
               </View>
             </View>
           ) : null}
@@ -796,11 +798,32 @@ export default function MerchantProfileScreen(): React.JSX.Element {
   });
 
   if (profileQuery.isLoading || (profileQuery.isFetching && !profileQuery.isFetchedAfterMount)) {
-    return <LoadingState message={t("merchantProfile.loading")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("merchantProfile.loading")}
+        </PanelLoadingText>
+      </View>
+    );
   }
 
   if (profileQuery.isError || !profile) {
-    return <ErrorState error={profileQuery.error} onRetry={profileQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(profileQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void profileQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   const pickImage = async (kind: ImageKind) => {

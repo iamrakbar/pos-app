@@ -1,6 +1,13 @@
-import { useToast } from "panelui-native";
+import {
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  Typography,
+  QRCode,
+  useToast,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
-import AdaptiveFormOverlay from "@/components/common/adaptive-form-overlay";
+import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useTranslation } from "@/stores/use-locale";
@@ -9,16 +16,13 @@ import { Asset, requestPermissionsAsync } from "expo-media-library";
 import { EncodingType, File as ExpoFile, Paths } from "expo-file-system";
 import * as Linking from "expo-linking";
 import * as Sharing from "expo-sharing";
-import { Button, Typography } from "heroui-native";
 import React from "react";
 import { Platform, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
+import { Image } from "expo-image";
+import { captureRef } from "react-native-view-shot";
 
 type TableData = App.Data.Merchant.Area.TableData;
 type QrAction = "download" | "share" | null;
-type QrSvgRef = {
-  toDataURL: (callback: (base64: string) => void, options?: object) => void;
-};
 
 type TableQrOverlayProps = {
   table: TableData | null;
@@ -109,18 +113,22 @@ export default function TableQrOverlay({
     "--color-primary-foreground",
   ]) as [string, string, string];
   const [activeAction, setActiveAction] = React.useState<QrAction>(null);
-  const qrRef = React.useRef<QrSvgRef | null>(null);
+  const qrRef = React.useRef<View>(null);
   const orderUrl = table ? getTableOrderUrl(table.id) : null;
   const tableNumberLabel = table ? getTableNumberLabel(table.name) : "TABLE";
   const isUnavailable = !orderUrl;
+  const { isPhonePortrait, sheetRef, handleDidDismiss } = useAdaptiveOverlayPresentation(
+    isOpen && !!table,
+    onOpenChange
+  );
 
   const getQrDataUrl = async (): Promise<string> => {
     if (!qrRef.current) throw new Error(t("areasManagement.tableQrNotReady"));
-    const base64 = await new Promise<string>((resolve) => {
-      qrRef.current?.toDataURL(resolve, {
-        width: QR_EXPORT_SIZE,
-        height: QR_EXPORT_SIZE,
-      });
+    const base64 = await captureRef(qrRef, {
+      format: "png",
+      result: "base64",
+      width: QR_EXPORT_SIZE,
+      height: QR_EXPORT_SIZE,
     });
     return `data:image/png;base64,${base64}`;
   };
@@ -215,112 +223,161 @@ export default function TableQrOverlay({
 
   if (!table) return <></>;
 
-  return (
-    <AdaptiveFormOverlay
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      title={t("areasManagement.tableQrTitle", { table: table.name })}
-      description={t("areasManagement.tableQrDescription")}
-      maxWidthClassName="max-w-lg"
-      footer={
-        <View className="flex-row items-center gap-3 px-5 pb-5 pt-4">
-          <Button
-            variant="outline"
-            className="flex-1"
-            accessibilityLabel={t("areasManagement.tableQrShareAccessibility", {
-              table: table.name,
-            })}
-            isDisabled={isUnavailable || activeAction !== null}
-            onPress={handleShare}
-          >
-            <AppIcon icon={AppIcons.share} size={18} color={mutedColor} />
-            <Button.Label>
-              {activeAction === "share"
-                ? t("areasManagement.tableQrSharing")
-                : t("areasManagement.tableQrShare")}
-            </Button.Label>
-          </Button>
-          <Button
-            className="flex-1"
-            accessibilityLabel={t("areasManagement.tableQrDownloadAccessibility", {
-              table: table.name,
-            })}
-            isDisabled={isUnavailable || activeAction !== null}
-            onPress={handleDownload}
-          >
-            <AppIcon icon={AppIcons.download} size={18} color={accentForegroundColor} />
-            <Button.Label>
-              {activeAction === "download"
-                ? t("areasManagement.tableQrDownloading")
-                : t("areasManagement.tableQrDownload")}
-            </Button.Label>
-          </Button>
-        </View>
-      }
-    >
-      <View className="px-5 gap-4">
-        {orderUrl ? (
-          <View
-            className="rounded-3xl border border-border bg-white p-4"
-            accessible
-            accessibilityRole="image"
-            accessibilityLabel={t("areasManagement.tableQrImageAccessibility", {
-              table: table.name,
-            })}
-          >
-            <View className="items-center gap-1">
-              <QRCode
-                value={orderUrl}
-                size={QR_CODE_SIZE}
-                quietZone={12}
-                backgroundColor="#ffffff"
-                color="#000000"
-                ecl="H"
-                logoSVG={SOEAT_LOGO}
-                logoSize={QR_LOGO_SIZE}
-                logoMargin={6}
-                logoBackgroundColor="#ffffff"
-                logoBorderRadius={12}
-                getRef={(ref) => {
-                  qrRef.current = ref as QrSvgRef | null;
-                }}
-              />
-              <Typography type="h6" weight="bold" className="text-center text-black">
-                {tableNumberLabel}
-              </Typography>
+  const footer = (
+    <View className="flex-row items-center gap-3 px-5 pb-5 pt-4">
+      <PanelButton
+        variant="outline"
+        className="flex-1"
+        accessibilityLabel={t("areasManagement.tableQrShareAccessibility", {
+          table: table.name,
+        })}
+        disabled={isUnavailable || activeAction !== null}
+        onPress={handleShare}
+      >
+        <AppIcon icon={AppIcons.share} size={18} color={mutedColor} />
+        {activeAction === "share"
+          ? t("areasManagement.tableQrSharing")
+          : t("areasManagement.tableQrShare")}
+      </PanelButton>
+      <PanelButton
+        className="flex-1"
+        accessibilityLabel={t("areasManagement.tableQrDownloadAccessibility", {
+          table: table.name,
+        })}
+        disabled={isUnavailable || activeAction !== null}
+        onPress={handleDownload}
+      >
+        <AppIcon icon={AppIcons.download} size={18} color={accentForegroundColor} />
+        {activeAction === "download"
+          ? t("areasManagement.tableQrDownloading")
+          : t("areasManagement.tableQrDownload")}
+      </PanelButton>
+    </View>
+  );
+  const content = (
+    <View className="px-5 gap-4">
+      {orderUrl ? (
+        <View
+          className="rounded-3xl border border-border bg-white p-4"
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={t("areasManagement.tableQrImageAccessibility", {
+            table: table.name,
+          })}
+        >
+          <View className="items-center gap-1">
+            <View ref={qrRef} collapsable={false}>
+              <QRCode value={orderUrl} size="lg" errorCorrection="H">
+                <QRCode.Panel>
+                  <QRCode.Canvas pixelSize={QR_CODE_SIZE} />
+                  <QRCode.Logo>
+                    <Image
+                      source={SOEAT_LOGO}
+                      style={{ width: QR_LOGO_SIZE, height: QR_LOGO_SIZE }}
+                      contentFit="contain"
+                    />
+                  </QRCode.Logo>
+                </QRCode.Panel>
+              </QRCode>
             </View>
-          </View>
-        ) : (
-          <View className="w-full rounded-panel border border-danger/30 bg-danger-soft p-4">
-            <Typography type="body-sm" className="text-danger">
-              {t("areasManagement.tableQrUnavailable")}
+            <Typography type="h6" weight="bold" className="text-center text-black">
+              {tableNumberLabel}
             </Typography>
           </View>
-        )}
-        <View className="gap-1">
-          <Typography type="body-xs" color="muted">
-            {t("areasManagement.tableQrOrderLink")}
+        </View>
+      ) : (
+        <View className="w-full rounded-2xl border border-destructive/30 bg-destructive-soft p-4">
+          <Typography type="body-sm" className="text-destructive-foreground">
+            {t("areasManagement.tableQrUnavailable")}
           </Typography>
-          <View className="flex-row justify-center items-center w-full rounded-lg bg-surface-secondary ">
-            <View className="flex-1 py-2 px-3 overflow-hidden">
-              <Typography type="body-sm" selectable className="text-foreground">
-                {orderUrl ?? t("areasManagement.tableQrUnavailable")}
-              </Typography>
-            </View>
-            <Button
-              variant="ghost"
-              isIconOnly
-              accessibilityLabel={t("areasManagement.tableQrPreviewAccessibility", {
-                table: table.name,
-              })}
-              isDisabled={isUnavailable || activeAction !== null}
-              onPress={handlePreview}
-            >
-              <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
-            </Button>
+        </View>
+      )}
+      <View className="gap-1">
+        <Typography type="body-xs" muted>
+          {t("areasManagement.tableQrOrderLink")}
+        </Typography>
+        <View className="flex-row justify-center items-center w-full rounded-lg bg-surface-secondary ">
+          <View className="flex-1 py-2 px-3 overflow-hidden">
+            <Typography type="body-sm" selectable className="text-foreground">
+              {orderUrl ?? t("areasManagement.tableQrUnavailable")}
+            </Typography>
           </View>
+          <PanelButton
+            variant="ghost"
+            size="icon"
+            accessibilityLabel={t("areasManagement.tableQrPreviewAccessibility", {
+              table: table.name,
+            })}
+            disabled={isUnavailable || activeAction !== null}
+            onPress={handlePreview}
+          >
+            <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
+          </PanelButton>
         </View>
       </View>
-    </AdaptiveFormOverlay>
+    </View>
+  );
+  const title = t("areasManagement.tableQrTitle", { table: table.name });
+  const description = t("areasManagement.tableQrDescription");
+
+  if (isPhonePortrait) {
+    return (
+      <TrueSheet
+        ref={sheetRef}
+        detents={[0.9]}
+        scrollable
+        cornerRadius={24}
+        grabber
+        dimmed
+        onDidDismiss={handleDidDismiss}
+        header={
+          <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+            <Typography type="h4" weight="semibold">
+              {title}
+            </Typography>
+            <Typography type="body-sm" muted>
+              {description}
+            </Typography>
+            <PanelButton
+              variant="ghost"
+              size="sm"
+              accessibilityLabel={t("common.close")}
+              className="absolute right-3 top-3"
+              onPress={() => onOpenChange(false)}
+            >
+              {t("common.close")}
+            </PanelButton>
+          </View>
+        }
+        footer={<View className="bg-surface">{footer}</View>}
+      >
+        {content}
+      </TrueSheet>
+    );
+  }
+
+  return (
+    <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
+      <PanelDialog.Content
+        dismissible={false}
+        className="w-full max-w-lg self-center overflow-hidden p-0"
+      >
+        <PanelButton
+          variant="ghost"
+          size="sm"
+          accessibilityLabel={t("common.close")}
+          className="absolute right-3 top-3 z-50"
+          onPress={() => onOpenChange(false)}
+        >
+          {t("common.close")}
+        </PanelButton>
+        <View className="gap-1.5 px-5 pb-4 pr-14 pt-5">
+          <PanelDialog.Title>{title}</PanelDialog.Title>
+          <PanelDialog.Description>{description}</PanelDialog.Description>
+        </View>
+        {content}
+        {footer}
+      </PanelDialog.Content>
+    </PanelDialog>
   );
 }

@@ -1,4 +1,11 @@
-import { useToast } from "panelui-native";
+import {
+  Alert as PanelAlert,
+  Button as PanelButton,
+  Typography,
+  useToast,
+  Card,
+  Chip as PanelChip,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -10,7 +17,6 @@ import {
   scheduleTestNotification,
 } from "@/services/notifications";
 import { useTranslation } from "@/stores/use-locale";
-import { Alert, Button, Card, Chip, Typography } from "heroui-native";
 import Constants from "expo-constants";
 import React from "react";
 import { Linking, ScrollView, View } from "react-native";
@@ -127,7 +133,7 @@ export default function NotificationsSettingsScreen(): React.JSX.Element {
           onGetToken={handleGetToken}
         />
 
-        <Typography type="body-xs" color="muted" className="px-1">
+        <Typography type="body-xs" muted className="px-1">
           {t("notifications.localOnlyNotice")}
         </Typography>
       </View>
@@ -165,11 +171,11 @@ function NotificationsCard({
   const { t } = useTranslation();
 
   return (
-    <Card>
-      <Card.Body className="gap-4 p-5">
+    <Card className="p-4">
+      <Card.Content className="gap-4 p-5">
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-1 flex-row items-center gap-3">
-            <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
+            <View className="size-10 items-center justify-center rounded-xl bg-accent">
               <AppIcon icon={AppIcons.notifications} size={20} color={accentColor} />
             </View>
             <View className="flex-1 gap-1">
@@ -179,23 +185,23 @@ function NotificationsCard({
               ) : null}
             </View>
           </View>
-          <Chip size="sm" variant="soft" color={statusColor}>
-            <Chip.Label>
+          <PanelChip size="sm" variant={statusColor === "danger" ? "destructive" : statusColor}>
+            <PanelChip.Label>
               {permission.isLoading ? t("notifications.loading") : statusLabel}
-            </Chip.Label>
-          </Chip>
+            </PanelChip.Label>
+          </PanelChip>
         </View>
 
         {permission.status !== "granted" ? (
-          <Alert status={permission.status === "denied" ? "warning" : "accent"}>
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>{t("notifications.permissionTitle")}</Alert.Title>
-              <Alert.Description>
+          <PanelAlert variant={permission.status === "denied" ? "warning" : "info"}>
+            <PanelAlert.Indicator />
+            <PanelAlert.Content>
+              <PanelAlert.Title>{t("notifications.permissionTitle")}</PanelAlert.Title>
+              <PanelAlert.Description>
                 {t(`notifications.descriptionByStatus.${permission.status}`)}
-              </Alert.Description>
-            </Alert.Content>
-          </Alert>
+              </PanelAlert.Description>
+            </PanelAlert.Content>
+          </PanelAlert>
         ) : null}
 
         <NotificationActions
@@ -210,16 +216,16 @@ function NotificationsCard({
         />
 
         {pushToken ? (
-          <View className="rounded-panel bg-surface-secondary p-3">
+          <View className="rounded-2xl bg-surface-secondary p-3">
             <Typography type="body-xs" weight="semibold">
               {t("notifications.tokenLabel")}
             </Typography>
-            <Typography selectable type="body-xs" color="muted" className="mt-1">
+            <Typography selectable type="body-xs" muted className="mt-1">
               {pushToken}
             </Typography>
           </View>
         ) : null}
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -249,40 +255,34 @@ function NotificationActions({
     <View className="gap-3 pt-1">
       {permission.status === "undetermined" ||
       (permission.status === "denied" && permission.canAskAgain) ? (
-        <Button
+        <PanelButton
           className="w-full"
-          isDisabled={permission.isLoading || permission.isRequesting}
+          disabled={permission.isLoading || permission.isRequesting}
           onPress={onRequest}
         >
-          <Button.Label>
-            {permission.isRequesting ? t("notifications.requesting") : t("notifications.allow")}
-          </Button.Label>
-        </Button>
+          {permission.isRequesting ? t("notifications.requesting") : t("notifications.allow")}
+        </PanelButton>
       ) : null}
 
       {permission.status === "denied" && !permission.canAskAgain ? (
-        <Button className="w-full" onPress={onOpenSettings}>
-          <Button.Label>{t("notifications.openSettings")}</Button.Label>
-        </Button>
+        <PanelButton className="w-full" onPress={onOpenSettings}>
+          {t("notifications.openSettings")}
+        </PanelButton>
       ) : null}
 
       {permission.status === "granted" && !isProduction ? (
         <>
-          <Button className="w-full" isDisabled={isSendingTest} onPress={onSendTest}>
-            <Button.Label>
-              {isSendingTest ? t("notifications.sendingTest") : t("notifications.sendTest")}
-            </Button.Label>
-          </Button>
-          <Button
+          <PanelButton className="w-full" disabled={isSendingTest} onPress={onSendTest}>
+            {isSendingTest ? t("notifications.sendingTest") : t("notifications.sendTest")}
+          </PanelButton>
+          <PanelButton
             variant="outline"
             className="w-full"
-            isDisabled={isGettingToken}
+            disabled={isGettingToken}
             onPress={onGetToken}
           >
-            <Button.Label>
-              {isGettingToken ? t("notifications.gettingToken") : t("notifications.getToken")}
-            </Button.Label>
-          </Button>
+            {isGettingToken ? t("notifications.gettingToken") : t("notifications.getToken")}
+          </PanelButton>
         </>
       ) : null}
     </View>

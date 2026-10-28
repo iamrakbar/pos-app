@@ -1,3 +1,12 @@
+import {
+  Button as PanelButton,
+  Chip as PanelChip,
+  Typography as PanelTypography,
+  Skeleton as PanelGridSkeleton,
+  ScrollFade,
+  EmptyState,
+  Card,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
 import { useTables } from "@/hooks/db/use-tables";
@@ -5,11 +14,7 @@ import { usePOSStore } from "@/stores/use-pos-store";
 import type { POSTable } from "@/types/pos";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { GridSkeleton } from "@/components/common/list-skeleton";
-import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
-import { Button, Card, Chip, ScrollShadow } from "heroui-native";
-import { EmptyState } from "heroui-native-pro";
 import type { JSX } from "react";
 import { useState } from "react";
 import { FlatList, Pressable, View, useWindowDimensions } from "react-native";
@@ -65,13 +70,27 @@ export default function TableSelectionScreen(): JSX.Element {
   if (isLoading) {
     return (
       <View className="flex-1 bg-background">
-        <GridSkeleton
-          columns={width >= 520 ? 3 : 2}
-          width={width}
-          horizontalPadding={16}
-          gap={12}
-          aspectRatio={1.15}
-        />
+        <View
+          className="flex-1 flex-row flex-wrap content-start gap-y-4 py-6"
+          style={{ paddingHorizontal: 16, columnGap: 12 }}
+          accessibilityRole="progressbar"
+        >
+          {Array.from({ length: (width >= 520 ? 3 : 2) * 2 }, (_, index) => (
+            <View
+              key={`loading-grid-${index}`}
+              style={{
+                width: Math.max(
+                  0,
+                  (width - 16 * 2 - 12 * ((width >= 520 ? 3 : 2) - 1)) / (width >= 520 ? 3 : 2)
+                ),
+                aspectRatio: 1.15,
+              }}
+              className="overflow-hidden rounded-2xl"
+            >
+              <PanelGridSkeleton className="h-full w-full rounded-2xl" />
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
@@ -82,12 +101,13 @@ export default function TableSelectionScreen(): JSX.Element {
   };
 
   const renderArea = ({ item: group }: { item: (typeof groups)[number] }) => (
-    <Chip
-      variant={resolvedAreaId === group.id ? "primary" : "secondary"}
+    <PanelChip
+      variant={resolvedAreaId === group.id ? "primary" : "default"}
+      selected={resolvedAreaId === group.id}
       onPress={() => setActiveAreaId(group.id)}
     >
-      <Chip.Label>{group.name}</Chip.Label>
-    </Chip>
+      {group.name}
+    </PanelChip>
   );
 
   const renderTable = ({ item: table }: { item: POSTable }) => {
@@ -107,21 +127,29 @@ export default function TableSelectionScreen(): JSX.Element {
         onPress={() => handleSelect(table.id)}
         style={{ width: cardWidth, margin: 6 }}
       >
-        <Card variant={isSelected ? "default" : "secondary"} className="flex-1">
-          <Card.Body className="flex-1 h-full min-h-32 items-center justify-center gap-2 py-4 p-0">
-            <Chip color="default">
-              <Chip.Label numberOfLines={1}>{table.name}</Chip.Label>
-            </Chip>
+        <Card className={isSelected ? "flex-1 p-4" : "flex-1 p-4 bg-inset"}>
+          <Card.Content className="flex-1 h-full min-h-32 items-center justify-center gap-2 py-4 p-0">
+            <PanelChip variant="default">
+              <PanelChip.Label>
+                <PanelTypography type="body-xs" numberOfLines={1}>
+                  {table.name}
+                </PanelTypography>
+              </PanelChip.Label>
+            </PanelChip>
             <TableSymbol
               seats={seatCount}
               scale={0.5}
               color={isSelected ? accent : muted}
               tableColor={isSelected ? accentSoft : undefined}
             />
-            <Chip color="default" className="self-end">
-              <Chip.Label numberOfLines={1}>{seats}</Chip.Label>
-            </Chip>
-          </Card.Body>
+            <PanelChip variant="default" className="self-end">
+              <PanelChip.Label>
+                <PanelTypography type="body-xs" numberOfLines={1}>
+                  {seats}
+                </PanelTypography>
+              </PanelChip.Label>
+            </PanelChip>
+          </Card.Content>
         </Card>
       </Pressable>
     );
@@ -132,20 +160,20 @@ export default function TableSelectionScreen(): JSX.Element {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Button
+            <PanelButton
               variant="outline"
               size="sm"
               onPress={() => handleSelect(null)}
               accessibilityLabel={t("tables.continueWithoutTable")}
             >
-              <Button.Label>{t("tables.noTable")}</Button.Label>
-            </Button>
+              {t("tables.noTable")}
+            </PanelButton>
           ),
         }}
       />
       <View className="flex-1 overflow-hidden bg-background pb-safe">
         <View className="flex-1 gap-4 px-4 pt-4">
-          <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
+          <ScrollFade orientation="horizontal" size={32}>
             <FlatList
               data={groups}
               horizontal
@@ -154,7 +182,7 @@ export default function TableSelectionScreen(): JSX.Element {
               showsHorizontalScrollIndicator={false}
               contentContainerClassName="gap-2 pb-1"
             />
-          </ScrollShadow>
+          </ScrollFade>
 
           {filteredTables.length > 0 ? (
             <FlatList

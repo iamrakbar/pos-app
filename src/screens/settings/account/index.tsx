@@ -1,14 +1,17 @@
-import { useToast } from "panelui-native";
+import { Typography ,
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Input as PanelInput, Card } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
 import { useAccountProfile, useUpdateAccountProfile } from "@/hooks/db/use-account-profile";
 import { createAccountSchema, type AccountFormValues } from "@/schemas/account";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import { Button, Card, Input, Label, Select, TextField, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm, useWatch, type Control, type FieldErrors } from "react-hook-form";
 import { View } from "react-native";
@@ -64,11 +67,32 @@ export default function AccountScreen(): React.JSX.Element {
   }, [clearErrors, locale]);
 
   if (profileQuery.isLoading || (profileQuery.isFetching && !profileQuery.isFetchedAfterMount)) {
-    return <LoadingState message={t("profile.loading")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("profile.loading")}
+        </PanelLoadingText>
+      </View>
+    );
   }
 
   if (profileQuery.isError || !profileQuery.data) {
-    return <ErrorState error={profileQuery.error} onRetry={profileQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(profileQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void profileQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   const roleOption = formValues.role
@@ -146,32 +170,28 @@ function AccountForm({
       bottomOffset={24}
     >
       <View className="w-full max-w-3xl gap-6">
-        <Card className="gap-3">
-          <Card.Header>
+        <Card className="gap-3 p-4">
+          <Card.Header className="p-0">
             <View className="gap-1">
               <Card.Title>{t("profile.accountDetails")}</Card.Title>
               <Card.Description>{t("profile.accountDescription")}</Card.Description>
             </View>
           </Card.Header>
-          <Card.Body className="gap-5">
+          <Card.Content className="gap-5 p-0">
             <Controller
               control={control}
               name="name"
-              render={({ field: { value, onChange, onBlur } }) => (
-                <TextField isRequired isInvalid={Boolean(errors.name)}>
-                  <Label>{t("profile.name")}</Label>
-                  <Input
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    autoCapitalize="words"
-                  />
-                  {errors.name?.message ? (
-                    <Typography type="body-xs" className="text-danger">
-                      {errors.name.message}
-                    </Typography>
-                  ) : null}
-                </TextField>
+              render={({ field: { value, onChange, onBlur, ref } }) => (
+                <PanelInput
+                  ref={ref}
+                  label={t("profile.name")}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  autoCapitalize="words"
+                  isRequired
+                  errorMessage={errors.name?.message}
+                />
               )}
             />
 
@@ -179,87 +199,49 @@ function AccountForm({
               control={control}
               name="email"
               render={({ field: { value } }) => (
-                <TextField>
-                  <Label>{t("profile.email")}</Label>
-                  <Input value={value} editable={false} accessibilityState={{ disabled: true }} />
-                  <Typography type="body-xs" color="muted">
-                    {t("profile.readOnly")}
-                  </Typography>
-                </TextField>
+                <PanelInput
+                  label={t("profile.email")}
+                  value={value}
+                  editable={false}
+                  accessibilityState={{ disabled: true }}
+                  description={t("profile.readOnly")}
+                />
               )}
             />
 
-            <View className="gap-1.5">
-              <Label>{t("profile.role")}</Label>
-              <Select value={roleOption} isDisabled presentation="popover">
-                <Select.Trigger>
-                  <Typography type="body-sm" className="flex-1">
-                    {roleOption?.label ?? t("profile.role")}
-                  </Typography>
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content presentation="popover">
-                    {roleOption ? (
-                      <Select.Item value={roleOption.value} label={roleOption.label} />
-                    ) : null}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-              <Typography type="body-xs" color="muted">
-                {t("profile.readOnly")}
-              </Typography>
-            </View>
-
-            <View className="gap-1.5">
-              <Label>{t("profile.merchants")}</Label>
-              <Select
-                selectionMode="multiple"
-                value={merchantOptions}
-                isDisabled
-                presentation="popover"
-              >
-                <Select.Trigger>
-                  <Typography type="body-sm" className="flex-1" numberOfLines={1}>
-                    {merchantOptions.map((merchant) => merchant.label).join(", ") ||
-                      t("profile.noMerchants")}
-                  </Typography>
-                  <Select.TriggerIndicator />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content presentation="popover">
-                    {merchantOptions.map((merchant) => (
-                      <Select.Item
-                        key={merchant.value}
-                        value={merchant.value}
-                        label={merchant.label}
-                      />
-                    ))}
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
-              <Typography type="body-xs" color="muted">
-                {t("profile.readOnly")}
-              </Typography>
-            </View>
-          </Card.Body>
+            <PanelInput
+              label={t("profile.role")}
+              value={roleOption?.label ?? t("profile.role")}
+              editable={false}
+              accessibilityState={{ disabled: true }}
+              description={t("profile.readOnly")}
+            />
+            <PanelInput
+              label={t("profile.merchants")}
+              value={
+                merchantOptions.map((merchant) => merchant.label).join(", ") ||
+                t("profile.noMerchants")
+              }
+              editable={false}
+              accessibilityState={{ disabled: true }}
+              description={t("profile.readOnly")}
+            />
+          </Card.Content>
         </Card>
 
         <View className="flex-1 gap-3">
           {errors.root?.server?.message ? (
-            <Typography type="body-sm" className="text-danger">
+            <Typography type="body-sm" className="text-destructive-foreground">
               {errors.root.server.message}
             </Typography>
           ) : null}
           <View className="flex-col gap-3 md:flex-row">
-            <Button variant="ghost" onPress={onCancel} isDisabled={isPending}>
-              <Button.Label>{t("common.cancel")}</Button.Label>
-            </Button>
-            <Button className="flex-1" onPress={onSubmit} isDisabled={!isDirty || isPending}>
-              <Button.Label>
-                {isPending ? t("common.saving") : t("profile.saveChanges")}
-              </Button.Label>
-            </Button>
+            <PanelErrorButton variant="ghost" onPress={onCancel} disabled={isPending}>
+              {t("common.cancel")}
+            </PanelErrorButton>
+            <PanelErrorButton className="flex-1" onPress={onSubmit} disabled={!isDirty || isPending}>
+              {isPending ? t("common.saving") : t("profile.saveChanges")}
+            </PanelErrorButton>
           </View>
         </View>
       </View>

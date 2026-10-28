@@ -1,15 +1,19 @@
-import { useToast } from "panelui-native";
+import { Typography ,
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Input as PanelInput, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import ActionDialog from "@/components/common/action-dialog";
-import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
 import { useArea, useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
 import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Card, Input, Label, TextField, Typography } from "heroui-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
@@ -54,10 +58,31 @@ export default function AreaFormScreen(): React.JSX.Element {
   }, [areaQuery.data, isNew, reset]);
 
   if (!isNew && areaQuery.isLoading) {
-    return <LoadingState message={t("areasManagement.loadingArea")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("areasManagement.loadingArea")}
+        </PanelLoadingText>
+      </View>
+    );
   }
   if (!isNew && areaQuery.isError) {
-    return <ErrorState error={areaQuery.error} onRetry={areaQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(areaQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void areaQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -123,68 +148,76 @@ export default function AreaFormScreen(): React.JSX.Element {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
-        <Card className="w-full max-w-3xl">
-          <Card.Header>
+        <Card className="w-full max-w-3xl p-4">
+          <Card.Header className="p-0">
             <View className="gap-1">
               <Card.Title>{t("areasManagement.seatingArea")}</Card.Title>
               <Card.Description>{t("areasManagement.areaDescription")}</Card.Description>
             </View>
           </Card.Header>
-          <Card.Body className="gap-5">
+          <Card.Content className="gap-5 p-0">
             <Controller
               control={control}
               name="name"
-              render={({ field: { value, onChange } }) => (
-                <TextField isRequired isInvalid={Boolean(errors.name)}>
-                  <Label>{t("areasManagement.name")}</Label>
-                  <Input
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={t("areasManagement.areaNamePlaceholder")}
-                    variant="secondary"
-                  />
-                  {errors.name?.message ? (
-                    <Typography type="body-xs" className="text-danger">
-                      {errors.name.message}
-                    </Typography>
-                  ) : null}
-                </TextField>
+              render={({ field: { value, onChange, onBlur, ref } }) => (
+                <PanelInput
+                  ref={ref}
+                  label={t("areasManagement.name")}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  placeholder={t("areasManagement.areaNamePlaceholder")}
+                  variant="filled"
+                  isRequired
+                  errorMessage={errors.name?.message}
+                />
               )}
             />
             {errors.root?.server?.message ? (
-              <Typography type="body-sm" className="text-danger">
+              <Typography type="body-sm" className="text-destructive-foreground">
                 {errors.root.server.message}
               </Typography>
             ) : null}
             {!isNew ? (
-              <Button variant="outline" onPress={() => router.push(`/settings/areas/${id}/tables`)}>
-                <Button.Label>{t("areasManagement.manageTables")}</Button.Label>
-              </Button>
+              <PanelButton variant="outline" onPress={() => router.push(`/settings/areas/${id}/tables`)}>
+                {t("areasManagement.manageTables")}
+              </PanelButton>
             ) : null}
             <View className="flex-row justify-end gap-3">
-              <Button variant="ghost" onPress={() => router.back()}>
-                <Button.Label>{t("common.cancel")}</Button.Label>
-              </Button>
-              <Button onPress={handleSubmit(submitArea)} isDisabled={isSaving}>
-                <Button.Label>
-                  {isSaving ? t("common.saving") : t("areasManagement.saveArea")}
-                </Button.Label>
-              </Button>
+              <PanelButton variant="ghost" onPress={() => router.back()}>
+                {t("common.cancel")}
+              </PanelButton>
+              <PanelButton onPress={handleSubmit(submitArea)} disabled={isSaving}>
+                {isSaving ? t("common.saving") : t("areasManagement.saveArea")}
+              </PanelButton>
             </View>
-          </Card.Body>
+          </Card.Content>
         </Card>
       </KeyboardAwareScrollView>
 
-      <ActionDialog
-        isOpen={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        title={t("areasManagement.deleteAreaTitle")}
-        description={t("areasManagement.deleteAreaDescription")}
-        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-        actionVariant="danger"
-        isActionDisabled={deleteMutation.isPending}
-        onAction={handleDelete}
-      />
+      <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("areasManagement.deleteAreaTitle")}</PanelDialog.Title>
+          <PanelDialog.Description>
+            {t("areasManagement.deleteAreaDescription")}
+          </PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton
+              variant="destructive"
+              size="sm"
+              disabled={deleteMutation.isPending}
+              onPress={handleDelete}
+            >
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

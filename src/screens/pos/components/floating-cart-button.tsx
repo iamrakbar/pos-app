@@ -4,7 +4,7 @@ import { formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button } from "heroui-native";
+import { Button, Typography } from "panelui-native";
 import type { JSX } from "react";
 import { useEffect, useRef } from "react";
 import { View } from "react-native";
@@ -79,9 +79,9 @@ export default function FloatingCartButton(): JSX.Element | null {
         >
           <View className="flex-row items-center gap-2">
             <AppIcon icon={AppIcons.cart} size={18} color={foreground} />
-            <Button.Label>{displayItemsLabel}</Button.Label>
+            <Typography className="text-primary-foreground">{displayItemsLabel}</Typography>
           </View>
-          <Button.Label className="tabular-nums">{formatRupiah(subtotal)}</Button.Label>
+          <Typography className="text-primary-foreground tabular-nums">{formatRupiah(subtotal)}</Typography>
         </Button>
       </Animated.View>
     </View>

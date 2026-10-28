@@ -1,16 +1,22 @@
-import { useToast } from "panelui-native";
+import {
+  Frame,
+  Typography,
+  Button as PanelButton,
+  Typography as PanelTypography,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Skeleton as PanelListSkeleton,
+  Switch as PanelSwitch,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
-import ErrorState from "@/components/common/error-state";
-import { ListSkeleton } from "@/components/common/list-skeleton";
-import ReorderChangesBanner from "@/components/common/reorder-changes-banner";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useMerchantPayments, useReorderMerchantPayments } from "@/hooks/db/use-payments";
 import { useTranslation } from "@/stores/use-locale";
 import { useFocusEffect } from "expo-router";
 import { Image } from "expo-image";
-import { Button, ListGroup, Separator, Switch, Typography } from "heroui-native";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
@@ -68,6 +74,7 @@ function togglePaymentActive(
 
 function PaymentSettingsRow({
   payment,
+  divided,
   isFirstInGroup,
   isLastInGroup,
   isSaving,
@@ -75,6 +82,7 @@ function PaymentSettingsRow({
   onToggle,
 }: {
   payment: MerchantPayment;
+  divided: boolean;
   isFirstInGroup: boolean;
   isLastInGroup: boolean;
   isSaving: boolean;
@@ -85,8 +93,8 @@ function PaymentSettingsRow({
   const [mutedColor] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
-    <ListGroup.Item>
-      <ListGroup.ItemPrefix>
+    <Frame.Row divided={divided}>
+      <Frame.Media>
         <View className="flex-1 size-8">
           <Image
             source={{ uri: payment.image ?? "" }}
@@ -97,50 +105,48 @@ function PaymentSettingsRow({
             }}
           />
         </View>
-      </ListGroup.ItemPrefix>
-      <ListGroup.ItemContent>
-        <ListGroup.ItemTitle>{payment.name}</ListGroup.ItemTitle>
-        <ListGroup.ItemDescription>{payment.processing_mode.label}</ListGroup.ItemDescription>
-      </ListGroup.ItemContent>
-      <ListGroup.ItemSuffix>
+      </Frame.Media>
+      <Frame.Content>
+        <Frame.Title>{payment.name}</Frame.Title>
+        <Frame.Description>{payment.processing_mode.label}</Frame.Description>
+      </Frame.Content>
+      <Frame.Actions>
         <View className="flex-row items-center gap-2">
           <View className="flex-row">
-            <Button
-              size="sm"
+            <PanelButton
+              size="icon"
               variant="ghost"
-              isIconOnly
+
               accessibilityLabel={t("paymentSettings.moveUpAccessibility", {
                 name: payment.name,
               })}
-              isDisabled={isFirstInGroup || isSaving}
+              disabled={isFirstInGroup || isSaving}
               onPress={() => onMove(payment.id, -1)}
             >
               <AppIcon icon={AppIcons.chevronUp} size={18} color={mutedColor} />
-            </Button>
-            <Button
-              size="sm"
+            </PanelButton>
+            <PanelButton
+              size="icon"
               variant="ghost"
-              isIconOnly
+
               accessibilityLabel={t("paymentSettings.moveDownAccessibility", {
                 name: payment.name,
               })}
-              isDisabled={isLastInGroup || isSaving}
+              disabled={isLastInGroup || isSaving}
               onPress={() => onMove(payment.id, 1)}
             >
               <AppIcon icon={AppIcons.chevronDown} size={18} color={mutedColor} />
-            </Button>
+            </PanelButton>
           </View>
-          <Switch
-            isSelected={payment.is_active}
-            isDisabled={isSaving}
-            onSelectedChange={(active) => onToggle(payment.id, active)}
+          <PanelSwitch
+            value={payment.is_active}
+            disabled={isSaving}
+            onValueChange={(active) => onToggle(payment.id, active)}
             accessibilityLabel={t("paymentSettings.toggle", { name: payment.name })}
-          >
-            <Switch.Thumb />
-          </Switch>
+          />
         </View>
-      </ListGroup.ItemSuffix>
-    </ListGroup.Item>
+      </Frame.Actions>
+    </Frame.Row>
   );
 }
 
@@ -191,21 +197,63 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
     }
   };
 
-  if (payments.isLoading) return <ListSkeleton />;
-  if (payments.isError) return <ErrorState error={payments.error} onRetry={payments.refetch} />;
+  if (payments.isLoading)
+    return (
+      <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
+        {Array.from({ length: 6 }, (_, index) => (
+          <View
+            key={`loading-row-${index}`}
+            className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+          >
+            <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+            <View className="flex-1 gap-2">
+              <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+              <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+              <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+            </View>
+            <PanelListSkeleton className="size-4 rounded-full" />
+          </View>
+        ))}
+      </View>
+    );
+  if (payments.isError)
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(payments.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void payments.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
 
   return (
     <View className="flex-1 bg-background">
       {isDirty ? (
-        <ReorderChangesBanner
-          message={t("paymentSettings.unsavedChanges")}
-          isSaving={reorderMutation.isPending}
-          cancelLabel={t("common.cancel")}
-          onCancel={handleCancel}
-          onSave={handleSave}
-          saveLabel={t("paymentSettings.saveChanges")}
-          savingLabel={t("common.saving")}
-        />
+        <View className="flex-row items-center justify-between gap-3 border-b border-border bg-card px-4 py-3 md:px-6">
+          <PanelTypography type="body-sm" muted className="flex-1">
+            {t("paymentSettings.unsavedChanges")}
+          </PanelTypography>
+          <View className="flex-row gap-2">
+            <PanelButton
+              size="icon"
+              variant="ghost"
+              onPress={handleCancel}
+              disabled={reorderMutation.isPending}
+            >
+              {t("common.cancel")}
+            </PanelButton>
+            <PanelButton size="sm" onPress={handleSave} disabled={reorderMutation.isPending}>
+              {reorderMutation.isPending ? t("common.saving") : t("paymentSettings.saveChanges")}
+            </PanelButton>
+          </View>
+        </View>
       ) : null}
 
       <ScrollView
@@ -217,28 +265,29 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
           {groupedSections.length ? (
             groupedSections.map((section) => (
               <View key={section.key} className="gap-2">
-                <Typography type="body-sm" weight="semibold" color="muted" className="px-1">
+                <Typography type="body-sm" weight="semibold" muted className="px-1">
                   {section.label}
                 </Typography>
-                <ListGroup>
-                  {section.payments.map((payment, index) => (
-                    <View key={payment.id}>
-                      {index !== 0 && <Separator className="mx-4" />}
+                <Frame variant="plain">
+                  <Frame.Panel dividers={false}>
+                    {section.payments.map((payment, index) => (
                       <PaymentSettingsRow
+                        key={payment.id}
                         payment={payment}
+                        divided={index !== 0}
                         isFirstInGroup={index === 0}
                         isLastInGroup={index === section.payments.length - 1}
                         isSaving={reorderMutation.isPending}
                         onMove={handleMove}
                         onToggle={handleToggle}
                       />
-                    </View>
-                  ))}
-                </ListGroup>
+                    ))}
+                  </Frame.Panel>
+                </Frame>
               </View>
             ))
           ) : (
-            <Typography color="muted">{t("paymentSettings.empty")}</Typography>
+            <Typography muted>{t("paymentSettings.empty")}</Typography>
           )}
         </View>
       </ScrollView>

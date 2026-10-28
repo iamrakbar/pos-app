@@ -1,14 +1,12 @@
+import { Typography , Button as PanelButton, Dialog as PanelDialog, Frame } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import SettingsMenuRow from "@/components/common/settings-menu-row";
 import { useRouter } from "expo-router";
-import { Button, ListGroup, Separator, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { useAuth } from "@/stores/use-auth";
 import { useTranslation } from "@/stores/use-locale";
-import LogoutConfirmationDialog from "@/components/common/logout-confirmation-dialog";
 import { useState } from "react";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
 import { hasMerchantFeature } from "@/utils/merchant-features";
@@ -24,9 +22,9 @@ type SettingsItem = {
 export default function SettingsScreen(): JSX.Element {
   const router = useRouter();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  const [themeColorMuted, themeColorDangerSoftForeground] = useCSSVariable([
+  const [themeColorMuted, themeColorDestructiveForeground] = useCSSVariable([
     "--color-muted-foreground",
-    "--color-destructive",
+    "--color-destructive-solid-foreground",
   ]) as [string, string];
   const logout = useAuth((s) => s.logout);
   const activeMerchant = useAuth((s) => s.activeMerchant);
@@ -142,33 +140,53 @@ export default function SettingsScreen(): JSX.Element {
                 <Typography type="body-sm" weight="semibold">
                   {group.title}
                 </Typography>
-                <ListGroup>
-                  {group.items.map((item, index) => (
-                    <View key={item.id}>
-                      <SettingsMenuRow
-                        item={item}
-                        iconColor={themeColorMuted}
+                <Frame variant="plain">
+                  <Frame.Panel>
+                    {group.items.map((item) => (
+                      <Frame.Row
+                        key={item.id}
+                        chevron
                         onPress={() => router.push(item.href as never)}
-                      />
-                      {index < group.items.length - 1 ? <Separator className="mx-4" /> : null}
-                    </View>
-                  ))}
-                </ListGroup>
+                      >
+                        <Frame.Media>
+                          <AppIcon icon={item.icon} size={21} color={themeColorMuted} />
+                        </Frame.Media>
+                        <Frame.Content>
+                          <Frame.Title>{item.label}</Frame.Title>
+                          <Frame.Description numberOfLines={2}>
+                            {item.description}
+                          </Frame.Description>
+                        </Frame.Content>
+                      </Frame.Row>
+                    ))}
+                  </Frame.Panel>
+                </Frame>
               </View>
             ))}
           </View>
 
-          <Button variant="danger-soft" onPress={() => setIsLogoutOpen(true)} className="w-full">
-            <AppIcon icon={AppIcons.logout} size={18} color={themeColorDangerSoftForeground} />
-            <Button.Label>{t("settings.logout")}</Button.Label>
-          </Button>
+          <PanelButton variant="destructive" onPress={() => setIsLogoutOpen(true)} className="w-full">
+            <AppIcon icon={AppIcons.logout} size={18} color={themeColorDestructiveForeground} />
+            {t("settings.logout")}
+          </PanelButton>
         </View>
       </ScrollView>
-      <LogoutConfirmationDialog
-        isOpen={isLogoutOpen}
-        onOpenChange={setIsLogoutOpen}
-        onConfirm={logout}
-      />
+      <PanelDialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("logout.title")}</PanelDialog.Title>
+          <PanelDialog.Description>{t("logout.description")}</PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton variant="destructive" size="sm" onPress={logout}>
+              {t("logout.confirm")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

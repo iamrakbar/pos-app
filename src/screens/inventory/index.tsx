@@ -1,9 +1,8 @@
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import SettingsMenuRow from "@/components/common/settings-menu-row";
 import { useRouter } from "expo-router";
-import { ListGroup, Separator, Typography } from "heroui-native";
+import { Frame, Typography } from "panelui-native";
 import type { JSX } from "react";
 import { ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -75,18 +74,21 @@ export default function InventoryOverviewScreen(): JSX.Element {
             <Typography type="body-sm" weight="semibold">
               {t("navigation.inventoryManage")}
             </Typography>
-            <ListGroup>
-              {manageItems.map((item, index) => (
-                <View key={item.id}>
-                  <SettingsMenuRow
-                    item={item}
-                    iconColor={themeColorMuted}
-                    onPress={() => router.push(item.href as never)}
-                  />
-                  {index < manageItems.length - 1 ? <Separator className="mx-4" /> : null}
-                </View>
-              ))}
-            </ListGroup>
+            <Frame variant="plain">
+              <Frame.Panel>
+                {manageItems.map((item) => (
+                  <Frame.Row key={item.id} chevron onPress={() => router.push(item.href as never)}>
+                    <Frame.Media>
+                      <AppIcon icon={item.icon} size={21} color={themeColorMuted} />
+                    </Frame.Media>
+                    <Frame.Content>
+                      <Frame.Title>{item.label}</Frame.Title>
+                      <Frame.Description numberOfLines={2}>{item.description}</Frame.Description>
+                    </Frame.Content>
+                  </Frame.Row>
+                ))}
+              </Frame.Panel>
+            </Frame>
           </View>
         ) : null}
 
@@ -94,18 +96,21 @@ export default function InventoryOverviewScreen(): JSX.Element {
           <Typography type="body-sm" weight="semibold">
             {t("navigation.inventoryMonitor")}
           </Typography>
-          <ListGroup>
-            {monitorItems.map((item, index) => (
-              <View key={item.id}>
-                <SettingsMenuRow
-                  item={item}
-                  iconColor={themeColorMuted}
-                  onPress={() => router.push(item.href as never)}
-                />
-                {index < monitorItems.length - 1 ? <Separator className="mx-4" /> : null}
-              </View>
-            ))}
-          </ListGroup>
+          <Frame variant="plain">
+            <Frame.Panel>
+              {monitorItems.map((item) => (
+                <Frame.Row key={item.id} chevron onPress={() => router.push(item.href as never)}>
+                  <Frame.Media>
+                    <AppIcon icon={item.icon} size={21} color={themeColorMuted} />
+                  </Frame.Media>
+                  <Frame.Content>
+                    <Frame.Title>{item.label}</Frame.Title>
+                    <Frame.Description numberOfLines={2}>{item.description}</Frame.Description>
+                  </Frame.Content>
+                </Frame.Row>
+              ))}
+            </Frame.Panel>
+          </Frame>
         </View>
       </View>
     </ScrollView>

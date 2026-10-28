@@ -1,8 +1,16 @@
-import { useToast } from "panelui-native";
-import AdaptiveFormOverlay, {
-  AdaptiveFormKeyboardHandlers,
-} from "@/components/common/adaptive-form-overlay";
-import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
+import {
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  Label as PanelLabel,
+  Typography,
+  Input as PanelInput,
+  Typography as PanelTypography,
+  useToast,
+} from "panelui-native";
+import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
+import { IDR_NUMBER_FIELD_FORMAT_OPTIONS, RUPIAH_PREFIX } from "@/utils/format";
 import { isApiError } from "@/api/api-error";
 import { useCreateDiscount } from "@/hooks/db/use-discounts";
 import {
@@ -12,19 +20,10 @@ import {
 } from "@/schemas/discount";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Label, TextField, Typography } from "heroui-native";
 import React from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useController, useForm, useWatch } from "react-hook-form";
 import { View } from "react-native";
 import type { DiscountListItem } from "@/hooks/db/use-discounts";
-
-function FieldMessage({ message }: { message?: string }) {
-  return message ? (
-    <Typography type="body-xs" className="text-danger">
-      {message}
-    </Typography>
-  ) : null;
-}
 
 function getDefaultValues(productId: string): DiscountFormValues {
   return {
@@ -68,6 +67,25 @@ export default function QuickDiscountFormOverlay({
   });
 
   const unit = useWatch({ control, name: "unit" });
+  const {
+    field: {
+      value: discountValue,
+      onChange: discountChange,
+      onBlur: discountBlur,
+      ref: discountRef,
+    },
+  } = useController({ control, name: "value" });
+  const { localizedInputProps: discountInput } = useLocalizedNumberInput({
+    value: discountValue,
+    onChange: discountChange,
+    formatOptions:
+      unit === "fixed"
+        ? IDR_NUMBER_FIELD_FORMAT_OPTIONS
+        : { useGrouping: false, minimumFractionDigits: 0, maximumFractionDigits: 2 },
+    minValue: 0,
+    maxValue: unit === "fixed" ? undefined : 100,
+    inputProps: { onBlur: discountBlur },
+  });
 
   React.useEffect(() => {
     clearErrors();
@@ -82,6 +100,8 @@ export default function QuickDiscountFormOverlay({
     if (!nextIsOpen) reset(getDefaultValues(productId));
     onOpenChange(nextIsOpen);
   };
+  const { isPhonePortrait, sheetRef, handleDidDismiss, dialogKeyboardStyle } =
+    useAdaptiveOverlayPresentation(isOpen, handleOpenChange);
 
   const submit = async (values: DiscountFormValues) => {
     try {
@@ -114,126 +134,153 @@ export default function QuickDiscountFormOverlay({
     }
   };
 
-  return (
-    <AdaptiveFormOverlay
-      isOpen={isOpen}
-      onOpenChange={handleOpenChange}
-      title={t("discounts.quickCreateTitle")}
-      description={t("discounts.quickCreateDescription")}
-      footer={
-        <View className="flex-row gap-3 px-5 pb-safe pt-4">
-          <Button variant="ghost" onPress={() => handleOpenChange(false)}>
-            <Button.Label>{t("common.cancel")}</Button.Label>
-          </Button>
-          <Button
-            className="flex-1"
-            onPress={handleSubmit(submit)}
-            isDisabled={createMutation.isPending}
-          >
-            <Button.Label>
-              {createMutation.isPending ? t("common.saving") : t("discounts.create")}
-            </Button.Label>
-          </Button>
-        </View>
-      }
-    >
-      <View className="gap-4 px-5">
-        <Controller
-          control={control}
-          name="name"
-          render={({ field: { value, onChange } }) => (
-            <TextField isRequired isInvalid={Boolean(errors.name)}>
-              <Label>{t("discounts.name")}</Label>
-              <AdaptiveFormKeyboardHandlers>
-                {(keyboardHandlers) => (
-                  <Input
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={t("discounts.namePlaceholder")}
-                    variant="secondary"
-                    {...keyboardHandlers}
-                  />
-                )}
-              </AdaptiveFormKeyboardHandlers>
-              <FieldMessage message={errors.name?.message} />
-            </TextField>
-          )}
-        />
+  const footer = (
+    <View className="flex-row gap-3 px-5 pb-safe pt-4">
+      <PanelButton variant="ghost" onPress={() => handleOpenChange(false)}>
+        {t("common.cancel")}
+      </PanelButton>
+      <PanelButton
+        className="flex-1"
+        onPress={handleSubmit(submit)}
+        disabled={createMutation.isPending}
+      >
+        {createMutation.isPending ? t("common.saving") : t("discounts.create")}
+      </PanelButton>
+    </View>
+  );
+  const content = (
+    <View className="gap-4 px-5">
+      <Controller
+        control={control}
+        name="name"
+        render={({ field: { value, onChange, ref } }) => (
+          <PanelInput
+            ref={ref}
+            label={t("discounts.name")}
+            value={value}
+            onChangeText={onChange}
+            placeholder={t("discounts.namePlaceholder")}
+            variant="filled"
+            errorMessage={errors.name?.message}
+            isRequired
+          />
+        )}
+      />
 
-        <Controller
-          control={control}
-          name="unit"
-          render={({ field: { value, onChange } }) => (
-            <View className="gap-2">
-              <Label isRequired>{t("discounts.unit")}</Label>
-              <View className="flex-row gap-2">
-                {(["percentage", "fixed"] as const).map((option) => (
-                  <Button
-                    key={option}
-                    variant={value === option ? "primary" : "secondary"}
-                    onPress={() => onChange(option)}
-                    className="flex-1"
-                  >
-                    <Button.Label>
-                      {option === "percentage" ? t("discounts.percentage") : t("discounts.fixed")}
-                    </Button.Label>
-                  </Button>
-                ))}
-              </View>
+      <Controller
+        control={control}
+        name="unit"
+        render={({ field: { value, onChange } }) => (
+          <View className="gap-2">
+            <PanelLabel isRequired>{t("discounts.unit")}</PanelLabel>
+            <View className="flex-row gap-2">
+              {(["percentage", "fixed"] as const).map((option) => (
+                <PanelButton
+                  key={option}
+                  variant={value === option ? "primary" : "secondary"}
+                  onPress={() => onChange(option)}
+                  className="flex-1"
+                >
+                  {option === "percentage" ? t("discounts.percentage") : t("discounts.fixed")}
+                </PanelButton>
+              ))}
             </View>
-          )}
-        />
+          </View>
+        )}
+      />
 
-        <Controller
-          control={control}
-          name="value"
-          render={({ field: { value, onChange } }) => (
-            <AdaptiveFormKeyboardHandlers>
-              {(keyboardHandlers) =>
-                unit === "fixed" ? (
-                  <RupiahField
-                    label={t("discounts.value")}
-                    value={value}
-                    onChange={onChange}
-                    placeholder="0"
-                    minValue={0}
-                    step={1000}
-                    inputVariant="secondary"
-                    inputProps={keyboardHandlers}
-                    isRequired
-                    isInvalid={Boolean(errors.value)}
-                  >
-                    <FieldMessage message={errors.value?.message} />
-                  </RupiahField>
-                ) : (
-                  <FormNumberField
-                    label={t("discounts.value")}
-                    value={value}
-                    onChange={onChange}
-                    placeholder="0"
-                    minValue={0}
-                    maxValue={100}
-                    step={1}
-                    formatOptions={{ maximumFractionDigits: 2 }}
-                    inputVariant="secondary"
-                    inputProps={keyboardHandlers}
-                    isRequired
-                    isInvalid={Boolean(errors.value)}
-                  >
-                    <FieldMessage message={errors.value?.message} />
-                  </FormNumberField>
-                )
-              }
-            </AdaptiveFormKeyboardHandlers>
-          )}
-        />
+      <PanelInput
+        ref={discountRef}
+        label={t("discounts.value")}
+        placeholder="0"
+        variant="filled"
+        isRequired
+        errorMessage={errors.value?.message}
+        keyboardType="numeric"
+        startContent={
+          unit === "fixed" ? (
+            <PanelTypography type="body-sm" weight="medium" muted>
+              {RUPIAH_PREFIX}
+            </PanelTypography>
+          ) : undefined
+        }
+        interactiveContent={false}
 
-        {errors.root?.server?.message ? (
-          <Typography type="body-sm" className="text-danger">
-            {errors.root.server.message}
-          </Typography>
-        ) : null}
-      </View>
-    </AdaptiveFormOverlay>
+        {...discountInput}
+        onBlur={(event) => {
+          discountInput.onBlur(event);
+        }}
+      />
+
+      {errors.root?.server?.message ? (
+        <Typography type="body-sm" className="text-destructive-foreground">
+          {errors.root.server.message}
+        </Typography>
+      ) : null}
+    </View>
+  );
+  const title = t("discounts.quickCreateTitle");
+  const description = t("discounts.quickCreateDescription");
+
+  if (isPhonePortrait) {
+    return (
+      <TrueSheet
+        ref={sheetRef}
+        detents={[0.9]}
+        scrollable
+        cornerRadius={24}
+        grabber
+        dimmed
+        onDidDismiss={handleDidDismiss}
+        header={
+          <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+            <Typography type="h4" weight="semibold">
+              {title}
+            </Typography>
+            <Typography type="body-sm" muted>
+              {description}
+            </Typography>
+            <PanelButton
+              variant="ghost"
+              size="sm"
+              accessibilityLabel={t("common.close")}
+              className="absolute right-3 top-3"
+              onPress={() => handleOpenChange(false)}
+            >
+              {t("common.close")}
+            </PanelButton>
+          </View>
+        }
+        footer={<View className="bg-surface">{footer}</View>}
+      >
+        {content}
+      </TrueSheet>
+    );
+  }
+
+  return (
+    <PanelDialog open={isOpen} onOpenChange={handleOpenChange}>
+      <PanelDialog.Content
+        dismissible={false}
+        className="w-full max-w-md self-center overflow-hidden p-0"
+        style={dialogKeyboardStyle}
+      >
+        <PanelButton
+          variant="ghost"
+          size="sm"
+          accessibilityLabel={t("common.close")}
+          className="absolute right-3 top-3 z-50"
+          onPress={() => handleOpenChange(false)}
+        >
+          {t("common.close")}
+        </PanelButton>
+        <View className="gap-1.5 px-5 pb-4 pr-14 pt-5">
+          <PanelDialog.Title>{title}</PanelDialog.Title>
+          <PanelDialog.Description>{description}</PanelDialog.Description>
+        </View>
+        {content}
+        {footer}
+      </PanelDialog.Content>
+    </PanelDialog>
   );
 }

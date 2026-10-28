@@ -1,8 +1,19 @@
+import {
+  Button as PanelButton,
+  Typography,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Chip,
+  EmptyState,
+  Table,
+  Typography as PanelTypography,
+  Skeleton as PanelTableSkeleton,
+} from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
+import { compareTableValues } from "@/utils/table-sort";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import ErrorState from "@/components/common/error-state";
-import TableSkeleton from "@/components/common/table-skeleton";
 import type { InventoryOperationStatus } from "@/api/endpoints/inventory-audit";
 import type { TranslationKey } from "@/locales";
 import { useInventoryOperations } from "@/hooks/db/use-inventory-audit";
@@ -11,12 +22,11 @@ import { formatDateTime, formatInventoryQuantity, normalizeInventorySource } fro
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack } from "expo-router";
-import { Button, Chip, Typography } from "heroui-native";
-import { EmptyState, Table, type TableSortDescriptor } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 
 type Operation = App.Data.Merchant.Inventory.InventoryOperationData;
+type TableSortDescriptor = { column: string; direction: "ascending" | "descending" };
 type OperationFilter = "all" | InventoryOperationStatus;
 type OperationSortColumn =
   | "source"
@@ -48,14 +58,39 @@ const SORTABLE_COLUMNS = new Set<OperationSortColumn>([
   "failed_at",
 ]);
 const SERVER_SORT_COLUMNS = new Set(["created_at"]);
+const TABLE_COLUMNS = [
+  { id: "source", width: 180, label: "operations.source" },
+  { id: "status", width: 140, label: "operations.status" },
+  { id: "movement_count", width: 130, label: "operations.movementCount" },
+  { id: "attempts", width: 120, label: "operations.attempts" },
+  { id: "actor", width: 180, label: "operations.actor" },
+  { id: "failure_reason", width: 260, label: "operations.failureReason" },
+  { id: "created_at", width: 180, label: "operations.createdAt" },
+  { id: "processed_at", width: 180, label: "operations.processedAt" },
+  { id: "failed_at", width: 180, label: "operations.failedAt" },
+] as const;
+const SKELETON_COLUMN_WIDTHS = [180, 140, 130, 120, 180, 260, 180, 180, 180];
+const SKELETON_CELL_WIDTHS = [
+  "w-32",
+  "w-16",
+  "w-20",
+  "w-20",
+  "w-24",
+  "w-32",
+  "w-20",
+  "w-28",
+  "w-28",
+];
+const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
+const TABLE_WIDTH = TABLE_COLUMNS.reduce((sum, column) => sum + column.width, 0);
 const OPERATION_STATUS_COLORS: Record<
   InventoryOperationStatus,
-  "accent" | "success" | "warning" | "danger"
+  "primary" | "success" | "warning" | "destructive"
 > = {
   processing: "warning",
   posted: "success",
-  reversed: "accent",
-  failed: "danger",
+  reversed: "primary",
+  failed: "destructive",
 };
 
 function getSortColumn(descriptor: TableSortDescriptor): OperationSortColumn {
@@ -67,14 +102,6 @@ function getOperationSort(descriptor: TableSortDescriptor): "created_at" | "-cre
   const column = String(descriptor.column);
   if (!SERVER_SORT_COLUMNS.has(column)) return "-created_at";
   return descriptor.direction === "descending" ? "-created_at" : "created_at";
-}
-
-function compareValues(a: string | number | null, b: string | number | null): number {
-  if (a === null && b === null) return 0;
-  if (a === null) return 1;
-  if (b === null) return -1;
-  if (typeof a === "number" && typeof b === "number") return a - b;
-  return String(a).localeCompare(String(b));
 }
 
 function sortOperations(items: Operation[], descriptor: TableSortDescriptor): Operation[] {
@@ -96,22 +123,22 @@ function sortOperations(items: Operation[], descriptor: TableSortDescriptor): Op
         comparison = a.attempts - b.attempts;
         break;
       case "actor":
-        comparison = compareValues(a.actor?.name ?? null, b.actor?.name ?? null);
+        comparison = compareTableValues(a.actor?.name ?? null, b.actor?.name ?? null);
         break;
       case "failure_reason":
-        comparison = compareValues(a.failure_reason, b.failure_reason);
+        comparison = compareTableValues(a.failure_reason, b.failure_reason);
         break;
       case "created_at":
         comparison = Date.parse(a.created_at) - Date.parse(b.created_at);
         break;
       case "processed_at":
-        comparison = compareValues(
+        comparison = compareTableValues(
           a.processed_at ? Date.parse(a.processed_at) : null,
           b.processed_at ? Date.parse(b.processed_at) : null
         );
         break;
       case "failed_at":
-        comparison = compareValues(
+        comparison = compareTableValues(
           a.failed_at ? Date.parse(a.failed_at) : null,
           b.failed_at ? Date.parse(b.failed_at) : null
         );
@@ -119,15 +146,6 @@ function sortOperations(items: Operation[], descriptor: TableSortDescriptor): Op
     }
     return comparison === 0 ? a.id.localeCompare(b.id) : comparison * direction;
   });
-}
-
-function OperationStatusChip({ status }: { status: InventoryOperationStatus }): React.JSX.Element {
-  const { t } = useTranslation();
-  return (
-    <Chip color={OPERATION_STATUS_COLORS[status]} size="sm" variant="soft">
-      <Chip.Label>{t(`operations.statuses.${status}` as TranslationKey)}</Chip.Label>
-    </Chip>
-  );
 }
 
 function formatOptionalDate(value: string | null): string {
@@ -175,9 +193,57 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {query.isLoading ? (
-          <TableSkeleton columnWidths={[180, 140, 130, 120, 180, 260, 180, 180, 180]} />
+          <ScrollView className="flex-1" contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6">
+            <ScrollView horizontal>
+              <View
+                style={{ width: SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) }}
+                accessibilityRole="progressbar"
+              >
+                <Table columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
+                  <Table.Header>
+                    <Table.Row>
+                      {SKELETON_COLUMN_WIDTHS.map((_, index) => (
+                        <Table.Head key={`heading-${index}`}>
+                          <PanelTableSkeleton className="h-3 w-20 rounded-md" />
+                        </Table.Head>
+                      ))}
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {Array.from({ length: 6 }, (_, rowIndex) => (
+                      <Table.Row key={`row-${rowIndex}`}>
+                        {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
+                          <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
+                            <PanelTableSkeleton
+                              className={
+                                columnIndex === 6
+                                  ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
+                                  : `h-4 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-md`
+                              }
+                            />
+                          </Table.Cell>
+                        ))}
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              </View>
+            </ScrollView>
+          </ScrollView>
         ) : query.isError ? (
-          <ErrorState error={query.error} onRetry={query.refetch} />
+          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+            <PanelErrorAlert variant="destructive">
+              <PanelErrorAlert.Indicator />
+              <PanelErrorAlert.Content>
+                <PanelErrorAlert.Description>
+                  {getErrorMessage(query.error)}
+                </PanelErrorAlert.Description>
+              </PanelErrorAlert.Content>
+            </PanelErrorAlert>
+            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+              {t("common.retry")}
+            </PanelErrorButton>
+          </View>
         ) : (
           <ScrollView
             className="flex-1"
@@ -187,42 +253,84 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
             }
           >
             <View className="flex-1 items-center w-full">
-              <Table sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor}>
-                <Table.ScrollContainer className="w-full self-center">
-                  <Table.Content className="w-full">
+              <ScrollView horizontal showsHorizontalScrollIndicator className="w-full">
+                <View style={{ width: TABLE_WIDTH }}>
+                  <Table columns={COLUMN_LAYOUT}>
                     <Table.Header>
-                      <Table.Column id="source" width={180} allowsSorting>
-                        {t("operations.source")}
-                      </Table.Column>
-                      <Table.Column id="status" width={140} allowsSorting>
-                        {t("operations.status")}
-                      </Table.Column>
-                      <Table.Column id="movement_count" width={130} allowsSorting>
-                        {t("operations.movementCount")}
-                      </Table.Column>
-                      <Table.Column id="attempts" width={120} allowsSorting>
-                        {t("operations.attempts")}
-                      </Table.Column>
-                      <Table.Column id="actor" width={180} allowsSorting>
-                        {t("operations.actor")}
-                      </Table.Column>
-                      <Table.Column id="failure_reason" width={260} allowsSorting>
-                        {t("operations.failureReason")}
-                      </Table.Column>
-                      <Table.Column id="created_at" width={180} allowsSorting>
-                        {t("operations.createdAt")}
-                      </Table.Column>
-                      <Table.Column id="processed_at" width={180} allowsSorting>
-                        {t("operations.processedAt")}
-                      </Table.Column>
-                      <Table.Column id="failed_at" width={180} allowsSorting>
-                        {t("operations.failedAt")}
-                      </Table.Column>
+                      <Table.Row>
+                        {TABLE_COLUMNS.map((column) => (
+                          <Table.Head
+                            key={column.id}
+                            sortable
+                            sortDirection={
+                              sortDescriptor.column === column.id
+                                ? sortDescriptor.direction === "ascending"
+                                  ? "asc"
+                                  : "desc"
+                                : undefined
+                            }
+                            onPress={() =>
+                              setSortDescriptor((previous) => ({
+                                column: column.id,
+                                direction:
+                                  previous.column === column.id &&
+                                  previous.direction === "ascending"
+                                    ? "descending"
+                                    : "ascending",
+                              }))
+                            }
+                          >
+                            {t(column.label)}
+                          </Table.Head>
+                        ))}
+                      </Table.Row>
                     </Table.Header>
-                    <Table.Body
-                      items={sortedOperations}
-                      keyExtractor={(operation) => operation.id}
-                      renderEmptyState={() => (
+                    {sortedOperations.length ? (
+                      <Table.Body>
+                        {sortedOperations.map((operation) => (
+                          <Table.Row key={operation.id}>
+                            <Table.Cell>
+                              {operation.source ? (
+                                <Chip size="sm">{normalizeInventorySource(operation.source)}</Chip>
+                              ) : (
+                                "—"
+                              )}
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Chip size="sm" variant={OPERATION_STATUS_COLORS[operation.status]}>
+                                {t(`operations.statuses.${operation.status}` as TranslationKey)}
+                              </Chip>
+                            </Table.Cell>
+                            <Table.Cell labelClassName="tabular-nums">
+                              {formatInventoryQuantity(operation.movement_count)}
+                            </Table.Cell>
+                            <Table.Cell labelClassName="tabular-nums">
+                              {formatInventoryQuantity(operation.attempts)}
+                            </Table.Cell>
+                            <Table.Cell>
+                              <PanelTypography type="body-sm" numberOfLines={1}>
+                                {operation.actor?.name ?? "—"}
+                              </PanelTypography>
+                            </Table.Cell>
+                            <Table.Cell>
+                              <PanelTypography type="body-sm" numberOfLines={1}>
+                                {operation.failure_reason ?? "—"}
+                              </PanelTypography>
+                            </Table.Cell>
+                            <Table.Cell labelClassName="tabular-nums">
+                              {formatDateTime(operation.created_at)}
+                            </Table.Cell>
+                            <Table.Cell labelClassName="tabular-nums">
+                              {formatOptionalDate(operation.processed_at)}
+                            </Table.Cell>
+                            <Table.Cell labelClassName="tabular-nums">
+                              {formatOptionalDate(operation.failed_at)}
+                            </Table.Cell>
+                          </Table.Row>
+                        ))}
+                      </Table.Body>
+                    ) : (
+                      <Table.Empty>
                         <EmptyState className="py-16">
                           <EmptyState.Header>
                             <EmptyState.Media variant="icon">
@@ -234,70 +342,28 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
                             </EmptyState.Description>
                           </EmptyState.Header>
                         </EmptyState>
-                      )}
-                    >
-                      {(operation) => (
-                        <Table.Row id={operation.id}>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            {operation.source ? (
-                              <Chip color="default" size="sm" variant="soft">
-                                <Chip.Label numberOfLines={1} ellipsizeMode="tail">
-                                  {normalizeInventorySource(operation.source)}
-                                </Chip.Label>
-                              </Chip>
-                            ) : (
-                              "—"
-                            )}
-                          </Table.Cell>
-                          <Table.Cell>
-                            <OperationStatusChip status={operation.status} />
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatInventoryQuantity(operation.movement_count)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatInventoryQuantity(operation.attempts)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            {operation.actor?.name ?? "—"}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ numberOfLines: 1 }}>
-                            {operation.failure_reason ?? "—"}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatDateTime(operation.created_at)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatOptionalDate(operation.processed_at)}
-                          </Table.Cell>
-                          <Table.Cell textProps={{ className: "tabular-nums" }}>
-                            {formatOptionalDate(operation.failed_at)}
-                          </Table.Cell>
-                        </Table.Row>
-                      )}
-                    </Table.Body>
-                  </Table.Content>
-                </Table.ScrollContainer>
-                {query.hasNextPage ? (
-                  <Table.Footer className="flex-row items-center justify-between gap-3">
-                    <Typography type="body-xs" color="muted">
-                      {t("operations.loadedCount", { count: sortedOperations.length })}
-                    </Typography>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => query.fetchNextPage()}
-                      isDisabled={query.isFetchingNextPage}
-                    >
-                      <Button.Label>
-                        {query.isFetchingNextPage
-                          ? t("operations.loadingMore")
-                          : t("operations.loadMore")}
-                      </Button.Label>
-                    </Button>
-                  </Table.Footer>
-                ) : null}
-              </Table>
+                      </Table.Empty>
+                    )}
+                  </Table>
+                </View>
+              </ScrollView>
+              {query.hasNextPage ? (
+                <View className="w-full flex-row items-center justify-between gap-3 p-4">
+                  <Typography type="body-xs" muted>
+                    {t("operations.loadedCount", { count: sortedOperations.length })}
+                  </Typography>
+                  <PanelButton
+                    size="sm"
+                    variant="ghost"
+                    onPress={() => query.fetchNextPage()}
+                    disabled={query.isFetchingNextPage}
+                  >
+                    {query.isFetchingNextPage
+                      ? t("operations.loadingMore")
+                      : t("operations.loadMore")}
+                  </PanelButton>
+                </View>
+              ) : null}
             </View>
           </ScrollView>
         )}

@@ -1,8 +1,13 @@
-import { useToast } from "panelui-native";
+import {
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
-import ActionDialog from "@/components/common/action-dialog";
-import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
 import {
   useDiscount,
   useCreateDiscount,
@@ -16,13 +21,12 @@ import {
   toDiscountRequest,
   type DiscountFormValues,
 } from "@/schemas/discount";
-import { isApiError } from "@/api/api-error";
+import { getErrorMessage, isApiError } from "@/api/api-error";
 import { getLocaleTag } from "@/locales";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button } from "heroui-native";
 import { useForm } from "react-hook-form";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import React from "react";
@@ -95,9 +99,30 @@ export default function DiscountFormScreen(): React.JSX.Element {
   }, [discountQuery.data, initializeProductDraft, isNew, reset]);
 
   if (!isNew && discountQuery.isLoading)
-    return <LoadingState message={t("discounts.loadingOne")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("discounts.loadingOne")}
+        </PanelLoadingText>
+      </View>
+    );
   if (!isNew && discountQuery.isError)
-    return <ErrorState error={discountQuery.error} onRetry={discountQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(discountQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void discountQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
 
   const submit = async (values: DiscountFormValues) => {
     if (selectedProductIds.length === 0) {
@@ -195,24 +220,35 @@ export default function DiscountFormScreen(): React.JSX.Element {
         />
         <DiscountStatusCard control={control} t={t} />
         <View className="w-full max-w-3xl flex-row gap-3 pt-2">
-          <Button variant="ghost" onPress={() => router.back()} isDisabled={saving}>
-            <Button.Label>{t("common.cancel")}</Button.Label>
-          </Button>
-          <Button className="flex-1" onPress={handleSubmit(submit)} isDisabled={saving}>
-            <Button.Label>{saving ? t("common.saving") : t("common.save")}</Button.Label>
-          </Button>
+          <PanelButton variant="ghost" onPress={() => router.back()} disabled={saving}>
+            {t("common.cancel")}
+          </PanelButton>
+          <PanelButton className="flex-1" onPress={handleSubmit(submit)} disabled={saving}>
+            {saving ? t("common.saving") : t("common.save")}
+          </PanelButton>
         </View>
       </KeyboardAwareScrollView>
-      <ActionDialog
-        isOpen={confirmDelete}
-        onOpenChange={setConfirmDelete}
-        title={t("discounts.deleteTitle")}
-        description={t("discounts.deleteDescription")}
-        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-        actionVariant="danger"
-        isActionDisabled={deleteMutation.isPending}
-        onAction={handleDelete}
-      />
+      <PanelDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("discounts.deleteTitle")}</PanelDialog.Title>
+          <PanelDialog.Description>{t("discounts.deleteDescription")}</PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton
+              variant="destructive"
+              size="sm"
+              disabled={deleteMutation.isPending}
+              onPress={handleDelete}
+            >
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { Button, Typography, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { useCartStore } from "@/stores/use-cart-store";
 import { usePOSAddOnSheet } from "@/hooks/use-pos-add-on-sheet";
@@ -5,7 +6,6 @@ import type { CartItem } from "@/types/cart";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 import { getCartItemSubtotal } from "@/utils/cart-pricing";
-import { Button, cn, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
@@ -19,9 +19,9 @@ type Props = {
 
 export default function CartItemRow({ item, product }: Props): JSX.Element {
   const { t } = useTranslation();
-  const [themeColorForeground, themeColorDangerSoftForeground] = useCSSVariable([
+  const [themeColorForeground, themeColorDestructiveForeground] = useCSSVariable([
     "--color-foreground",
-    "--color-destructive",
+    "--color-destructive-solid-foreground",
   ]) as [string, string];
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQty = useCartStore((s) => s.updateQty);
@@ -62,17 +62,17 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
         </View>
 
         <View className="flex-row items-center gap-1">
-          <Typography type="body-sm" color="muted" className="tabular-nums">
+          <Typography type="body-sm" muted className="tabular-nums">
             {item.qty} x
           </Typography>
           {hasDiscount ? (
-            <Typography type="body-xs" color="muted" className="tabular-nums line-through">
+            <Typography type="body-xs" muted className="tabular-nums line-through">
               {formatRupiah(item.original_price ?? item.price)}
             </Typography>
           ) : null}
           <Typography
             type="body-sm"
-            color={hasDiscount ? undefined : "muted"}
+            muted={!hasDiscount}
             className={cn("tabular-nums", hasDiscount && "text-accent")}
           >
             {formatRupiah(item.price)}
@@ -85,11 +85,11 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
               key={`${addOn.id}-${option.id}`}
               className="flex-row items-start justify-between gap-3 pl-2"
             >
-              <Typography type="body-sm" color="muted" className="flex-1">
+              <Typography type="body-sm" muted className="flex-1">
                 + {addOn.name}: {option.name}
               </Typography>
               {option.price > 0 && (
-                <Typography type="body-sm" color="muted" className="tabular-nums">
+                <Typography type="body-sm" muted className="tabular-nums">
                   {formatRupiah(option.price)}
                 </Typography>
               )}
@@ -99,7 +99,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
 
         {item.notes ? (
           <View className="flex-row items-start gap-2 pl-2">
-            <Typography type="body-sm" color="muted" className="flex-1">
+            <Typography type="body-sm" muted className="flex-1">
               {t("addOns.notes")}: {item.notes}
             </Typography>
           </View>
@@ -109,20 +109,18 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
       <View className="flex-row items-center justify-between gap-4">
         <View>
           <Button
-            variant="danger-soft"
-            size="sm"
-            isIconOnly
+            variant="destructive"
+            size="icon"
             onPress={() => removeItem(item.id)}
             accessibilityLabel={t("pos.removeProductAccessibility", { product: item.name })}
           >
-            <AppIcon icon={AppIcons.trash} size={16} color={themeColorDangerSoftForeground} />
+            <AppIcon icon={AppIcons.trash} size={16} color={themeColorDestructiveForeground} />
           </Button>
         </View>
         <View className="flex-row items-center gap-2 rounded-full bg-surface-secondary p-1">
           <Button
             variant="ghost"
-            size="sm"
-            isIconOnly
+            size="icon"
             onPress={handleDecrement}
             accessibilityLabel={t("pos.decreaseProductAccessibility", { product: item.name })}
           >
@@ -135,8 +133,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
           </View>
           <Button
             variant="ghost"
-            size="sm"
-            isIconOnly
+            size="icon"
             onPress={() => updateQty(item.id, item.qty + 1)}
             accessibilityLabel={t("pos.increaseProductAccessibility", { product: item.name })}
           >

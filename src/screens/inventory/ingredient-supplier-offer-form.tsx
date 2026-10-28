@@ -1,12 +1,24 @@
-import { useToast } from "panelui-native";
+import {
+  Typography,
+  Typography as PanelFieldText,
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  Input as PanelInput,
+  Select as PanelSelect,
+  Label as PanelLabel,
+  Switch as PanelSwitch,
+  Typography as PanelTypography,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Card,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
-import { AdaptiveFormKeyboardHandlers } from "@/components/common/adaptive-form-overlay";
-import ActionDialog from "@/components/common/action-dialog";
-import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
-import FormActiveField from "@/components/common/form-active-field";
-import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
+import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
+import { IDR_NUMBER_FIELD_FORMAT_OPTIONS, RUPIAH_PREFIX } from "@/utils/format";
 import {
   useDeleteIngredientSupplierOffer,
   useIngredientSupplierOffers,
@@ -22,109 +34,22 @@ import {
 import { useTranslation } from "@/stores/use-locale";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Card, Input, Label, Select, TextField, Typography } from "heroui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Controller, useForm, type Control, type FieldErrors } from "react-hook-form";
-import { View } from "react-native";
+import {
+  Controller,
+  useController,
+  useForm,
+  type Control,
+  type FieldErrors,
+} from "react-hook-form";
+import { Pressable as ActiveFieldPressable, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
-import { FieldMessage } from "@/screens/inventory/ingredient-stock-overlay-shared";
 import {
   mapServerErrors,
   QUANTITY_FORMAT_OPTIONS,
 } from "@/screens/inventory/ingredient-stock-overlay-utils";
-
-function SupplierOfferTextField({
-  control,
-  errors,
-  name,
-  label,
-  placeholder,
-  isRequired = false,
-}: {
-  control: Control<SupplierOfferFormValues>;
-  errors: FieldErrors<SupplierOfferFormValues>;
-  name: "supplier_sku" | "purchase_unit";
-  label: string;
-  placeholder: string;
-  isRequired?: boolean;
-}): React.JSX.Element {
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field: { value, onChange } }) => (
-        <TextField
-          className="w-full md:flex-1"
-          isRequired={isRequired}
-          isInvalid={Boolean(errors[name])}
-        >
-          <Label>{label}</Label>
-          <Input
-            variant="secondary"
-            value={value}
-            onChangeText={onChange}
-            placeholder={placeholder}
-          />
-          <FieldMessage message={errors[name]?.message} />
-        </TextField>
-      )}
-    />
-  );
-}
-
-function SupplierOfferNumberField({
-  control,
-  errors,
-  name,
-  label,
-  placeholder,
-  required = false,
-  formatOptions = QUANTITY_FORMAT_OPTIONS,
-}: {
-  control: Control<SupplierOfferFormValues>;
-  errors: FieldErrors<SupplierOfferFormValues>;
-  name: "pack_quantity" | "minimum_order_quantity" | "lead_time_days";
-  label: string;
-  placeholder: string;
-  required?: boolean;
-  formatOptions?: Intl.NumberFormatOptions;
-}): React.JSX.Element {
-  const { t } = useTranslation();
-
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field: { value, onChange } }) => (
-        <AdaptiveFormKeyboardHandlers>
-          {(keyboardHandlers) => (
-            <FormNumberField
-              className="w-full md:flex-1"
-              label={label}
-              value={value}
-              onChange={onChange}
-              placeholder={placeholder}
-              minValue={0}
-              step={1}
-              showStepper
-              inputVariant="secondary"
-              inputProps={keyboardHandlers}
-              formatOptions={formatOptions}
-              isRequired={required}
-              isInvalid={Boolean(errors[name])}
-              decreaseAccessibilityLabel={t("productForm.decreaseAccessibility", { field: label })}
-              increaseAccessibilityLabel={t("productForm.increaseAccessibility", { field: label })}
-            >
-              <FieldMessage message={errors[name]?.message} />
-            </FormNumberField>
-          )}
-        </AdaptiveFormKeyboardHandlers>
-      )}
-    />
-  );
-}
 
 function SupplierOfferSaveActions({
   isEditing,
@@ -144,23 +69,21 @@ function SupplierOfferSaveActions({
   return (
     <View className="gap-3 pt-2">
       {serverError ? (
-        <Typography type="body-xs" className="text-danger">
+        <Typography type="body-xs" className="text-destructive-foreground">
           {serverError}
         </Typography>
       ) : null}
       <View className="flex-row gap-3">
-        <Button variant="ghost" onPress={onCancel} isDisabled={isPending}>
-          <Button.Label>{t("common.cancel")}</Button.Label>
-        </Button>
-        <Button className="flex-1" onPress={onSubmit} isDisabled={isPending}>
-          <Button.Label>
-            {isPending
-              ? t("common.saving")
-              : isEditing
-                ? t("ingredients.updateSupplierOffer")
-                : t("common.save")}
-          </Button.Label>
-        </Button>
+        <PanelButton variant="ghost" onPress={onCancel} disabled={isPending}>
+          {t("common.cancel")}
+        </PanelButton>
+        <PanelButton className="flex-1" onPress={onSubmit} disabled={isPending}>
+          {isPending
+            ? t("common.saving")
+            : isEditing
+              ? t("ingredients.updateSupplierOffer")
+              : t("common.save")}
+        </PanelButton>
       </View>
     </View>
   );
@@ -238,6 +161,7 @@ function getSupplierOfferLoadState({
   offer,
   loadingMessage,
   notFoundMessage,
+  retryLabel,
 }: {
   isEditing: boolean;
   isLoading: boolean;
@@ -247,84 +171,42 @@ function getSupplierOfferLoadState({
   offer: App.Data.Merchant.Inventory.SupplierOfferData | undefined;
   loadingMessage: string;
   notFoundMessage: string;
+  retryLabel: string;
 }): React.JSX.Element | null {
   if (!isEditing) return null;
-  if (isLoading) return <LoadingState message={loadingMessage} />;
-  if (isError) return <ErrorState error={error} onRetry={onRetry} />;
-  if (!offer) return <ErrorState error={new Error(notFoundMessage)} />;
+  if (isLoading)
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {loadingMessage}
+        </PanelLoadingText>
+      </View>
+    );
+  if (isError)
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>{getErrorMessage(error)}</PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void onRetry()}>
+          {retryLabel}
+        </PanelErrorButton>
+      </View>
+    );
+  if (!offer)
+    return (
+      <PanelErrorAlert variant="destructive">
+        <PanelErrorAlert.Indicator />
+        <PanelErrorAlert.Content>
+          <PanelErrorAlert.Description>{notFoundMessage}</PanelErrorAlert.Description>
+        </PanelErrorAlert.Content>
+      </PanelErrorAlert>
+    );
   return null;
-}
-
-function SupplierSelectField({
-  control,
-  errors,
-  options,
-  presentation,
-  isLoading,
-  isError,
-  error,
-  isPending,
-}: {
-  control: Control<SupplierOfferFormValues>;
-  errors: FieldErrors<SupplierOfferFormValues>;
-  options: SupplierOption[];
-  presentation: "dialog" | "popover";
-  isLoading: boolean;
-  isError: boolean;
-  error: unknown;
-  isPending: boolean;
-}): React.JSX.Element {
-  const { t } = useTranslation();
-
-  return (
-    <Controller
-      control={control}
-      name="supplier_id"
-      render={({ field: { value, onChange } }) => (
-        <View className="gap-1.5">
-          <Label isRequired isInvalid={Boolean(errors.supplier_id)}>
-            {t("ingredients.supplierOfferSupplier")}
-          </Label>
-          <Select
-            presentation={presentation}
-            value={options.find((option) => option.value === value)}
-            onValueChange={(option) => onChange(option?.value ?? "")}
-            isDisabled={isLoading || isError || options.length === 0 || isPending}
-          >
-            <Select.Trigger
-              accessibilityLabel={t("ingredients.supplierOfferSupplier")}
-              className={errors.supplier_id ? "border-danger" : undefined}
-            >
-              <Select.Value placeholder={t("ingredients.supplierOfferSupplierPlaceholder")} />
-              <Select.TriggerIndicator />
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Overlay />
-              <Select.Content
-                presentation={presentation}
-                width={presentation === "popover" ? "trigger" : undefined}
-              >
-                <Select.ListLabel>{t("ingredients.supplierOfferSupplier")}</Select.ListLabel>
-                {options.map((option) => (
-                  <Select.Item key={option.value} {...option} />
-                ))}
-              </Select.Content>
-            </Select.Portal>
-          </Select>
-          <FieldMessage message={errors.supplier_id?.message} />
-          {!errors.supplier_id && (isLoading || isError || options.length === 0) ? (
-            <Typography type="body-xs" color={isError ? undefined : "muted"}>
-              {isLoading
-                ? t("suppliers.loadingOne")
-                : isError
-                  ? getErrorMessage(error)
-                  : t("ingredients.supplierOfferNoSuppliers")}
-            </Typography>
-          ) : null}
-        </View>
-      )}
-    />
-  );
 }
 
 function SupplierOfferFormCard({
@@ -349,10 +231,53 @@ function SupplierOfferFormCard({
   isEditing: boolean;
 }): React.JSX.Element {
   const { t } = useTranslation();
+  const {
+    field: { value: priceValue, onChange: priceChange, onBlur: priceBlur, ref: priceRef },
+  } = useController({ control, name: "last_purchase_price" });
+  const { localizedInputProps: priceInput } = useLocalizedNumberInput({
+    value: priceValue,
+    onChange: priceChange,
+    formatOptions: IDR_NUMBER_FIELD_FORMAT_OPTIONS,
+    minValue: 0,
+    inputProps: { onBlur: priceBlur },
+  });
+  const {
+    field: { value: packValue, onChange: changePack, onBlur: blurPack },
+  } = useController({ control, name: "pack_quantity" });
+  const { numericValue: packNumber, localizedInputProps: packInput } = useLocalizedNumberInput({
+    value: packValue,
+    onChange: changePack,
+    formatOptions: QUANTITY_FORMAT_OPTIONS,
+    minValue: 0,
+    inputProps: { onBlur: blurPack },
+  });
+
+  const {
+    field: { value: minimumValue, onChange: changeMinimum, onBlur: blurMinimum },
+  } = useController({ control, name: "minimum_order_quantity" });
+  const { numericValue: minimumNumber, localizedInputProps: minimumInput } =
+    useLocalizedNumberInput({
+      value: minimumValue,
+      onChange: changeMinimum,
+      formatOptions: QUANTITY_FORMAT_OPTIONS,
+      minValue: 0,
+      inputProps: { onBlur: blurMinimum },
+    });
+
+  const {
+    field: { value: leadValue, onChange: changeLead, onBlur: blurLead },
+  } = useController({ control, name: "lead_time_days" });
+  const { numericValue: leadNumber, localizedInputProps: leadInput } = useLocalizedNumberInput({
+    value: leadValue,
+    onChange: changeLead,
+    formatOptions: QUANTITY_FORMAT_OPTIONS,
+    minValue: 0,
+    inputProps: { onBlur: blurLead },
+  });
 
   return (
-    <Card className="w-full gap-4 overflow-hidden">
-      <Card.Header>
+    <Card className="w-full gap-4 overflow-hidden p-4">
+      <Card.Header className="p-0">
         <View className="gap-1">
           <Card.Title>
             {t(isEditing ? "ingredients.editSupplierOffer" : "ingredients.addSupplierOffer")}
@@ -360,100 +285,266 @@ function SupplierOfferFormCard({
           <Card.Description>{t("ingredients.supplierOfferFormDescription")}</Card.Description>
         </View>
       </Card.Header>
-      <Card.Body className="gap-5">
-        <SupplierSelectField
+      <Card.Content className="gap-5 p-0">
+        <Controller
           control={control}
-          errors={errors}
-          options={supplierOptions}
-          presentation={supplierSelectPresentation}
-          isLoading={suppliersLoading}
-          isError={suppliersError}
-          error={suppliersErrorValue}
-          isPending={isPending}
+          name="supplier_id"
+          render={({ field: { value, onChange } }) => (
+            <View className="gap-1.5">
+              <PanelLabel isRequired isInvalid={Boolean(errors.supplier_id)}>
+                {t("ingredients.supplierOfferSupplier")}
+              </PanelLabel>
+              <PanelSelect
+                presentation={supplierSelectPresentation === "popover" ? "overlay" : "sheet"}
+                value={value}
+                onValueChange={onChange}
+                disabled={
+                  suppliersLoading || suppliersError || supplierOptions.length === 0 || isPending
+                }
+                triggerClassName={errors.supplier_id ? "border-destructive" : undefined}
+                placeholder={t("ingredients.supplierOfferSupplierPlaceholder")}
+                title={t("ingredients.supplierOfferSupplier")}
+              >
+                {supplierOptions.map((option) => (
+                  <PanelSelect.Item key={option.value} {...option} />
+                ))}
+              </PanelSelect>
+              {errors.supplier_id?.message ? (
+                <PanelFieldText type="body-xs" className="text-destructive">
+                  {errors.supplier_id?.message}
+                </PanelFieldText>
+              ) : null}
+              {!errors.supplier_id &&
+              (suppliersLoading || suppliersError || supplierOptions.length === 0) ? (
+                <Typography type="body-xs" muted={!suppliersError}>
+                  {suppliersLoading
+                    ? t("suppliers.loadingOne")
+                    : suppliersError
+                      ? getErrorMessage(suppliersErrorValue)
+                      : t("ingredients.supplierOfferNoSuppliers")}
+                </Typography>
+              ) : null}
+            </View>
+          )}
         />
-
-        <View className="gap-4 md:flex-row">
-          <SupplierOfferTextField
-            control={control}
-            errors={errors}
-            name="purchase_unit"
-            label={t("ingredients.supplierOfferPurchaseUnit")}
-            placeholder={t("ingredients.supplierOfferPurchaseUnitPlaceholder")}
-            isRequired
-          />
-          <SupplierOfferTextField
-            control={control}
-            errors={errors}
-            name="supplier_sku"
-            label={t("ingredients.supplierOfferSku")}
-            placeholder={t("ingredients.supplierOfferSku")}
-          />
-        </View>
-
-        <View className="gap-4 md:flex-row">
-          <SupplierOfferNumberField
-            control={control}
-            errors={errors}
-            name="pack_quantity"
-            label={t("ingredients.supplierOfferPackQuantity")}
-            placeholder={t("ingredients.supplierOfferPackQuantityPlaceholder")}
-            required
-          />
-          <SupplierOfferNumberField
-            control={control}
-            errors={errors}
-            name="minimum_order_quantity"
-            label={t("ingredients.supplierOfferMinimumOrderQuantity")}
-            placeholder={t("ingredients.supplierOfferMinimumOrderQuantityPlaceholder")}
-          />
-        </View>
 
         <View className="gap-4 md:flex-row">
           <Controller
             control={control}
-            name="last_purchase_price"
-            render={({ field: { value, onChange } }) => (
-              <AdaptiveFormKeyboardHandlers>
-                {(keyboardHandlers) => (
-                  <RupiahField
-                    className="w-full md:flex-1"
-                    label={t("ingredients.supplierOfferLastPurchasePrice")}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={t("ingredients.supplierOfferLastPurchasePricePlaceholder")}
-                    minValue={0}
-                    inputVariant="secondary"
-                    inputProps={keyboardHandlers}
-                    isInvalid={Boolean(errors.last_purchase_price)}
-                  >
-                    <FieldMessage message={errors.last_purchase_price?.message} />
-                  </RupiahField>
-                )}
-              </AdaptiveFormKeyboardHandlers>
+            name="purchase_unit"
+            render={({ field: { value, onChange, onBlur, ref } }) => (
+              <PanelInput
+                ref={ref}
+                containerClassName="w-full md:flex-1"
+                variant="filled"
+                label={t("ingredients.supplierOfferPurchaseUnit")}
+                placeholder={t("ingredients.supplierOfferPurchaseUnitPlaceholder")}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                errorMessage={errors.purchase_unit?.message}
+                isRequired
+              />
             )}
           />
-          <SupplierOfferNumberField
+          <Controller
             control={control}
-            errors={errors}
-            name="lead_time_days"
-            label={t("ingredients.supplierOfferLeadTime")}
-            placeholder={t("ingredients.supplierOfferLeadTimePlaceholder")}
+            name="supplier_sku"
+            render={({ field: { value, onChange, onBlur, ref } }) => (
+              <PanelInput
+                ref={ref}
+                containerClassName="w-full md:flex-1"
+                variant="filled"
+                label={t("ingredients.supplierOfferSku")}
+                placeholder={t("ingredients.supplierOfferSku")}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                errorMessage={errors.supplier_sku?.message}
+              />
+            )}
           />
         </View>
 
-        <FormActiveField
+        <View className="gap-4 md:flex-row">
+          <PanelInput
+            containerClassName="w-full md:flex-1"
+            label={t("ingredients.supplierOfferPackQuantity")}
+            placeholder={t("ingredients.supplierOfferPackQuantityPlaceholder")}
+            keyboardType="decimal-pad"
+            errorMessage={errors.pack_quantity?.message}
+            isRequired
+            {...packInput}
+            startContent={
+              <PanelButton
+                size="icon"
+                variant="ghost"
+                accessibilityLabel={t("productForm.decreaseAccessibility", {
+                  field: t("ingredients.supplierOfferPackQuantity"),
+                })}
+                disabled={Number.isFinite(packNumber) && packNumber <= 0}
+                onPress={() => changePack(String(Math.max(0, (packNumber || 0) - 1)))}
+              >
+                −
+              </PanelButton>
+            }
+            endContent={
+              <PanelButton
+                size="icon"
+                variant="ghost"
+                accessibilityLabel={t("productForm.increaseAccessibility", {
+                  field: t("ingredients.supplierOfferPackQuantity"),
+                })}
+                onPress={() => changePack(String((packNumber || 0) + 1))}
+              >
+                +
+              </PanelButton>
+            }
+          />
+          <PanelInput
+            containerClassName="w-full md:flex-1"
+            label={t("ingredients.supplierOfferMinimumOrderQuantity")}
+            placeholder={t("ingredients.supplierOfferMinimumOrderQuantityPlaceholder")}
+            keyboardType="decimal-pad"
+            errorMessage={errors.minimum_order_quantity?.message}
+            {...minimumInput}
+            startContent={
+              <PanelButton
+                size="icon"
+                variant="ghost"
+                accessibilityLabel={t("productForm.decreaseAccessibility", {
+                  field: t("ingredients.supplierOfferMinimumOrderQuantity"),
+                })}
+                disabled={Number.isFinite(minimumNumber) && minimumNumber <= 0}
+                onPress={() => changeMinimum(String(Math.max(0, (minimumNumber || 0) - 1)))}
+              >
+                −
+              </PanelButton>
+            }
+            endContent={
+              <PanelButton
+                size="icon"
+                variant="ghost"
+                accessibilityLabel={t("productForm.increaseAccessibility", {
+                  field: t("ingredients.supplierOfferMinimumOrderQuantity"),
+                })}
+                onPress={() => changeMinimum(String((minimumNumber || 0) + 1))}
+              >
+                +
+              </PanelButton>
+            }
+          />
+        </View>
+
+        <View className="gap-4 md:flex-row">
+          <PanelInput
+            ref={priceRef}
+            containerClassName="w-full md:flex-1"
+            label={t("ingredients.supplierOfferLastPurchasePrice")}
+            placeholder={t("ingredients.supplierOfferLastPurchasePricePlaceholder")}
+            errorMessage={errors.last_purchase_price?.message}
+            variant="filled"
+            keyboardType="numeric"
+            startContent={
+              <PanelTypography type="body-sm" weight="medium" muted>
+                {RUPIAH_PREFIX}
+              </PanelTypography>
+            }
+            interactiveContent={false}
+
+            {...priceInput}
+            onBlur={(event) => {
+              priceInput.onBlur(event);
+            }}
+          />
+          <PanelInput
+            containerClassName="w-full md:flex-1"
+            label={t("ingredients.supplierOfferLeadTime")}
+            placeholder={t("ingredients.supplierOfferLeadTimePlaceholder")}
+            keyboardType="decimal-pad"
+            errorMessage={errors.lead_time_days?.message}
+            {...leadInput}
+            startContent={
+              <PanelButton
+                size="icon"
+                variant="ghost"
+                accessibilityLabel={t("productForm.decreaseAccessibility", {
+                  field: t("ingredients.supplierOfferLeadTime"),
+                })}
+                disabled={Number.isFinite(leadNumber) && leadNumber <= 0}
+                onPress={() => changeLead(String(Math.max(0, (leadNumber || 0) - 1)))}
+              >
+                −
+              </PanelButton>
+            }
+            endContent={
+              <PanelButton
+                size="icon"
+                variant="ghost"
+                accessibilityLabel={t("productForm.increaseAccessibility", {
+                  field: t("ingredients.supplierOfferLeadTime"),
+                })}
+                onPress={() => changeLead(String((leadNumber || 0) + 1))}
+              >
+                +
+              </PanelButton>
+            }
+          />
+        </View>
+
+        <Controller
           control={control}
           name="is_preferred"
-          label={t("ingredients.supplierOfferPreferred")}
-          description={t("ingredients.supplierOfferPreferredDescription")}
+          render={({ field: { value, onChange } }) => (
+            <ActiveFieldPressable
+              accessible={false}
+              onPress={() => onChange(!value)}
+              className="flex-row items-center justify-between gap-4 py-1"
+            >
+              <View className="flex-1">
+                <PanelTypography type="body-sm" weight="semibold">
+                  {t("ingredients.supplierOfferPreferred")}
+                </PanelTypography>
+                <PanelTypography type="body-xs" muted>
+                  {t("ingredients.supplierOfferPreferredDescription")}
+                </PanelTypography>
+              </View>
+              <PanelSwitch
+                value={Boolean(value)}
+                onValueChange={onChange}
+                accessibilityLabel={t("ingredients.supplierOfferPreferred")}
+                accessibilityHint={t("ingredients.supplierOfferPreferredDescription")}
+              />
+            </ActiveFieldPressable>
+          )}
         />
-        <FormActiveField
+        <Controller
           control={control}
           name="active"
-          label={t("common.active")}
-          description={t("ingredients.supplierOfferActiveDescription")}
+          render={({ field: { value, onChange } }) => (
+            <ActiveFieldPressable
+              accessible={false}
+              onPress={() => onChange(!value)}
+              className="flex-row items-center justify-between gap-4 py-1"
+            >
+              <View className="flex-1">
+                <PanelTypography type="body-sm" weight="semibold">
+                  {t("common.active")}
+                </PanelTypography>
+                <PanelTypography type="body-xs" muted>
+                  {t("ingredients.supplierOfferActiveDescription")}
+                </PanelTypography>
+              </View>
+              <PanelSwitch
+                value={Boolean(value)}
+                onValueChange={onChange}
+                accessibilityLabel={t("common.active")}
+                accessibilityHint={t("ingredients.supplierOfferActiveDescription")}
+              />
+            </ActiveFieldPressable>
+          )}
         />
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -585,6 +676,7 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
     offer,
     loadingMessage: t("ingredients.loadingOne"),
     notFoundMessage: t("ingredients.supplierOfferNotFound"),
+    retryLabel: t("common.retry"),
   });
   if (loadState) return loadState;
 
@@ -638,18 +730,34 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
           </View>
         </KeyboardAwareScrollView>
       </View>
-      <ActionDialog
-        isOpen={isConfirmingDelete}
+      <PanelDialog
+        open={isConfirmingDelete}
         onOpenChange={(isOpen) => {
           if (!isOpen && !deleteMutation.isPending) setIsConfirmingDelete(false);
         }}
-        title={t("ingredients.supplierOfferDeleteTitle")}
-        description={t("ingredients.supplierOfferDeleteDescription")}
-        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-        actionVariant="danger"
-        isActionDisabled={deleteMutation.isPending}
-        onAction={handleDelete}
-      />
+      >
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("ingredients.supplierOfferDeleteTitle")}</PanelDialog.Title>
+          <PanelDialog.Description>
+            {t("ingredients.supplierOfferDeleteDescription")}
+          </PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton
+              variant="destructive"
+              size="sm"
+              disabled={deleteMutation.isPending}
+              onPress={handleDelete}
+            >
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

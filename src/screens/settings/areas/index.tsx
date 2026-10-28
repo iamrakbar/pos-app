@@ -1,14 +1,18 @@
+import { getErrorMessage } from "@/api/api-error";
+import {
+  Fab,
+  PlusIcon,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Skeleton as PanelGridSkeleton,
+ EmptyState, Card } from "panelui-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
-import CreateFAB from "@/components/common/create-fab";
-import ErrorState from "@/components/common/error-state";
-import { GridSkeleton } from "@/components/common/list-skeleton";
 import { useAreas } from "@/hooks/db/use-areas";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Button, Card } from "heroui-native";
-import { EmptyState } from "heroui-native-pro";
 import React from "react";
 import { FlatList, View } from "react-native";
 import AreaFormDialog from "./area-form-dialog";
@@ -17,6 +21,7 @@ import { useTranslation } from "@/stores/use-locale";
 type AreaData = App.Data.Merchant.Area.AreaData;
 
 export default function AreasScreen(): React.JSX.Element {
+  const fabInsets = useSafeAreaInsets();
   const { t } = useTranslation();
   const router = useRouter();
   const { width, isCompact, isMedium, horizontalPagePadding } = useResponsiveLayout();
@@ -42,18 +47,46 @@ export default function AreasScreen(): React.JSX.Element {
   if (areasQuery.isLoading) {
     return (
       <View className="flex-1 bg-background">
-        <GridSkeleton
-          columns={columnCount}
-          width={width}
-          horizontalPadding={horizontalPagePadding}
-          gap={16}
-          aspectRatio={1.8}
-        />
+        <View
+          className="flex-1 flex-row flex-wrap content-start gap-y-4 py-6"
+          style={{ paddingHorizontal: horizontalPagePadding, columnGap: 16 }}
+          accessibilityRole="progressbar"
+        >
+          {Array.from({ length: columnCount * 2 }, (_, index) => (
+            <View
+              key={`loading-grid-${index}`}
+              style={{
+                width: Math.max(
+                  0,
+                  (width - horizontalPagePadding * 2 - 16 * (columnCount - 1)) / columnCount
+                ),
+                aspectRatio: 1.8,
+              }}
+              className="overflow-hidden rounded-2xl"
+            >
+              <PanelGridSkeleton className="h-full w-full rounded-2xl" />
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
   if (areasQuery.isError) {
-    return <ErrorState error={areasQuery.error} onRetry={areasQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(areasQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void areasQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   const areas = areasQuery.data ?? [];
@@ -75,9 +108,9 @@ export default function AreasScreen(): React.JSX.Element {
         columnWrapperClassName={columnCount > 1 ? "gap-4" : undefined}
         ItemSeparatorComponent={() => <View className="h-4" />}
         renderItem={({ item: area }) => (
-          <Card className="gap-4" style={{ width: cardWidth }}>
-            <Card.Body className="flex-row gap-3 active:bg-surface-secondary">
-              <View className="size-12 items-center justify-center rounded-panel-inner bg-accent-soft">
+          <Card className="gap-4 p-4" style={{ width: cardWidth }}>
+            <Card.Content className="flex-row gap-3 active:bg-surface-secondary p-0">
+              <View className="size-12 items-center justify-center rounded-xl bg-accent">
                 <AppIcon icon={AppIcons.restaurant} size={20} color={accentColor} />
               </View>
               <View>
@@ -91,9 +124,9 @@ export default function AreasScreen(): React.JSX.Element {
                   )}
                 </Card.Description>
               </View>
-            </Card.Body>
-            <Card.Footer className="flex-row gap-4">
-              <Button
+            </Card.Content>
+            <Card.Footer className="flex-row gap-4 p-0">
+              <PanelErrorButton
                 size="sm"
                 variant="outline"
                 accessibilityLabel={t("areasManagement.openTablesAccessibility", {
@@ -103,9 +136,9 @@ export default function AreasScreen(): React.JSX.Element {
                 className="flex-1"
               >
                 <AppIcon icon={AppIcons.eye} size={18} color={mutedColor} />
-                <Button.Label className="ml-2">{t("areasManagement.viewTables")}</Button.Label>
-              </Button>
-              <Button
+                {t("areasManagement.viewTables")}
+              </PanelErrorButton>
+              <PanelErrorButton
                 size="sm"
                 variant="outline"
                 accessibilityLabel={t("areasManagement.editAreaAccessibility", {
@@ -115,8 +148,8 @@ export default function AreasScreen(): React.JSX.Element {
                 className="flex-1"
               >
                 <AppIcon icon={AppIcons.pencil} size={18} color={mutedColor} />
-                <Button.Label className="ml-2">{t("areasManagement.editAreaAction")}</Button.Label>
-              </Button>
+                {t("areasManagement.editAreaAction")}
+              </PanelErrorButton>
             </Card.Footer>
           </Card>
         )}
@@ -134,7 +167,10 @@ export default function AreasScreen(): React.JSX.Element {
           </EmptyState>
         }
       />
-      <CreateFAB
+      <Fab
+        icon={<PlusIcon size={22} />}
+        placement="bottom-right"
+        style={{ bottom: Math.max(fabInsets.bottom, 24), right: 24, zIndex: 50 }}
         accessibilityLabel={t("areasManagement.addAreaAccessibility")}
         onPress={openCreate}
       />

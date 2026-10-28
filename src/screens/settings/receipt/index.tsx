@@ -1,4 +1,14 @@
-import { useToast } from "panelui-native";
+import {
+  Button as PanelButton,
+  Typography,
+  useToast,
+  ScrollFade,
+  Select as PanelSelect,
+  SplitView,
+  Input as PanelInput,
+  Textarea as PanelTextarea,
+  Label as PanelLabel,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/receipt-paper";
 import { useAuth } from "@/stores/use-auth";
@@ -11,13 +21,10 @@ import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Button, Input, ScrollShadow, Select, Separator, Typography } from "heroui-native";
 import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
-import { SplitView } from "heroui-native-pro";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate, TranslationKey } from "@/locales";
@@ -98,21 +105,13 @@ function getMerchantHeader(merchant: unknown): string {
   return [addressLine, phone].filter(Boolean).join("\n");
 }
 
-function FieldLabel({ children }: { children: string }) {
-  return (
-    <Typography type="body-sm" weight="semibold" className="mb-1.5">
-      {children}
-    </Typography>
-  );
-}
-
 function PrinterSetupButton({ color, onPress }: { color: string; onPress: () => void }) {
   const { t } = useTranslation();
   return (
-    <Button className="w-full" variant="outline" onPress={onPress}>
+    <PanelButton className="w-full" variant="outline" onPress={onPress}>
       <AppIcon icon={AppIcons.print} size={18} color={color} />
-      <Button.Label>{t("receiptSettings.setupPrinter")}</Button.Label>
-    </Button>
+      {t("receiptSettings.setupPrinter")}
+    </PanelButton>
   );
 }
 
@@ -138,46 +137,28 @@ function ReceiptPreviewSection({
 
   return (
     <View className="min-h-0 flex-1">
-      <ScrollShadow
+      <ScrollFade
         className="flex-1 bg-surface-secondary"
         color={surfaceColor}
         orientation="vertical"
-        LinearGradientComponent={LinearGradient}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
           <View className="flex-row items-center justify-between gap-3 p-4">
             <Typography className="text-sm font-semibold text-foreground">
               {t("receiptSettings.preview")}
             </Typography>
-            <Select
-              presentation={choicePresentation}
-              value={{ value: previewPaperWidth, label: previewPaperWidth }}
-              onValueChange={(option) => {
-                if (option?.value) onPaperWidthChange(option.value as PaperWidth);
-              }}
+            <PanelSelect
+              className="w-32"
+              presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+              value={previewPaperWidth}
+              onValueChange={(value) => onPaperWidthChange(value as PaperWidth)}
+              placeholder={t("receiptSettings.paperSize")}
+              title={t("receiptSettings.previewSize")}
             >
-              <Select.Trigger className="w-32">
-                <Select.Value placeholder={t("receiptSettings.paperSize")} numberOfLines={1} />
-                <Select.TriggerIndicator />
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Overlay />
-                <Select.Content
-                  presentation={choicePresentation}
-                  width={choicePresentation === "popover" ? "trigger" : undefined}
-                >
-                  <Select.ListLabel className="mb-2">
-                    {t("receiptSettings.previewSize")}
-                  </Select.ListLabel>
-                  {PAPER_WIDTHS.map((paperWidth, index) => (
-                    <React.Fragment key={paperWidth}>
-                      <Select.Item value={paperWidth} label={paperWidth} />
-                      {index < PAPER_WIDTHS.length - 1 ? <Separator /> : null}
-                    </React.Fragment>
-                  ))}
-                </Select.Content>
-              </Select.Portal>
-            </Select>
+              {PAPER_WIDTHS.map((paperWidth) => (
+                <PanelSelect.Item key={paperWidth} value={paperWidth} label={paperWidth} />
+              ))}
+            </PanelSelect>
           </View>
           <ReceiptPaper
             settings={settings}
@@ -195,7 +176,7 @@ function ReceiptPreviewSection({
             }
           />
         </ScrollView>
-      </ScrollShadow>
+      </ScrollFade>
     </View>
   );
 }
@@ -223,11 +204,11 @@ function ReceiptSetupLayout({
       minHeight={0.28}
       maxHeight={0.58}
     >
-      <SplitView.TopSection className="min-h-0">{preview}</SplitView.TopSection>
+      <SplitView.Top className="min-h-0">{preview}</SplitView.Top>
       <SplitView.DragArea accessibilityLabel={t("receiptSettings.resizePreview")}>
-        <SplitView.DragHandle />
+        <SplitView.Handle />
       </SplitView.DragArea>
-      <SplitView.BottomSection className="min-h-0">{form}</SplitView.BottomSection>
+      <SplitView.Bottom className="min-h-0">{form}</SplitView.Bottom>
     </SplitView>
   );
 }
@@ -360,43 +341,31 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   <Typography className="text-lg font-semibold text-foreground">
                     {t("receiptSettings.details")}
                   </Typography>
-                  <Typography type="body-sm" color="muted">
+                  <Typography type="body-sm" muted>
                     {t("receiptSettings.detailsDescription")}
                   </Typography>
                 </View>
                 <View className="gap-5">
                   <View>
-                    <FieldLabel>{t("receiptSettings.layout")}</FieldLabel>
-                    <Select
-                      presentation={choicePresentation}
-                      value={receiptLayouts.find((item) => item.value === settings.layout)}
-                      onValueChange={(option) => {
-                        if (option) {
-                          updateSettings({
-                            layout: option.value as "standard" | "compact" | "customer" | "kitchen",
-                          });
-                        }
-                      }}
+                    <PanelLabel className="mb-1.5">{t("receiptSettings.layout")}</PanelLabel>
+                    <PanelSelect
+                      presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                      value={settings.layout}
+                      onValueChange={(value) =>
+                        updateSettings({
+                          layout: value as "standard" | "compact" | "customer" | "kitchen",
+                        })
+                      }
+                      placeholder={t("receiptSettings.selectLayout")}
+                      title={t("receiptSettings.layout")}
                     >
-                      <Select.Trigger>
-                        <Select.Value placeholder={t("receiptSettings.selectLayout")} />
-                        <Select.TriggerIndicator />
-                      </Select.Trigger>
-                      <Select.Portal>
-                        <Select.Overlay />
-                        <Select.Content
-                          presentation={choicePresentation}
-                          width={choicePresentation === "popover" ? "trigger" : undefined}
-                        >
-                          {receiptLayouts.map((item) => (
-                            <Select.Item key={item.value} value={item.value} label={item.label} />
-                          ))}
-                        </Select.Content>
-                      </Select.Portal>
-                    </Select>
+                      {receiptLayouts.map((item) => (
+                        <PanelSelect.Item key={item.value} value={item.value} label={item.label} />
+                      ))}
+                    </PanelSelect>
                   </View>
                   <View>
-                    <FieldLabel>{t("receiptSettings.storeLogo")}</FieldLabel>
+                    <PanelLabel className="mb-1.5">{t("receiptSettings.storeLogo")}</PanelLabel>
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={t("receiptSettings.changeLogoAccessibility")}
@@ -407,7 +376,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       {isProcessingLogo ? (
                         <View className="items-center gap-2">
                           <ActivityIndicator />
-                          <Typography type="body-xs" color="muted">
+                          <Typography type="body-xs" muted>
                             {t("receiptSettings.optimizingLogo")}
                           </Typography>
                         </View>
@@ -425,52 +394,46 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       ) : (
                         <View className="items-center gap-1.5">
                           <AppIcon icon={AppIcons.image} size={26} color={themeColorMuted} />
-                          <Typography type="body-xs" color="muted">
+                          <Typography type="body-xs" muted>
                             {t("receiptSettings.chooseImage")}
                           </Typography>
                         </View>
                       )}
                     </Pressable>
-                    <Typography type="body-xs" color="muted" className="mt-1.5">
+                    <Typography type="body-xs" muted className="mt-1.5">
                       {t("receiptSettings.logoDescription")}
                     </Typography>
                   </View>
 
                   <View>
-                    <FieldLabel>{t("receiptSettings.storeName")}</FieldLabel>
-                    <Input
+                    <PanelInput
+                      label={t("receiptSettings.storeName")}
                       value={settings.storeName}
                       onChangeText={(storeName) => updateSettings({ storeName })}
                       placeholder={t("receiptSettings.storeName")}
-                      variant="secondary"
+                      variant="filled"
                     />
                   </View>
 
                   <View>
-                    <FieldLabel>{t("receiptSettings.header")}</FieldLabel>
-                    <Input
+                    <PanelTextarea
+                      label={t("receiptSettings.header")}
                       value={settings.header}
                       onChangeText={(header) => updateSettings({ header })}
                       placeholder={t("receiptSettings.headerPlaceholder")}
-                      multiline
-                      numberOfLines={3}
-                      textAlignVertical="top"
-                      variant="secondary"
-                      className="min-h-24 py-3"
+                      variant="filled"
+                      rows={3}
                     />
                   </View>
 
                   <View>
-                    <FieldLabel>{t("receiptSettings.footer")}</FieldLabel>
-                    <Input
+                    <PanelTextarea
+                      label={t("receiptSettings.footer")}
                       value={settings.footer}
                       onChangeText={(footer) => updateSettings({ footer })}
                       placeholder={t("receiptSettings.footerPlaceholder")}
-                      multiline
-                      numberOfLines={2}
-                      textAlignVertical="top"
-                      variant="secondary"
-                      className="min-h-20 py-3"
+                      variant="filled"
+                      rows={2}
                     />
                   </View>
 
@@ -481,9 +444,9 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                 </View>
               </KeyboardAwareScrollView>
               <View className="bg-surface px-5 py-4 pb-safe">
-                <Button className="w-full" onPress={() => router.back()}>
-                  <Button.Label>{t("common.done")}</Button.Label>
-                </Button>
+                <PanelButton className="w-full" onPress={() => router.back()}>
+                  {t("common.done")}
+                </PanelButton>
               </View>
             </View>
           </ReceiptSetupLayout>

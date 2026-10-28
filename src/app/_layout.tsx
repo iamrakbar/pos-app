@@ -4,16 +4,19 @@ import * as SplashScreen from "expo-splash-screen";
 import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
-import { PanelUIProvider } from "panelui-native";
+import { PanelUIProvider, Typography as PanelTypography } from "panelui-native";
 import { useEffect, type JSX } from "react";
 import { Platform, StatusBar as NativeStatusBar, View } from "react-native";
-import { useUniwind } from "uniwind";
+import { useCSSVariable, useUniwind } from "uniwind";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuth, setQueryClientRef } from "@/stores/use-auth";
 import { isApiError } from "@/api/api-error";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useNavigationTheme } from "@/utils/navigation-theme";
-import OfflineBanner from "@/components/common/offline-banner";
+import AppIcon from "@/components/common/app-icon";
+import { AppIcons } from "@/components/common/app-icons";
+import { useNetworkStore } from "@/stores/use-network-store";
+import { useTranslation } from "@/stores/use-locale";
 import AppUpdateManager from "@/components/common/app-update-manager";
 import POSAddOnSheet from "@/screens/pos/add-ons";
 import { TrueSheetProvider } from "@lodev09/react-native-true-sheet";
@@ -35,6 +38,9 @@ const queryClient = new QueryClient({
 
 function RootLayout(): JSX.Element {
   const token = useAuth((s) => s.token);
+  const isOffline = useNetworkStore((state) => state.isOffline);
+  const { t } = useTranslation();
+  const warningForeground = useCSSVariable("--color-warning-foreground") as string;
   const hasHydrated = useAuth((s) => s.hasHydrated);
   const { theme } = useUniwind();
   const isDarkMode = theme === "dark";
@@ -99,7 +105,27 @@ function RootLayout(): JSX.Element {
                 <NotificationManager />
               </View>
             )}
-            <OfflineBanner />
+            {isOffline ? (
+              <View className="bg-warning/10 px-4 py-2 flex-row items-center gap-2 pb-safe">
+                <AppIcon icon={AppIcons.cloudOffline} size={16} color={warningForeground} />
+                <View className="flex-1">
+                  <PanelTypography
+                    type="body-xs"
+                    weight="semibold"
+                    className="text-warning-foreground"
+                  >
+                    {t("offline.title")}
+                  </PanelTypography>
+                  <PanelTypography
+                    type="body-xs"
+                    className="text-warning-foreground"
+                    numberOfLines={1}
+                  >
+                    {t("offline.description")}
+                  </PanelTypography>
+                </View>
+              </View>
+            ) : null}
             <AppUpdateManager mode="banner" />
           </ErrorBoundary>
         </TrueSheetProvider>

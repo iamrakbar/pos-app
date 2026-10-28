@@ -1,22 +1,26 @@
+import { Typography , Separator ,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  AreaChart,
+  Card as PanelCard,
+  Chip as PanelChip,
+  EmptyState,
+  Kpi,
+  Spinner,
+  Typography as PanelTypography,
+} from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
+import { normalizeChartRange } from "@/utils/dashboard-chart";
+import { formatLocalDate } from "@/utils/local-date";
 import { useCSSVariable } from "uniwind";
-import ErrorState from "@/components/common/error-state";
-import LoadingAnimation from "@/components/common/loading-animation";
 import { useDashboard } from "@/hooks/db/use-dashboard";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { Chip, cn, Separator, Typography } from "heroui-native";
-import { AreaChart, EmptyState, Widget } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
-
-const SUMMARY_ICON_BACKGROUNDS = {
-  accent: "bg-accent-soft",
-  warning: "bg-warning-soft",
-  success: "bg-success-soft",
-} as const;
 
 type Period = "today" | "7-days" | "30-days";
 
@@ -28,63 +32,10 @@ const PERIODS: { value: Period; days: number }[] = [
 
 type AppliedDateRange = { startDate: string; endDate: string };
 
-function SummaryWidget({
-  label,
-  value,
-  icon,
-  color = "accent",
-}: {
-  label: string;
-  value: string;
-  icon: React.ComponentProps<typeof AppIcon>["icon"];
-  color?: "accent" | "warning" | "success";
-}) {
-  const iconColor = useCSSVariable(
-    `--color-${color === "accent" ? "secondary" : color}-foreground`
-  ) as string;
-
-  return (
-    <Widget className="grow shrink basis-2/5 landscape:basis-1/5">
-      <Widget.Header>
-        <Widget.Title>{label}</Widget.Title>
-        <View
-          className={cn(
-            "size-9 items-center justify-center rounded-panel-inner",
-            SUMMARY_ICON_BACKGROUNDS[color]
-          )}
-        >
-          <AppIcon icon={icon} size={18} color={iconColor} />
-        </View>
-      </Widget.Header>
-      <Widget.Content className="p-4">
-        <Typography
-          type="h4"
-          weight="bold"
-          className="tabular-nums"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.72}
-        >
-          {value}
-        </Typography>
-      </Widget.Content>
-    </Widget>
-  );
-}
-
 function formatChartDate(value: string): string {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return formatDate(date, { day: "2-digit", month: "2-digit", year: "numeric" });
-}
-
-type ChartPoint = { date: string; count: number };
-
-function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 function startOfToday(): Date {
@@ -99,83 +50,22 @@ function getPeriodRange(period: Period): AppliedDateRange {
   const start = new Date(end);
   start.setDate(start.getDate() - (definition.days - 1));
 
-  return { startDate: toDateKey(start), endDate: toDateKey(end) };
-}
-
-function normalizeChartRange(
-  points: ChartPoint[],
-  startDate: string,
-  endDate: string
-): ChartPoint[] {
-  const countsByDate = new Map<string, number>();
-
-  for (const point of points) {
-    const date = point.date.slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < startDate || date > endDate) continue;
-    countsByDate.set(date, (countsByDate.get(date) ?? 0) + point.count);
-  }
-
-  const normalized: ChartPoint[] = [];
-  const start = new Date(startDate + "T00:00:00");
-  const end = new Date(endDate + "T00:00:00");
-
-  for (const date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
-    const dateKey = toDateKey(date);
-    normalized.push({ date: dateKey, count: countsByDate.get(dateKey) ?? 0 });
-  }
-
-  return normalized;
-}
-
-function OrdersChart({ data, isCompact }: { data: ChartPoint[]; isCompact: boolean }) {
-  const [width, setWidth] = React.useState(0);
-  const height = isCompact ? 192 : 224;
-  const max = Math.max(1, ...data.map((point) => point.count));
-  const domainMax = Math.max(5, Math.ceil(max / 5) * 5);
-
-  return (
-    <View className="gap-2" onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
-      <View style={{ height }}>
-        {width > 0 ? (
-          <AreaChart
-            data={data}
-            xKey="date"
-            yKeys={["count"]}
-            orientation="vertical"
-            domain={{ y: [0, domainMax] }}
-            domainPadding={{ top: 8, bottom: 0, left: 8, right: 8 }}
-            xAxis={{
-              tickCount: Math.min(data.length, isCompact ? 4 : 8),
-              labelOffset: 8,
-              formatXLabel: (value: unknown) => formatChartDate(String(value)),
-            }}
-            yAxis={[
-              {
-                tickCount: 5,
-                labelOffset: 8,
-                formatYLabel: (value: unknown) => String(Math.round(Number(value))),
-              },
-            ]}
-            explicitSize={{ width, height }}
-            wrapperClassName={isCompact ? "h-48" : "h-56"}
-          >
-            {({ points, chartBounds }) => (
-              <AreaChart.Area points={points.count} y0={chartBounds.bottom} curveType="monotoneX" />
-            )}
-          </AreaChart>
-        ) : null}
-      </View>
-    </View>
-  );
+  return { startDate: formatLocalDate(start), endDate: formatLocalDate(end) };
 }
 
 export default function DashboardScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { isCompact, horizontalPagePadding } = useResponsiveLayout();
   const [period, setPeriod] = React.useState<Period>("today");
+  const [chartWidth, setChartWidth] = React.useState(0);
   const appliedRange = getPeriodRange(period);
   const dashboard = useDashboard(appliedRange.startDate, appliedRange.endDate);
   const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
+  const [metricAccent, metricSuccess, metricWarning] = useCSSVariable([
+    "--color-secondary-foreground",
+    "--color-success-foreground",
+    "--color-warning-foreground",
+  ]) as [string, string, string];
 
   const chart = normalizeChartRange(
     (dashboard.data?.orders_chart ?? []).map((point) => ({
@@ -185,11 +75,22 @@ export default function DashboardScreen(): React.JSX.Element {
     appliedRange.startDate,
     appliedRange.endDate
   );
+  const chartHeight = isCompact ? 192 : 224;
+  const chartMax = Math.max(1, ...chart.map((point) => point.count));
+  const chartDomainMax = Math.max(5, Math.ceil(chartMax / 5) * 5);
   const bestSellers = dashboard.data?.best_sellers ?? [];
   const dateRangeLabel = t(`dashboard.periods.${period}`);
 
   if (dashboard.isLoading) {
-    return <LoadingAnimation fullScreen />;
+    return (
+      <View
+        className="flex-1 items-center justify-center bg-background"
+        accessibilityRole="progressbar"
+        accessibilityLabel={t("common.loadingApplication")}
+      >
+        <Spinner size="lg" />
+      </View>
+    );
   }
 
   return (
@@ -211,60 +112,133 @@ export default function DashboardScreen(): React.JSX.Element {
           </Typography>
           <View className="flex-row flex-wrap justify-center gap-2">
             {PERIODS.map((item) => (
-              <Chip
+              <PanelChip
                 key={item.value}
-                variant={period === item.value ? "primary" : "secondary"}
+                variant={period === item.value ? "primary" : "default"}
+                selected={period === item.value}
                 onPress={() => setPeriod(item.value)}
               >
-                <Chip.Label>{t(`dashboard.periods.${item.value}`)}</Chip.Label>
-              </Chip>
+                <PanelChip.Label>{t(`dashboard.periods.${item.value}`)}</PanelChip.Label>
+              </PanelChip>
             ))}
           </View>
         </View>
 
         {dashboard.isError ? (
-          <ErrorState error={dashboard.error} onRetry={() => void dashboard.refetch()} />
+          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+            <PanelErrorAlert variant="destructive">
+              <PanelErrorAlert.Indicator />
+              <PanelErrorAlert.Content>
+                <PanelErrorAlert.Description>
+                  {getErrorMessage(dashboard.error)}
+                </PanelErrorAlert.Description>
+              </PanelErrorAlert.Content>
+            </PanelErrorAlert>
+            <PanelErrorButton variant="outline" onPress={() => void dashboard.refetch()}>
+              {t("common.retry")}
+            </PanelErrorButton>
+          </View>
         ) : (
           <>
             <View className="w-full flex-row flex-wrap gap-4">
-              <SummaryWidget
-                label={t("dashboard.revenue")}
-                value={formatRupiah(dashboard.data?.revenue_today ?? 0)}
-                icon={AppIcons.wallet}
-                color="success"
-              />
-              <SummaryWidget
-                label={t("dashboard.orders")}
-                value={String(dashboard.data?.orders_today ?? 0)}
-                icon={AppIcons.receipt}
-              />
-              <SummaryWidget
-                label={t("dashboard.pending")}
-                value={String(dashboard.data?.pending_orders ?? 0)}
-                icon={AppIcons.time}
-                color="warning"
-              />
-              <SummaryWidget
-                label={t("dashboard.completed")}
-                value={String(dashboard.data?.completed_orders ?? 0)}
-                icon={AppIcons.checkmarkCircle}
-                color="success"
-              />
+              <Kpi className="grow shrink basis-2/5 landscape:basis-1/5">
+                <Kpi.Header>
+                  <Kpi.Title>{t("dashboard.revenue")}</Kpi.Title>
+                  <Kpi.Icon tone="good">
+                    <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+                  </Kpi.Icon>
+                </Kpi.Header>
+                <Kpi.Content>
+                  <PanelTypography
+                    type="h4"
+                    weight="bold"
+                    className="tabular-nums"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.72}
+                  >
+                    {formatRupiah(dashboard.data?.revenue_today ?? 0)}
+                  </PanelTypography>
+                </Kpi.Content>
+              </Kpi>
+              <Kpi className="grow shrink basis-2/5 landscape:basis-1/5">
+                <Kpi.Header>
+                  <Kpi.Title>{t("dashboard.orders")}</Kpi.Title>
+                  <Kpi.Icon tone="neutral">
+                    <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+                  </Kpi.Icon>
+                </Kpi.Header>
+                <Kpi.Content>
+                  <PanelTypography
+                    type="h4"
+                    weight="bold"
+                    className="tabular-nums"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.72}
+                  >
+                    {String(dashboard.data?.orders_today ?? 0)}
+                  </PanelTypography>
+                </Kpi.Content>
+              </Kpi>
+              <Kpi className="grow shrink basis-2/5 landscape:basis-1/5">
+                <Kpi.Header>
+                  <Kpi.Title>{t("dashboard.pending")}</Kpi.Title>
+                  <Kpi.Icon tone="flat">
+                    <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
+                  </Kpi.Icon>
+                </Kpi.Header>
+                <Kpi.Content>
+                  <PanelTypography
+                    type="h4"
+                    weight="bold"
+                    className="tabular-nums"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.72}
+                  >
+                    {String(dashboard.data?.pending_orders ?? 0)}
+                  </PanelTypography>
+                </Kpi.Content>
+              </Kpi>
+              <Kpi className="grow shrink basis-2/5 landscape:basis-1/5">
+                <Kpi.Header>
+                  <Kpi.Title>{t("dashboard.completed")}</Kpi.Title>
+                  <Kpi.Icon tone="good">
+                    <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
+                  </Kpi.Icon>
+                </Kpi.Header>
+                <Kpi.Content>
+                  <PanelTypography
+                    type="h4"
+                    weight="bold"
+                    className="tabular-nums"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.72}
+                  >
+                    {String(dashboard.data?.completed_orders ?? 0)}
+                  </PanelTypography>
+                </Kpi.Content>
+              </Kpi>
             </View>
 
-            <Widget>
-              <Widget.Header>
+            <PanelCard>
+              <PanelCard.Header>
                 <View className="gap-0.5">
-                  <Widget.Title>{t("dashboard.orderActivity")}</Widget.Title>
-                  <Widget.Description>{t("dashboard.orderActivityDescription")}</Widget.Description>
+                  <PanelCard.Title>{t("dashboard.orderActivity")}</PanelCard.Title>
+                  <PanelCard.Description>
+                    {t("dashboard.orderActivityDescription")}
+                  </PanelCard.Description>
                 </View>
-                <Widget.Legend>
-                  <Widget.LegendItem colorClassName="bg-chart-3">
+                <View className="flex-row items-center gap-2">
+                  <View className="size-2 rounded-full bg-chart-1" />
+                  <PanelTypography type="body-xs" muted>
                     {t("dashboard.orders")}
-                  </Widget.LegendItem>
-                </Widget.Legend>
-              </Widget.Header>
-              <Widget.Content className="p-4">
+                  </PanelTypography>
+                </View>
+              </PanelCard.Header>
+              <PanelCard.Content className="p-4">
                 {chart.length === 0 ? (
                   <EmptyState className="py-12">
                     <EmptyState.Header>
@@ -278,22 +252,52 @@ export default function DashboardScreen(): React.JSX.Element {
                     </EmptyState.Header>
                   </EmptyState>
                 ) : (
-                  <OrdersChart data={chart} isCompact={isCompact} />
+                  <View
+                    className="gap-2"
+                    onLayout={(event) => setChartWidth(event.nativeEvent.layout.width)}
+                  >
+                    {chartWidth > 0 ? (
+                      <AreaChart
+                        data={chart}
+                        xDataKey="date"
+                        yDomain={[0, chartDomainMax]}
+                        aspectRatio={chartWidth / chartHeight}
+                        accessibilityLabel={t("dashboard.orderActivity")}
+                        accessibilityLabelForDatum={(point) =>
+                          `${formatChartDate(String(point.date))}, ${t("dashboard.orders")}: ${Number(point.count)}`
+                        }
+                      >
+                        <AreaChart.Grid rows={5} />
+                        <AreaChart.Area dataKey="count" />
+                        <AreaChart.XAxis
+                          ticks={Math.min(chart.length, isCompact ? 4 : 8)}
+                          format={(point) => formatChartDate(String(point.date))}
+                        />
+                        <AreaChart.YAxis ticks={5} format={(value) => String(Math.round(value))} />
+                        <AreaChart.Tooltip
+                          formatX={(point) => formatChartDate(String(point.date))}
+                          formatValue={(value) => String(Math.round(value))}
+                        />
+                      </AreaChart>
+                    ) : null}
+                  </View>
                 )}
-              </Widget.Content>
-              <Widget.Footer>
-                <Widget.Description>{dateRangeLabel}</Widget.Description>
-              </Widget.Footer>
-            </Widget>
+              </PanelCard.Content>
+              <PanelCard.Footer>
+                <PanelCard.Description>{dateRangeLabel}</PanelCard.Description>
+              </PanelCard.Footer>
+            </PanelCard>
 
-            <Widget>
-              <Widget.Header>
+            <PanelCard>
+              <PanelCard.Header>
                 <View className="gap-0.5">
-                  <Widget.Title>{t("dashboard.bestSellers")}</Widget.Title>
-                  <Widget.Description>{t("dashboard.bestSellersDescription")}</Widget.Description>
+                  <PanelCard.Title>{t("dashboard.bestSellers")}</PanelCard.Title>
+                  <PanelCard.Description>
+                    {t("dashboard.bestSellersDescription")}
+                  </PanelCard.Description>
                 </View>
-              </Widget.Header>
-              <Widget.Content className="overflow-hidden p-0">
+              </PanelCard.Header>
+              <PanelCard.Content className="overflow-hidden p-0">
                 {bestSellers.length === 0 ? (
                   <EmptyState className="py-12">
                     <EmptyState.Header>
@@ -320,7 +324,7 @@ export default function DashboardScreen(): React.JSX.Element {
                             <Typography type="body-sm" weight="semibold" numberOfLines={1}>
                               {product.name}
                             </Typography>
-                            <Typography type="body-xs" color="muted" className="tabular-nums">
+                            <Typography type="body-xs" muted className="tabular-nums">
                               {t("dashboard.sold", { count: product.qty_sold })}
                             </Typography>
                           </View>
@@ -335,8 +339,8 @@ export default function DashboardScreen(): React.JSX.Element {
                     </View>
                   ))
                 )}
-              </Widget.Content>
-            </Widget>
+              </PanelCard.Content>
+            </PanelCard>
           </>
         )}
       </View>

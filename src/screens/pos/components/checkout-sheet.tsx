@@ -1,3 +1,4 @@
+import { Typography , Separator } from "panelui-native";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { CheckoutContent } from "@/screens/pos/components/checkout-content";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -6,7 +7,7 @@ import type { PaymentSession } from "@/types/pos";
 import { useCartStore } from "@/stores/use-cart-store";
 import { useTrueSheet } from "@lodev09/react-native-true-sheet";
 import { useRouter } from "expo-router";
-import { Separator, Typography } from "heroui-native";
+
 import type { JSX } from "react";
 import { View } from "react-native";
 

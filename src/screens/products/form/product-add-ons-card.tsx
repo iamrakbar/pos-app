@@ -1,7 +1,7 @@
+import { Typography , Separator, Card, Button as PanelButton } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { Button, Card, Separator, Typography } from "heroui-native";
 import { Pressable, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
@@ -33,21 +33,21 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
   const mutedColor = useCSSVariable("--color-muted-foreground") as string;
 
   return (
-    <Card className="gap-3 overflow-hidden">
-      <Card.Header>
+    <Card className="gap-3 overflow-hidden p-4">
+      <Card.Header className="p-0">
         <View className="flex-1 gap-1">
           <Card.Title>{t("productForm.addOnsTitle")}</Card.Title>
           <Card.Description>{t("productForm.addOnsDescription")}</Card.Description>
         </View>
       </Card.Header>
-      <Card.Body className="gap-0">
+      <Card.Content className="gap-0 p-0">
         {addOns.length === 0 ? (
           <View className="items-center gap-2 py-5">
             <AppIcon icon={AppIcons.options} size={24} color={mutedColor} />
             <Typography type="body-sm" weight="semibold">
               {t("productForm.noAddOns")}
             </Typography>
-            <Typography type="body-xs" color="muted" className="text-center">
+            <Typography type="body-xs" muted className="text-center">
               {t("productForm.noAddOnsDescription")}
             </Typography>
           </View>
@@ -66,7 +66,7 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
                   <Typography type="body-sm" weight="semibold">
                     {addOn.name}
                   </Typography>
-                  <Typography type="body-xs" color="muted" numberOfLines={1}>
+                  <Typography type="body-xs" muted numberOfLines={1}>
                     {selectionRule(addOn, t)}
                   </Typography>
                 </View>
@@ -77,19 +77,19 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
           ))
         )}
         {addOns.length > 3 ? (
-          <Typography type="body-xs" color="muted" className="pt-2">
+          <Typography type="body-xs" muted className="pt-2">
             {t(
               addOns.length - 3 === 1 ? "productForm.moreGroupOne" : "productForm.moreGroupOther",
               { count: addOns.length - 3 }
             )}
           </Typography>
         ) : null}
-        <Card.Footer className="pt-4 items-center">
-          <Button variant="outline" size="sm" onPress={onAdd}>
-            <Button.Label>{t("productForm.add")}</Button.Label>
-          </Button>
+        <Card.Footer className="pt-4 items-center p-0">
+          <PanelButton variant="outline" size="sm" onPress={onAdd}>
+            {t("productForm.add")}
+          </PanelButton>
         </Card.Footer>
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }

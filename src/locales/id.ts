@@ -681,6 +681,7 @@ export const id: TranslationSchema = {
     takeaway: "Takeaway",
     pickupTime: "Waktu pengambilan",
     cart: "Keranjang",
+    clearCart: "Kosongkan keranjang",
     added: "Ditambahkan",
     cartEmpty: "Keranjang kosong",
     cartEmptyDescription: "Tambahkan produk untuk memulai.",

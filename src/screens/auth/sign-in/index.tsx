@@ -1,10 +1,10 @@
+import { Button, Card, InputGroup, Typography, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import Logo from "@/components/common/logo";
-import { Button, Card, cn, InputGroup, Typography } from "heroui-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useEffect, useState, type JSX } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardToolbar } from "react-native-keyboard-controller";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +18,7 @@ export default function SignInScreen(): JSX.Element {
   const { locale, t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const themeColorAccent = useCSSVariable("--color-primary") as string;
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const login = useLogin();
   const loginSchema = createLoginSchema(t);
@@ -49,7 +50,7 @@ export default function SignInScreen(): JSX.Element {
         <View className="w-full">
           <Card
             className={cn(
-              "items-center gap-4 w-full max-w-md self-center",
+              "items-center gap-4 w-full max-w-md self-center p-4",
               isCompact ? "py-6" : "py-10 md:gap-6"
             )}
           >
@@ -62,7 +63,7 @@ export default function SignInScreen(): JSX.Element {
                 render={({ field }) => (
                   <InputGroup className="w-full">
                     <InputGroup.Prefix isDecorative>
-                      <AppIcon icon={AppIcons.person} size={16} color="#888" />
+                      <AppIcon icon={AppIcons.person} size={16} color={themeColorMuted} />
                     </InputGroup.Prefix>
                     <InputGroup.Input
                       value={field.value}
@@ -75,7 +76,7 @@ export default function SignInScreen(): JSX.Element {
                 )}
               />
               {errors.email && (
-                <Typography className="text-xs text-danger">{errors.email.message}</Typography>
+                <Typography className="text-xs text-destructive-foreground">{errors.email.message}</Typography>
               )}
             </View>
 
@@ -86,7 +87,7 @@ export default function SignInScreen(): JSX.Element {
                 render={({ field }) => (
                   <InputGroup className="w-full">
                     <InputGroup.Prefix isDecorative>
-                      <AppIcon icon={AppIcons.lockClosed} size={16} color="#888" />
+                      <AppIcon icon={AppIcons.lockClosed} size={16} color={themeColorMuted} />
                     </InputGroup.Prefix>
                     <InputGroup.Input
                       value={field.value}
@@ -95,10 +96,11 @@ export default function SignInScreen(): JSX.Element {
                       secureTextEntry={!isPasswordVisible}
                     />
                     <InputGroup.Suffix>
-                      <Pressable
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-11 w-11"
                         onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                        hitSlop={20}
-                        accessibilityRole="button"
                         accessibilityLabel={
                           isPasswordVisible ? t("auth.hidePassword") : t("auth.showPassword")
                         }
@@ -106,20 +108,20 @@ export default function SignInScreen(): JSX.Element {
                         <AppIcon
                           icon={isPasswordVisible ? AppIcons.eyeOff : AppIcons.eye}
                           size={16}
-                          color="#888"
+                          color={themeColorMuted}
                         />
-                      </Pressable>
+                      </Button>
                     </InputGroup.Suffix>
                   </InputGroup>
                 )}
               />
               {errors.password && (
-                <Typography className="text-xs text-danger">{errors.password.message}</Typography>
+                <Typography className="text-xs text-destructive-foreground">{errors.password.message}</Typography>
               )}
             </View>
 
             {login.isError && (
-              <Typography className="text-sm text-danger text-center">
+              <Typography className="text-sm text-destructive-foreground text-center">
                 {getErrorMessage(login.error)}
               </Typography>
             )}
@@ -127,9 +129,10 @@ export default function SignInScreen(): JSX.Element {
             <Button
               className="w-full"
               onPress={handleSubmit(onSubmit)}
-              isDisabled={login.isPending}
+              loading={login.isPending}
+              disabled={login.isPending}
             >
-              {login.isPending ? <ActivityIndicator color="#fff" /> : t("auth.login")}
+              {t("auth.login")}
             </Button>
           </Card>
         </View>

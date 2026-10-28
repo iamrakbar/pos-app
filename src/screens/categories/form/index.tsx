@@ -1,11 +1,18 @@
-import { useToast } from "panelui-native";
+import { Typography ,
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  Input as PanelInput,
+  Switch as PanelSwitch,
+  Typography as PanelTypography,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Textarea as PanelTextarea, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
-import ActionDialog from "@/components/common/action-dialog";
-import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
-import { FormNumberField } from "@/components/common/form-number-field";
-import FormActiveField from "@/components/common/form-active-field";
+import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import {
   useCategory,
   useCreateCategory,
@@ -20,10 +27,9 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Card, Input, Label, TextArea, TextField, Typography } from "heroui-native";
 import React from "react";
-import { Controller, useForm } from "react-hook-form";
-import { View } from "react-native";
+import { Controller, useController, useForm } from "react-hook-form";
+import { Pressable as ActiveFieldPressable, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
@@ -33,21 +39,6 @@ const CATEGORY_FIELDS = new Set<keyof CategoryFormValues>([
   "position",
   "active",
 ]);
-
-function FieldMessage({ message, fallback }: { message?: string; fallback?: string }) {
-  const text = message ?? fallback;
-  if (!text) return null;
-
-  return (
-    <Typography
-      type="body-xs"
-      color={message ? undefined : "muted"}
-      className={message ? "text-danger" : undefined}
-    >
-      {text}
-    </Typography>
-  );
-}
 
 export default function CategoryFormScreen(): React.JSX.Element {
   const { locale, t } = useTranslation();
@@ -76,6 +67,22 @@ export default function CategoryFormScreen(): React.JSX.Element {
     defaultValues: { name: "", description: "", position: "0", active: true },
   });
 
+  const {
+    field: {
+      value: positionFieldValue,
+      onChange: positionFieldChange,
+      onBlur: positionFieldBlur,
+      ref: positionFieldRef,
+    },
+  } = useController({ control, name: "position" });
+  const { localizedInputProps: positionInputProps } = useLocalizedNumberInput({
+    value: positionFieldValue,
+    onChange: positionFieldChange,
+    minValue: 0,
+    formatOptions: { useGrouping: false, minimumFractionDigits: 0, maximumFractionDigits: 0 },
+    inputProps: { onBlur: positionFieldBlur },
+  });
+
   React.useEffect(() => {
     clearErrors();
   }, [clearErrors, locale]);
@@ -93,11 +100,32 @@ export default function CategoryFormScreen(): React.JSX.Element {
   }, [category, isNew, reset]);
 
   if (!isNew && categoryQuery.isLoading) {
-    return <LoadingState message={t("categories.loadingOne")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("categories.loadingOne")}
+        </PanelLoadingText>
+      </View>
+    );
   }
 
   if (!isNew && categoryQuery.isError) {
-    return <ErrorState error={categoryQuery.error} onRetry={categoryQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(categoryQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void categoryQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   const applyServerErrors = (error: unknown) => {
@@ -178,8 +206,8 @@ export default function CategoryFormScreen(): React.JSX.Element {
         contentContainerClassName="items-center px-4 py-6 pb-10 md:px-6 gap-3"
         keyboardShouldPersistTaps="handled"
       >
-        <Card className="gap-4 w-full max-w-3xl overflow-hidden">
-          <Card.Header>
+        <Card className="gap-4 w-full max-w-3xl overflow-hidden p-4">
+          <Card.Header className="p-0">
             <View className="gap-1">
               <Card.Title>
                 {isNew ? t("categories.createTitle") : t("categories.detailsTitle")}
@@ -188,94 +216,116 @@ export default function CategoryFormScreen(): React.JSX.Element {
             </View>
           </Card.Header>
 
-          <Card.Body className="gap-5">
+          <Card.Content className="gap-5 p-0">
             <Controller
               control={control}
               name="name"
-              render={({ field: { value, onChange } }) => (
-                <TextField isRequired isInvalid={Boolean(errors.name)}>
-                  <Label>{t("categories.name")}</Label>
-                  <Input
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={t("categories.namePlaceholder")}
-                  />
-                  <FieldMessage message={errors.name?.message} />
-                </TextField>
+              render={({ field: { value, onChange, onBlur, ref } }) => (
+                <PanelInput
+                  label={t("categories.name")}
+                  isRequired
+                  errorMessage={errors.name?.message}
+                  ref={ref}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  placeholder={t("categories.namePlaceholder")}
+                />
               )}
             />
 
             <Controller
               control={control}
               name="description"
-              render={({ field: { value, onChange } }) => (
-                <TextField isInvalid={Boolean(errors.description)}>
-                  <Label>{t("categories.description")}</Label>
-                  <TextArea
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder={t("categories.descriptionPlaceholder")}
-                  />
-                  <FieldMessage message={errors.description?.message} />
-                </TextField>
+              render={({ field: { value, onChange, onBlur, ref } }) => (
+                <PanelTextarea
+                  label={t("categories.description")}
+                  errorMessage={errors.description?.message}
+                  ref={ref}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  placeholder={t("categories.descriptionPlaceholder")}
+                />
               )}
+            />
+
+            <PanelInput
+              ref={positionFieldRef}
+              label={t("categories.position")}
+              description={t("categories.positionDescription")}
+              errorMessage={errors.position?.message}
+              isRequired
+              keyboardType="numeric"
+              {...positionInputProps}
             />
 
             <Controller
               control={control}
-              name="position"
+              name="active"
               render={({ field: { value, onChange } }) => (
-                <FormNumberField
-                  label={t("categories.position")}
-                  value={value}
-                  onChange={onChange}
-                  minValue={0}
-                  isRequired
-                  isInvalid={Boolean(errors.position)}
+                <ActiveFieldPressable
+                  accessible={false}
+                  onPress={() => onChange(!value)}
+                  className="flex-row items-center justify-between gap-4 py-1"
                 >
-                  <FieldMessage
-                    message={errors.position?.message}
-                    fallback={t("categories.positionDescription")}
+                  <View className="flex-1">
+                    <PanelTypography type="body-sm" weight="semibold">
+                      {t("common.active")}
+                    </PanelTypography>
+                    <PanelTypography type="body-xs" muted>
+                      {t("categories.activeDescription")}
+                    </PanelTypography>
+                  </View>
+                  <PanelSwitch
+                    value={Boolean(value)}
+                    onValueChange={onChange}
+                    accessibilityLabel={t("common.active")}
+                    accessibilityHint={t("categories.activeDescription")}
                   />
-                </FormNumberField>
+                </ActiveFieldPressable>
               )}
             />
 
-            <FormActiveField
-              control={control}
-              name="active"
-              label={t("common.active")}
-              description={t("categories.activeDescription")}
-            />
-
             {errors.root?.server?.message ? (
-              <Typography type="body-sm" className="text-danger">
+              <Typography type="body-sm" className="text-destructive-foreground">
                 {errors.root.server.message}
               </Typography>
             ) : null}
-          </Card.Body>
+          </Card.Content>
         </Card>
 
         <View className="flex-row gap-3 pt-2 w-full max-w-3xl">
-          <Button variant="ghost" onPress={() => router.back()} isDisabled={isSaving}>
-            <Button.Label>{t("common.cancel")}</Button.Label>
-          </Button>
-          <Button className="flex-1" onPress={handleSubmit(submitCategory)} isDisabled={isSaving}>
-            <Button.Label>{isSaving ? t("common.saving") : t("categories.save")}</Button.Label>
-          </Button>
+          <PanelButton variant="ghost" onPress={() => router.back()} disabled={isSaving}>
+            {t("common.cancel")}
+          </PanelButton>
+          <PanelButton className="flex-1" onPress={handleSubmit(submitCategory)} disabled={isSaving}>
+            {isSaving ? t("common.saving") : t("categories.save")}
+          </PanelButton>
         </View>
       </KeyboardAwareScrollView>
 
-      <ActionDialog
-        isOpen={isConfirmingDelete}
-        onOpenChange={setIsConfirmingDelete}
-        title={t("categories.deleteTitle")}
-        description={t("categories.deleteDescription")}
-        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-        actionVariant="danger"
-        isActionDisabled={deleteMutation.isPending}
-        onAction={handleDelete}
-      />
+      <PanelDialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("categories.deleteTitle")}</PanelDialog.Title>
+          <PanelDialog.Description>{t("categories.deleteDescription")}</PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton
+              variant="destructive"
+              size="sm"
+              disabled={deleteMutation.isPending}
+              onPress={handleDelete}
+            >
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

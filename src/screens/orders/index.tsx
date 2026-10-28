@@ -1,3 +1,10 @@
+import { statusChipVariant } from "@/utils/status-chip-variant";
+import { Typography , Separator ,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Skeleton as PanelListSkeleton,
+ EmptyState, Chip as PanelChip } from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import { useOrders } from "@/hooks/db/use-orders";
 import { extractPaymentExpiry } from "@/api/mappers/checkout";
@@ -11,18 +18,15 @@ import {
   getOrderStatus,
   getPaymentStatus,
 } from "@/api/mappers/order";
-import { ListSkeleton } from "@/components/common/list-skeleton";
-import ErrorState from "@/components/common/error-state";
 import { formatDateTime, formatRupiah, formatTime } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
-import { Chip, Separator, Typography } from "heroui-native";
+
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { useTables } from "@/hooks/db/use-tables";
-import { EmptyState } from "heroui-native-pro";
 import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -93,9 +97,34 @@ export default function OrdersScreen(): React.JSX.Element {
       </Stack.Toolbar>
       <View className="flex-1 bg-background">
         {isLoading ? (
-          <ListSkeleton />
+          <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
+            {Array.from({ length: 6 }, (_, index) => (
+              <View
+                key={`loading-row-${index}`}
+                className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+              >
+                <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                <View className="flex-1 gap-2">
+                  <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+                  <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+                  <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                </View>
+                <PanelListSkeleton className="size-4 rounded-full" />
+              </View>
+            ))}
+          </View>
         ) : isError ? (
-          <ErrorState error={error} onRetry={refetch} />
+          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+            <PanelErrorAlert variant="destructive">
+              <PanelErrorAlert.Indicator />
+              <PanelErrorAlert.Content>
+                <PanelErrorAlert.Description>{getErrorMessage(error)}</PanelErrorAlert.Description>
+              </PanelErrorAlert.Content>
+            </PanelErrorAlert>
+            <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+              {t("common.retry")}
+            </PanelErrorButton>
+          </View>
         ) : orders.length === 0 ? (
           <EmptyState className="py-20">
             <EmptyState.Header>
@@ -128,7 +157,26 @@ export default function OrdersScreen(): React.JSX.Element {
                 onPress={() => router.push(`/orders/${item.id}` as never)}
               />
             )}
-            ListFooterComponent={isFetchingNextPage ? <ListSkeleton rows={1} fill={false} /> : null}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <View className="gap-px py-2" accessibilityRole="progressbar">
+                  {Array.from({ length: 1 }, (_, index) => (
+                    <View
+                      key={`loading-row-${index}`}
+                      className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+                    >
+                      <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                      <View className="flex-1 gap-2">
+                        <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+                        <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+                        <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                      </View>
+                      <PanelListSkeleton className="size-4 rounded-full" />
+                    </View>
+                  ))}
+                </View>
+              ) : null
+            }
           />
         )}
       </View>
@@ -176,9 +224,9 @@ function OrderRow({
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            <Chip color={orderStatus.color} size="sm" variant="soft">
-              <Chip.Label>{orderStatusLabel}</Chip.Label>
-            </Chip>
+            <PanelChip variant={statusChipVariant(orderStatus.color)} size="sm">
+              <PanelChip.Label>{orderStatusLabel}</PanelChip.Label>
+            </PanelChip>
           </View>
           <View className="flex-row items-center gap-1.5">
             <AppIcon
@@ -186,12 +234,12 @@ function OrderRow({
               size={12}
               color={themeColorMuted}
             />
-            <Typography type="body-xs" color="muted">
+            <Typography type="body-xs" muted>
               {customerName ? `${orderContext} · ${customerName}` : orderContext}
             </Typography>
           </View>
           {cancellationReasonLabel ? (
-            <Typography type="body-xs" color="muted">
+            <Typography type="body-xs" muted>
               {cancellationReasonLabel}
             </Typography>
           ) : null}
@@ -201,7 +249,7 @@ function OrderRow({
           <Typography type="body-sm" weight="bold" className="tabular-nums">
             {formatRupiah(order.total)}
           </Typography>
-          <Typography type="body-xs" color="muted" className="tabular-nums">
+          <Typography type="body-xs" muted className="tabular-nums">
             {formatTime(order.created_at)}
           </Typography>
         </View>
@@ -210,16 +258,16 @@ function OrderRow({
       {/* Bottom row */}
       <View className="flex-row items-center justify-between mt-1.5">
         <View className="flex-row items-center gap-1.5">
-          <Typography type="body-xs" color="muted">
+          <Typography type="body-xs" muted>
             {paymentName}
           </Typography>
-          <Chip color={paymentStatus.color} size="sm" variant="soft">
-            <Chip.Label>{paymentStatusLabel}</Chip.Label>
-          </Chip>
-          <Typography type="body-xs" color="muted">
+          <PanelChip variant={statusChipVariant(paymentStatus.color)} size="sm">
+            <PanelChip.Label>{paymentStatusLabel}</PanelChip.Label>
+          </PanelChip>
+          <Typography type="body-xs" muted>
             ·
           </Typography>
-          <Typography type="body-xs" color="muted">
+          <Typography type="body-xs" muted>
             {t(order.products_count === 1 ? "orders.itemOne" : "orders.itemOther", {
               count: order.products_count,
             })}

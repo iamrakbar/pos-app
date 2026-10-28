@@ -22,9 +22,11 @@ module.exports = [
           paths: [
             {
               name: "heroui-native",
-              importNames: ["useThemeColor", "useToast", "HeroUINativeProvider"],
-              message:
-                "P0 migrated theme, toast, and root provider infrastructure. Use Uniwind useCSSVariable and direct panelui-native exports.",
+              message: "HeroUI has been removed. Use direct panelui-native exports.",
+            },
+            {
+              name: "heroui-native-pro",
+              message: "HeroUI Pro has been removed. Use direct panelui-native exports.",
             },
           ],
           patterns: [

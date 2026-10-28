@@ -1,14 +1,13 @@
+import { Typography , Separator , Fab, PlusIcon, Skeleton as PanelListSkeleton , EmptyState } from "panelui-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useRouter } from "expo-router";
-import { Separator, Typography } from "heroui-native";
+
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
-import { ListSkeleton } from "@/components/common/list-skeleton";
-import CreateFAB from "@/components/common/create-fab";
 import { usePrinterStore, type SavedPrinter } from "@/stores/use-printer-store";
-import { EmptyState } from "heroui-native-pro";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 
@@ -23,6 +22,7 @@ function getPrinterTarget(printer: SavedPrinter, t: Translate) {
 }
 
 export default function PrintersScreen(): React.JSX.Element {
+  const fabInsets = useSafeAreaInsets();
   const { t } = useTranslation();
   const router = useRouter();
   const printers = usePrinterStore((state) => state.printers);
@@ -37,7 +37,22 @@ export default function PrintersScreen(): React.JSX.Element {
   return (
     <View className="flex-1 bg-background">
       {!hasHydrated ? (
-        <ListSkeleton />
+        <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
+          {Array.from({ length: 6 }, (_, index) => (
+            <View
+              key={`loading-row-${index}`}
+              className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+            >
+              <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+              <View className="flex-1 gap-2">
+                <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+                <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+                <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+              </View>
+              <PanelListSkeleton className="size-4 rounded-full" />
+            </View>
+          ))}
+        </View>
       ) : printers.length === 0 ? (
         <EmptyState className="py-20">
           <EmptyState.Header>
@@ -94,13 +109,13 @@ export default function PrintersScreen(): React.JSX.Element {
                       </Typography>
                       <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />
                     </View>
-                    <Typography type="body-xs" color="muted" numberOfLines={1}>
+                    <Typography type="body-xs" muted numberOfLines={1}>
                       {printer.connection === "bluetooth"
                         ? t("printerManagement.bluetooth")
                         : t("printerManagement.network")}{" "}
                       • {printer.paperWidth}
                     </Typography>
-                    <Typography type="body-xs" color="muted" numberOfLines={1}>
+                    <Typography type="body-xs" muted numberOfLines={1}>
                       {getPrinterTarget(printer, t)}
                     </Typography>
                   </View>
@@ -110,7 +125,10 @@ export default function PrintersScreen(): React.JSX.Element {
           }}
         />
       )}
-      <CreateFAB
+      <Fab
+        icon={<PlusIcon size={22} />}
+        placement="bottom-right"
+        style={{ bottom: Math.max(fabInsets.bottom, 24), right: 24, zIndex: 50 }}
         accessibilityLabel={t("printerManagement.addAccessibility")}
         onPress={() => router.push("/settings/printers/new" as never)}
       />

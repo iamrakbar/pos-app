@@ -1,23 +1,35 @@
+import {
+  Button as PanelButton,
+  Typography,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Chip,
+  EmptyState,
+  Fab,
+  PlusIcon,
+  Table,
+  Typography as PanelTypography,
+  Skeleton as PanelTableSkeleton,
+} from "panelui-native";
+import { getErrorMessage } from "@/api/api-error";
+import { compareTableValues } from "@/utils/table-sort";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import CreateFAB from "@/components/common/create-fab";
-import ErrorState from "@/components/common/error-state";
-import TableSkeleton from "@/components/common/table-skeleton";
 import { useIngredients } from "@/hooks/db/use-ingredients";
 import { IngredientDetailCoordinator } from "@/screens/inventory/ingredient-detail-sheet";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { formatDateTime, formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { Stack, useRouter } from "expo-router";
-import { Button, Chip, Typography } from "heroui-native";
-import { EmptyState, Table, type TableSortDescriptor } from "heroui-native-pro";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 
 type IngredientFilter = "all" | "active" | "inactive" | "low-stock";
 type Ingredient = App.Data.Merchant.Inventory.IngredientData;
+type TableSortDescriptor = { column: string; direction: "ascending" | "descending" };
 type IngredientSortColumn =
   | "name"
   | "unit"
@@ -47,6 +59,31 @@ const SERVER_SORT_COLUMNS = new Set<ServerSortColumn>([
   "reorder_point",
   "created_at",
 ]);
+const TABLE_COLUMNS = [
+  { id: "name", width: 230, label: "ingredients.name" },
+  { id: "unit", width: 125, label: "ingredients.unit" },
+  { id: "current_stock", width: 150, label: "ingredients.currentStock" },
+  { id: "reorder_point", width: 150, label: "ingredients.reorderPoint" },
+  { id: "cost_per_unit", width: 150, label: "ingredients.costPerUnit" },
+  { id: "supplier", width: 220, label: "ingredients.supplier" },
+  { id: "status", width: 130, label: "ingredients.status" },
+  { id: "created_at", width: 180, label: "ingredients.createdAt" },
+  { id: "updated_at", width: 180, label: "ingredients.updatedAt" },
+] as const;
+const SKELETON_COLUMN_WIDTHS = [230, 125, 150, 150, 150, 220, 130, 180, 180];
+const SKELETON_CELL_WIDTHS = [
+  "w-32",
+  "w-16",
+  "w-20",
+  "w-20",
+  "w-24",
+  "w-32",
+  "w-20",
+  "w-28",
+  "w-28",
+];
+const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
+const TABLE_WIDTH = TABLE_COLUMNS.reduce((sum, column) => sum + column.width, 0);
 
 function getIngredientSort(
   descriptor: TableSortDescriptor
@@ -80,14 +117,6 @@ function isLowStock(ingredient: Ingredient): boolean {
   return ingredient.reorder_point > 0 && ingredient.current_stock <= ingredient.reorder_point;
 }
 
-function compareValues(a: string | number | null, b: string | number | null): number {
-  if (a === null && b === null) return 0;
-  if (a === null) return 1;
-  if (b === null) return -1;
-  if (typeof a === "number" && typeof b === "number") return a - b;
-  return String(a).localeCompare(String(b));
-}
-
 function getStatusRank(ingredient: Ingredient): number {
   if (!ingredient.active) return 0;
   return isLowStock(ingredient) ? 1 : 2;
@@ -102,13 +131,13 @@ function sortIngredients(items: Ingredient[], descriptor: TableSortDescriptor): 
     let comparison: number;
     switch (column) {
       case "unit":
-        comparison = compareValues(a.base_unit, b.base_unit);
+        comparison = compareTableValues(a.base_unit, b.base_unit);
         break;
       case "cost_per_unit":
-        comparison = compareValues(a.cost_per_unit, b.cost_per_unit);
+        comparison = compareTableValues(a.cost_per_unit, b.cost_per_unit);
         break;
       case "supplier":
-        comparison = compareValues(
+        comparison = compareTableValues(
           a.preferred_supplier?.name ?? null,
           b.preferred_supplier?.name ?? null
         );
@@ -117,39 +146,13 @@ function sortIngredients(items: Ingredient[], descriptor: TableSortDescriptor): 
         comparison = getStatusRank(a) - getStatusRank(b);
         break;
       case "updated_at":
-        comparison = compareValues(Date.parse(a.updated_at), Date.parse(b.updated_at));
+        comparison = compareTableValues(Date.parse(a.updated_at), Date.parse(b.updated_at));
         break;
       default:
         comparison = 0;
     }
     return comparison === 0 ? a.name.localeCompare(b.name) : comparison * direction;
   });
-}
-
-function IngredientStatus({ ingredient }: { ingredient: Ingredient }): React.JSX.Element {
-  const { t } = useTranslation();
-  const isLowStock =
-    ingredient.reorder_point > 0 && ingredient.current_stock <= ingredient.reorder_point;
-  const status = !ingredient.active ? "inactive" : isLowStock ? "lowStock" : "active";
-  const statusPresentation = (
-    {
-      active: "success",
-      lowStock: "warning",
-      inactive: "danger",
-    } as const
-  )[status];
-
-  return (
-    <Chip color={statusPresentation} size="sm" variant="soft">
-      <Chip.Label>
-        {status === "inactive"
-          ? t("common.inactive")
-          : status === "lowStock"
-            ? t("ingredients.lowStock")
-            : t("common.active")}
-      </Chip.Label>
-    </Chip>
-  );
 }
 
 function IngredientsTable({
@@ -170,11 +173,63 @@ function IngredientsTable({
   const { t } = useTranslation();
 
   if (query.isLoading) {
-    return <TableSkeleton columnWidths={[230, 125, 150, 150, 150, 220, 130, 180, 180]} />;
+    return (
+      <ScrollView className="flex-1" contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6">
+        <ScrollView horizontal>
+          <View
+            style={{ width: SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) }}
+            accessibilityRole="progressbar"
+          >
+            <Table columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
+              <Table.Header>
+                <Table.Row>
+                  {SKELETON_COLUMN_WIDTHS.map((_, index) => (
+                    <Table.Head key={`heading-${index}`}>
+                      <PanelTableSkeleton className="h-3 w-20 rounded-md" />
+                    </Table.Head>
+                  ))}
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {Array.from({ length: 6 }, (_, rowIndex) => (
+                  <Table.Row key={`row-${rowIndex}`}>
+                    {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
+                      <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
+                        <PanelTableSkeleton
+                          className={
+                            columnIndex === 6
+                              ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
+                              : `h-4 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-md`
+                          }
+                        />
+                      </Table.Cell>
+                    ))}
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </View>
+        </ScrollView>
+      </ScrollView>
+    );
   }
 
   if (query.isError) {
-    return <ErrorState error={query.error} onRetry={query.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(query.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   return (
@@ -184,42 +239,106 @@ function IngredientsTable({
       refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />}
     >
       <View className="flex-1 items-center w-full">
-        <Table sortDescriptor={sortDescriptor} onSortChange={onSortChange}>
-          <Table.ScrollContainer className="w-full self-center">
-            <Table.Content className="w-full">
+        <ScrollView horizontal showsHorizontalScrollIndicator className="w-full">
+          <View style={{ width: TABLE_WIDTH }}>
+            <Table columns={COLUMN_LAYOUT}>
               <Table.Header>
-                <Table.Column id="name" width={230} allowsSorting>
-                  {t("ingredients.name")}
-                </Table.Column>
-                <Table.Column id="unit" width={125} allowsSorting>
-                  {t("ingredients.unit")}
-                </Table.Column>
-                <Table.Column id="current_stock" width={150} allowsSorting>
-                  {t("ingredients.currentStock")}
-                </Table.Column>
-                <Table.Column id="reorder_point" width={150} allowsSorting>
-                  {t("ingredients.reorderPoint")}
-                </Table.Column>
-                <Table.Column id="cost_per_unit" width={150} allowsSorting>
-                  {t("ingredients.costPerUnit")}
-                </Table.Column>
-                <Table.Column id="supplier" width={220} allowsSorting>
-                  {t("ingredients.supplier")}
-                </Table.Column>
-                <Table.Column id="status" width={130} allowsSorting>
-                  {t("ingredients.status")}
-                </Table.Column>
-                <Table.Column id="created_at" width={180} allowsSorting>
-                  {t("ingredients.createdAt")}
-                </Table.Column>
-                <Table.Column id="updated_at" width={180} allowsSorting>
-                  {t("ingredients.updatedAt")}
-                </Table.Column>
+                <Table.Row>
+                  {TABLE_COLUMNS.map((column) => (
+                    <Table.Head
+                      key={column.id}
+                      sortable
+                      sortDirection={
+                        sortDescriptor.column === column.id
+                          ? sortDescriptor.direction === "ascending"
+                            ? "asc"
+                            : "desc"
+                          : undefined
+                      }
+                      onPress={() =>
+                        onSortChange((previous) => ({
+                          column: column.id,
+                          direction:
+                            previous.column === column.id && previous.direction === "ascending"
+                              ? "descending"
+                              : "ascending",
+                        }))
+                      }
+                    >
+                      {t(column.label)}
+                    </Table.Head>
+                  ))}
+                </Table.Row>
               </Table.Header>
-              <Table.Body
-                items={ingredients}
-                keyExtractor={(ingredient) => ingredient.id}
-                renderEmptyState={() => (
+              {ingredients.length ? (
+                <Table.Body>
+                  {ingredients.map((ingredient) => (
+                    <Table.Row
+                      key={ingredient.id}
+                      accessibilityLabel={`${t("ingredients.detailsTitle")}: ${ingredient.name}`}
+                      onPress={() => onSelectIngredient(ingredient.id)}
+                    >
+                      <Table.Cell>
+                        <PanelTypography type="body-sm" weight="semibold" numberOfLines={1}>
+                          {ingredient.name}
+                        </PanelTypography>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Chip size="sm">{ingredient.base_unit}</Chip>
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
+                        {formatInventoryQuantity(ingredient.current_stock)}
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
+                        {formatInventoryQuantity(ingredient.reorder_point)}
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
+                        {ingredient.cost_per_unit === null
+                          ? "—"
+                          : formatRupiah(ingredient.cost_per_unit)}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <PanelTypography type="body-sm" numberOfLines={1}>
+                          {ingredient.preferred_supplier?.name ?? "—"}
+                        </PanelTypography>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Chip
+                          size="sm"
+                          variant={
+                            !ingredient.active
+                              ? "destructive"
+                              : isLowStock(ingredient)
+                                ? "warning"
+                                : "success"
+                          }
+                        >
+                          {!ingredient.active
+                            ? t("common.inactive")
+                            : isLowStock(ingredient)
+                              ? t("ingredients.lowStock")
+                              : t("common.active")}
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
+                        {formatDateTime(ingredient.created_at, {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
+                        {formatDateTime(ingredient.updated_at, {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              ) : (
+                <Table.Empty>
                   <EmptyState className="py-16">
                     <EmptyState.Header>
                       <EmptyState.Media variant="icon">
@@ -231,87 +350,33 @@ function IngredientsTable({
                       </EmptyState.Description>
                     </EmptyState.Header>
                   </EmptyState>
-                )}
-              >
-                {(ingredient) => (
-                  <Table.Row
-                    id={ingredient.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${t("ingredients.detailsTitle")}: ${ingredient.name}`}
-                    onPress={() => onSelectIngredient(ingredient.id)}
-                  >
-                    <Table.Cell textProps={{ numberOfLines: 1 }}>
-                      <Typography weight="semibold" numberOfLines={1}>
-                        {ingredient.name}
-                      </Typography>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Chip size="sm" variant="soft" color="default">
-                        <Chip.Label>{ingredient.base_unit}</Chip.Label>
-                      </Chip>
-                    </Table.Cell>
-                    <Table.Cell textProps={{ className: "tabular-nums" }}>
-                      {formatInventoryQuantity(ingredient.current_stock)}
-                    </Table.Cell>
-                    <Table.Cell textProps={{ className: "tabular-nums" }}>
-                      {formatInventoryQuantity(ingredient.reorder_point)}
-                    </Table.Cell>
-                    <Table.Cell textProps={{ className: "tabular-nums" }}>
-                      {ingredient.cost_per_unit === null
-                        ? "—"
-                        : formatRupiah(ingredient.cost_per_unit)}
-                    </Table.Cell>
-                    <Table.Cell textProps={{ numberOfLines: 1 }}>
-                      {ingredient.preferred_supplier?.name ?? "—"}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <IngredientStatus ingredient={ingredient} />
-                    </Table.Cell>
-                    <Table.Cell textProps={{ className: "tabular-nums" }}>
-                      {formatDateTime(ingredient.created_at, {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </Table.Cell>
-                    <Table.Cell textProps={{ className: "tabular-nums" }}>
-                      {formatDateTime(ingredient.updated_at, {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </Table.Cell>
-                  </Table.Row>
-                )}
-              </Table.Body>
-            </Table.Content>
-          </Table.ScrollContainer>
-          {query.hasNextPage ? (
-            <Table.Footer className="flex-row items-center justify-between gap-3">
-              <Typography type="body-xs" color="muted">
-                {t("ingredients.loadedCount", { count: ingredients.length })}
-              </Typography>
-              <Button
-                size="sm"
-                variant="ghost"
-                onPress={() => query.fetchNextPage()}
-                isDisabled={query.isFetchingNextPage}
-              >
-                <Button.Label>
-                  {query.isFetchingNextPage
-                    ? t("ingredients.loadingMore")
-                    : t("ingredients.loadMore")}
-                </Button.Label>
-              </Button>
-            </Table.Footer>
-          ) : null}
-        </Table>
+                </Table.Empty>
+              )}
+            </Table>
+          </View>
+        </ScrollView>
+        {query.hasNextPage ? (
+          <View className="w-full flex-row items-center justify-between gap-3 p-4">
+            <Typography type="body-xs" muted>
+              {t("ingredients.loadedCount", { count: ingredients.length })}
+            </Typography>
+            <PanelButton
+              size="sm"
+              variant="ghost"
+              onPress={() => query.fetchNextPage()}
+              disabled={query.isFetchingNextPage}
+            >
+              {query.isFetchingNextPage ? t("ingredients.loadingMore") : t("ingredients.loadMore")}
+            </PanelButton>
+          </View>
+        ) : null}
       </View>
     </ScrollView>
   );
 }
 
 export default function InventoryIngredientsScreen(): React.JSX.Element {
+  const fabInsets = useSafeAreaInsets();
   const { t } = useTranslation();
   const router = useRouter();
   const theme = useNavigationTheme();
@@ -387,7 +452,10 @@ export default function InventoryIngredientsScreen(): React.JSX.Element {
             setDetailOpenRequest((request) => request + 1);
           }}
         />
-        <CreateFAB
+        <Fab
+          icon={<PlusIcon size={22} />}
+          placement="bottom-right"
+          style={{ bottom: Math.max(fabInsets.bottom, 24), right: 24, zIndex: 50 }}
           accessibilityLabel={t("ingredients.addAccessibility")}
           onPress={() => router.push("/settings/inventory/ingredients/new")}
         />

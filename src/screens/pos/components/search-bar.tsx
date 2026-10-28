@@ -1,9 +1,15 @@
+import {
+  Button as PanelButton,
+  Chip as PanelChip,
+  Select as PanelSelect,
+  SearchBar as PanelSearchBar,
+  ScrollFade,
+  Skeleton,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore, type ProductSort } from "@/stores/use-pos-store";
 import { useCategories } from "@/hooks/db/use-categories";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
-import { Button, Chip, ScrollShadow, SearchField, Select, Skeleton } from "heroui-native";
-import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -77,18 +83,18 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
       <View className="flex-row items-center gap-3 px-2 py-4">
         <DrawerMenuButton />
         <View className="flex-1">
-          <SearchField value={searchQuery} onChange={setSearchQuery}>
-            <SearchField.Group>
-              <SearchField.SearchIcon />
-              <SearchField.Input placeholder={t("pos.searchProducts")} />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
+          <PanelSearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder={t("pos.searchProducts")}
+            clearLabel={t("common.clear")}
+            panel="never"
+          />
         </View>
         <View className="flex-row items-center gap-0.5">
-          <Button
+          <PanelButton
             variant="ghost"
-            isIconOnly
+            size="icon"
             onPress={toggleCategories}
             accessibilityLabel={
               areCategoriesVisible ? t("pos.hideCategories") : t("pos.showCategories")
@@ -99,63 +105,50 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
               size={22}
               color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
             />
-          </Button>
-          <Select
-            presentation={choicePresentation}
-            value={{ value: selectedSort.value, label: selectedSort.label }}
-            onValueChange={(option) => option && setProductSort(option.value as ProductSort)}
+          </PanelButton>
+          <PanelSelect
+            presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+            value={selectedSort.value}
+            valueLabel={selectedSort.label}
+            onValueChange={(value) => setProductSort(value as ProductSort)}
+            title={t("pos.sortProducts")}
+            placeholder={t("pos.sortProducts")}
+            size="xs"
+            className="w-28"
           >
-            <Select.Trigger asChild variant="unstyled">
-              <Button
-                variant="ghost"
-                isIconOnly
-                accessibilityLabel={t("pos.sortProductsAccessibility", {
-                  sort: selectedSort.label,
-                })}
-              >
-                <AppIcon icon={AppIcons.swapVertical} size={22} color={themeColorForeground} />
-              </Button>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Overlay />
-              <Select.Content
-                presentation={choicePresentation}
-                width={choicePresentation === "popover" ? 220 : undefined}
-              >
-                <Select.ListLabel>{t("pos.sortProducts")}</Select.ListLabel>
-                {sortOptions.map((option) => (
-                  <Select.Item key={option.value} value={option.value} label={option.label} />
-                ))}
-              </Select.Content>
-            </Select.Portal>
-          </Select>
+            {sortOptions.map((option) => (
+              <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
+            ))}
+          </PanelSelect>
         </View>
       </View>
 
       {areCategoriesVisible ? (
-        <ScrollShadow orientation="horizontal" size={32} LinearGradientComponent={LinearGradient}>
+        <ScrollFade orientation="horizontal" size={32}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerClassName="gap-2 px-5 pb-4"
           >
-            <Chip
-              variant={categoryId === null ? "primary" : "secondary"}
+            <PanelChip
+              variant={categoryId === null ? "primary" : "default"}
+              selected={categoryId === null}
               onPress={() => setCategoryId(null)}
             >
-              <Chip.Label>{t("common.all")}</Chip.Label>
-            </Chip>
+              {t("common.all")}
+            </PanelChip>
             {categoriesList.map((category) => (
-              <Chip
+              <PanelChip
                 key={category.id}
-                variant={categoryId === category.id ? "primary" : "secondary"}
+                variant={categoryId === category.id ? "primary" : "default"}
+                selected={categoryId === category.id}
                 onPress={() => setCategoryId(category.id)}
               >
-                <Chip.Label>{category.name}</Chip.Label>
-              </Chip>
+                {category.name}
+              </PanelChip>
             ))}
           </ScrollView>
-        </ScrollShadow>
+        </ScrollFade>
       ) : null}
     </View>
   );

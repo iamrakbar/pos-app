@@ -1,8 +1,8 @@
+import { Button as PanelButton, Typography } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useTranslation } from "@/stores/use-locale";
-import { Button, Spinner, Typography } from "heroui-native";
 import React from "react";
 import { View } from "react-native";
 
@@ -27,30 +27,22 @@ export function SheetHeader({
           <Typography type="h4" weight="semibold">
             {title}
           </Typography>
-          <Typography type="body-sm" color="muted" numberOfLines={2}>
+          <Typography type="body-sm" muted numberOfLines={2}>
             {description}
           </Typography>
         </View>
         {action}
       </View>
-      <Button
+      <PanelButton
         variant="ghost"
-        size="sm"
-        isIconOnly
+        size="icon"
+
         className="absolute right-3 top-3"
         onPress={onClose}
         accessibilityLabel={t("common.close")}
       >
         <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
-      </Button>
-    </View>
-  );
-}
-
-export function SheetLoading(): React.JSX.Element {
-  return (
-    <View className="items-center justify-center py-20">
-      <Spinner size="sm" />
+      </PanelButton>
     </View>
   );
 }

@@ -1,3 +1,16 @@
+import {
+  Typography,
+  Separator,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  Input as PanelInput,
+  Label as PanelLabel,
+  Switch as PanelSwitch,
+  Select as PanelSelect,
+  EmptyState,
+  Card,
+  cn,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -9,12 +22,12 @@ import {
 } from "@haroldtran/react-native-thermal-printer";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Card, cn, Input, Separator, Spinner, Switch, Typography } from "heroui-native";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
   Controller,
+  useController,
   useForm,
   useWatch,
   type Control,
@@ -33,10 +46,7 @@ import {
 } from "@/stores/use-printer-store";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { printCalibrationReceipt } from "@/services/printer/print-service";
-import ActionDialog from "@/components/common/action-dialog";
-import { FormNumberField } from "@/components/common/form-number-field";
-import PrinterSelectField from "@/components/common/printer-select-field";
-import { EmptyState } from "heroui-native-pro";
+import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -60,28 +70,15 @@ type PromptState = {
 };
 
 const PORT = "9100";
-
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
-  return (
-    <Typography type="body-sm" weight="semibold" className="mb-1.5">
-      {label}
-      {required ? <Typography className="text-danger"> *</Typography> : null}
-    </Typography>
-  );
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <Typography type="body-xs" className="text-danger mt-1">
-      {message}
-    </Typography>
-  );
-}
+const INTEGER_FORMAT = {
+  useGrouping: false,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+} as const;
 
 function SectionHeading({ title, description }: { title: string; description?: string }) {
   return (
-    <Card.Header>
+    <Card.Header className="p-0">
       <View className="gap-1">
         <Card.Title>{title}</Card.Title>
         {description ? <Card.Description>{description}</Card.Description> : null}
@@ -115,47 +112,58 @@ function PrinterDetailsCard({
   const { choicePresentation } = useOverlayPresentation();
 
   return (
-    <Card>
+    <Card className="p-4">
       <SectionHeading
         title={t("printerForm.details")}
         description={t("printerForm.detailsDescription")}
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         <View>
-          <FieldLabel label={t("printerForm.name")} required />
           <Controller
             control={control}
             name="name"
             render={({ field: { value, onChange } }) => (
-              <Input
+              <PanelInput
+                label={t("printerForm.name")}
+                isRequired
+                errorMessage={errors.name?.message}
                 value={value}
                 onChangeText={onChange}
                 placeholder={t("printerForm.namePlaceholder")}
-                variant="secondary"
+                variant="filled"
               />
             )}
           />
-          <FieldError message={errors.name?.message} />
         </View>
 
         <View>
-          <FieldLabel label={t("printerForm.connection")} required />
-          <PrinterSelectField
+          <PanelLabel isRequired className="mb-1.5">
+            {t("printerForm.connection")}
+          </PanelLabel>
+          <Controller
             control={control}
             name="connection"
-            options={CONNECTION_TYPES}
-            presentation={choicePresentation}
-            placeholder={t("printerForm.selectConnection")}
-            listLabel={t("printerForm.connectionType")}
-            onChange={(value) => {
-              const nextConnection = value as ConnectionType;
-              setValue("selectedDeviceId", "", { shouldDirty: true });
-              setValue("macAddress", "", { shouldDirty: true, shouldValidate: true });
-              onConnectionChange(nextConnection);
-            }}
+            render={({ field: { value, onChange } }) => (
+              <PanelSelect
+                value={value}
+                presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                placeholder={t("printerForm.selectConnection")}
+                title={t("printerForm.connectionType")}
+                onValueChange={(next) => {
+                  onChange(next);
+                  setValue("selectedDeviceId", "", { shouldDirty: true });
+                  setValue("macAddress", "", { shouldDirty: true, shouldValidate: true });
+                  onConnectionChange(next as ConnectionType);
+                }}
+              >
+                {CONNECTION_TYPES.map((option) => (
+                  <PanelSelect.Item key={option.value} {...option} />
+                ))}
+              </PanelSelect>
+            )}
           />
         </View>
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -180,9 +188,25 @@ function PrinterConnectionCard({
   onSelectDevice: (device: DiscoveredDevice) => void;
 }) {
   const { t } = useTranslation();
+  const {
+    field: {
+      value: portFieldValue,
+      onChange: portFieldChange,
+      onBlur: portFieldBlur,
+      ref: portFieldRef,
+    },
+  } = useController({ control, name: "port" });
+  const { localizedInputProps: portInput } = useLocalizedNumberInput({
+    value: portFieldValue,
+    onChange: portFieldChange,
+    formatOptions: INTEGER_FORMAT,
+    minValue: 1,
+    maxValue: 65535,
+    inputProps: { onBlur: portFieldBlur },
+  });
 
   return (
-    <Card>
+    <Card className="p-4">
       <SectionHeading
         title={t("printerForm.connection")}
         description={
@@ -191,28 +215,28 @@ function PrinterConnectionCard({
             : t("printerForm.connectionNetworkDescription")
         }
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         {connection === "bluetooth" ? (
           <View className="gap-3">
             <View>
               <View className="flex-row items-center justify-between mb-2">
-                <FieldLabel label={t("printerForm.device")} />
-                <Button
+                <PanelLabel>{t("printerForm.device")}</PanelLabel>
+                <PanelButton
                   variant="ghost"
-                  size="sm"
-                  isIconOnly
+                  size="icon"
+
                   onPress={onScan}
-                  isDisabled={scanning}
+                  disabled={scanning}
                   accessibilityLabel={t("printerForm.scanAccessibility")}
                 >
                   <AppIcon icon={AppIcons.refresh} size={18} color={colors.foreground} />
-                </Button>
+                </PanelButton>
               </View>
 
-              <View className="bg-surface-secondary rounded-panel overflow-hidden">
+              <View className="bg-surface-secondary rounded-2xl overflow-hidden">
                 {scanning ? (
                   <View className="py-6 items-center">
-                    <Typography type="body-sm" color="muted">
+                    <Typography type="body-sm" muted>
                       {t("printerForm.scanning")}
                     </Typography>
                   </View>
@@ -251,7 +275,7 @@ function PrinterConnectionCard({
                           <Typography type="body-sm" weight="medium" numberOfLines={1}>
                             {device.name}
                           </Typography>
-                          <Typography type="body-xs" color="muted" numberOfLines={1}>
+                          <Typography type="body-xs" muted numberOfLines={1}>
                             {device.id}
                           </Typography>
                         </View>
@@ -264,66 +288,59 @@ function PrinterConnectionCard({
             </View>
 
             <View>
-              <FieldLabel label={t("printerForm.macAddress")} />
               <Controller
                 control={control}
                 name="macAddress"
                 render={({ field: { value, onChange } }) => (
-                  <Input
+                  <PanelInput
+                    label={t("printerForm.macAddress")}
+                    errorMessage={errors.macAddress?.message}
                     value={value}
                     onChangeText={onChange}
                     placeholder="00:00:00:00:00:00"
                     autoCapitalize="characters"
-                    variant="secondary"
+                    variant="filled"
                   />
                 )}
               />
-              <FieldError message={errors.macAddress?.message} />
             </View>
           </View>
         ) : (
           <View className="gap-5">
             <View>
-              <FieldLabel label={t("printerForm.ipAddress")} required />
               <Controller
                 control={control}
                 name="ipAddress"
                 render={({ field: { value, onChange } }) => (
-                  <Input
+                  <PanelInput
+                    label={t("printerForm.ipAddress")}
+                    isRequired
+                    errorMessage={errors.ipAddress?.message}
                     value={value}
                     onChangeText={onChange}
                     placeholder="192.168.1.100"
                     keyboardType="decimal-pad"
-                    variant="secondary"
+                    variant="filled"
                   />
                 )}
               />
-              <FieldError message={errors.ipAddress?.message} />
             </View>
 
             <View>
-              <Controller
-                control={control}
-                name="port"
-                render={({ field: { value, onChange } }) => (
-                  <FormNumberField
-                    label={t("printerForm.port")}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={PORT}
-                    inputVariant="secondary"
-                    minValue={1}
-                    maxValue={65535}
-                    isRequired
-                    isInvalid={Boolean(errors.port)}
-                  />
-                )}
+              <PanelInput
+                ref={portFieldRef}
+                label={t("printerForm.port")}
+                placeholder={PORT}
+                variant="filled"
+                isRequired
+                errorMessage={errors.port?.message}
+                keyboardType="numeric"
+                {...portInput}
               />
-              <FieldError message={errors.port?.message} />
             </View>
           </View>
         )}
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -336,85 +353,107 @@ function ReceiptSetupCard({
 }: PrinterFieldsProps & { paperWidth: PaperWidth }) {
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
+  const {
+    field: {
+      value: charactersFieldValue,
+      onChange: charactersFieldChange,
+      onBlur: charactersFieldBlur,
+      ref: charactersFieldRef,
+    },
+  } = useController({ control, name: "charactersPerLine" });
+  const {
+    field: {
+      value: logoWidthFieldValue,
+      onChange: logoWidthFieldChange,
+      onBlur: logoWidthFieldBlur,
+      ref: logoWidthFieldRef,
+    },
+  } = useController({ control, name: "logoWidthDots" });
+  const { localizedInputProps: charactersInput } = useLocalizedNumberInput({
+    value: charactersFieldValue,
+    onChange: charactersFieldChange,
+    formatOptions: INTEGER_FORMAT,
+    minValue: 24,
+    maxValue: 64,
+    inputProps: { onBlur: charactersFieldBlur },
+  });
+  const { localizedInputProps: logoWidthInput } = useLocalizedNumberInput({
+    value: logoWidthFieldValue,
+    onChange: logoWidthFieldChange,
+    formatOptions: INTEGER_FORMAT,
+    minValue: 100,
+    maxValue: paperWidth === "80mm" ? 280 : 200,
+    inputProps: { onBlur: logoWidthFieldBlur },
+  });
 
   return (
-    <Card>
+    <Card className="p-4">
       <SectionHeading
         title={t("printerForm.receiptSetup")}
         description={t("printerForm.receiptSetupDescription")}
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         <View>
-          <FieldLabel label={t("printerForm.receiptSize")} required />
-          <PrinterSelectField
+          <PanelLabel isRequired className="mb-1.5">
+            {t("printerForm.receiptSize")}
+          </PanelLabel>
+          <Controller
             control={control}
             name="paperWidth"
-            options={PAPER_WIDTHS}
-            presentation={choicePresentation}
-            placeholder={t("printerForm.selectSize")}
-            listLabel={t("printerForm.receiptSize")}
-            onChange={(value) => {
-              setValue("charactersPerLine", value === "80mm" ? "46" : "32", {
-                shouldDirty: true,
-                shouldValidate: true,
-              });
-              setValue("logoWidthDots", value === "80mm" ? "280" : "200", {
-                shouldDirty: true,
-                shouldValidate: true,
-              });
-            }}
+            render={({ field: { value, onChange } }) => (
+              <PanelSelect
+                value={value}
+                presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                placeholder={t("printerForm.selectSize")}
+                title={t("printerForm.receiptSize")}
+                onValueChange={(next) => {
+                  onChange(next);
+                  setValue("charactersPerLine", next === "80mm" ? "46" : "32", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  setValue("logoWidthDots", next === "80mm" ? "280" : "200", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }}
+              >
+                {PAPER_WIDTHS.map((option) => (
+                  <PanelSelect.Item key={option.value} {...option} />
+                ))}
+              </PanelSelect>
+            )}
           />
         </View>
 
         <View>
-          <Controller
-            control={control}
-            name="charactersPerLine"
-            render={({ field: { value, onChange } }) => (
-              <FormNumberField
-                label={t("printerForm.charactersPerLine")}
-                value={value}
-                onChange={onChange}
-                placeholder={paperWidth === "80mm" ? "46" : "32"}
-                inputVariant="secondary"
-                minValue={24}
-                maxValue={64}
-                isRequired
-                isInvalid={Boolean(errors.charactersPerLine)}
-              />
-            )}
+          <PanelInput
+            ref={charactersFieldRef}
+            label={t("printerForm.charactersPerLine")}
+            description={t("printerForm.charactersRecommendation")}
+            errorMessage={errors.charactersPerLine?.message}
+            placeholder={paperWidth === "80mm" ? "46" : "32"}
+            variant="filled"
+            isRequired
+            keyboardType="numeric"
+            {...charactersInput}
           />
-          <Typography type="body-xs" color="muted" className="mt-1">
-            {t("printerForm.charactersRecommendation")}
-          </Typography>
-          <FieldError message={errors.charactersPerLine?.message} />
         </View>
 
         <View>
-          <Controller
-            control={control}
-            name="logoWidthDots"
-            render={({ field: { value, onChange } }) => (
-              <FormNumberField
-                label={t("printerForm.logoWidth")}
-                value={value}
-                onChange={onChange}
-                placeholder={paperWidth === "80mm" ? "280" : "200"}
-                inputVariant="secondary"
-                minValue={100}
-                maxValue={paperWidth === "80mm" ? 280 : 200}
-                step={10}
-                isRequired
-                isInvalid={Boolean(errors.logoWidthDots)}
-              />
-            )}
+          <PanelInput
+            ref={logoWidthFieldRef}
+            label={t("printerForm.logoWidth")}
+            description={t("printerForm.logoRecommendation")}
+            errorMessage={errors.logoWidthDots?.message}
+            placeholder={paperWidth === "80mm" ? "280" : "200"}
+            variant="filled"
+            isRequired
+            keyboardType="numeric"
+            {...logoWidthInput}
           />
-          <Typography type="body-xs" color="muted" className="mt-1">
-            {t("printerForm.logoRecommendation")}
-          </Typography>
-          <FieldError message={errors.logoWidthDots?.message} />
         </View>
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -423,12 +462,12 @@ function HardwareOptionsCard({ control }: Pick<PrinterFieldsProps, "control">) {
   const { t } = useTranslation();
 
   return (
-    <Card>
+    <Card className="p-4">
       <SectionHeading
         title={t("printerForm.hardwareOptions")}
         description={t("printerForm.hardwareDescription")}
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         {(["cutReceipt", "openDrawer"] as const).map((name, index) => (
           <React.Fragment key={name}>
             {index > 0 ? <Separator /> : null}
@@ -446,17 +485,25 @@ function HardwareOptionsCard({ control }: Pick<PrinterFieldsProps, "control">) {
                         ? t("printerForm.cutReceipt")
                         : t("printerForm.openDrawer")}
                     </Typography>
-                    <Typography type="body-xs" color="muted" className="mt-0.5">
+                    <Typography type="body-xs" muted className="mt-0.5">
                       {t("printerForm.hardwareOptionDescription")}
                     </Typography>
                   </View>
-                  <Switch isSelected={value} onSelectedChange={onChange} />
+                  <PanelSwitch
+                    value={value}
+                    onValueChange={onChange}
+                    accessibilityLabel={
+                      name === "cutReceipt"
+                        ? t("printerForm.cutReceipt")
+                        : t("printerForm.openDrawer")
+                    }
+                  />
                 </Pressable>
               )}
             />
           </React.Fragment>
         ))}
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -477,35 +524,32 @@ function PrinterDiagnosticsCard({
   const { t } = useTranslation();
 
   return (
-    <Card className="gap-3">
+    <Card className="gap-3 p-4">
       <SectionHeading
         title={t("printerForm.diagnostics")}
         description={t("printerForm.diagnosticsDescription")}
       />
-      <Card.Body className="gap-3">
-        <Button variant="outline" onPress={onTestConnection} isDisabled={connecting}>
-          <AppIcon icon={AppIcons.link} size={16} color={foregroundColor} />
-          <Button.Label>
-            {connecting ? t("printerForm.connecting") : t("printerForm.testConnection")}
-          </Button.Label>
-        </Button>
-        <Button
+      <Card.Content className="gap-3 p-0">
+        <PanelButton
+          variant="outline"
+          onPress={onTestConnection}
+          disabled={connecting}
+          startContent={<AppIcon icon={AppIcons.link} size={16} color={foregroundColor} />}
+        >
+          {connecting ? t("printerForm.connecting") : t("printerForm.testConnection")}
+        </PanelButton>
+        <PanelButton
           variant="outline"
           onPress={onPrintCalibration}
-          isDisabled={printingCalibration || connecting}
+          disabled={printingCalibration || connecting}
+          loading={printingCalibration}
+          startContent={<AppIcon icon={AppIcons.receipt} size={16} color={foregroundColor} />}
         >
-          {printingCalibration ? (
-            <Spinner size="sm" />
-          ) : (
-            <AppIcon icon={AppIcons.receipt} size={16} color={foregroundColor} />
-          )}
-          <Button.Label>
-            {printingCalibration
-              ? t("printerForm.printingCalibration")
-              : t("printerForm.printCalibration")}
-          </Button.Label>
-        </Button>
-      </Card.Body>
+          {printingCalibration
+            ? t("printerForm.printingCalibration")
+            : t("printerForm.printCalibration")}
+        </PanelButton>
+      </Card.Content>
     </Card>
   );
 }
@@ -592,25 +636,42 @@ function PrinterDialogs({
 
   return (
     <>
-      <ActionDialog
-        isOpen={prompt !== null}
-        onOpenChange={(open) => !open && setPrompt(null)}
-        title={prompt?.title}
-        description={prompt?.message}
-        cancelLabel={prompt?.actionLabel ? t("common.cancel") : t("common.close")}
-        actionLabel={prompt?.actionLabel}
-        onAction={handlePromptAction}
-      />
-
-      <ActionDialog
-        isOpen={deletePromptOpen}
-        onOpenChange={setDeletePromptOpen}
-        title={t("printerForm.deleteTitle")}
-        description={t("printerForm.deleteDescription")}
-        actionLabel={t("common.delete")}
-        actionVariant="danger"
-        onAction={onDelete}
-      />
+      <PanelDialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{prompt?.title}</PanelDialog.Title>
+          {prompt?.message ? (
+            <PanelDialog.Description>{prompt.message}</PanelDialog.Description>
+          ) : null}
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {prompt?.actionLabel ? t("common.cancel") : t("common.close")}
+              </PanelButton>
+            </PanelDialog.Close>
+            {prompt?.actionLabel ? (
+              <PanelButton size="sm" onPress={handlePromptAction}>
+                {prompt.actionLabel}
+              </PanelButton>
+            ) : null}
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
+      <PanelDialog open={deletePromptOpen} onOpenChange={setDeletePromptOpen}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("printerForm.deleteTitle")}</PanelDialog.Title>
+          <PanelDialog.Description>{t("printerForm.deleteDescription")}</PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton variant="destructive" size="sm" onPress={onDelete}>
+              {t("common.delete")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }
@@ -784,17 +845,17 @@ function PrinterFormView(props: PrinterFormViewProps) {
             />
             <View className="gap-3 pt-2">
               {errors.root?.server?.message ? (
-                <FieldError message={errors.root.server.message} />
+                <Typography type="body-xs" className="text-destructive-foreground mt-1">
+                  {errors.root.server.message}
+                </Typography>
               ) : null}
               <View className={cn("gap-3", !isCompact && "flex-row")}>
-                <Button variant="ghost" onPress={props.onCancel}>
-                  <Button.Label>{t("common.cancel")}</Button.Label>
-                </Button>
-                <Button className="flex-1" onPress={props.onSave} isDisabled={isSubmitting}>
-                  <Button.Label>
-                    {isCreate ? t("printerForm.save") : t("printerForm.update")}
-                  </Button.Label>
-                </Button>
+                <PanelButton variant="ghost" onPress={props.onCancel}>
+                  {t("common.cancel")}
+                </PanelButton>
+                <PanelButton className="flex-1" onPress={props.onSave} disabled={isSubmitting}>
+                  {isCreate ? t("printerForm.save") : t("printerForm.update")}
+                </PanelButton>
               </View>
             </View>
           </View>

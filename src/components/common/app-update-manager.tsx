@@ -2,7 +2,7 @@ import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import * as Updates from "expo-updates";
-import { Alert as HeroAlert, Button, Card, Spinner, Typography } from "heroui-native";
+import { Alert as PanelAlert, Button, Card, Spinner, Typography } from "panelui-native";
 import { useState, type JSX } from "react";
 import { Alert as NativeAlert, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -161,21 +161,21 @@ function UpdateBanner({
 
   return (
     <View className="absolute left-4 right-4 bottom-4">
-      <HeroAlert status="accent" className="items-center shadow-lg">
-        <HeroAlert.Indicator />
-        <HeroAlert.Content>
-          <HeroAlert.Title>{t("updates.ready")}</HeroAlert.Title>
-          <HeroAlert.Description>{t("updates.readyDescription")}</HeroAlert.Description>
-        </HeroAlert.Content>
+      <PanelAlert variant="info" className="items-center shadow-lg">
+        <PanelAlert.Indicator />
+        <PanelAlert.Content>
+          <PanelAlert.Title>{t("updates.ready")}</PanelAlert.Title>
+          <PanelAlert.Description>{t("updates.readyDescription")}</PanelAlert.Description>
+        </PanelAlert.Content>
         <View className="flex-row gap-2">
           <Button size="sm" variant="ghost" onPress={onDismiss}>
-            <Button.Label>{t("updates.later")}</Button.Label>
+            {t("updates.later")}
           </Button>
           <Button size="sm" variant="primary" onPress={onRestart}>
-            <Button.Label>{t("updates.restart")}</Button.Label>
+            {t("updates.restart")}
           </Button>
         </View>
-      </HeroAlert>
+      </PanelAlert>
     </View>
   );
 }
@@ -200,12 +200,13 @@ function UpdateSettingsCard({
   formatDate: (value?: Date | null) => string;
 }): JSX.Element {
   const { t } = useTranslation();
+  const primaryForeground = useCSSVariable("--color-primary-foreground") as string;
 
   return (
     <Card>
-      <Card.Body className="gap-5 p-5">
+      <Card.Content className="gap-5 p-5">
         <View className="flex-row items-center gap-4">
-          <View className="size-10 items-center justify-center rounded-panel-inner bg-accent-soft">
+          <View className="size-10 items-center justify-center rounded-xl bg-secondary">
             {isBusy ? (
               <Spinner size="sm" color={themeColorAccent} />
             ) : (
@@ -216,7 +217,7 @@ function UpdateSettingsCard({
             <Typography type="body-sm" weight="semibold">
               {t("updates.title")}
             </Typography>
-            <Typography type="body-xs" color="muted" numberOfLines={2}>
+            <Typography type="body-xs" muted numberOfLines={2}>
               {statusText}
             </Typography>
           </View>
@@ -225,13 +226,13 @@ function UpdateSettingsCard({
         {updates.downloadProgress ? (
           <View className="h-1.5 overflow-hidden rounded-full bg-surface-secondary">
             <View
-              className="h-full rounded-full bg-accent"
+              className="h-full rounded-full bg-primary"
               style={{ width: `${Math.round(updates.downloadProgress * 100)}%` }}
             />
           </View>
         ) : null}
 
-        <View className="gap-3 rounded-panel-inner bg-surface-secondary p-4">
+        <View className="gap-3 rounded-xl bg-surface-secondary p-4">
           <UpdateMetaRow
             label={t("updates.channel")}
             value={updates.currentlyRunning.channel ?? notAvailable}
@@ -253,24 +254,24 @@ function UpdateSettingsCard({
         <View className="flex-row gap-3">
           <Button
             variant="secondary"
+            startContent={<AppIcon icon={AppIcons.refresh} size={18} color={themeColorAccent} />}
             onPress={onCheck}
-            isDisabled={isBusy || updates.isUpdatePending}
+            disabled={isBusy || updates.isUpdatePending}
             className="flex-1"
           >
-            <AppIcon icon={AppIcons.refresh} size={18} color={themeColorAccent} />
-            <Button.Label>{t("updates.check")}</Button.Label>
+            {t("updates.check")}
           </Button>
           <Button
             variant="primary"
+            startContent={<AppIcon icon={AppIcons.refresh} size={18} color={primaryForeground} />}
             onPress={onRestart}
-            isDisabled={!updates.isUpdatePending || isBusy}
+            disabled={!updates.isUpdatePending || isBusy}
             className="flex-1"
           >
-            <AppIcon icon={AppIcons.refresh} size={18} color="white" />
-            <Button.Label>{t("updates.restart")}</Button.Label>
+            {t("updates.restart")}
           </Button>
         </View>
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -278,7 +279,7 @@ function UpdateSettingsCard({
 function UpdateMetaRow({ label, value }: { label: string; value: string }): JSX.Element {
   return (
     <View className="flex-row items-center gap-3">
-      <Typography type="body-xs" color="muted" className="w-28">
+      <Typography type="body-xs" muted className="w-28">
         {label}
       </Typography>
       <Typography type="body-xs" weight="medium" numberOfLines={1} className="flex-1">

@@ -1,13 +1,31 @@
-import { useToast } from "panelui-native";
+import {
+  Typography,
+  Spinner,
+  Chip as PanelMovementChip,
+  EmptyState as PanelMovementEmpty,
+  Table as PanelMovementTable,
+  Typography as PanelMovementText,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Button as PanelButton,
+  Label as PanelLabel,
+  Input as PanelInput,
+} from "panelui-native";
+import {
+  MOVEMENT_TYPE_COLORS,
+  MOVEMENT_TABLE_COLUMNS,
+  MOVEMENT_TABLE_WIDTH,
+  formatSignedQuantity,
+} from "@/utils/inventory-movement-table";
+import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import InventoryMovementsTable from "@/components/common/inventory-movements-table";
-import ErrorState from "@/components/common/error-state";
 import { useInventoryMovements } from "@/hooks/db/use-inventory-audit";
 import { useIngredients } from "@/hooks/db/use-ingredients";
 import { useProductRecipe, useUpdateProductRecipe } from "@/hooks/db/use-products";
-import { FormNumberField } from "@/components/common/form-number-field";
+import { useLocalizedNumberInputList } from "@/hooks/use-localized-number-input";
 import { QUANTITY_FORMAT_OPTIONS } from "@/screens/inventory/ingredient-stock-overlay-utils";
 import {
   getCompatibleUnits,
@@ -17,16 +35,18 @@ import {
   type RecipeDraftLine,
 } from "@/schemas/product-recipe";
 import { useTranslation } from "@/stores/use-locale";
-import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
+import {
+  formatDateTime,
+  formatInventoryQuantity,
+  formatRupiah,
+  normalizeInventorySource,
+} from "@/utils/format";
 import type { TranslationKey } from "@/locales";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { Button, Label, Spinner, Typography } from "heroui-native";
-import { EmptyState, Table } from "heroui-native-pro";
 import React from "react";
 import { FlatList, ScrollView, View } from "react-native";
 
 type Movement = App.Data.Merchant.Inventory.InventoryMovementData;
-type RecipeIngredient = App.Data.Merchant.Inventory.RecipeIngredientData;
 
 type ProductRelationshipSheetsProps = {
   productId: string;
@@ -54,94 +74,20 @@ function SheetHeader({
       <Typography type="h4" weight="semibold">
         {title}
       </Typography>
-      <Typography type="body-sm" color="muted" numberOfLines={2}>
+      <Typography type="body-sm" muted numberOfLines={2}>
         {description}
       </Typography>
-      <Button
+      <PanelButton
         variant="ghost"
-        size="sm"
-        isIconOnly
+        size="icon"
+
         className="absolute right-3 top-3"
         onPress={onClose}
         accessibilityLabel={t("common.close")}
       >
         <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
-      </Button>
+      </PanelButton>
     </View>
-  );
-}
-
-function SheetLoading(): React.JSX.Element {
-  return (
-    <View className="items-center justify-center py-20">
-      <Spinner size="sm" />
-    </View>
-  );
-}
-
-function RecipeTable({ ingredients }: { ingredients: RecipeIngredient[] }): React.JSX.Element {
-  const { t } = useTranslation();
-  const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
-
-  return (
-    <Table variant="secondary">
-      <Table.ScrollContainer className="w-full self-center">
-        <Table.Content className="w-full">
-          <Table.Header>
-            <Table.Column id="ingredient" width={220}>
-              {t("productForm.recipeIngredient")}
-            </Table.Column>
-            <Table.Column id="quantity" width={150}>
-              {t("productForm.recipeQuantity")}
-            </Table.Column>
-            <Table.Column id="unit" width={150}>
-              {t("productForm.recipeUnit")}
-            </Table.Column>
-            <Table.Column id="cost_contribution" width={190}>
-              {t("productForm.recipeCostContribution")}
-            </Table.Column>
-          </Table.Header>
-          <Table.Body
-            items={ingredients}
-            keyExtractor={(ingredient) => ingredient.ingredient_id}
-            renderEmptyState={() => (
-              <EmptyState className="py-16">
-                <EmptyState.Header>
-                  <EmptyState.Media variant="icon">
-                    <AppIcon icon={AppIcons.restaurant} size={22} color={themeColorMuted} />
-                  </EmptyState.Media>
-                  <EmptyState.Title>{t("productForm.recipeEmpty")}</EmptyState.Title>
-                  <EmptyState.Description>
-                    {t("productForm.recipeEmptyDescription")}
-                  </EmptyState.Description>
-                </EmptyState.Header>
-              </EmptyState>
-            )}
-          >
-            {(ingredient) => (
-              <Table.Row id={ingredient.ingredient_id}>
-                <Table.Cell textProps={{ numberOfLines: 1 }}>
-                  <Typography weight="semibold" numberOfLines={1}>
-                    {ingredient.name}
-                  </Typography>
-                </Table.Cell>
-                <Table.Cell textProps={{ className: "tabular-nums" }}>
-                  {formatInventoryQuantity(ingredient.quantity)}
-                </Table.Cell>
-                <Table.Cell textProps={{ numberOfLines: 1 }}>
-                  {t(`ingredients.units.${ingredient.unit}` as TranslationKey)}
-                </Table.Cell>
-                <Table.Cell textProps={{ className: "tabular-nums" }}>
-                  {ingredient.cost_contribution === null
-                    ? "—"
-                    : formatRupiah(ingredient.cost_contribution)}
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table.Content>
-      </Table.ScrollContainer>
-    </Table>
   );
 }
 
@@ -159,6 +105,7 @@ function RecipeEditor({
   onOpenPicker: (kind: RecipePickerKind, index: number) => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
+  const getQuantityInput = useLocalizedNumberInputList(QUANTITY_FORMAT_OPTIONS);
   const [themeColorDanger] = useCSSVariable(["--color-destructive"]) as [string];
   const ingredientOptions = ingredients.map((ingredient) => ({
     value: ingredient.id,
@@ -168,6 +115,10 @@ function RecipeEditor({
   return (
     <View className="gap-3">
       {draft.map((line, index) => {
+        const quantityInput = getQuantityInput(line.id, line.quantity, (quantity) =>
+          onChange(index, { ...line, quantity })
+        );
+        const quantityNumber = Number(line.quantity);
         const ingredient = ingredients.find((item) => item.id === line.ingredient_id);
         const unitOptions = ingredient
           ? getCompatibleUnits(ingredient.base_unit).map((unit) => ({
@@ -177,23 +128,23 @@ function RecipeEditor({
           : [];
 
         return (
-          <View key={line.id} className="gap-3 rounded-panel-inner bg-surface px-4 py-3">
+          <View key={line.id} className="gap-3 rounded-xl bg-surface px-4 py-3">
             <View className="flex-row items-center justify-between gap-3">
               <Typography type="body-sm" weight="semibold">
                 {t("productForm.recipeIngredient")} {index + 1}
               </Typography>
-              <Button
+              <PanelButton
                 variant="ghost"
-                size="sm"
-                isIconOnly
+                size="icon"
+
                 accessibilityLabel={t("productForm.recipeRemoveIngredientAccessibility")}
                 onPress={() => onRemove(index)}
               >
                 <AppIcon icon={AppIcons.trash} size={17} color={themeColorDanger} />
-              </Button>
+              </PanelButton>
             </View>
             <View className="gap-1.5">
-              <Label isRequired>{t("productForm.recipeIngredient")}</Label>
+              <PanelLabel isRequired>{t("productForm.recipeIngredient")}</PanelLabel>
               <RecipePickerTrigger
                 label={t("productForm.recipeIngredient")}
                 value={
@@ -205,24 +156,52 @@ function RecipeEditor({
               </RecipePickerTrigger>
             </View>
             <View className="flex-row gap-3">
-              <FormNumberField
-                className="flex-1"
+              <PanelInput
+                containerClassName="flex-1"
                 label={t("productForm.recipeQuantity")}
-                value={line.quantity}
-                onChange={(quantity) => onChange(index, { ...line, quantity })}
-                minValue={0}
-                showStepper
-                inputVariant="secondary"
-                formatOptions={QUANTITY_FORMAT_OPTIONS}
+                keyboardType="decimal-pad"
                 isRequired
+                {...quantityInput}
+                startContent={
+                  <PanelButton
+                    size="icon"
+                    variant="ghost"
+                    accessibilityLabel={t("productForm.decreaseAccessibility", {
+                      field: t("productForm.recipeQuantity"),
+                    })}
+                    disabled={Number.isFinite(quantityNumber) && quantityNumber <= 0}
+                    onPress={() =>
+                      onChange(index, {
+                        ...line,
+                        quantity: String(Math.max(0, (quantityNumber || 0) - 1)),
+                      })
+                    }
+                  >
+                    −
+                  </PanelButton>
+                }
+                endContent={
+                  <PanelButton
+                    size="icon"
+                    variant="ghost"
+                    accessibilityLabel={t("productForm.increaseAccessibility", {
+                      field: t("productForm.recipeQuantity"),
+                    })}
+                    onPress={() =>
+                      onChange(index, { ...line, quantity: String((quantityNumber || 0) + 1) })
+                    }
+                  >
+                    +
+                  </PanelButton>
+                }
               />
               <View className="min-w-0 flex-1 gap-1.5">
-                <Label isRequired>{t("productForm.recipeUnit")}</Label>
+                <PanelLabel isRequired>{t("productForm.recipeUnit")}</PanelLabel>
                 <RecipePickerTrigger
                   label={t("productForm.recipeUnit")}
                   value={unitOptions.find((option) => option.value === line.unit)?.label}
                   onPress={() => onOpenPicker("unit", index)}
-                  isDisabled={!ingredient}
+                  disabled={!ingredient}
                 >
                   {t("productForm.recipeUnit")}
                 </RecipePickerTrigger>
@@ -246,30 +225,34 @@ function RecipePickerTrigger({
   label,
   value,
   onPress,
-  isDisabled = false,
+  disabled = false,
   children,
 }: {
   label: string;
   value?: string;
   onPress: () => void;
-  isDisabled?: boolean;
+  disabled?: boolean;
   children: string;
 }): React.JSX.Element {
   const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
-    <Button
+    <PanelButton
       variant="outline"
       className="min-w-0 justify-between"
       onPress={onPress}
-      isDisabled={isDisabled}
+      disabled={disabled}
       accessibilityLabel={label}
     >
-      <Button.Label numberOfLines={1} className={value ? undefined : "text-muted"}>
+      <Typography
+        type="body-sm"
+        numberOfLines={1}
+        className={value ? undefined : "text-muted-foreground"}
+      >
         {value ?? children}
-      </Button.Label>
+      </Typography>
       <AppIcon icon={AppIcons.chevronDown} size={17} color={themeColorMuted} />
-    </Button>
+    </PanelButton>
   );
 }
 
@@ -316,19 +299,22 @@ function RecipePickerSheet({
           const isSelected = option.value === selectedValue;
 
           return (
-            <Button
+            <PanelButton
               variant={isSelected ? "secondary" : "ghost"}
               className="min-w-0 justify-between"
+              accessibilityLabel={option.label}
               onPress={() => {
                 onSelect(option.value);
                 void sheetRef.current?.dismiss();
               }}
             >
-              <Button.Label numberOfLines={1}>{option.label}</Button.Label>
+              <Typography type="body-sm" numberOfLines={1}>
+                {option.label}
+              </Typography>
               {isSelected ? (
                 <AppIcon icon={AppIcons.checkmark} size={18} color={themeColorAccent} />
               ) : null}
-            </Button>
+            </PanelButton>
           );
         }}
         className="flex-1 bg-surface-secondary"
@@ -388,6 +374,7 @@ function ProductMovementsSheet({
   movements: Movement[];
 }): React.JSX.Element {
   const { t } = useTranslation();
+  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
 
   return (
     <TrueSheet
@@ -411,29 +398,116 @@ function ProductMovementsSheet({
         showsVerticalScrollIndicator={false}
       >
         {query.isLoading ? (
-          <SheetLoading />
+          <View className="items-center justify-center py-20">
+            <Spinner size="sm" label={t("movements.loadingMore")} />
+          </View>
         ) : query.isError ? (
-          <ErrorState error={query.error} onRetry={query.refetch} />
+          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+            <PanelErrorAlert variant="destructive">
+              <PanelErrorAlert.Indicator />
+              <PanelErrorAlert.Content>
+                <PanelErrorAlert.Description>
+                  {getErrorMessage(query.error)}
+                </PanelErrorAlert.Description>
+              </PanelErrorAlert.Content>
+            </PanelErrorAlert>
+            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+              {t("common.retry")}
+            </PanelErrorButton>
+          </View>
         ) : (
-          <InventoryMovementsTable
-            movements={movements}
-            emptyTitle={t("productForm.inventoryMovementsEmpty")}
-            emptyDescription={t("productForm.inventoryMovementsEmptyDescription")}
-            variant="secondary"
-          />
+          <ScrollView horizontal showsHorizontalScrollIndicator>
+            <View style={{ width: MOVEMENT_TABLE_WIDTH }}>
+              <PanelMovementTable columns={MOVEMENT_TABLE_COLUMNS} className="bg-secondary">
+                <PanelMovementTable.Header>
+                  <PanelMovementTable.Row>
+                    <PanelMovementTable.Head>{t("movements.type")}</PanelMovementTable.Head>
+                    <PanelMovementTable.Head>{t("movements.quantity")}</PanelMovementTable.Head>
+                    <PanelMovementTable.Head>{t("movements.balanceAfter")}</PanelMovementTable.Head>
+                    <PanelMovementTable.Head>{t("movements.costPerUnit")}</PanelMovementTable.Head>
+                    <PanelMovementTable.Head>{t("movements.source")}</PanelMovementTable.Head>
+                    <PanelMovementTable.Head>{t("movements.reason")}</PanelMovementTable.Head>
+                    <PanelMovementTable.Head>{t("movements.actor")}</PanelMovementTable.Head>
+                    <PanelMovementTable.Head>{t("movements.movedAt")}</PanelMovementTable.Head>
+                  </PanelMovementTable.Row>
+                </PanelMovementTable.Header>
+                {movements.length ? (
+                  <PanelMovementTable.Body>
+                    {movements.map((movement) => (
+                      <PanelMovementTable.Row key={movement.id}>
+                        <PanelMovementTable.Cell>
+                          <PanelMovementChip
+                            variant={MOVEMENT_TYPE_COLORS[movement.type]}
+                            size="sm"
+                          >
+                            {t(`movements.types.${movement.type}` as TranslationKey)}
+                          </PanelMovementChip>
+                        </PanelMovementTable.Cell>
+                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                          {formatSignedQuantity(movement.quantity)}
+                        </PanelMovementTable.Cell>
+                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                          {formatInventoryQuantity(movement.balance_after)}
+                        </PanelMovementTable.Cell>
+                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                          {movement.cost_per_unit === null
+                            ? "—"
+                            : formatRupiah(movement.cost_per_unit)}
+                        </PanelMovementTable.Cell>
+                        <PanelMovementTable.Cell>
+                          <PanelMovementChip variant="default" size="sm">
+                            <PanelMovementText type="body-xs" numberOfLines={1}>
+                              {normalizeInventorySource(movement.source)}
+                            </PanelMovementText>
+                          </PanelMovementChip>
+                        </PanelMovementTable.Cell>
+                        <PanelMovementTable.Cell>
+                          <PanelMovementText type="body-sm" numberOfLines={1}>
+                            {movement.reason ?? "—"}
+                          </PanelMovementText>
+                        </PanelMovementTable.Cell>
+                        <PanelMovementTable.Cell>
+                          <PanelMovementText type="body-sm" numberOfLines={1}>
+                            {movement.actor?.name ?? "—"}
+                          </PanelMovementText>
+                        </PanelMovementTable.Cell>
+                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                          {formatDateTime(movement.moved_at)}
+                        </PanelMovementTable.Cell>
+                      </PanelMovementTable.Row>
+                    ))}
+                  </PanelMovementTable.Body>
+                ) : (
+                  <PanelMovementTable.Empty>
+                    <PanelMovementEmpty className="py-16">
+                      <PanelMovementEmpty.Header>
+                        <PanelMovementEmpty.Media variant="icon">
+                          <AppIcon icon={AppIcons.swapVertical} size={22} color={themeColorMuted} />
+                        </PanelMovementEmpty.Media>
+                        <PanelMovementEmpty.Title>
+                          {t("productForm.inventoryMovementsEmpty")}
+                        </PanelMovementEmpty.Title>
+                        <PanelMovementEmpty.Description>
+                          {t("productForm.inventoryMovementsEmptyDescription")}
+                        </PanelMovementEmpty.Description>
+                      </PanelMovementEmpty.Header>
+                    </PanelMovementEmpty>
+                  </PanelMovementTable.Empty>
+                )}
+              </PanelMovementTable>
+            </View>
+          </ScrollView>
         )}
         {query.hasNextPage ? (
           <View className="flex-row items-center justify-end pt-3">
-            <Button
+            <PanelButton
               size="sm"
               variant="ghost"
               onPress={() => void query.fetchNextPage()}
-              isDisabled={query.isFetchingNextPage}
+              disabled={query.isFetchingNextPage}
             >
-              <Button.Label>
-                {query.isFetchingNextPage ? t("movements.loadingMore") : t("movements.loadMore")}
-              </Button.Label>
-            </Button>
+              {query.isFetchingNextPage ? t("movements.loadingMore") : t("movements.loadMore")}
+            </PanelButton>
           </View>
         ) : null}
       </ScrollView>
@@ -546,21 +620,24 @@ function RecipeEditingFooter({
   return (
     <View className="border-t border-separator bg-surface px-4 pb-safe pt-3">
       <View className="flex-row gap-2">
-        <Button
+        <PanelButton
           size="sm"
           variant="outline"
           onPress={onAddLine}
-          isDisabled={isDisabled}
+          disabled={isDisabled}
           className="min-w-0 flex-1"
+          accessibilityLabel={t("productForm.recipeAddIngredient")}
         >
-          <Button.Label numberOfLines={1}>{t("productForm.recipeAddIngredient")}</Button.Label>
-        </Button>
-        <Button size="sm" variant="ghost" onPress={onCancel} isDisabled={isSaving}>
-          <Button.Label>{t("productForm.recipeCancel")}</Button.Label>
-        </Button>
-        <Button size="sm" onPress={onSave} isDisabled={isDisabled}>
-          <Button.Label>{isSaving ? t("common.saving") : t("productForm.recipeSave")}</Button.Label>
-        </Button>
+          <Typography type="body-sm" numberOfLines={1}>
+            {t("productForm.recipeAddIngredient")}
+          </Typography>
+        </PanelButton>
+        <PanelButton size="sm" variant="ghost" onPress={onCancel} disabled={isSaving}>
+          {t("productForm.recipeCancel")}
+        </PanelButton>
+        <PanelButton size="sm" onPress={onSave} disabled={isDisabled}>
+          {isSaving ? t("common.saving") : t("productForm.recipeSave")}
+        </PanelButton>
       </View>
     </View>
   );
@@ -571,9 +648,9 @@ function RecipeReadFooter({ onEdit }: { onEdit: () => void }): React.JSX.Element
 
   return (
     <View className="border-t border-separator bg-surface px-4 pb-safe pt-3">
-      <Button size="sm" variant="outline" onPress={onEdit}>
-        <Button.Label>{t("productForm.recipeEdit")}</Button.Label>
-      </Button>
+      <PanelButton size="sm" variant="outline" onPress={onEdit}>
+        {t("productForm.recipeEdit")}
+      </PanelButton>
     </View>
   );
 }
@@ -593,9 +670,29 @@ function RecipeSheetEditingBody({
   onRemove: (index: number) => void;
   onOpenPicker: (kind: RecipePickerKind, index: number) => void;
 }): React.JSX.Element {
-  if (ingredientsQuery.isLoading) return <SheetLoading />;
+  const { t } = useTranslation();
+  if (ingredientsQuery.isLoading)
+    return (
+      <View className="items-center justify-center py-20">
+        <Spinner size="sm" label={t("movements.loadingMore")} />
+      </View>
+    );
   if (ingredientsQuery.isError) {
-    return <ErrorState error={ingredientsQuery.error} onRetry={ingredientsQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(ingredientsQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void ingredientsQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
   return (
     <RecipeEditor
@@ -632,6 +729,7 @@ function RecipeSheetBody({
   onOpenPicker: (kind: RecipePickerKind, index: number) => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
+  const recipeEmptyColor = useCSSVariable("--color-muted-foreground") as string;
 
   return (
     <ScrollView
@@ -640,14 +738,28 @@ function RecipeSheetBody({
       showsVerticalScrollIndicator={false}
     >
       {query.isLoading ? (
-        <SheetLoading />
+        <View className="items-center justify-center py-20">
+          <Spinner size="sm" label={t("movements.loadingMore")} />
+        </View>
       ) : query.isError ? (
-        <ErrorState error={query.error} onRetry={query.refetch} />
+        <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+          <PanelErrorAlert variant="destructive">
+            <PanelErrorAlert.Indicator />
+            <PanelErrorAlert.Content>
+              <PanelErrorAlert.Description>
+                {getErrorMessage(query.error)}
+              </PanelErrorAlert.Description>
+            </PanelErrorAlert.Content>
+          </PanelErrorAlert>
+          <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+            {t("common.retry")}
+          </PanelErrorButton>
+        </View>
       ) : (
         <>
           {recipe ? (
-            <View className="flex-row items-center justify-between gap-3 rounded-panel-inner bg-surface px-4 py-3">
-              <Typography type="body-sm" color="muted">
+            <View className="flex-row items-center justify-between gap-3 rounded-xl bg-surface px-4 py-3">
+              <Typography type="body-sm" muted>
                 {t("productForm.recipeEstimatedUnitCogs")}
               </Typography>
               <Typography weight="semibold" className="tabular-nums">
@@ -665,10 +777,82 @@ function RecipeSheetBody({
                 onRemove={onRemove}
                 onOpenPicker={onOpenPicker}
               />
-              {recipeError ? <Typography className="text-danger">{recipeError}</Typography> : null}
+              {recipeError ? (
+                <Typography className="text-destructive-foreground">{recipeError}</Typography>
+              ) : null}
             </>
           ) : (
-            <RecipeTable ingredients={recipe?.ingredients ?? []} />
+            <ScrollView horizontal showsHorizontalScrollIndicator>
+              <View style={{ width: 710 }}>
+                <PanelMovementTable
+                  className="bg-secondary"
+                  columns={[220, 150, 150, 190].map((width) => ({ width }))}
+                >
+                  <PanelMovementTable.Header>
+                    <PanelMovementTable.Row>
+                      <PanelMovementTable.Head>
+                        {t("productForm.recipeIngredient")}
+                      </PanelMovementTable.Head>
+                      <PanelMovementTable.Head>
+                        {t("productForm.recipeQuantity")}
+                      </PanelMovementTable.Head>
+                      <PanelMovementTable.Head>
+                        {t("productForm.recipeUnit")}
+                      </PanelMovementTable.Head>
+                      <PanelMovementTable.Head>
+                        {t("productForm.recipeCostContribution")}
+                      </PanelMovementTable.Head>
+                    </PanelMovementTable.Row>
+                  </PanelMovementTable.Header>
+                  {recipe?.ingredients.length ? (
+                    <PanelMovementTable.Body>
+                      {recipe.ingredients.map((ingredient) => (
+                        <PanelMovementTable.Row key={ingredient.ingredient_id}>
+                          <PanelMovementTable.Cell>
+                            <PanelMovementText weight="semibold" numberOfLines={1}>
+                              {ingredient.name}
+                            </PanelMovementText>
+                          </PanelMovementTable.Cell>
+                          <PanelMovementTable.Cell labelClassName="tabular-nums">
+                            {formatInventoryQuantity(ingredient.quantity)}
+                          </PanelMovementTable.Cell>
+                          <PanelMovementTable.Cell>
+                            <PanelMovementText numberOfLines={1}>
+                              {t(`ingredients.units.${ingredient.unit}` as TranslationKey)}
+                            </PanelMovementText>
+                          </PanelMovementTable.Cell>
+                          <PanelMovementTable.Cell labelClassName="tabular-nums">
+                            {ingredient.cost_contribution === null
+                              ? "—"
+                              : formatRupiah(ingredient.cost_contribution)}
+                          </PanelMovementTable.Cell>
+                        </PanelMovementTable.Row>
+                      ))}
+                    </PanelMovementTable.Body>
+                  ) : (
+                    <PanelMovementTable.Empty>
+                      <PanelMovementEmpty className="py-16">
+                        <PanelMovementEmpty.Header>
+                          <PanelMovementEmpty.Media variant="icon">
+                            <AppIcon
+                              icon={AppIcons.restaurant}
+                              size={22}
+                              color={recipeEmptyColor}
+                            />
+                          </PanelMovementEmpty.Media>
+                          <PanelMovementEmpty.Title>
+                            {t("productForm.recipeEmpty")}
+                          </PanelMovementEmpty.Title>
+                          <PanelMovementEmpty.Description>
+                            {t("productForm.recipeEmptyDescription")}
+                          </PanelMovementEmpty.Description>
+                        </PanelMovementEmpty.Header>
+                      </PanelMovementEmpty>
+                    </PanelMovementTable.Empty>
+                  )}
+                </PanelMovementTable>
+              </View>
+            </ScrollView>
           )}
         </>
       )}

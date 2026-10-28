@@ -1,15 +1,24 @@
+import {
+  Surface,
+  Typography,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Button as PanelButton,
+  Chip as PanelChip,
+  Skeleton as PanelListSkeleton,
+  ScrollFade,
+  EmptyState,
+  cn,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { useKitchenTickets, useUpdateKitchenTicketStatus } from "@/hooks/db/use-kitchen-tickets";
 import type { KitchenTicketData, KitchenTicketOrderType } from "@/api/endpoints/kitchen-tickets";
 import { extractStatusValue, normalizeStatusColor } from "@/api/mappers/order";
+import { statusChipVariant } from "@/utils/status-chip-variant";
 import { getErrorMessage } from "@/api/api-error";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import ErrorState from "@/components/common/error-state";
-import { GridSkeleton, ListSkeleton } from "@/components/common/list-skeleton";
 import { formatTime } from "@/utils/format";
-import { EmptyState } from "heroui-native-pro";
-import { Button, Chip, cn, ScrollShadow, Surface, Typography } from "heroui-native";
 import React from "react";
 import { FlatList, RefreshControl, useWindowDimensions, View } from "react-native";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
@@ -19,7 +28,6 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { Stack } from "expo-router";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { ScrollView } from "react-native-gesture-handler";
-import { LinearGradient } from "expo-linear-gradient";
 
 type Lane = "all" | "queued" | "preparing" | "ready";
 type ActionLane = Exclude<Lane, "all">;
@@ -36,9 +44,9 @@ const ORDER_TYPE_FILTERS: readonly KitchenTicketOrderType[] = [
 ];
 const KDS_STATUS_HEADER_BACKGROUNDS: Record<string, string> = {
   queued: "bg-warning-soft",
-  preparing: "bg-accent-soft",
+  preparing: "bg-accent",
   ready: "bg-surface",
-  cancelled: "bg-danger-soft",
+  cancelled: "bg-destructive-soft",
 };
 
 function ticketStatus(ticket: KitchenTicketData): string {
@@ -66,12 +74,12 @@ function TicketCard({
 }) {
   const { t } = useTranslation();
   const [mutedColor] = useCSSVariable(["--color-muted-foreground"]) as [string];
+  const primaryForegroundColor = useCSSVariable("--color-primary-foreground") as string;
   const order = ticket.order;
   const statusColor = normalizeStatusColor(ticket.status);
-  const statusBackground = KDS_STATUS_HEADER_BACKGROUNDS[ticketStatus(ticket)] ?? "bg-default";
+  const statusBackground = KDS_STATUS_HEADER_BACKGROUNDS[ticketStatus(ticket)] ?? "bg-secondary";
   const actionLane = lane === "all" ? ticketStatus(ticket) : lane;
   const action = LANE_ACTION[actionLane as ActionLane];
-  const isQueuedAction = action === "start";
 
   return (
     <Surface className="w-full h-full gap-0 p-0">
@@ -81,29 +89,27 @@ function TicketCard({
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            <Chip color={statusColor} size="sm">
-              <Chip.Label className="text-white">
-                {t(`kds.status.${ticketStatus(ticket)}` as TranslationKey)}
-              </Chip.Label>
-            </Chip>
+            <PanelChip variant={statusChipVariant(statusColor)} size="sm">
+              {t(`kds.status.${ticketStatus(ticket)}` as TranslationKey)}
+            </PanelChip>
           </View>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-1.5">
               <AppIcon icon={orderTypeIcon(order.order_type)} size={12} color={mutedColor} />
-              <Typography type="body-xs" color="muted">
+              <Typography type="body-xs" muted>
                 {t(order.products_count === 1 ? "orders.itemOne" : "orders.itemOther", {
                   count: order.products_count,
                 })}
               </Typography>
             </View>
-            <Typography type="body-xs" color="muted" className="tabular-nums">
+            <Typography type="body-xs" muted className="tabular-nums">
               {formatTime(ticket.created_at)}
             </Typography>
           </View>
         </View>
       </View>
 
-      <ScrollShadow LinearGradientComponent={LinearGradient} className="flex-1">
+      <ScrollFade className="flex-1">
         <ScrollView className="border-t border-border" showsVerticalScrollIndicator={false}>
           <View className="flex-1 p-4">
             {order.products.map((product) => (
@@ -121,7 +127,7 @@ function TicketCard({
                     <Typography
                       key={`${addOn.name}-${option.id}`}
                       type="body-xs"
-                      color="muted"
+                      muted
                       className="pl-6"
                     >
                       + {addOn.name}: {option.name}
@@ -129,7 +135,7 @@ function TicketCard({
                   ))
                 )}
                 {product.notes ? (
-                  <Typography type="body-xs" color="muted" className="pl-6 italic">
+                  <Typography type="body-xs" muted className="pl-6 italic">
                     {t("orders.detail.note", { note: product.notes })}
                   </Typography>
                 ) : null}
@@ -137,29 +143,30 @@ function TicketCard({
             ))}
           </View>
         </ScrollView>
-      </ScrollShadow>
+      </ScrollFade>
 
       {error ? (
-        <Typography type="body-xs" className="text-danger">
+        <Typography type="body-xs" className="text-destructive-foreground">
           {getErrorMessage(error)}
         </Typography>
       ) : null}
 
       {action ? (
         <View className="p-4">
-          <Button
+          <PanelButton
             size="sm"
             onPress={onAction}
-            isDisabled={isPending}
-            className={isQueuedAction ? "bg-warning" : ""}
+            disabled={isPending}
+            startContent={
+              <AppIcon
+                icon={action === "start" ? AppIcons.play : AppIcons.checkmarkCircle}
+                size={16}
+                color={primaryForegroundColor}
+              />
+            }
           >
-            <AppIcon
-              icon={action === "start" ? AppIcons.play : AppIcons.checkmarkCircle}
-              size={16}
-              color={"white"}
-            />
-            <Button.Label>{t(action === "start" ? "kds.start" : "kds.markReady")}</Button.Label>
-          </Button>
+            {t(action === "start" ? "kds.start" : "kds.markReady")}
+          </PanelButton>
         </View>
       ) : null}
     </Surface>
@@ -234,18 +241,46 @@ export default function KdsScreen(): React.JSX.Element {
   if (ticketsQuery.isLoading) {
     return (
       <View className="flex-1 bg-background">
-        <GridSkeleton
-          columns={gridColumns}
-          width={width}
-          horizontalPadding={horizontalPagePadding}
-          gap={gridGap}
-          aspectRatio={3 / 4}
-        />
+        <View
+          className="flex-1 flex-row flex-wrap content-start gap-y-4 py-6"
+          style={{ paddingHorizontal: horizontalPagePadding, columnGap: gridGap }}
+          accessibilityRole="progressbar"
+        >
+          {Array.from({ length: gridColumns * 2 }, (_, index) => (
+            <View
+              key={`loading-grid-${index}`}
+              style={{
+                width: Math.max(
+                  0,
+                  (width - horizontalPagePadding * 2 - gridGap * (gridColumns - 1)) / gridColumns
+                ),
+                aspectRatio: 3 / 4,
+              }}
+              className="overflow-hidden rounded-2xl"
+            >
+              <PanelListSkeleton className="h-full w-full rounded-2xl" />
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
   if (ticketsQuery.isError) {
-    return <ErrorState error={ticketsQuery.error} onRetry={ticketsQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(ticketsQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void ticketsQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   return (
@@ -281,19 +316,15 @@ export default function KdsScreen(): React.JSX.Element {
               {LANES.map((lane) => {
                 const isActive = activeLane === lane;
                 return (
-                  <Chip
+                  <PanelChip
                     key={lane}
-                    variant={isActive ? "primary" : "soft"}
-                    color={isActive ? "accent" : "default"}
+                    variant={isActive ? "primary" : "default"}
+                    selected={isActive}
                     onPress={() => setActiveLane(lane)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isActive }}
                     accessibilityLabel={t(`kds.${lane}` as TranslationKey)}
                   >
-                    <Chip.Label>
-                      {lane === "all" ? t("common.all") : t(`kds.${lane}` as TranslationKey)}
-                    </Chip.Label>
-                  </Chip>
+                    {lane === "all" ? t("common.all") : t(`kds.${lane}` as TranslationKey)}
+                  </PanelChip>
                 );
               })}
             </View>
@@ -337,7 +368,24 @@ export default function KdsScreen(): React.JSX.Element {
             onEndReachedThreshold={0.5}
             onEndReached={handleEndReached}
             ListFooterComponent={
-              ticketsQuery.isFetchingNextPage ? <ListSkeleton rows={1} fill={false} /> : null
+              ticketsQuery.isFetchingNextPage ? (
+                <View className="gap-px py-2" accessibilityRole="progressbar">
+                  {Array.from({ length: 1 }, (_, index) => (
+                    <View
+                      key={`loading-row-${index}`}
+                      className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
+                    >
+                      <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                      <View className="flex-1 gap-2">
+                        <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
+                        <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
+                        <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                      </View>
+                      <PanelListSkeleton className="size-4 rounded-full" />
+                    </View>
+                  ))}
+                </View>
+              ) : null
             }
             ListEmptyComponent={
               <View className="w-full">

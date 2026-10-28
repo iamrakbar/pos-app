@@ -8,7 +8,7 @@ import { Platform, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate } from "@/locales";
 import { getReceiptLogoPreviewWidth } from "@/utils/receipt-logo-layout";
-import { cn } from "heroui-native";
+import { cn } from "panelui-native";
 
 export type ReceiptPreviewData = {
   code: string;

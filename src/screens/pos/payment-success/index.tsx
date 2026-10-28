@@ -1,14 +1,13 @@
+import { Surface , Typography , Spinner , Separator, Button as PanelButton, Dialog as PanelDialog, Switch, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useReceiptPrinter } from "@/hooks/printer/use-receipt-printer";
 import { useReceiptStore } from "@/stores/use-receipt-store";
 import { formatDateTime, formatRupiah } from "@/utils/format";
-import { Button, cn, Separator, Spinner, Surface, Switch, Typography } from "heroui-native";
 import { useEffect, useRef, useState, type JSX } from "react";
 import { ScrollView, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import ActionDialog from "@/components/common/action-dialog";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -31,6 +30,7 @@ function PaymentSuccessSummary({
   totalQty: number;
 }): JSX.Element {
   const { t } = useTranslation();
+  const successForegroundColor = useCSSVariable("--color-success-solid-foreground") as string;
 
   return (
     <ScrollView
@@ -41,7 +41,7 @@ function PaymentSuccessSummary({
       <View className="w-full max-w-xl self-center gap-6 px-5 pt-8">
         <View className="items-center gap-3 py-2">
           <View className="w-14 h-14 rounded-full bg-success items-center justify-center">
-            <AppIcon icon={AppIcons.checkmark} size={28} color="white" />
+            <AppIcon icon={AppIcons.checkmark} size={28} color={successForegroundColor} />
           </View>
           <View className="items-center gap-1.5">
             <Typography type="h4" weight="bold">
@@ -50,7 +50,7 @@ function PaymentSuccessSummary({
             <Typography type="h2" weight="bold" className="tabular-nums">
               {formatRupiah(paymentSession.amount)}
             </Typography>
-            <Typography type="body-xs" color="muted" className="font-mono">
+            <Typography type="body-xs" muted className="font-mono">
               {checkoutResult?.code ?? paymentSession.transaction_id}
             </Typography>
           </View>
@@ -58,7 +58,7 @@ function PaymentSuccessSummary({
 
         <Surface className="w-full p-5 gap-3">
           <View className="flex-row justify-between gap-4">
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-sm" muted>
               {t("payment.method")}
             </Typography>
             <Typography type="body-sm" weight="semibold">
@@ -68,7 +68,7 @@ function PaymentSuccessSummary({
           {paymentSession.cash_received !== undefined ? (
             <>
               <View className="flex-row justify-between gap-4">
-                <Typography type="body-sm" color="muted">
+                <Typography type="body-sm" muted>
                   {t("paymentSuccess.cashReceived")}
                 </Typography>
                 <Typography type="body-sm" weight="semibold" className="tabular-nums">
@@ -76,7 +76,7 @@ function PaymentSuccessSummary({
                 </Typography>
               </View>
               <View className="flex-row justify-between gap-4">
-                <Typography type="body-sm" color="muted">
+                <Typography type="body-sm" muted>
                   {t("paymentSuccess.change")}
                 </Typography>
                 <Typography type="body-sm" weight="semibold" className="tabular-nums">
@@ -86,7 +86,7 @@ function PaymentSuccessSummary({
             </>
           ) : null}
           <View className="flex-row justify-between gap-4">
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-sm" muted>
               {t("paymentSuccess.dateTime")}
             </Typography>
             <Typography type="body-sm" weight="semibold" className="text-right">
@@ -94,7 +94,7 @@ function PaymentSuccessSummary({
             </Typography>
           </View>
           <View className="flex-row justify-between gap-4">
-            <Typography type="body-sm" color="muted">
+            <Typography type="body-sm" muted>
               {t("paymentSuccess.items")}
             </Typography>
             <Typography type="body-sm" weight="semibold">
@@ -105,7 +105,7 @@ function PaymentSuccessSummary({
           </View>
           {checkoutResult?.code ? (
             <View className="flex-row justify-between gap-4">
-              <Typography type="body-sm" color="muted">
+              <Typography type="body-sm" muted>
                 {t("paymentSuccess.order")}
               </Typography>
               <Typography type="body-sm" weight="semibold" className="font-mono">
@@ -137,6 +137,7 @@ function PaymentSuccessActions({
   onNewOrder: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
+  const primaryForegroundColor = useCSSVariable("--color-primary-foreground") as string;
 
   return (
     <View className="bg-surface px-safe pb-safe">
@@ -146,41 +147,38 @@ function PaymentSuccessActions({
             <Typography type="body-sm" weight="semibold">
               {t("paymentSuccess.autoPrint")}
             </Typography>
-            <Typography type="body-xs" color="muted">
+            <Typography type="body-xs" muted>
               {t("paymentSuccess.autoPrintDescription")}
             </Typography>
           </View>
           <Switch
-            isSelected={receiptSettings.autoPrintOnSuccess}
-            onSelectedChange={(isSelected) =>
-              updateReceiptSettings({ autoPrintOnSuccess: isSelected })
+            value={receiptSettings.autoPrintOnSuccess}
+            label={t("paymentSuccess.autoPrint")}
+            onValueChange={(enabled) =>
+              updateReceiptSettings({ autoPrintOnSuccess: enabled })
             }
-          >
-            <Switch.Thumb />
-          </Switch>
+          />
         </View>
         <View className={cn("gap-3", !isCompact && "flex-row")}>
           {!receiptSettings.autoPrintOnSuccess ? (
-            <Button
+            <PanelButton
               variant="outline"
               className={isCompact ? "w-full" : "flex-1"}
               onPress={onPrint}
-              isDisabled={isPrinting}
+              disabled={isPrinting}
             >
               {isPrinting ? (
                 <Spinner size="sm" />
               ) : (
                 <AppIcon icon={AppIcons.print} size={16} color={themeColorForeground} />
               )}
-              <Button.Label className="ml-2">
-                {isPrinting ? t("paymentSuccess.printing") : t("paymentSuccess.printReceipt")}
-              </Button.Label>
-            </Button>
+              {isPrinting ? t("paymentSuccess.printing") : t("paymentSuccess.printReceipt")}
+            </PanelButton>
           ) : null}
-          <Button className={isCompact ? "w-full" : "flex-1"} onPress={onNewOrder}>
-            <AppIcon icon={AppIcons.addCircle} size={16} color="white" />
-            <Button.Label className="ml-2">{t("paymentSuccess.newOrder")}</Button.Label>
-          </Button>
+          <PanelButton className={isCompact ? "w-full" : "flex-1"} onPress={onNewOrder}>
+            <AppIcon icon={AppIcons.addCircle} size={16} color={primaryForegroundColor} />
+            {t("paymentSuccess.newOrder")}
+          </PanelButton>
         </View>
       </View>
     </View>
@@ -259,15 +257,26 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         />
       </View>
 
-      <ActionDialog
-        isOpen={prompt !== null}
-        onOpenChange={(open) => !open && setPrompt(null)}
-        title={prompt?.title}
-        description={prompt?.message}
-        cancelLabel={prompt?.actionLabel ? t("common.cancel") : t("common.close")}
-        actionLabel={prompt?.actionLabel}
-        onAction={handlePromptAction}
-      />
+      <PanelDialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{prompt?.title}</PanelDialog.Title>
+          {prompt?.message ? (
+            <PanelDialog.Description>{prompt.message}</PanelDialog.Description>
+          ) : null}
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {prompt?.actionLabel ? t("common.cancel") : t("common.close")}
+              </PanelButton>
+            </PanelDialog.Close>
+            {prompt?.actionLabel ? (
+              <PanelButton size="sm" onPress={handlePromptAction}>
+                {prompt.actionLabel}
+              </PanelButton>
+            ) : null}
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

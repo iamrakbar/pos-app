@@ -2,7 +2,7 @@ import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useNavigation } from "expo-router";
-import { Button } from "heroui-native";
+import { Button } from "panelui-native";
 import type { JSX } from "react";
 import { useTranslation } from "@/stores/use-locale";
 
@@ -24,7 +24,7 @@ export default function DrawerMenuButton({
   return (
     <Button
       variant="ghost"
-      isIconOnly
+      size="icon"
       onPress={() => navigation.openDrawer()}
       accessibilityLabel={accessibilityLabel ?? t("navigation.openNavigation")}
     >

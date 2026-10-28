@@ -1,3 +1,5 @@
+export const RUPIAH_PREFIX = "Rp";
+
 export const IDR_CURRENCY_FORMAT_OPTIONS = {
   style: "currency",
   currency: "IDR",

@@ -677,6 +677,7 @@ export const en = {
     takeaway: "Takeaway",
     pickupTime: "Pickup time",
     cart: "Cart",
+    clearCart: "Clear cart",
     added: "Added",
     cartEmpty: "Cart is empty",
     cartEmptyDescription: "Add products to get started.",

@@ -1,4 +1,21 @@
-import { useToast } from "panelui-native";
+import {
+  Typography,
+  Separator,
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  Button as PanelButton,
+  Label as PanelLabel,
+  Dialog as PanelDialog,
+  Input as PanelInput,
+  Select as PanelSelect,
+  Textarea as PanelTextarea,
+  Typography as PanelTypography,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton,
+  Card,
+  Switch as PanelSwitch,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -7,27 +24,12 @@ import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import {
-  Button,
-  Card,
-  Description,
-  Input,
-  Label,
-  Select,
-  Separator,
-  Switch,
-  TextArea,
-  TextField,
-  Typography,
-} from "heroui-native";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import {
-  useOverlayPresentation,
-  type OverlayChoicePresentation,
-} from "@/hooks/use-overlay-presentation";
+import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
   Controller,
+  useController,
   useForm,
   useWatch,
   type Control,
@@ -37,10 +39,7 @@ import {
 import { Image } from "expo-image";
 import { Platform, Pressable, View } from "react-native";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
-import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
-import ActionDialog from "@/components/common/action-dialog";
-import { FormNumberField, RupiahField } from "@/components/common/form-number-field";
+import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { getErrorMessage } from "@/api/api-error";
 import type { ProductImageAsset } from "@/api/endpoints/products";
 import { useCategories } from "@/hooks/db/use-categories";
@@ -72,7 +71,12 @@ import QuickCategoryFormOverlay from "./quick-category-form-overlay";
 import QuickDiscountFormOverlay from "./quick-discount-form-overlay";
 import { saveProduct, toProductPayload } from "./product-form-save";
 import { applyProductServerErrors } from "./product-form-errors";
-import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
+import {
+  formatInventoryQuantity,
+  formatRupiah,
+  IDR_NUMBER_FIELD_FORMAT_OPTIONS,
+  RUPIAH_PREFIX,
+} from "@/utils/format";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
 import { useMerchantProfile } from "@/hooks/db/use-merchant-profile";
@@ -195,92 +199,12 @@ async function removeProduct({
 
 function SectionHeading({ title, description }: { title: string; description?: string }) {
   return (
-    <Card.Header className="pb-2">
+    <Card.Header className="pb-2 p-0">
       <View className="gap-1">
         <Card.Title>{title}</Card.Title>
         {description ? <Card.Description>{description}</Card.Description> : null}
       </View>
     </Card.Header>
-  );
-}
-
-function ProductNumberField({
-  label,
-  placeholder,
-  description,
-  required,
-  value,
-  onChangeText,
-  error,
-  step = 1,
-}: {
-  label: string;
-  placeholder: string;
-  description?: string;
-  required?: boolean;
-  value: string;
-  onChangeText: (value: string) => void;
-  error?: string;
-  step?: number;
-}) {
-  return (
-    <RupiahField
-      className="flex-1"
-      label={label}
-      placeholder={placeholder}
-      inputVariant="secondary"
-      value={value}
-      onChange={onChangeText}
-      minValue={0}
-      step={step}
-      isRequired={required}
-      isInvalid={!!error}
-    >
-      {error ? (
-        <Description className="text-danger">{error}</Description>
-      ) : description ? (
-        <Description>{description}</Description>
-      ) : null}
-    </RupiahField>
-  );
-}
-
-function ProductNumberStepper({
-  label,
-  description,
-  required,
-  value,
-  onChangeText,
-  error,
-}: {
-  label: string;
-  description?: string;
-  required?: boolean;
-  value: string;
-  onChangeText: (value: string) => void;
-  error?: string;
-}) {
-  const { t } = useTranslation();
-  return (
-    <FormNumberField
-      className="flex-1"
-      label={label}
-      value={value}
-      onChange={onChangeText}
-      minValue={0}
-      step={1}
-      showStepper
-      decreaseAccessibilityLabel={t("productForm.decreaseAccessibility", { field: label })}
-      increaseAccessibilityLabel={t("productForm.increaseAccessibility", { field: label })}
-      isRequired={required}
-      isInvalid={!!error}
-    >
-      {error ? (
-        <Description className="text-danger">{error}</Description>
-      ) : description ? (
-        <Description>{description}</Description>
-      ) : null}
-    </FormNumberField>
   );
 }
 
@@ -301,39 +225,12 @@ function ToggleRow({
         <Typography type="body-sm" weight="semibold">
           {title}
         </Typography>
-        <Typography type="body-xs" color="muted">
+        <Typography type="body-xs" muted>
           {description}
         </Typography>
       </View>
-      <Switch isSelected={isSelected} onSelectedChange={onSelectedChange} />
+      <PanelSwitch value={isSelected} onValueChange={onSelectedChange} label={title} />
     </View>
-  );
-}
-
-function DeleteProductDialog({
-  isOpen,
-  isDeleting,
-  onOpenChange,
-  onDelete,
-}: {
-  isOpen: boolean;
-  isDeleting: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-  onDelete: () => void | Promise<void>;
-}) {
-  const { t } = useTranslation();
-
-  return (
-    <ActionDialog
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      title={t("productForm.deleteTitle")}
-      description={t("productForm.deleteDescription")}
-      actionLabel={isDeleting ? t("common.deleting") : t("common.delete")}
-      actionVariant="danger"
-      isActionDisabled={isDeleting}
-      onAction={onDelete}
-    />
   );
 }
 
@@ -349,17 +246,17 @@ function ProductImageCard({
   const { t } = useTranslation();
 
   return (
-    <Card className="gap-3 overflow-hidden">
+    <Card className="gap-3 overflow-hidden p-4">
       <SectionHeading
         title={t("productForm.imageTitle")}
         description={t("productForm.imageDescription")}
       />
-      <Card.Body className="items-center pt-2">
+      <Card.Content className="items-center pt-2 p-0">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t("productForm.chooseImageAccessibility")}
           onPress={onSelect}
-          className="aspect-video w-full items-center justify-center gap-3 overflow-hidden rounded-panel-inner bg-surface-secondary active:opacity-80"
+          className="aspect-video w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-surface-secondary active:opacity-80"
         >
           {imageUri ? (
             <Image
@@ -369,23 +266,23 @@ function ProductImageCard({
             />
           ) : (
             <>
-              <View className="size-14 items-center justify-center rounded-full bg-accent-soft">
+              <View className="size-14 items-center justify-center rounded-full bg-accent">
                 <AppIcon icon={AppIcons.image} size={26} color={accentColor} />
               </View>
               <View className="items-center gap-1 px-6">
                 <Typography type="body-sm" weight="semibold">
                   {t("productForm.addImage")}
                 </Typography>
-                <Typography type="body-xs" color="muted" className="text-center">
+                <Typography type="body-xs" muted className="text-center">
                   {t("productForm.imageRequirements")}
                 </Typography>
               </View>
             </>
           )}
         </Pressable>
-      </Card.Body>
-      <Card.Footer className="pt-0">
-        <Typography type="body-xs" color="muted">
+      </Card.Content>
+      <Card.Footer className="pt-0 p-0">
+        <Typography type="body-xs" muted>
           {t("productForm.imageAvailability")}
         </Typography>
       </Card.Footer>
@@ -415,73 +312,66 @@ function ProductDetailsCard({
   const [themeColorForeground] = useCSSVariable(["--color-foreground"]) as [string];
 
   return (
-    <Card className="gap-3 overflow-hidden">
+    <Card className="gap-3 overflow-hidden p-4">
       <SectionHeading
         title={t("productForm.detailsTitle")}
         description={t("productForm.detailsDescription")}
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         <Controller
           control={control}
           name="category_id"
           render={({ field: { value, onChange } }) => (
             <View className="gap-1.5">
-              <Label isRequired isInvalid={Boolean(errors.category_id)}>
+              <PanelLabel isRequired isInvalid={Boolean(errors.category_id)}>
                 {t("productForm.category")}
-              </Label>
+              </PanelLabel>
               <View className="flex-row items-center gap-2">
-                <Select
-                  presentation={choicePresentation}
-                  value={categoryOptions.find((option) => option.value === value)}
-                  onValueChange={(option) => onChange(option?.value ?? "")}
-                  isDisabled={areCategoriesLoading || didCategoriesFail}
+                <PanelSelect
+                  presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                  value={value}
+                  onValueChange={onChange}
+                  disabled={areCategoriesLoading || didCategoriesFail}
                   className="flex-1"
+                  triggerClassName={errors.category_id ? "border-destructive" : undefined}
+                  placeholder={t("productForm.selectCategory")}
+                  title={t("productForm.category")}
                 >
-                  <Select.Trigger
-                    accessibilityLabel={t("productForm.category")}
-                    className={errors.category_id ? "border-danger" : undefined}
-                  >
-                    <Select.Value placeholder={t("productForm.selectCategory")} numberOfLines={1} />
-                    <Select.TriggerIndicator />
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Overlay />
-                    <Select.Content
-                      presentation={choicePresentation}
-                      width={choicePresentation === "popover" ? "trigger" : undefined}
-                    >
-                      {categoryOptions.map((option) => (
-                        <Select.Item key={option.value} {...option} />
-                      ))}
-                    </Select.Content>
-                  </Select.Portal>
-                </Select>
-                <Button
+                  {categoryOptions.map((option) => (
+                    <PanelSelect.Item key={option.value} {...option} />
+                  ))}
+                </PanelSelect>
+                <PanelButton
                   variant="ghost"
-                  isIconOnly
+                  size="icon"
+
                   accessibilityLabel={t("productForm.addCategoryAccessibility")}
                   onPress={onAddCategory}
                 >
                   <AppIcon icon={AppIcons.add} size={18} color={themeColorForeground} />
-                </Button>
+                </PanelButton>
               </View>
               {didCategoriesFail ? (
                 <View className="flex-row items-center justify-between gap-3">
-                  <Description isInvalid className="flex-1 text-danger">
+                  <PanelTypography type="body-xs" className="flex-1 text-destructive-foreground">
                     {t("productForm.categoriesFailed")}
-                  </Description>
-                  <Button size="sm" variant="ghost" onPress={onRetryCategories}>
+                  </PanelTypography>
+                  <PanelButton size="sm" variant="ghost" onPress={onRetryCategories}>
                     {t("common.retry")}
-                  </Button>
+                  </PanelButton>
                 </View>
               ) : errors.category_id?.message ? (
-                <Description isInvalid className="text-danger">
+                <PanelTypography type="body-xs" className="text-destructive-foreground">
                   {errors.category_id.message}
-                </Description>
+                </PanelTypography>
               ) : areCategoriesLoading ? (
-                <Description>{t("categories.loading")}</Description>
+                <PanelTypography type="body-xs" muted>
+                  {t("categories.loading")}
+                </PanelTypography>
               ) : categoryOptions.length === 0 ? (
-                <Description className="text-warning">{t("productForm.noCategories")}</Description>
+                <PanelTypography type="body-xs" className="text-warning">
+                  {t("productForm.noCategories")}
+                </PanelTypography>
               ) : null}
             </View>
           )}
@@ -489,43 +379,39 @@ function ProductDetailsCard({
         <Controller
           control={control}
           name="name"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextField isRequired isInvalid={!!errors.name}>
-              <Label>{t("productForm.name")}</Label>
-              <Input
-                variant="secondary"
-                placeholder={t("productForm.namePlaceholder")}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-              />
-              {errors.name?.message ? (
-                <Description className="text-danger">{errors.name.message}</Description>
-              ) : null}
-            </TextField>
+          render={({ field: { value, onChange, onBlur, ref } }) => (
+            <PanelInput
+              ref={ref}
+              label={t("productForm.name")}
+              placeholder={t("productForm.namePlaceholder")}
+              variant="filled"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              errorMessage={errors.name?.message}
+              isRequired
+            />
           )}
         />
         <Controller
           control={control}
           name="description"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextField isInvalid={!!errors.description}>
-              <Label>{t("productForm.description")}</Label>
-              <TextArea
-                variant="secondary"
-                placeholder={t("productForm.descriptionPlaceholder")}
-                className="min-h-24"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-              />
-              <Description className={errors.description ? "text-danger" : undefined}>
-                {errors.description?.message ?? t("productForm.descriptionHelp")}
-              </Description>
-            </TextField>
+          render={({ field: { value, onChange, onBlur, ref } }) => (
+            <PanelTextarea
+              ref={ref}
+              label={t("productForm.description")}
+              placeholder={t("productForm.descriptionPlaceholder")}
+              variant="filled"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              errorMessage={errors.description?.message}
+              rows={3}
+              description={t("productForm.descriptionHelp")}
+            />
           )}
         />
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -548,6 +434,26 @@ function ProductInventoryFields({
   const { t } = useTranslation();
   const { choicePresentation } = useOverlayPresentation();
   const inventoryMode = useWatch({ control, name: "inventory_mode" });
+  const {
+    field: { value: costValue, onChange: costChange, onBlur: costBlur, ref: costRef },
+  } = useController({ control, name: "inventory_cost" });
+  const { localizedInputProps: costInput } = useLocalizedNumberInput({
+    value: costValue,
+    onChange: costChange,
+    formatOptions: IDR_NUMBER_FIELD_FORMAT_OPTIONS,
+    minValue: 0,
+    inputProps: { onBlur: costBlur },
+  });
+  const {
+    field: { value: alertValue, onChange: changeAlert, onBlur: blurAlert, ref: alertRef },
+  } = useController({ control, name: "stock_alert" });
+  const { localizedInputProps: alertInput } = useLocalizedNumberInput({
+    value: alertValue,
+    onChange: changeAlert,
+    formatOptions: { useGrouping: false, maximumFractionDigits: 0 },
+    minValue: 0,
+    inputProps: { onBlur: blurAlert },
+  });
   if (!inventoryEnabled) return <></>;
   const capabilities = getProductInventoryCapabilities(inventoryMode, isNew);
   const hideRecipeStock = inventoryMode === "recipe" && !inventoryRecipeEnabled;
@@ -565,91 +471,95 @@ function ProductInventoryFields({
         name="inventory_mode"
         render={({ field: { value, onChange } }) => (
           <View className="gap-1.5">
-            <Label isRequired isInvalid={Boolean(errors.inventory_mode)}>
+            <PanelLabel isRequired isInvalid={Boolean(errors.inventory_mode)}>
               {t("productForm.inventoryMode")}
-            </Label>
-            <Select
-              presentation={choicePresentation}
-              value={modeOptions.find((option) => option.value === value)}
-              onValueChange={(option) => {
-                if (
-                  option?.value === "recipe" &&
-                  !inventoryRecipeEnabled &&
-                  inventoryMode !== "recipe"
-                ) {
+            </PanelLabel>
+            <PanelSelect
+              presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+              value={value}
+              onValueChange={(next) => {
+                if (next === "recipe" && !inventoryRecipeEnabled && inventoryMode !== "recipe")
                   return;
-                }
-                onChange(option?.value ?? "unlimited");
+                onChange(next);
               }}
+              triggerClassName={errors.inventory_mode ? "border-destructive" : undefined}
+              placeholder={t("productForm.inventoryModePlaceholder")}
+              title={t("productForm.inventoryMode")}
             >
-              <Select.Trigger
-                accessibilityLabel={t("productForm.inventoryMode")}
-                className={errors.inventory_mode ? "border-danger" : undefined}
-              >
-                <Select.Value placeholder={t("productForm.inventoryModePlaceholder")} />
-                <Select.TriggerIndicator />
-              </Select.Trigger>
-              <Select.Portal>
-                <Select.Overlay />
-                <Select.Content
-                  presentation={choicePresentation}
-                  width={choicePresentation === "popover" ? "trigger" : undefined}
-                >
-                  <Select.ListLabel>{t("productForm.inventoryMode")}</Select.ListLabel>
-                  {modeOptions.map((option) => (
-                    <Select.Item key={option.value} {...option} />
-                  ))}
-                </Select.Content>
-              </Select.Portal>
-            </Select>
-            <Description>
+              {modeOptions.map((option) => (
+                <PanelSelect.Item key={option.value} {...option} />
+              ))}
+            </PanelSelect>
+            <PanelTypography type="body-xs" muted>
               {t(`productForm.inventoryModeDescriptions.${inventoryMode}` as TranslationKey)}
-            </Description>
+            </PanelTypography>
           </View>
         )}
       />
       {capabilities.showInventoryCost ? (
         <View className="flex-row flex-wrap gap-3">
-          <Controller
-            control={control}
-            name="inventory_cost"
-            render={({ field: { value, onChange } }) => (
-              <RupiahField
-                className="flex-1"
-                label={t("productForm.inventoryCost")}
-                placeholder={t("productForm.inventoryCostPlaceholder")}
-                inputVariant="secondary"
-                value={value}
-                onChange={onChange}
-                minValue={0}
-                isInvalid={Boolean(errors.inventory_cost)}
-              >
-                <Description className={errors.inventory_cost ? "text-danger" : undefined}>
-                  {errors.inventory_cost?.message ?? t("productForm.inventoryCostDescription")}
-                </Description>
-              </RupiahField>
-            )}
+          <PanelInput
+            ref={costRef}
+            containerClassName="flex-1"
+            label={t("productForm.inventoryCost")}
+            placeholder={t("productForm.inventoryCostPlaceholder")}
+            description={t("productForm.inventoryCostDescription")}
+            errorMessage={errors.inventory_cost?.message}
+            variant="filled"
+            keyboardType="numeric"
+            startContent={
+              <PanelTypography type="body-sm" weight="medium" muted>
+                {RUPIAH_PREFIX}
+              </PanelTypography>
+            }
+            interactiveContent={false}
+            {...costInput}
           />
           {capabilities.showStockAlert ? (
-            <Controller
-              control={control}
-              name="stock_alert"
-              render={({ field: { value, onChange } }) => (
-                <ProductNumberStepper
+            <View className="flex-1 gap-2">
+              <View className="flex-row items-end gap-2">
+                <PanelButton
+                  variant="outline"
+                  size="icon"
+                  disabled={Number(alertValue || 0) <= 0}
+                  accessibilityLabel={t("productForm.decreaseAccessibility", {
+                    field: t("productForm.lowStockAlert"),
+                  })}
+                  onPress={() => changeAlert(String(Math.max(0, Number(alertValue || 0) - 1)))}
+                >
+                  -
+                </PanelButton>
+                <PanelInput
+                  className="flex-1"
                   label={t("productForm.lowStockAlert")}
-                  description={t("productForm.lowStockDescription")}
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.stock_alert?.message}
+                  keyboardType="number-pad"
+                  {...alertInput}
+                  errorMessage={errors.stock_alert?.message}
+                  ref={alertRef}
                 />
-              )}
-            />
+                <PanelButton
+                  variant="outline"
+                  size="icon"
+                  accessibilityLabel={t("productForm.increaseAccessibility", {
+                    field: t("productForm.lowStockAlert"),
+                  })}
+                  onPress={() => changeAlert(String(Number(alertValue || 0) + 1))}
+                >
+                  +
+                </PanelButton>
+              </View>
+              {!errors.stock_alert?.message ? (
+                <PanelTypography type="body-xs" muted>
+                  {t("productForm.lowStockDescription")}
+                </PanelTypography>
+              ) : null}
+            </View>
           ) : null}
         </View>
       ) : null}
       {capabilities.showCurrentStock && !hideRecipeStock && inventory ? (
-        <View className="rounded-panel-inner bg-surface-secondary px-4 py-3">
-          <Typography type="body-xs" color="muted">
+        <View className="rounded-xl bg-surface-secondary px-4 py-3">
+          <Typography type="body-xs" muted>
             {t("productForm.currentStock")}
           </Typography>
           <Typography type="body-sm" weight="semibold" className="tabular-nums">
@@ -658,8 +568,8 @@ function ProductInventoryFields({
         </View>
       ) : null}
       {capabilities.showRecipe && inventoryRecipeEnabled && inventory ? (
-        <View className="rounded-panel-inner bg-surface-secondary px-4 py-3">
-          <Typography type="body-xs" color="muted">
+        <View className="rounded-xl bg-surface-secondary px-4 py-3">
+          <Typography type="body-xs" muted>
             {t("productForm.recipeEstimatedUnitCogs")}
           </Typography>
           <Typography type="body-sm" weight="semibold" className="tabular-nums">
@@ -708,9 +618,9 @@ function ProductInventoryActions({
   if (actions.length === 0) return null;
 
   return (
-    <Card.Footer className="flex-row flex-wrap gap-2 pt-0">
+    <Card.Footer className="flex-row flex-wrap gap-2 pt-0 p-0">
       {actions.map((action) => (
-        <Button
+        <PanelButton
           key={action.key}
           size="sm"
           variant="outline"
@@ -719,8 +629,10 @@ function ProductInventoryActions({
           onPress={action.onPress}
         >
           <AppIcon icon={action.icon} size={16} color={themeColorForeground} />
-          <Button.Label numberOfLines={1}>{action.label}</Button.Label>
-        </Button>
+          <PanelTypography type="body-xs" numberOfLines={1}>
+            {action.label}
+          </PanelTypography>
+        </PanelButton>
       ))}
     </Card.Footer>
   );
@@ -830,29 +742,28 @@ function InventoryCard({
   const { t } = useTranslation();
 
   return (
-    <Card className="gap-3 overflow-hidden">
+    <Card className="gap-3 overflow-hidden p-4">
       <SectionHeading
         title={t("productForm.inventoryTitle")}
         description={t("productForm.inventoryDescription")}
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         <Controller
           control={control}
           name="code"
-          render={({ field: { value, onChange } }) => (
-            <TextField isInvalid={!!errors.code}>
-              <Label>{t("productForm.code")}</Label>
-              <Input
-                variant="secondary"
-                placeholder={t("productForm.codePlaceholder")}
-                autoCapitalize="characters"
-                value={value}
-                onChangeText={onChange}
-              />
-              <Description className={errors.code ? "text-danger" : undefined}>
-                {errors.code?.message ?? t("productForm.codeHelp")}
-              </Description>
-            </TextField>
+          render={({ field: { value, onChange, onBlur, ref } }) => (
+            <PanelInput
+              ref={ref}
+              label={t("productForm.code")}
+              placeholder={t("productForm.codePlaceholder")}
+              variant="filled"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              errorMessage={errors.code?.message}
+              autoCapitalize="characters"
+              description={t("productForm.codeHelp")}
+            />
           )}
         />
         <Separator />
@@ -864,7 +775,7 @@ function InventoryCard({
           inventoryEnabled={inventoryEnabled}
           inventoryRecipeEnabled={inventoryRecipeEnabled}
         />
-      </Card.Body>
+      </Card.Content>
       {inventoryEnabled ? (
         <ProductInventoryActions
           control={control}
@@ -895,7 +806,16 @@ function PricingCard({
   onAddDiscount?: () => void;
 }) {
   const { t } = useTranslation();
-  const price = useWatch({ control, name: "price" });
+  const {
+    field: { value: price, onChange: priceChange, onBlur: priceBlur, ref: priceRef },
+  } = useController({ control, name: "price" });
+  const { localizedInputProps: priceInput } = useLocalizedNumberInput({
+    value: price,
+    onChange: priceChange,
+    formatOptions: IDR_NUMBER_FIELD_FORMAT_OPTIONS,
+    minValue: 0,
+    inputProps: { onBlur: priceBlur },
+  });
   const numericPrice = Number(price);
   const discountedPrice =
     discount && Number.isFinite(numericPrice)
@@ -908,31 +828,33 @@ function PricingCard({
       : null;
 
   return (
-    <Card className="gap-3 overflow-hidden">
+    <Card className="gap-3 overflow-hidden p-4">
       <SectionHeading
         title={t("productForm.pricingTitle")}
         description={t("productForm.pricingDescription")}
       />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         <View className="flex-row flex-wrap gap-3">
-          <Controller
-            control={control}
-            name="price"
-            render={({ field: { value, onChange } }) => (
-              <ProductNumberField
-                label={t("productForm.price")}
-                placeholder="0"
-                required
-                value={value}
-                onChangeText={onChange}
-                error={error}
-                step={1000}
-              />
-            )}
+          <PanelInput
+            ref={priceRef}
+            containerClassName="flex-1"
+            label={t("productForm.price")}
+            placeholder="0"
+            errorMessage={error}
+            variant="filled"
+            isRequired
+            keyboardType="numeric"
+            startContent={
+              <PanelTypography type="body-sm" weight="medium" muted>
+                {RUPIAH_PREFIX}
+              </PanelTypography>
+            }
+            interactiveContent={false}
+            {...priceInput}
           />
           {discountedPrice !== null ? (
             <View className="flex-1 gap-1">
-              <Label>{t("productForm.discountPrice")}</Label>
+              <PanelLabel>{t("productForm.discountPrice")}</PanelLabel>
               <Typography type="body-sm" weight="medium">
                 {formatRupiah(discountedPrice)}
               </Typography>
@@ -945,7 +867,7 @@ function PricingCard({
             <ProductDiscountField productId={productId} onAdd={onAddDiscount} />
           </>
         ) : null}
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -1043,103 +965,68 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
 
   return (
     <View className="gap-1.5">
-      <Label>{t("productForm.discountOptional")}</Label>
+      <PanelLabel>{t("productForm.discountOptional")}</PanelLabel>
       <View className="flex-row items-center gap-2">
-        <ProductDiscountSelect
-          choicePresentation={choicePresentation}
-          selectedOption={selectedOption}
-          discountOptions={discountOptions}
-          isDisabled={
+        <PanelSelect
+          presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+          value={selectedOption?.value}
+          valueLabel={selectedOption?.label}
+          placeholder={t("productForm.selectDiscount")}
+          title={t("productForm.discountOptional")}
+          onValueChange={(value) => void handleChange(value)}
+          disabled={
             discountsQuery.isLoading ||
             discountsQuery.isError ||
             discountOptions.length === 0 ||
             setProductDiscount.isPending
           }
-          onChange={handleChange}
-        />
-        <Button
+          className="flex-1"
+        >
+          {discountOptions.map((option) => (
+            <PanelSelect.Item
+              key={option.value}
+              value={option.value}
+              label={`${option.label} · ${option.description}`}
+            />
+          ))}
+        </PanelSelect>
+        <PanelButton
           variant="ghost"
-          isIconOnly
+          size="icon"
+
           accessibilityLabel={t("productForm.addDiscountAccessibility")}
           onPress={onAdd}
-          isDisabled={setProductDiscount.isPending}
+          disabled={setProductDiscount.isPending}
         >
           <AppIcon icon={AppIcons.add} size={18} color={themeColorForeground} />
-        </Button>
+        </PanelButton>
         {currentDiscount ? (
-          <Button
+          <PanelButton
             variant="ghost"
-            isIconOnly
+            size="icon"
+
             accessibilityLabel={t("productForm.removeDiscountAccessibility")}
             onPress={() => void handleRemove()}
-            isDisabled={setProductDiscount.isPending}
+            disabled={setProductDiscount.isPending}
           >
             <AppIcon icon={AppIcons.close} size={18} color={themeColorMuted} />
-          </Button>
+          </PanelButton>
         ) : null}
       </View>
       {discountsQuery.isLoading ? (
-        <Description>{t("productForm.discountLoading")}</Description>
+        <PanelTypography type="body-xs" muted>
+          {t("productForm.discountLoading")}
+        </PanelTypography>
       ) : discountsQuery.isError ? (
-        <Description isInvalid>{t("productForm.discountUnavailable")}</Description>
+        <PanelTypography type="body-xs" className="text-destructive">
+          {t("productForm.discountUnavailable")}
+        </PanelTypography>
       ) : (
-        <Description>{t("productForm.discountHelp")}</Description>
+        <PanelTypography type="body-xs" muted>
+          {t("productForm.discountHelp")}
+        </PanelTypography>
       )}
     </View>
-  );
-}
-
-function ProductDiscountSelect({
-  choicePresentation,
-  selectedOption,
-  discountOptions,
-  isDisabled,
-  onChange,
-}: {
-  choicePresentation: OverlayChoicePresentation;
-  selectedOption?: ProductDiscountOption;
-  discountOptions: ProductDiscountOption[];
-  isDisabled: boolean;
-  onChange: (value?: string) => void;
-}): React.JSX.Element {
-  const { t } = useTranslation();
-
-  return (
-    <Select
-      presentation={choicePresentation}
-      value={selectedOption}
-      onValueChange={(option) => onChange(option?.value)}
-      isDisabled={isDisabled}
-      className="flex-1"
-    >
-      <Select.Trigger accessibilityLabel={t("productForm.discountOptional")} className="flex-1">
-        <Select.Value placeholder={t("productForm.selectDiscount")} numberOfLines={1} />
-        <Select.TriggerIndicator />
-      </Select.Trigger>
-      <Select.Portal>
-        <Select.Overlay />
-        <Select.Content
-          presentation={choicePresentation}
-          width={choicePresentation === "popover" ? "trigger" : undefined}
-        >
-          {discountOptions.length ? (
-            discountOptions.map((option) => (
-              <Select.Item key={option.value} value={option.value} label={option.label}>
-                {() => (
-                  <>
-                    <Select.ItemLabel />
-                    <Select.ItemDescription>{option.description}</Select.ItemDescription>
-                    <Select.ItemIndicator />
-                  </>
-                )}
-              </Select.Item>
-            ))
-          ) : (
-            <Select.ListLabel>{t("productForm.noDiscounts")}</Select.ListLabel>
-          )}
-        </Select.Content>
-      </Select.Portal>
-    </Select>
   );
 }
 
@@ -1147,9 +1034,9 @@ function AvailabilityCard({ control }: { control: Control<ProductFormValues> }) 
   const { t } = useTranslation();
 
   return (
-    <Card className="gap-3 overflow-hidden">
+    <Card className="gap-3 overflow-hidden p-4">
       <SectionHeading title={t("productForm.availabilityTitle")} />
-      <Card.Body className="gap-4">
+      <Card.Content className="gap-4 p-0">
         <Controller
           control={control}
           name="active"
@@ -1162,7 +1049,7 @@ function AvailabilityCard({ control }: { control: Control<ProductFormValues> }) 
             />
           )}
         />
-      </Card.Body>
+      </Card.Content>
     </Card>
   );
 }
@@ -1180,30 +1067,28 @@ function SaveProductCard({
   isSaving: boolean;
   serverError?: string;
   onCancel: () => void;
-  onSubmit: React.ComponentProps<typeof Button>["onPress"];
+  onSubmit: React.ComponentProps<typeof PanelButton>["onPress"];
 }) {
   const { t } = useTranslation();
 
   return (
     <View className="flex-1 gap-3 pt-2">
       {serverError ? (
-        <Typography type="body-xs" className="text-danger">
+        <Typography type="body-xs" className="text-destructive-foreground">
           {serverError}
         </Typography>
       ) : null}
       <View className="flex-row gap-3">
-        <Button variant="ghost" onPress={onCancel} isDisabled={isSaving}>
-          <Button.Label>{t("common.cancel")}</Button.Label>
-        </Button>
-        <Button className="flex-1" onPress={onSubmit} isDisabled={isSaving}>
-          <Button.Label>
-            {isSaving
-              ? t("common.saving")
-              : isNew
-                ? t("productForm.create")
-                : t("productForm.saveChanges")}
-          </Button.Label>
-        </Button>
+        <PanelButton variant="ghost" onPress={onCancel} disabled={isSaving}>
+          {t("common.cancel")}
+        </PanelButton>
+        <PanelButton className="flex-1" onPress={onSubmit} disabled={isSaving}>
+          {isSaving
+            ? t("common.saving")
+            : isNew
+              ? t("productForm.create")
+              : t("productForm.saveChanges")}
+        </PanelButton>
       </View>
     </View>
   );
@@ -1487,12 +1372,22 @@ function ProductFormContent({
         />
       ) : null}
 
-      <DeleteProductDialog
-        isOpen={isDeleteOpen}
-        isDeleting={isDeleting}
-        onOpenChange={onDeleteChange}
-        onDelete={onDelete}
-      />
+      <PanelDialog open={isDeleteOpen} onOpenChange={onDeleteChange}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("productForm.deleteTitle")}</PanelDialog.Title>
+          <PanelDialog.Description>{t("productForm.deleteDescription")}</PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton variant="destructive" size="sm" disabled={isDeleting} onPress={onDelete}>
+              {isDeleting ? t("common.deleting") : t("common.delete")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }
@@ -1534,20 +1429,60 @@ function getProductFormLoadState({
   t: Translate;
 }): React.JSX.Element | null {
   if (!isNew && productQuery.isLoading) {
-    return <LoadingState message={t("productForm.loading")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("productForm.loading")}
+        </PanelLoadingText>
+      </View>
+    );
   }
 
   if (!isNew && productQuery.isError) {
-    return <ErrorState error={productQuery.error} onRetry={productQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(productQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void productQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   if (!isNew && inventoryEnabled && productInventoryQuery.isLoading) {
-    return <LoadingState message={t("productForm.inventoryLoading")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("productForm.inventoryLoading")}
+        </PanelLoadingText>
+      </View>
+    );
   }
 
   if (!isNew && inventoryEnabled && productInventoryQuery.isError) {
     return (
-      <ErrorState error={productInventoryQuery.error} onRetry={productInventoryQuery.refetch} />
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(productInventoryQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void productInventoryQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
     );
   }
 

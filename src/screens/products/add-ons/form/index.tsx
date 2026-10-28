@@ -1,9 +1,13 @@
-import { useToast } from "panelui-native";
+import { Typography ,
+  Spinner as PanelLoadingSpinner,
+  Typography as PanelLoadingText,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  useToast,
+  Alert as PanelErrorAlert,
+  Button as PanelErrorButton, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
-import ActionDialog from "@/components/common/action-dialog";
-import ErrorState from "@/components/common/error-state";
-import LoadingState from "@/components/common/loading-state";
 import { useAddOn, useCreateAddOn, useDeleteAddOn, useUpdateAddOn } from "@/hooks/db/use-add-ons";
 import {
   createAddOnManagementSchema,
@@ -13,7 +17,6 @@ import {
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Card, Typography } from "heroui-native";
 import React from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { View } from "react-native";
@@ -92,10 +95,31 @@ export default function AddOnFormScreen(): React.JSX.Element {
   }, [addOnQuery.data, isNew, reset]);
 
   if (!isNew && addOnQuery.isLoading) {
-    return <LoadingState message={t("addOnManagement.loadingOne")} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 py-20">
+        <PanelLoadingSpinner />
+        <PanelLoadingText type="body-sm" muted>
+          {t("addOnManagement.loadingOne")}
+        </PanelLoadingText>
+      </View>
+    );
   }
   if (!isNew && addOnQuery.isError) {
-    return <ErrorState error={addOnQuery.error} onRetry={addOnQuery.refetch} />;
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+        <PanelErrorAlert variant="destructive">
+          <PanelErrorAlert.Indicator />
+          <PanelErrorAlert.Content>
+            <PanelErrorAlert.Description>
+              {getErrorMessage(addOnQuery.error)}
+            </PanelErrorAlert.Description>
+          </PanelErrorAlert.Content>
+        </PanelErrorAlert>
+        <PanelErrorButton variant="outline" onPress={() => void addOnQuery.refetch()}>
+          {t("common.retry")}
+        </PanelErrorButton>
+      </View>
+    );
   }
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -168,14 +192,14 @@ export default function AddOnFormScreen(): React.JSX.Element {
         <View className="w-full max-w-3xl gap-4">
           <SelectionRulesCard control={control} errors={errors} setValue={setValue} />
 
-          <Card className="gap-3">
-            <Card.Header>
+          <Card className="gap-3 p-4">
+            <Card.Header className="p-0">
               <View className="gap-1">
                 <Card.Title>{t("addOnManagement.options")}</Card.Title>
                 <Card.Description>{t("addOnManagement.optionsDescription")}</Card.Description>
               </View>
             </Card.Header>
-            <Card.Body className="gap-3">
+            <Card.Content className="gap-3 p-0">
               {fields.map((field, index) => (
                 <OptionRow
                   key={field.id}
@@ -194,47 +218,58 @@ export default function AddOnFormScreen(): React.JSX.Element {
                 />
               ))}
               {errors.options?.root?.message ? (
-                <Typography type="body-xs" className="text-danger">
+                <Typography type="body-xs" className="text-destructive-foreground">
                   {errors.options.root.message}
                 </Typography>
               ) : null}
-              <Button variant="outline" onPress={() => append(EMPTY_OPTION)}>
+              <PanelButton variant="outline" onPress={() => append(EMPTY_OPTION)}>
                 <AppIcon icon={AppIcons.add} size={16} color={foregroundColor} />
-                <Button.Label>{t("addOnManagement.addOption")}</Button.Label>
-              </Button>
-            </Card.Body>
+                {t("addOnManagement.addOption")}
+              </PanelButton>
+            </Card.Content>
           </Card>
 
           <View className="flex-1 gap-3">
             {errors.root?.server?.message ? (
-              <Typography type="body-sm" className="text-danger">
+              <Typography type="body-sm" className="text-destructive-foreground">
                 {errors.root.server.message}
               </Typography>
             ) : null}
             <View className="flex-row gap-3 pt-2">
-              <Button variant="ghost" onPress={() => router.back()}>
-                <Button.Label>{t("common.cancel")}</Button.Label>
-              </Button>
-              <Button className="flex-1" onPress={handleSubmit(submitAddOn)} isDisabled={isSaving}>
-                <Button.Label>
-                  {isSaving ? t("common.saving") : t("addOnManagement.save")}
-                </Button.Label>
-              </Button>
+              <PanelButton variant="ghost" onPress={() => router.back()}>
+                {t("common.cancel")}
+              </PanelButton>
+              <PanelButton className="flex-1" onPress={handleSubmit(submitAddOn)} disabled={isSaving}>
+                {isSaving ? t("common.saving") : t("addOnManagement.save")}
+              </PanelButton>
             </View>
           </View>
         </View>
       </KeyboardAwareScrollView>
 
-      <ActionDialog
-        isOpen={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        title={t("addOnManagement.deleteTitle")}
-        description={t("addOnManagement.deleteDescription")}
-        actionLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-        actionVariant="danger"
-        isActionDisabled={deleteMutation.isPending}
-        onAction={handleDelete}
-      />
+      <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <PanelDialog.Content>
+          <PanelDialog.Title>{t("addOnManagement.deleteTitle")}</PanelDialog.Title>
+          <PanelDialog.Description>
+            {t("addOnManagement.deleteDescription")}
+          </PanelDialog.Description>
+          <PanelDialog.Footer>
+            <PanelDialog.Close>
+              <PanelButton variant="ghost" size="sm">
+                {t("common.cancel")}
+              </PanelButton>
+            </PanelDialog.Close>
+            <PanelButton
+              variant="destructive"
+              size="sm"
+              disabled={deleteMutation.isPending}
+              onPress={handleDelete}
+            >
+              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+            </PanelButton>
+          </PanelDialog.Footer>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

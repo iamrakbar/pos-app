@@ -1,8 +1,13 @@
+import {
+  Surface,
+  Typography,
+  Button as PanelDialogButton,
+  Dialog as PanelDialog,
+  Input as PanelInput,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
-import ActionDialog from "@/components/common/action-dialog";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import DialogCloseButton from "@/components/common/dialog-close-button";
 import { useAuth } from "@/stores/use-auth";
 import { useCartStore } from "@/stores/use-cart-store";
 import { useParkedOrdersStore } from "@/stores/use-parked-orders-store";
@@ -10,7 +15,6 @@ import { usePOSStore } from "@/stores/use-pos-store";
 import { resetCurrentOrder } from "@/stores/reset-current-order";
 import { formatTime } from "@/utils/format";
 import type { ParkedOrder } from "@/types/parked-order";
-import { Button, Dialog, Input, Label, Surface, TextField, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { useState } from "react";
 import { View } from "react-native";
@@ -95,125 +99,187 @@ export default function ParkedOrdersPanel({
 
   return (
     <>
-      <Button
+      <PanelDialogButton
         variant={mode === "park" ? "ghost" : "secondary"}
-        size="sm"
-        isIconOnly={mode === "park"}
-        isDisabled={isDisabled || !merchantId}
+        size={mode === "park" ? "icon" : "sm"}
+        disabled={isDisabled || !merchantId}
         onPress={openPanel}
         accessibilityLabel={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
+        startContent={
+          mode === "list" ? (
+            <AppIcon icon={AppIcons.queue} size={18} color={colorAcent} />
+          ) : undefined
+        }
       >
         {mode === "list" ? (
-          <>
-            <AppIcon icon={AppIcons.queue} size={18} color={colorAcent} />
-            <Button.Label>{merchantDrafts.length}</Button.Label>
-          </>
+          String(merchantDrafts.length)
         ) : (
           <AppIcon icon={AppIcons.save} size={21} color={colorMuted} />
         )}
-      </Button>
+      </PanelDialogButton>
 
-      <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content className="w-full max-w-md self-center">
-            <DialogCloseButton />
-            <Dialog.Title className="pr-10">
-              {mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
-            </Dialog.Title>
-            <Dialog.Description>
-              {mode === "park" ? t("pos.parkOrderDescription") : t("pos.parkedOrdersDescription")}
-            </Dialog.Description>
+      <PanelDialog open={isOpen} onOpenChange={setIsOpen}>
+        <PanelDialog.Content className="w-full max-w-md self-center">
+          <PanelDialogButton
+            variant="ghost"
+            size="icon"
+            accessibilityLabel={t("common.close")}
+            className="absolute right-3 top-3 z-50"
+            onPress={() => setIsOpen(false)}
+          >
+            ×
+          </PanelDialogButton>
+          <PanelDialog.Title className="pr-10">
+            {mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
+          </PanelDialog.Title>
+          <PanelDialog.Description>
+            {mode === "park" ? t("pos.parkOrderDescription") : t("pos.parkedOrdersDescription")}
+          </PanelDialog.Description>
 
-            {mode === "park" ? (
-              <View className="mt-5 gap-4">
-                <TextField>
-                  <Label>{t("pos.parkedOrderName")}</Label>
-                  <Input
-                    value={label}
-                    onChangeText={setLabel}
-                    placeholder={t("pos.parkedOrderNamePlaceholder")}
-                    returnKeyType="done"
-                  />
-                </TextField>
-                <Button onPress={handlePark}>
-                  <Button.Label>{t("pos.parkOrder")}</Button.Label>
-                </Button>
-              </View>
-            ) : (
-              <View className="mt-5 gap-3">
-                {merchantDrafts.length === 0 ? (
-                  <Surface variant="secondary" className="items-center gap-1 p-5">
-                    <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
-                    <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
-                    <Typography type="body-sm" color="muted" className="text-center">
-                      {t("pos.parkedOrdersEmptyDescription")}
-                    </Typography>
-                  </Surface>
-                ) : (
-                  merchantDrafts.map((draft) => (
-                    <Surface
-                      key={draft.id}
-                      variant="secondary"
-                      className="flex-row items-center gap-3 p-3"
+          {mode === "park" ? (
+            <View className="mt-5 gap-4">
+              <PanelInput
+                label={t("pos.parkedOrderName")}
+                value={label}
+                onChangeText={setLabel}
+                placeholder={t("pos.parkedOrderNamePlaceholder")}
+                returnKeyType="done"
+              />
+              <PanelDialogButton onPress={handlePark}>{t("pos.parkOrder")}</PanelDialogButton>
+            </View>
+          ) : (
+            <View className="mt-5 gap-3">
+              {merchantDrafts.length === 0 ? (
+                <Surface variant="secondary" className="items-center gap-1 p-5">
+                  <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
+                  <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
+                  <Typography type="body-sm" muted className="text-center">
+                    {t("pos.parkedOrdersEmptyDescription")}
+                  </Typography>
+                </Surface>
+              ) : (
+                merchantDrafts.map((draft) => (
+                  <Surface
+                    key={draft.id}
+                    variant="secondary"
+                    className="flex-row items-center gap-3 p-3"
+                  >
+                    <View className="min-w-0 flex-1 gap-0.5">
+                      <Typography weight="semibold" numberOfLines={1}>
+                        {draft.label}
+                      </Typography>
+                      <Typography type="body-xs" muted>
+                        {t("pos.parkedOrderMeta", {
+                          count: draft.cart.products.reduce((total, item) => total + item.qty, 0),
+                          time: formatDraftTime(draft.updated_at),
+                        })}
+                      </Typography>
+                    </View>
+                    <PanelDialogButton
+                      size="sm"
+                      variant="primary"
+                      onPress={() => handleRestore(draft)}
                     >
-                      <View className="min-w-0 flex-1 gap-0.5">
-                        <Typography weight="semibold" numberOfLines={1}>
-                          {draft.label}
-                        </Typography>
-                        <Typography type="body-xs" color="muted">
-                          {t("pos.parkedOrderMeta", {
-                            count: draft.cart.products.reduce((total, item) => total + item.qty, 0),
-                            time: formatDraftTime(draft.updated_at),
-                          })}
-                        </Typography>
-                      </View>
-                      <Button size="sm" variant="primary" onPress={() => handleRestore(draft)}>
-                        <Button.Label>{t("pos.resumeOrder")}</Button.Label>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger-soft"
-                        onPress={() => setDeleteTarget(draft)}
-                        accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
-                      >
-                        <AppIcon icon={AppIcons.trash} size={17} color={colorDanger} />
-                      </Button>
-                    </Surface>
-                  ))
-                )}
-              </View>
-            )}
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+                      {t("pos.resumeOrder")}
+                    </PanelDialogButton>
+                    <PanelDialogButton
+                      size="icon"
+                      variant="ghost"
+                      onPress={() => setDeleteTarget(draft)}
+                      accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
+                    >
+                      <AppIcon icon={AppIcons.trash} size={17} color={colorDanger} />
+                    </PanelDialogButton>
+                  </Surface>
+                ))
+              )}
+            </View>
+          )}
+        </PanelDialog.Content>
+      </PanelDialog>
 
-      <ActionDialog
-        isOpen={deleteTarget !== null}
+      <PanelDialog
+        open={deleteTarget !== null}
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
-        title={t("pos.deleteParkedOrderTitle")}
-        description={t("pos.deleteParkedOrderDescription", { label: deleteTarget?.label ?? "" })}
-        actionLabel={t("common.delete")}
-        actionVariant="danger"
-        onAction={() => {
-          if (merchantId && deleteTarget) removeOrder(merchantId, deleteTarget.id);
-          setDeleteTarget(null);
-        }}
-      />
+      >
+        <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
+          <PanelDialogButton
+            variant="ghost"
+            size="icon"
+            accessibilityLabel={t("common.close")}
+            className="absolute right-3 top-3 z-50"
+            onPress={() => setDeleteTarget(null)}
+          >
+            ×
+          </PanelDialogButton>
+          <View className="mb-5 gap-1.5">
+            <View className="pr-10">
+              <PanelDialog.Title>{t("pos.deleteParkedOrderTitle")}</PanelDialog.Title>
+            </View>
+            <PanelDialog.Description>
+              {t("pos.deleteParkedOrderDescription", { label: deleteTarget?.label ?? "" })}
+            </PanelDialog.Description>
+          </View>
+          <View className="flex-row items-center gap-3">
+            <PanelDialogButton variant="ghost" size="sm" onPress={() => setDeleteTarget(null)}>
+              {t("common.cancel")}
+            </PanelDialogButton>
+            <PanelDialogButton
+              variant="destructive"
+              size="sm"
+              className="flex-1"
+              onPress={() => {
+                if (merchantId && deleteTarget) removeOrder(merchantId, deleteTarget.id);
+                setDeleteTarget(null);
+              }}
+            >
+              {t("common.delete")}
+            </PanelDialogButton>
+          </View>
+        </PanelDialog.Content>
+      </PanelDialog>
 
-      <ActionDialog
-        isOpen={restoreTarget !== null}
+      <PanelDialog
+        open={restoreTarget !== null}
         onOpenChange={(open) => {
           if (!open) setRestoreTarget(null);
         }}
-        title={t("pos.replaceActiveOrderTitle")}
-        description={t("pos.replaceActiveOrderDescription")}
-        actionLabel={t("pos.clearAndResume")}
-        actionVariant="danger"
-        onAction={confirmRestoreAfterClear}
-      />
+      >
+        <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
+          <PanelDialogButton
+            variant="ghost"
+            size="icon"
+            accessibilityLabel={t("common.close")}
+            className="absolute right-3 top-3 z-50"
+            onPress={() => setRestoreTarget(null)}
+          >
+            ×
+          </PanelDialogButton>
+          <View className="mb-5 gap-1.5">
+            <View className="pr-10">
+              <PanelDialog.Title>{t("pos.replaceActiveOrderTitle")}</PanelDialog.Title>
+            </View>
+            <PanelDialog.Description>
+              {t("pos.replaceActiveOrderDescription")}
+            </PanelDialog.Description>
+          </View>
+          <View className="flex-row items-center gap-3">
+            <PanelDialogButton variant="ghost" size="sm" onPress={() => setRestoreTarget(null)}>
+              {t("common.cancel")}
+            </PanelDialogButton>
+            <PanelDialogButton
+              variant="destructive"
+              size="sm"
+              className="flex-1"
+              onPress={confirmRestoreAfterClear}
+            >
+              {t("pos.clearAndResume")}
+            </PanelDialogButton>
+          </View>
+        </PanelDialog.Content>
+      </PanelDialog>
     </>
   );
 }

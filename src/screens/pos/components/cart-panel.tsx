@@ -1,7 +1,7 @@
+import { Separator } from "panelui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
 import CartContent from "./cart-content";
-import { Separator } from "heroui-native";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 
 export default function CartPanel(): JSX.Element {
