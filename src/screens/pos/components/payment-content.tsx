@@ -317,11 +317,18 @@ function PaymentContentFooter({
         </PanelDialogButton>
         <PanelDialogButton className="flex-1" onPress={onCheck} disabled={paymentStatus.isPending}>
           {paymentStatus.isPending ? (
-            <ActivityIndicator color={primaryForegroundColor} />
+            <>
+              <ActivityIndicator color={primaryForegroundColor} />
+              <PanelTypography type="body-sm" weight="semibold" className="text-primary-foreground">
+                {t("payment.checking")}
+              </PanelTypography>
+            </>
           ) : (
             <>
               <AppIcon icon={AppIcons.refresh} size={16} color={primaryForegroundColor} />
-              {t("payment.checkStatus")}
+              <PanelTypography type="body-sm" weight="semibold" className="text-primary-foreground">
+                {t("payment.checkStatus")}
+              </PanelTypography>
             </>
           )}
         </PanelDialogButton>
@@ -412,8 +419,8 @@ export function PaymentContent({
             </Typography>
           </View>
           <PanelDialogButton
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             accessibilityLabel={t("common.close")}
             onPress={requestClose}
           >

@@ -81,7 +81,9 @@ export default function FloatingCartButton(): JSX.Element | null {
             <AppIcon icon={AppIcons.cart} size={18} color={foreground} />
             <Typography className="text-primary-foreground">{displayItemsLabel}</Typography>
           </View>
-          <Typography className="text-primary-foreground tabular-nums">{formatRupiah(subtotal)}</Typography>
+          <Typography className="text-primary-foreground tabular-nums">
+            {formatRupiah(subtotal)}
+          </Typography>
         </Button>
       </Animated.View>
     </View>

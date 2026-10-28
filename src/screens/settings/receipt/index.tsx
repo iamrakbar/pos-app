@@ -25,6 +25,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate, TranslationKey } from "@/locales";
@@ -218,6 +219,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
+  const insets = useSafeAreaInsets();
   const activeMerchant = useAuth((state) => state.activeMerchant);
   const merchantProfile = useMerchantProfile();
   const settings = useReceiptStore((state) => state.settings);
@@ -330,10 +332,13 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
               surfaceColor={themeColorSurfaceSecondary}
             />
 
-            <View className="min-h-0 flex-1 bg-surface overflow-hidden p-0">
+            <View
+              className="min-h-0 flex-1 overflow-hidden bg-surface"
+              style={{ paddingRight: isPortrait ? 0 : insets.right, paddingBottom: insets.bottom }}
+            >
               <KeyboardAwareScrollView
                 className="flex-1"
-                contentContainerClassName="px-5 pt-5"
+                contentContainerClassName="px-5 pb-6 pt-5"
                 bottomOffset={88}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
@@ -442,7 +447,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   />
                 </View>
               </KeyboardAwareScrollView>
-              <View className="bg-surface px-5 py-4 pb-safe">
+              <View className="bg-surface px-5 py-4">
                 <PanelButton className="w-full" onPress={() => router.back()}>
                   {t("common.done")}
                 </PanelButton>

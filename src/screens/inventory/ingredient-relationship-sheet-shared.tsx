@@ -21,7 +21,7 @@ export function SheetHeader({
   const { t } = useTranslation();
 
   return (
-    <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+    <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
       <View className="flex-row items-start gap-3">
         <View className="min-w-0 flex-1 gap-1">
           <Typography type="h4" weight="semibold">

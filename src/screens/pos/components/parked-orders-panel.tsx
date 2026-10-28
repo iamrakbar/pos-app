@@ -100,8 +100,9 @@ export default function ParkedOrdersPanel({
   return (
     <>
       <PanelDialogButton
-        variant={mode === "park" ? "ghost" : "secondary"}
-        size={mode === "park" ? "icon" : "sm"}
+        variant={mode === "park" ? "ghost" : "outline"}
+        size={mode === "park" ? "icon" : "md"}
+        className="h-12"
         disabled={isDisabled || !merchantId}
         onPress={openPanel}
         accessibilityLabel={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
@@ -112,7 +113,9 @@ export default function ParkedOrdersPanel({
         }
       >
         {mode === "list" ? (
-          String(merchantDrafts.length)
+          <Typography type="body-sm" weight="semibold" className="tabular-nums">
+            {String(merchantDrafts.length)}
+          </Typography>
         ) : (
           <AppIcon icon={AppIcons.save} size={21} color={colorMuted} />
         )}
@@ -127,7 +130,7 @@ export default function ParkedOrdersPanel({
             className="absolute right-3 top-3 z-50"
             onPress={() => setIsOpen(false)}
           >
-            ×
+            <AppIcon icon={AppIcons.close} size={20} />
           </PanelDialogButton>
           <PanelDialog.Title className="pr-10">
             {mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
@@ -212,7 +215,7 @@ export default function ParkedOrdersPanel({
             className="absolute right-3 top-3 z-50"
             onPress={() => setDeleteTarget(null)}
           >
-            ×
+            <AppIcon icon={AppIcons.close} size={20} />
           </PanelDialogButton>
           <View className="mb-5 gap-1.5">
             <View className="pr-10">
@@ -255,7 +258,7 @@ export default function ParkedOrdersPanel({
             className="absolute right-3 top-3 z-50"
             onPress={() => setRestoreTarget(null)}
           >
-            ×
+            <AppIcon icon={AppIcons.close} size={20} />
           </PanelDialogButton>
           <View className="mb-5 gap-1.5">
             <View className="pr-10">

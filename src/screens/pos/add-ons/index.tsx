@@ -5,7 +5,6 @@ import {
   Typography as PanelTypography,
   Chip as PanelChip,
   Button,
-  Surface,
   Separator,
   RadioGroup as PanelRadioGroup,
   Alert,
@@ -69,7 +68,11 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
                     ? `+${formatRupiah(option.price)}`
                     : t("addOns.noAdditionalCharge")
                 }`}
-                className="min-h-15 px-4 py-3"
+                className={
+                  field.value === option.id
+                    ? "min-h-16 border-2 border-primary bg-primary/10 px-4 py-3"
+                    : "min-h-16 border border-border px-4 py-3"
+                }
               />
             ))}
           </PanelRadioGroup>
@@ -88,15 +91,20 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
         const hasLimit = group.max > 0;
 
         return (
-          <Surface padding="none" className="w-full overflow-hidden">
-            {group.options.map((option, index) => {
+          <View className="w-full gap-2">
+            {group.options.map((option) => {
               const isSelected = selectedIds.has(option.id);
               const isDisabled = !isSelected && hasLimit && selected.length >= group.max;
 
               return (
                 <React.Fragment key={option.id}>
-                  {index > 0 ? <Separator /> : null}
                   <PanelCheckbox
+                    variant="card"
+                    className={
+                      isSelected
+                        ? "min-h-16 border-2 border-primary bg-primary/10"
+                        : "min-h-16 border border-border"
+                    }
                     checked={isSelected}
                     disabled={isDisabled}
                     onCheckedChange={() =>
@@ -117,7 +125,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
                 </React.Fragment>
               );
             })}
-          </Surface>
+          </View>
         );
       }}
     />
@@ -242,7 +250,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
 
   const header = (
     <View className="bg-surface">
-      <View className="gap-1 px-5 pb-4 pt-safe">
+      <View className="gap-2 px-6 pb-5 pt-8">
         <PanelTypography type="h4" weight="semibold" numberOfLines={1}>
           {product?.name ?? t("addOns.customizeProduct")}
         </PanelTypography>
@@ -315,8 +323,8 @@ export default function POSAddOnSheet(): React.JSX.Element {
         showsVerticalScrollIndicator
         contentContainerStyle={{
           gap: 24,
-          paddingHorizontal: 20,
-          paddingTop: 20,
+          paddingHorizontal: 24,
+          paddingTop: 24,
           paddingBottom: 24,
         }}
         ListHeaderComponent={

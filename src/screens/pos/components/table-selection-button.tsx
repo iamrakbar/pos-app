@@ -20,9 +20,10 @@ export default function TableSelectionButton({
 
   return (
     <Button
-      variant="secondary"
-      size="sm"
-      className="min-w-20 flex-1 items-center justify-between"
+      variant="outline"
+      size="md"
+      className="h-12 min-w-0 flex-1"
+      startContent={<AppIcon icon={AppIcons.diningTable} size={18} color={colorAccent} />}
       onPress={() => router.push("/pos/table-selection")}
       accessibilityLabel={
         selectedTable
@@ -30,8 +31,7 @@ export default function TableSelectionButton({
           : t("pos.selectTable")
       }
     >
-      <AppIcon icon={AppIcons.diningTable} size={18} color={colorAccent} />
-      <Typography type="body-sm" className="text-secondary-foreground" numberOfLines={1}>
+      <Typography type="body-sm" numberOfLines={1} className="min-w-0 flex-1">
         {selectedTable?.name ?? t("pos.table")}
       </Typography>
     </Button>

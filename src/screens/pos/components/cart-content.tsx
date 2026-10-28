@@ -75,10 +75,10 @@ function CartOrderControls({
     : undefined;
 
   return (
-    <View className="h-12 flex-row items-center gap-2">
+    <View className="h-12 min-w-0 flex-1 flex-row items-center gap-2">
       <PanelSelect
         triggerClassName="h-12"
-        className={choicePresentation === "popover" ? "w-44 shrink-0" : "min-w-0 flex-1"}
+        className={choicePresentation === "popover" ? "w-32 shrink-0" : "min-w-0 flex-1"}
         presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
         value={checkoutForm.order_type}
         size="md"
@@ -120,8 +120,9 @@ function CartOrderControls({
           }}
         >
           <PanelButton
-            variant="secondary"
-            size="sm"
+            variant="outline"
+            size="md"
+            className="h-12"
             endContent={<AppIcon icon={AppIcons.time} size={12} color={colorAccent} />}
           >
             {checkoutForm.pickup_time ?? t("pos.pickupTime")}
@@ -162,18 +163,18 @@ function CartHeader({
     <View className="flex-row items-center justify-between gap-2 px-4 py-4">
       {isLoading ? (
         <>
-          <View className="h-12 flex-row items-center gap-2">
-            <Skeleton className="h-10 w-24 rounded-md" />
+          <View className="h-12 min-w-0 flex-1 flex-row items-center gap-2">
+            <Skeleton className="h-12 w-24 rounded-md" />
             <Skeleton
               className={
                 checkoutForm.order_type === "dine-in"
-                  ? "h-10 min-w-20 flex-1 rounded-md"
-                  : "h-10 w-28 rounded-full"
+                  ? "h-12 min-w-20 flex-1 rounded-md"
+                  : "h-12 w-28 rounded-full"
               }
             />
-            <Skeleton className="h-10 w-10 rounded-md" />
+            <Skeleton className="h-12 w-12 rounded-md" />
           </View>
-          {cartProducts.length > 0 ? <Skeleton className="h-10 w-10 rounded-md" /> : null}
+          {cartProducts.length > 0 ? <Skeleton className="h-12 w-12 rounded-md" /> : null}
         </>
       ) : (
         <>
@@ -191,6 +192,7 @@ function CartHeader({
             <PanelButton
               variant="ghost"
               size="icon"
+              className="h-12 w-12"
               accessibilityLabel={t("pos.clearCart")}
               onPress={resetCurrentOrder}
             >

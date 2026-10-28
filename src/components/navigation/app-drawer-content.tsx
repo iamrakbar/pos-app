@@ -1,4 +1,13 @@
-import { Surface , Typography , Button as PanelButton, Dialog as PanelDialog, ScrollFade, Avatar as PanelAvatar, Popover as PanelPopover, cn } from "panelui-native";
+import {
+  Surface,
+  Typography,
+  Button as PanelButton,
+  Dialog as PanelDialog,
+  ScrollFade,
+  Avatar as PanelAvatar,
+  Popover as PanelPopover,
+  cn,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import Logo from "@/components/common/logo";
 import { useAccountProfile } from "@/hooks/db/use-account-profile";
@@ -13,6 +22,7 @@ import type { DrawerContentComponentProps } from "expo-router/drawer";
 import type { ComponentProps, JSX } from "react";
 import { Fragment, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { hasMerchantFeature } from "@/utils/merchant-features";
 
@@ -69,6 +79,7 @@ export default function AppDrawerContent({
   ]) as [string, string, string, string, string];
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+  const insets = useSafeAreaInsets();
   const { data: user } = useAccountProfile();
   const { data: merchantProfile } = useMerchantProfile();
   const logout = useAuth((s) => s.logout);
@@ -101,7 +112,10 @@ export default function AppDrawerContent({
   ];
 
   return (
-    <View className="flex-1 justify-between pt-safe bg-background">
+    <View
+      className="flex-1 justify-between bg-background"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
       <View className="px-6 py-4 landscape:pb-3">
         <Logo tintColor={themeColorAccent} />
       </View>
@@ -194,7 +208,9 @@ export default function AppDrawerContent({
                 variant={isProfileOpen ? "default" : "transparent"}
                 className="min-h-12 flex-row items-center gap-3 px-3 py-2"
               >
-                <PanelAvatar fallback={(user?.name || activeMerchant?.name || "SO").slice(0, 2).toUpperCase()} />
+                <PanelAvatar
+                  fallback={(user?.name || activeMerchant?.name || "SO").slice(0, 2).toUpperCase()}
+                />
                 <View className="flex-1">
                   <Typography weight="semibold" numberOfLines={1}>
                     {user?.name ?? t("profile.account")}
@@ -211,58 +227,58 @@ export default function AppDrawerContent({
               </Surface>
             </Pressable>
           </PanelPopover.Trigger>
-            <PanelPopover.Content
-              placement="top"
-              align="center"
-              width={choicePresentation === "popover" ? "trigger" : undefined}
-              className={choicePresentation === "popover" ? "gap-2 p-2" : "gap-2 px-4 pb-safe pt-2"}
+          <PanelPopover.Content
+            placement="top"
+            align="center"
+            width={choicePresentation === "popover" ? "trigger" : undefined}
+            className={choicePresentation === "popover" ? "gap-2 p-2" : "gap-2 px-4 pb-safe pt-2"}
+          >
+            <PanelButton
+              variant="ghost"
+              onPress={() => {
+                setIsProfileOpen(false);
+                navigation.closeDrawer();
+                navigation.navigate("settings", { screen: "account" });
+              }}
+              className="flex-1 items-center justify-between"
             >
-              <PanelButton
-                variant="ghost"
-                onPress={() => {
-                  setIsProfileOpen(false);
-                  navigation.closeDrawer();
-                  navigation.navigate("settings", { screen: "account" });
-                }}
-                className="flex-1 items-center justify-between"
-              >
-                {t("profile.account")}
-                <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />
-              </PanelButton>
+              {t("profile.account")}
+              <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />
+            </PanelButton>
 
-              <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">
-                {themeActions.map((action) => {
-                  const isSelected = themeMode === action.value;
-                  return (
-                    <PanelButton
-                      key={action.value}
-                      size="sm"
-                      variant={isSelected ? "primary" : "ghost"}
-                      accessibilityLabel={action.label}
-                      accessibilityState={{ selected: isSelected }}
-                      onPress={() => setThemeMode(action.value)}
-                      className="h-9 flex-1"
-                    >
-                      <AppIcon
-                        icon={action.icon}
-                        size={19}
-                        color={isSelected ? themeColorAccentForeground : themeColorMuted}
-                      />
-                    </PanelButton>
-                  );
-                })}
-              </View>
-              <PanelButton
-                variant="destructive"
-                onPress={() => {
-                  setIsProfileOpen(false);
-                  setIsLogoutOpen(true);
-                }}
-              >
-                <AppIcon icon={AppIcons.logout} size={18} color={themeColorDanger} />
-                {t("settings.logout")}
-              </PanelButton>
-            </PanelPopover.Content>
+            <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">
+              {themeActions.map((action) => {
+                const isSelected = themeMode === action.value;
+                return (
+                  <PanelButton
+                    key={action.value}
+                    size="sm"
+                    variant={isSelected ? "primary" : "ghost"}
+                    accessibilityLabel={action.label}
+                    accessibilityState={{ selected: isSelected }}
+                    onPress={() => setThemeMode(action.value)}
+                    className="h-9 flex-1"
+                  >
+                    <AppIcon
+                      icon={action.icon}
+                      size={19}
+                      color={isSelected ? themeColorAccentForeground : themeColorMuted}
+                    />
+                  </PanelButton>
+                );
+              })}
+            </View>
+            <PanelButton
+              variant="destructive"
+              onPress={() => {
+                setIsProfileOpen(false);
+                setIsLogoutOpen(true);
+              }}
+            >
+              <AppIcon icon={AppIcons.logout} size={18} color={themeColorDanger} />
+              {t("settings.logout")}
+            </PanelButton>
+          </PanelPopover.Content>
         </PanelPopover>
         <PanelDialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
           <PanelDialog.Content>

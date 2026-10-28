@@ -155,7 +155,7 @@ These checkboxes record completed implementation work. The broader P1 requiremen
 - [x] Replace payment-success print and new-order actions with PanelUI Button and the auto-print toggle with PanelUI Switch, preserving print pending state and navigation; the screen no longer imports HeroUI.
 - [x] Replace the settings logout action with PanelUI Button and its destructive variant, retaining the confirmation dialog and removing that screen's HeroUI import.
 - [x] Replace discount form save/cancel actions with PanelUI Button, preserving the pending label and disabled state; remove the screen's HeroUI import.
-- [x] Replace POS cart-row remove and quantity actions with PanelUI Button, preserving their localized accessible names and quantity handlers; use the documented destructive variant for removal.
+- [x] Replace POS cart-row remove and quantity actions with PanelUI Button, preserving their localized accessible names and quantity handlers; use a low-emphasis ghost remove action with a destructive icon color.
 - [x] Replace the inventory movement load-more action with PanelUI Button, preserving its pending label and disabled state; remove that screen's HeroUI import.
 - [x] Replace the dashboard header's open-POS action with PanelUI Button, preserving its icon, navigation route, and localized accessible name.
 - [x] Replace the POS table selection action with PanelUI Button and Typography, preserving selected-table name truncation and the localized spoken label.
@@ -171,6 +171,7 @@ These checkboxes record completed implementation work. The broader P1 requiremen
 - [x] Replace dashboard period chips with selectable PanelUI Chip controls and move receipt preview's `cn` import to PanelUI, removing those HeroUI imports.
 - [x] Replace the sign-in Card, submit Button, credential InputGroups, and password visibility action with PanelUI, preserving responsive card padding, prefix icons, a localized spoken toggle label, and a disabled, busy submit state.
 - [x] Replace the drawer menu icon action with PanelUI Button, retaining its spoken label and navigation action.
+- [x] Apply the measured top and bottom device safe-area insets to the custom drawer content so its logo and profile actions clear system bars.
 - [x] Replace HeroUI Cards across 20 form, inventory, payment, POS table, and settings screen files with PanelUI Card; map Body to Content, preserve the old root and slot padding, and map the unselected table surface to `bg-inset`. Typecheck and targeted lint pass; visual review is delegated to the user.
 - [x] Replace POS product and discount product selection cards with PanelUI Card, preserving their explicit content padding and existing selection actions; device visual review remains open.
 - [x] Map stale HeroUI accent/danger/default color classes, muted text, and panel radius aliases to PanelUI semantic colors and radius tokens across active source; localization and lint pass with existing warnings, and light/dark visual review remains open.
@@ -194,12 +195,15 @@ These checkboxes record completed implementation work. The broader P1 requiremen
 - [x] Move Indonesian numeric parsing, local-date conversion, pickup-time calculation, chart aggregation, and table comparison into nonvisual utilities/hooks with focused tests.
 - [x] Compose the dashboard orders chart directly with PanelUI AreaChart, dashboard metrics with PanelUI GridItem, and earnings metrics with PanelUI Kpi; remove the chart wrapper.
 - [x] Constrain earnings, POS sort, and POS order-type Select widths; match Select trigger heights to the corresponding Input sizes while keeping PanelUI option typography.
+- [x] Add top breathing room to the POS screen; align table, park, pickup, sort, and cart-header controls to the medium 48-point height; increase shared TrueSheet header and POS add-on option spacing; make selected add-on radio and checkbox cards clearer.
+- [x] Render checkout cash-preset and payment refresh/checking labels inside PanelUI Typography; standardize top-right dialog and sheet close controls as accessible icon buttons while retaining footer cancel actions.
 - [x] Remove the filled input and text-area variants from forms and retain Cards and the standard medium field height.
 - [x] Replace the add-on minimum/maximum Input and Button steppers in both add-on forms with PanelUI NumberInput, retaining integer bounds and string-valued form state; TalkBack label verification remains open.
 - [x] Replace table capacity Input with PanelUI NumberInput, retaining the minimum of one, integer step, string-valued form state, and live table-seat preview.
 - [x] Convert remaining legacy accent utility classes to PanelUI primary or secondary roles; use `oklch(71.4% 0.122 209.33)` for primary, focus ring, and chart series in both themes, without custom accent overrides.
 - [x] Replace printer connection/paper-width and receipt layout/preview-size, ingredient unit, supplier offer, product category/inventory mode/discount, and preference selectors, POS and discount search fields, and checkout slide-to-pay and payment radio options with PanelUI controls.
 - [x] Replace the receipt preview SplitView with PanelUI SplitView while retaining snap points and its localized resize label.
+- [x] Apply measured bottom safe-area padding to the receipt setup form pane and right inset in landscape; leave the stack header responsible for the top inset and keep extra scroll space above the form action.
 - [x] Extract POS add-on selection mapping into a nonvisual utility and cover a 25-group, 200-option case, including mixed selection types and stale option IDs; device performance remains unverified.
 - [x] Replace POS add-on notes, typography, surfaces, separators, footer buttons, status chips, and error text with PanelUI while retaining the TrueSheet footer and focus behavior.
 - [x] Replace ingredient, supplier, discount, and stock-overlay field-message helpers with direct PanelUI Typography.
@@ -292,7 +296,8 @@ For each group, migrate normal, loading, empty, validation, error, and overlay s
 - [x] Remove the HeroUI Pro resolver override from metro.config.js; retain Uniwind configuration.
 - [ ] Retain TrueSheet dependency/provider and confirm cleanup does not remove its integrations.
 - [x] Remove @gorhom/bottom-sheet after scanning active source/configuration and finding no direct consumer; regenerate the Bun lockfile.
-- [x] Remove unused Victory and external QR rendering dependencies after confirming zero source/configuration consumers. Retain Skia and its installation script because `src/utils/receipt-logo.ts` still uses Skia for grayscale receipt-logo export; removing them would break that domain integration.
+- [x] Remove unused Victory and external QR rendering dependencies after confirming zero source/configuration consumers.
+- [x] Remove Skia and its installation script; resize receipt logos with Expo ImageManipulator and let the thermal printer rasterize them.
 - [x] Update Bun lockfile through the package workflow and verify a frozen dependency installation with lifecycle scripts disabled; Bun installed the six missing locked packages successfully.
 - [ ] Remove obsolete helpers and active HeroUI setup documentation; preserve user-requested skills and historical documents.
 - [x] Scan active application source/configuration and README for HeroUI imports, types, providers, styles, aliases, and vendor references; zero HeroUI runtime references remain. The tracked vendored directory is removed and TrueSheet references are retained.

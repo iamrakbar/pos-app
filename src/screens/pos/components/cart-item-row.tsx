@@ -21,7 +21,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
   const { t } = useTranslation();
   const [themeColorForeground, themeColorDestructiveForeground] = useCSSVariable([
     "--color-foreground",
-    "--color-destructive-solid-foreground",
+    "--color-destructive-foreground",
   ]) as [string, string];
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQty = useCartStore((s) => s.updateQty);
@@ -109,7 +109,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
       <View className="flex-row items-center justify-between gap-4">
         <View>
           <Button
-            variant="destructive"
+            variant="ghost"
             size="icon"
             onPress={() => removeItem(item.id)}
             accessibilityLabel={t("pos.removeProductAccessibility", { product: item.name })}

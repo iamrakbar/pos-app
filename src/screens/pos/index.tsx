@@ -11,6 +11,7 @@ import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
 import { useFocusEffect } from "expo-router";
 import { Platform, StatusBar, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigationTheme } from "@/utils/navigation-theme";
 import { paymentGroupsQueryOptions } from "@/hooks/db/use-payments";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,6 +22,7 @@ import { getProductSellingPrice } from "@/utils/product-price";
 
 export default function POSScreen(): JSX.Element {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { width: viewportWidth, isWide } = useResponsiveLayout();
   const openAddOnSheet = usePOSAddOnSheet();
   const addItem = useCartStore((s) => s.addItem);
@@ -62,7 +64,8 @@ export default function POSScreen(): JSX.Element {
   return (
     <View className="flex-1">
       <View
-        className="flex-1 flex-row p-safe"
+        className="flex-1 flex-row px-safe pb-safe"
+        style={{ paddingTop: insets.top + 12 }}
         pointerEvents={isCatalogLoading ? "none" : "auto"}
         accessibilityElementsHidden={isCatalogLoading}
         importantForAccessibility={isCatalogLoading ? "no-hide-descendants" : "auto"}

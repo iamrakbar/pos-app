@@ -52,7 +52,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
   if (isLoading) {
     return (
       <View accessibilityLabel={t("pos.loadingProducts")}>
-        <View className="flex-row items-center gap-3 px-2 py-4">
+        <View className="flex-row items-center gap-2 px-4 py-3">
           <DrawerMenuButton />
           <Skeleton className="h-12 flex-1 rounded-3xl" />
           <Skeleton className="size-12 rounded-3xl" />
@@ -79,8 +79,8 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
   }
 
   return (
-    <View className="">
-      <View className="flex-row items-center gap-3 px-2 py-4">
+    <View>
+      <View className="flex-row items-center gap-2 px-4 py-3">
         <DrawerMenuButton />
         <View className="flex-1">
           <PanelSearchBar
@@ -107,14 +107,14 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
             />
           </PanelButton>
           <PanelSelect
-            triggerClassName={choicePresentation === "popover" ? "h-12" : "h-8"}
+            triggerClassName="h-12"
             presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
             value={selectedSort.value}
             valueLabel={selectedSort.label}
             onValueChange={(value) => setProductSort(value as ProductSort)}
             title={t("pos.sortProducts")}
             placeholder={t("pos.sortProducts")}
-            size={choicePresentation === "popover" ? "md" : "xs"}
+            size="md"
             className={choicePresentation === "popover" ? "w-56" : "w-28"}
           >
             {sortOptions.map((option) => (

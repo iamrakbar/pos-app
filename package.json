@@ -4,8 +4,6 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "postinstall": "node node_modules/@shopify/react-native-skia/scripts/install-libs.js",
-    "skia:install": "node node_modules/@shopify/react-native-skia/scripts/install-libs.js",
     "start": "APP_VARIANT=development expo start --dev-client",
     "start:preview": "APP_VARIANT=preview expo start --dev-client",
     "start:production": "APP_VARIANT=production expo start --dev-client",
@@ -42,7 +40,6 @@
     "@hugeicons/react-native": "^1.0.16",
     "@lodev09/react-native-true-sheet": "^3.11.9",
     "@react-native-masked-view/masked-view": "0.3.2",
-    "@shopify/react-native-skia": "2.6.2",
     "@tanstack/react-query": "^5.101.2",
     "expo": "~57.0.31",
     "expo-build-properties": "~57.0.22",
@@ -99,9 +96,6 @@
     "prettier": "^3.9.4",
     "typescript": "~6.0.3"
   },
-  "trustedDependencies": [
-    "@shopify/react-native-skia"
-  ],
   "expo": {
     "doctor": {
       "reactNativeDirectoryCheck": {

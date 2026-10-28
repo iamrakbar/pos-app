@@ -1,3 +1,5 @@
+import { AppIcons } from "@/components/common/app-icons";
+import AppIcon from "@/components/common/app-icon";
 import {
   Typography,
   Button as PanelFooterButton,
@@ -228,7 +230,7 @@ export function ProductOpeningBalanceOverlay({
         dimmed
         onDidDismiss={handleDidDismiss}
         header={
-          <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+          <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
             <Typography type="h4" weight="semibold">
               {title}
             </Typography>
@@ -237,12 +239,12 @@ export function ProductOpeningBalanceOverlay({
             </Typography>
             <PanelFooterButton
               variant="ghost"
-              size="sm"
+              size="icon"
               accessibilityLabel={t("common.close")}
               className="absolute right-3 top-3"
               onPress={() => handleOpenChange(false)}
             >
-              {t("common.close")}
+              <AppIcon icon={AppIcons.close} size={20} />
             </PanelFooterButton>
           </View>
         }
@@ -262,14 +264,14 @@ export function ProductOpeningBalanceOverlay({
       >
         <PanelFooterButton
           variant="ghost"
-          size="sm"
+          size="icon"
           accessibilityLabel={t("common.close")}
           className="absolute right-3 top-3 z-50"
           onPress={() => handleOpenChange(false)}
         >
-          {t("common.close")}
+          <AppIcon icon={AppIcons.close} size={20} />
         </PanelFooterButton>
-        <View className="gap-1.5 px-5 pb-4 pr-14 pt-5">
+        <View className="gap-2 px-6 pb-5 pr-16 pt-8">
           <PanelDialog.Title>{title}</PanelDialog.Title>
           <PanelDialog.Description>{description}</PanelDialog.Description>
         </View>
@@ -441,7 +443,7 @@ export function ProductAdjustStockOverlay({
         dimmed
         onDidDismiss={handleDidDismiss}
         header={
-          <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+          <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
             <Typography type="h4" weight="semibold">
               {title}
             </Typography>
@@ -450,12 +452,12 @@ export function ProductAdjustStockOverlay({
             </Typography>
             <PanelFooterButton
               variant="ghost"
-              size="sm"
+              size="icon"
               accessibilityLabel={t("common.close")}
               className="absolute right-3 top-3"
               onPress={() => handleOpenChange(false)}
             >
-              {t("common.close")}
+              <AppIcon icon={AppIcons.close} size={20} />
             </PanelFooterButton>
           </View>
         }
@@ -475,14 +477,14 @@ export function ProductAdjustStockOverlay({
       >
         <PanelFooterButton
           variant="ghost"
-          size="sm"
+          size="icon"
           accessibilityLabel={t("common.close")}
           className="absolute right-3 top-3 z-50"
           onPress={() => handleOpenChange(false)}
         >
-          {t("common.close")}
+          <AppIcon icon={AppIcons.close} size={20} />
         </PanelFooterButton>
-        <View className="gap-1.5 px-5 pb-4 pr-14 pt-5">
+        <View className="gap-2 px-6 pb-5 pr-16 pt-8">
           <PanelDialog.Title>{title}</PanelDialog.Title>
           <PanelDialog.Description>{description}</PanelDialog.Description>
         </View>

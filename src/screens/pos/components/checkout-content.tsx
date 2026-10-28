@@ -582,11 +582,11 @@ function PaymentFields({
                   variant={cashReceivedAmount === amount ? "primary" : "outline"}
                   onPress={() => setValue("tender_value", String(amount), { shouldValidate: true })}
                 >
-                  <>
+                  <PanelTypography type="body-sm" weight="semibold" className="tabular-nums">
                     {index === 0
                       ? t("checkout.exactCash", { amount: formatRupiah(amount) })
                       : formatRupiah(amount)}
-                  </>
+                  </PanelTypography>
                 </PanelButton>
               ))}
             </View>

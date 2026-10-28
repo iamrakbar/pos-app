@@ -947,7 +947,7 @@ export const en = {
     changeLogoAccessibility: "Change store logo",
     optimizingLogo: "Optimizing logo",
     chooseImage: "Choose image",
-    logoDescription: "Stored locally as a grayscale image optimized for thermal printing.",
+    logoDescription: "Stored locally at a size optimized for thermal printing.",
     storeName: "Store name",
     header: "Header",
     headerPlaceholder: "Address and phone number",

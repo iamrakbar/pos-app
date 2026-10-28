@@ -1,4 +1,4 @@
-import { Typography , Separator } from "panelui-native";
+import { Typography, Separator } from "panelui-native";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { CheckoutContent } from "@/screens/pos/components/checkout-content";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -39,7 +39,7 @@ export default function CheckoutSheet(): JSX.Element {
 
   const header = (
     <View className="bg-surface">
-      <View className="px-5 pb-4 pt-safe">
+      <View className="px-6 pb-5 pt-8">
         <Typography type="h4" weight="semibold">
           {t("navigation.checkout")}
         </Typography>

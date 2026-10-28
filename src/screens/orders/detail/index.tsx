@@ -298,7 +298,7 @@ function PaymentQrDialog({
         dimmed
         onDidDismiss={handleDidDismiss}
         header={
-          <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+          <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
             <Typography type="h4" weight="semibold">
               {t("orders.detail.qrisPayment")}
             </Typography>
@@ -307,12 +307,12 @@ function PaymentQrDialog({
             </Typography>
             <PanelButton
               variant="ghost"
-              size="sm"
+              size="icon"
               accessibilityLabel={t("common.close")}
               className="absolute right-3 top-3"
               onPress={() => onOpenChange(false)}
             >
-              {t("common.close")}
+              <AppIcon icon={AppIcons.close} size={20} />
             </PanelButton>
           </View>
         }
@@ -330,14 +330,14 @@ function PaymentQrDialog({
       >
         <PanelButton
           variant="ghost"
-          size="sm"
+          size="icon"
           accessibilityLabel={t("common.close")}
           className="absolute right-3 top-3 z-50"
           onPress={() => onOpenChange(false)}
         >
-          {t("common.close")}
+          <AppIcon icon={AppIcons.close} size={20} />
         </PanelButton>
-        <View className="gap-1.5 px-5 pb-4 pr-14 pt-5">
+        <View className="gap-2 px-6 pb-5 pr-16 pt-8">
           <PanelDialog.Title>{t("orders.detail.qrisPayment")}</PanelDialog.Title>
           <PanelDialog.Description>{code}</PanelDialog.Description>
         </View>
@@ -502,7 +502,7 @@ function ReceiptPreviewSheet({
         onOpenChange(false);
       }}
       header={
-        <View className="bg-surface gap-1.5 px-5 pb-4 pr-14 pt-5">
+        <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
           <Typography type="h4" weight="semibold">
             {t("orders.detail.previewReceipt")}
           </Typography>
@@ -511,7 +511,7 @@ function ReceiptPreviewSheet({
           </Typography>
           <PanelButton
             variant="ghost"
-            size="sm"
+            size="icon"
             className="absolute right-3 top-3"
             onPress={dismissSheet}
             accessibilityLabel={t("common.close")}
