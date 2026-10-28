@@ -22,6 +22,7 @@ import React from "react";
 import { Controller, type Control, useForm, useWatch } from "react-hook-form";
 import { FlatList, View, useWindowDimensions } from "react-native";
 import { useKeyboardState } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 import { getProductSellingPrice } from "@/utils/product-price";
@@ -31,9 +32,11 @@ const EMPTY_FORM_VALUES: AddOnFormValues = {
   checkboxSelections: {},
   notes: "",
 };
+const NO_OPTION_VALUE = "__no_add_on__";
 
 function constraintLabel(group: AddOnGroup, t: Translate): string {
   if (!group.required) {
+    if (!group.multiple) return t("addOns.optionalChoice");
     return group.max > 0 ? t("addOns.optionalUpTo", { count: group.max }) : t("addOns.optional");
   }
   if (group.min === group.max) return t("addOns.chooseCount", { count: group.min });
@@ -54,25 +57,29 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
         name={`radioSelections.${group.id}`}
         render={({ field }) => (
           <PanelRadioGroup
-            value={field.value}
-            onValueChange={field.onChange}
+            value={field.value ?? (group.required ? undefined : NO_OPTION_VALUE)}
+            onValueChange={(value) => field.onChange(value === NO_OPTION_VALUE ? undefined : value)}
             variant="card"
             className="gap-2"
           >
+            {!group.required ? (
+              <PanelRadioGroup.Item
+                value={NO_OPTION_VALUE}
+                label={t("addOns.noOption")}
+                className="min-h-16"
+              />
+            ) : null}
             {group.options.map((option) => (
               <PanelRadioGroup.Item
                 key={option.id}
                 value={option.id}
-                label={`${option.name} · ${
+                label={option.name}
+                description={
                   option.price > 0
                     ? `+${formatRupiah(option.price)}`
                     : t("addOns.noAdditionalCharge")
-                }`}
-                className={
-                  field.value === option.id
-                    ? "min-h-16 border-2 border-primary bg-primary/10 px-4 py-3"
-                    : "min-h-16 border border-border px-4 py-3"
                 }
+                className="min-h-16"
               />
             ))}
           </PanelRadioGroup>
@@ -97,32 +104,27 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
               const isDisabled = !isSelected && hasLimit && selected.length >= group.max;
 
               return (
-                <React.Fragment key={option.id}>
-                  <PanelCheckbox
-                    variant="card"
-                    className={
+                <PanelCheckbox
+                  key={option.id}
+                  variant="card"
+                  className="min-h-16"
+                  checked={isSelected}
+                  disabled={isDisabled}
+                  onCheckedChange={() =>
+                    field.onChange(
                       isSelected
-                        ? "min-h-16 border-2 border-primary bg-primary/10"
-                        : "min-h-16 border border-border"
-                    }
-                    checked={isSelected}
-                    disabled={isDisabled}
-                    onCheckedChange={() =>
-                      field.onChange(
-                        isSelected
-                          ? selected.filter((id) => id !== option.id)
-                          : [...selected, option.id]
-                      )
-                    }
-                    label={option.name}
-                    description={
-                      option.price > 0
-                        ? `+${formatRupiah(option.price)}`
-                        : t("addOns.noAdditionalCharge")
-                    }
-                    size="lg"
-                  />
-                </React.Fragment>
+                        ? selected.filter((id) => id !== option.id)
+                        : [...selected, option.id]
+                    )
+                  }
+                  label={option.name}
+                  description={
+                    option.price > 0
+                      ? `+${formatRupiah(option.price)}`
+                      : t("addOns.noAdditionalCharge")
+                  }
+                  size="lg"
+                />
               );
             })}
           </View>
@@ -135,6 +137,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
 export default function POSAddOnSheet(): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { dismiss, resize } = useTrueSheet();
+  const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const [backgroundColor, borderColor] = useCSSVariable([
     "--color-background",
@@ -264,7 +267,8 @@ export default function POSAddOnSheet(): React.JSX.Element {
 
   const footer = (
     <View
-      className="bg-surface pb-safe"
+      className="bg-surface"
+      style={{ paddingBottom: insets.bottom }}
       onLayout={(event) => {
         const nextHeight = Math.ceil(event.nativeEvent.layout.height);
         setFooterHeight((currentHeight) =>
@@ -353,10 +357,20 @@ export default function POSAddOnSheet(): React.JSX.Element {
                     {constraintLabel(group, t)}
                   </PanelTypography>
                 </View>
-                <PanelChip size="sm" variant={group.required ? "primary" : "default"}>
-                  {group.required ? t("addOns.required") : t("addOns.optional")}
-                </PanelChip>
+                {group.required ? (
+                  <PanelChip size="sm" variant="primary">
+                    {t("addOns.required")}
+                  </PanelChip>
+                ) : null}
               </View>
+              {group.multiple && group.max > 0 ? (
+                <PanelTypography type="body-xs" muted>
+                  {t("addOns.selectionProgress", {
+                    selected: values.checkboxSelections?.[group.id]?.length ?? 0,
+                    max: group.max,
+                  })}
+                </PanelTypography>
+              ) : null}
               <AddOnSelection control={control} group={group} />
               {error ? (
                 <PanelTypography type="body-xs" className="text-destructive">

@@ -47,6 +47,7 @@ import {
 } from "react-native";
 import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView, useKeyboardState } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { CheckoutFormState, PaymentSession, POSPayment, POSPaymentGroup } from "@/types/pos";
 import type { Translate } from "@/locales";
 import {
@@ -370,6 +371,7 @@ function CheckoutActions({
   onHeightChange?: (height: number) => void;
 }) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const handleLayout = (event: LayoutChangeEvent) => {
     onHeightChange?.(event.nativeEvent.layout.height);
   };
@@ -377,7 +379,10 @@ function CheckoutActions({
   return (
     <GestureHandlerRootView style={shouldGrow ? { flexGrow: 1 } : { flexGrow: 0 }}>
       <View className="bg-surface" onLayout={handleLayout}>
-        <View className="w-full max-w-3xl self-center gap-3 px-5 pt-5 pb-safe-offset-4">
+        <View
+          className="w-full max-w-3xl self-center gap-3 px-5 pt-5"
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
           <CheckoutCostSummary
             subtotal={subtotal}
             paymentFee={paymentFee}

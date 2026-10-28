@@ -7,7 +7,6 @@ import {
   Frame,
   Chip as PanelChip,
   EmptyState,
-  Kpi,
   Spinner,
 } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
@@ -146,14 +145,14 @@ export default function DashboardScreen(): React.JSX.Element {
           <>
             <View className={isCompact ? "gap-4" : "flex-row flex-wrap gap-4"}>
               <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Kpi>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("dashboard.revenue")}</Kpi.Title>
-                    <Kpi.Icon tone="good">
+                <Frame className="w-full">
+                  <Frame.Header>
+                    <View className="flex-1 flex-row justify-between">
+                      <Frame.Title>{t("dashboard.revenue")}</Frame.Title>
                       <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
+                    </View>
+                  </Frame.Header>
+                  <Frame.Panel className="p-4">
                     <Typography
                       type="h4"
                       weight="bold"
@@ -164,18 +163,18 @@ export default function DashboardScreen(): React.JSX.Element {
                     >
                       {formatRupiah(dashboard.data?.revenue_today ?? 0)}
                     </Typography>
-                  </Kpi.Content>
-                </Kpi>
+                  </Frame.Panel>
+                </Frame>
               </View>
               <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Kpi>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("dashboard.orders")}</Kpi.Title>
-                    <Kpi.Icon tone="neutral">
+                <Frame className="w-full">
+                  <Frame.Header>
+                    <View className="flex-1 flex-row justify-between">
+                      <Frame.Title>{t("dashboard.orders")}</Frame.Title>
                       <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
+                    </View>
+                  </Frame.Header>
+                  <Frame.Panel className="p-4">
                     <Typography
                       type="h4"
                       weight="bold"
@@ -186,18 +185,18 @@ export default function DashboardScreen(): React.JSX.Element {
                     >
                       {String(dashboard.data?.orders_today ?? 0)}
                     </Typography>
-                  </Kpi.Content>
-                </Kpi>
+                  </Frame.Panel>
+                </Frame>
               </View>
               <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Kpi>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("dashboard.pending")}</Kpi.Title>
-                    <Kpi.Icon tone="flat">
+                <Frame className="w-full">
+                  <Frame.Header>
+                    <View className="flex-1 flex-row justify-between">
+                      <Frame.Title>{t("dashboard.pending")}</Frame.Title>
                       <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
+                    </View>
+                  </Frame.Header>
+                  <Frame.Panel className="p-4">
                     <Typography
                       type="h4"
                       weight="bold"
@@ -208,18 +207,18 @@ export default function DashboardScreen(): React.JSX.Element {
                     >
                       {String(dashboard.data?.pending_orders ?? 0)}
                     </Typography>
-                  </Kpi.Content>
-                </Kpi>
+                  </Frame.Panel>
+                </Frame>
               </View>
               <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Kpi>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("dashboard.completed")}</Kpi.Title>
-                    <Kpi.Icon tone="good">
+                <Frame className="w-full">
+                  <Frame.Header>
+                    <View className="flex-1 flex-row justify-between">
+                      <Frame.Title>{t("dashboard.completed")}</Frame.Title>
                       <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
+                    </View>
+                  </Frame.Header>
+                  <Frame.Panel className="p-4">
                     <Typography
                       type="h4"
                       weight="bold"
@@ -230,8 +229,8 @@ export default function DashboardScreen(): React.JSX.Element {
                     >
                       {String(dashboard.data?.completed_orders ?? 0)}
                     </Typography>
-                  </Kpi.Content>
-                </Kpi>
+                  </Frame.Panel>
+                </Frame>
               </View>
             </View>
 
