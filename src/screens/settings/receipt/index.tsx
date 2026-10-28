@@ -148,6 +148,7 @@ function ReceiptPreviewSection({
               {t("receiptSettings.preview")}
             </Typography>
             <PanelSelect
+              triggerClassName="h-12"
               className="w-32"
               presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
               value={previewPaperWidth}
@@ -349,6 +350,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   <View>
                     <PanelLabel className="mb-1.5">{t("receiptSettings.layout")}</PanelLabel>
                     <PanelSelect
+                      triggerClassName="h-12"
                       presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
                       value={settings.layout}
                       onValueChange={(value) =>

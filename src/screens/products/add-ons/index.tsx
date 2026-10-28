@@ -96,7 +96,7 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
                   onPress={() => router.push(`/products/${productId}/add-ons/${addOn.id}`)}
                   className="min-h-20 flex-row items-center gap-4 px-4 py-3 active:bg-surface-secondary md:px-6"
                 >
-                  <View className="size-11 items-center justify-center rounded-xl bg-accent">
+                  <View className="size-11 items-center justify-center rounded-xl bg-secondary">
                     <AppIcon icon={AppIcons.options} size={20} color={accentColor} />
                   </View>
                   <View className="flex-1 gap-1">

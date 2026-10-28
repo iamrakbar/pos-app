@@ -159,7 +159,7 @@ export default function IngredientDetailSheet({
               </View>
             </Card.Header>
             <Card.Content className="gap-3 p-0">
-              <View className="gap-1 rounded-2xl bg-accent p-4">
+              <View className="gap-1 rounded-2xl bg-secondary p-4">
                 <Typography type="body-xs" muted>
                   {t("ingredients.currentStock")}
                 </Typography>

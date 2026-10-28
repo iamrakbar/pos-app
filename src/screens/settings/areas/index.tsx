@@ -110,7 +110,7 @@ export default function AreasScreen(): React.JSX.Element {
         renderItem={({ item: area }) => (
           <Card className="gap-4 p-4" style={{ width: cardWidth }}>
             <Card.Content className="flex-row gap-3 active:bg-surface-secondary p-0">
-              <View className="size-12 items-center justify-center rounded-xl bg-accent">
+              <View className="size-12 items-center justify-center rounded-xl bg-secondary">
                 <AppIcon icon={AppIcons.restaurant} size={20} color={accentColor} />
               </View>
               <View>

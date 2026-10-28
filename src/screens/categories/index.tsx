@@ -277,7 +277,7 @@ function CategoriesContent({
                       onPress={() => router.push(`/settings/categories/${category.id}`)}
                       className="flex-1 flex-row items-center gap-3 active:opacity-70"
                     >
-                      <View className="size-11 items-center justify-center rounded-xl bg-accent">
+                      <View className="size-11 items-center justify-center rounded-xl bg-secondary">
                         <AppIcon icon={AppIcons.grid} size={20} color={accentColor} />
                       </View>
                       <View className="flex-1 gap-1">

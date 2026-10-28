@@ -155,7 +155,7 @@ export default function AppDrawerContent({
                       variant="transparent"
                       className={cn(
                         "h-12 w-12 items-center justify-center p-0 rounded-xl shadow-none border-0",
-                        focused ? "bg-accent" : "bg-transparent"
+                        focused ? "bg-secondary" : "bg-transparent"
                       )}
                     >
                       <AppIcon

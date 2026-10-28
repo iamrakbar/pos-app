@@ -180,7 +180,7 @@ function IngredientsTable({
             style={{ width: SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) }}
             accessibilityRole="progressbar"
           >
-            <Table columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
+            <Table.Frame columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
               <Table.Header>
                 <Table.Row>
                   {SKELETON_COLUMN_WIDTHS.map((_, index) => (
@@ -207,7 +207,7 @@ function IngredientsTable({
                   </Table.Row>
                 ))}
               </Table.Body>
-            </Table>
+            </Table.Frame>
           </View>
         </ScrollView>
       </ScrollView>
@@ -241,7 +241,7 @@ function IngredientsTable({
       <View className="flex-1 items-center w-full">
         <ScrollView horizontal showsHorizontalScrollIndicator className="w-full">
           <View style={{ width: TABLE_WIDTH }}>
-            <Table columns={COLUMN_LAYOUT}>
+            <Table.Frame columns={COLUMN_LAYOUT}>
               <Table.Header>
                 <Table.Row>
                   {TABLE_COLUMNS.map((column) => (
@@ -352,7 +352,7 @@ function IngredientsTable({
                   </EmptyState>
                 </Table.Empty>
               )}
-            </Table>
+            </Table.Frame>
           </View>
         </ScrollView>
         {query.hasNextPage ? (

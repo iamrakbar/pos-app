@@ -119,7 +119,7 @@ export default function DiscountsScreen(): React.JSX.Element {
                 className="flex-row items-center gap-3 px-4 py-4 active:bg-surface-secondary md:px-6"
                 onPress={() => router.push(`/settings/discounts/${discount.id}` as never)}
               >
-                <View className="h-11 w-11 items-center justify-center rounded-full bg-accent">
+                <View className="h-11 w-11 items-center justify-center rounded-full bg-secondary">
                   <AppIcon icon={AppIcons.priceTag} size={20} color={muted} />
                 </View>
                 <View className="flex-1 gap-1">

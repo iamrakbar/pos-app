@@ -145,6 +145,7 @@ function PrinterDetailsCard({
             name="connection"
             render={({ field: { value, onChange } }) => (
               <PanelSelect
+                triggerClassName="h-12"
                 value={value}
                 presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
                 placeholder={t("printerForm.selectConnection")}
@@ -402,6 +403,7 @@ function ReceiptSetupCard({
             name="paperWidth"
             render={({ field: { value, onChange } }) => (
               <PanelSelect
+                triggerClassName="h-12"
                 value={value}
                 presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
                 placeholder={t("printerForm.selectSize")}

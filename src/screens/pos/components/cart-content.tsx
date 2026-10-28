@@ -77,9 +77,11 @@ function CartOrderControls({
   return (
     <View className="h-12 flex-row items-center gap-2">
       <PanelSelect
+        triggerClassName="h-12"
+        className={choicePresentation === "popover" ? "w-44 shrink-0" : "min-w-0 flex-1"}
         presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
         value={checkoutForm.order_type}
-        size="sm"
+        size="md"
         title={t("orders.detail.orderType")}
         onValueChange={(value) => {
           const orderType = value as "dine-in" | "takeaway";

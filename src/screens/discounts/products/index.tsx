@@ -158,7 +158,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                           label={product.name}
                           description={`${formatRupiah(product.price)} · ${product.category?.name ?? t("navigation.category")}`}
                           className={
-                            selected ? "min-h-16 px-4 py-3 bg-accent" : "min-h-16 px-4 py-3"
+                            selected ? "min-h-16 px-4 py-3 bg-secondary" : "min-h-16 px-4 py-3"
                           }
                           labelClassName={selected ? "font-semibold" : undefined}
                           descriptionClassName="tabular-nums"

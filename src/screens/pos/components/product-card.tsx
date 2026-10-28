@@ -74,7 +74,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
             <Typography
               type="body-sm"
               weight="semibold"
-              className={isDiscounted ? "text-accent tabular-nums" : "tabular-nums"}
+              className={isDiscounted ? "text-primary tabular-nums" : "tabular-nums"}
             >
               {formatRupiah(effectivePrice)}
             </Typography>

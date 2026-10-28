@@ -237,7 +237,7 @@ export default function ProductsScreen(): React.JSX.Element {
                           <Typography
                             type="body-sm"
                             weight="semibold"
-                            className={cn("tabular-nums", isDiscounted && "text-accent")}
+                            className={cn("tabular-nums", isDiscounted && "text-primary")}
                           >
                             {(() => {
                               const effective = product.discount?.price ?? product.price;

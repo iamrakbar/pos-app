@@ -206,7 +206,7 @@ export function DiscountProductsCard({
               </PanelTypography>
             ) : null}
           </View>
-          <Typography type="body-sm" className="text-accent">
+          <Typography type="body-sm" className="text-primary">
             {t("discounts.changeProducts")}
           </Typography>
           <AppIcon icon={AppIcons.chevronForward} size={16} color={muted} />

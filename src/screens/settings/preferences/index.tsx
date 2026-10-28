@@ -59,6 +59,7 @@ export default function PreferencesScreen(): JSX.Element {
               </View>
               <Frame.Actions className={isCompact ? "w-full" : "w-48"}>
                 <PanelSelect
+                  triggerClassName="h-12"
                   key={`theme-${locale}`}
                   presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
                   value={themeMode}
@@ -87,6 +88,7 @@ export default function PreferencesScreen(): JSX.Element {
               </View>
               <Frame.Actions className={isCompact ? "w-full" : "w-48"}>
                 <PanelSelect
+                  triggerClassName="h-12"
                   key={`language-${locale}`}
                   presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
                   value={locale}

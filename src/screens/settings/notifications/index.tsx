@@ -175,7 +175,7 @@ function NotificationsCard({
       <Card.Content className="gap-4 p-5">
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-1 flex-row items-center gap-3">
-            <View className="size-10 items-center justify-center rounded-xl bg-accent">
+            <View className="size-10 items-center justify-center rounded-xl bg-secondary">
               <AppIcon icon={AppIcons.notifications} size={20} color={accentColor} />
             </View>
             <View className="flex-1 gap-1">

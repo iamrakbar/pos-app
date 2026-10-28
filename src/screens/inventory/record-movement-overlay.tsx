@@ -159,7 +159,7 @@ export default function RecordMovementOverlay({
               onValueChange={onChange}
               placeholder={t("ingredients.movementTypePlaceholder")}
               title={t("ingredients.movementType")}
-              triggerClassName={errors.type ? "border-destructive" : undefined}
+              triggerClassName={errors.type ? "h-12 border-destructive" : "h-12"}
             >
               {movementOptions.map((option) => (
                 <PanelSelect.Item key={option.value} {...option} />

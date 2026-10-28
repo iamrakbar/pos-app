@@ -301,7 +301,7 @@ function SupplierOfferFormCard({
                 disabled={
                   suppliersLoading || suppliersError || supplierOptions.length === 0 || isPending
                 }
-                triggerClassName={errors.supplier_id ? "border-destructive" : undefined}
+                triggerClassName={errors.supplier_id ? "h-12 border-destructive" : "h-12"}
                 placeholder={t("ingredients.supplierOfferSupplierPlaceholder")}
                 title={t("ingredients.supplierOfferSupplier")}
               >

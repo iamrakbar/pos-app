@@ -44,7 +44,7 @@ const ORDER_TYPE_FILTERS: readonly KitchenTicketOrderType[] = [
 ];
 const KDS_STATUS_HEADER_BACKGROUNDS: Record<string, string> = {
   queued: "bg-warning-soft",
-  preparing: "bg-accent",
+  preparing: "bg-secondary",
   ready: "bg-surface",
   cancelled: "bg-destructive-soft",
 };

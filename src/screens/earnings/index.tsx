@@ -1,7 +1,7 @@
 import {
   Typography,
   Separator,
-  Card as PanelCard,
+  Frame,
   Chip as PanelChip,
   EmptyState,
   Kpi,
@@ -274,21 +274,21 @@ function OrderTypesWidget({
 }) {
   const { t } = useTranslation();
   return (
-    <PanelCard>
-      <PanelCard.Header>
+    <Frame>
+      <Frame.Header>
         <View>
-          <PanelCard.Title>{t("earnings.salesByOrderType")}</PanelCard.Title>
-          <PanelCard.Description>{t("earnings.salesByOrderTypeDescription")}</PanelCard.Description>
+          <Frame.Title>{t("earnings.salesByOrderType")}</Frame.Title>
+          <Frame.Description>{t("earnings.salesByOrderTypeDescription")}</Frame.Description>
         </View>
-      </PanelCard.Header>
-      <PanelCard.Content className="overflow-hidden p-0">
+      </Frame.Header>
+      <Frame.Panel className="overflow-hidden p-0">
         {orderTypes.map((orderType, index) => {
           const share = totalEarnings > 0 ? orderType.amount / totalEarnings : 0;
           return (
             <View key={orderType.name}>
               <View className="gap-3 p-4">
                 <View className={cn("gap-3", isCompact ? "items-start" : "flex-row items-center")}>
-                  <View className="size-10 items-center justify-center rounded-xl bg-accent">
+                  <View className="size-10 items-center justify-center rounded-xl bg-secondary">
                     <AppIcon
                       icon={orderType.name === "Dine-in" ? AppIcons.restaurant : AppIcons.bag}
                       size={18}
@@ -314,7 +314,7 @@ function OrderTypesWidget({
                 </View>
                 <View className="h-1.5 overflow-hidden rounded-full bg-secondary">
                   <View
-                    className="h-full rounded-full bg-accent"
+                    className="h-full rounded-full bg-primary"
                     style={{ width: `${Math.max(share * 100, 2)}%` }}
                   />
                 </View>
@@ -323,11 +323,11 @@ function OrderTypesWidget({
             </View>
           );
         })}
-      </PanelCard.Content>
-      <PanelCard.Footer>
-        <PanelCard.Description>{periodLabel}</PanelCard.Description>
-      </PanelCard.Footer>
-    </PanelCard>
+      </Frame.Panel>
+      <Frame.Footer>
+        <Frame.Description>{periodLabel}</Frame.Description>
+      </Frame.Footer>
+    </Frame>
   );
 }
 
@@ -342,11 +342,11 @@ function RecentEarningsWidget({
 }) {
   const { t } = useTranslation();
   return (
-    <PanelCard>
-      <PanelCard.Header>
+    <Frame>
+      <Frame.Header>
         <View>
-          <PanelCard.Title>{t("earnings.recent")}</PanelCard.Title>
-          <PanelCard.Description>{t("earnings.recentDescription")}</PanelCard.Description>
+          <Frame.Title>{t("earnings.recent")}</Frame.Title>
+          <Frame.Description>{t("earnings.recentDescription")}</Frame.Description>
         </View>
         <View className="flex-row items-center gap-2">
           <View className="size-2 rounded-full bg-success" />
@@ -354,8 +354,8 @@ function RecentEarningsWidget({
             {t("earnings.settled")}
           </PanelTypography>
         </View>
-      </PanelCard.Header>
-      <PanelCard.Content className="overflow-hidden p-0">
+      </Frame.Header>
+      <Frame.Panel className="overflow-hidden p-0">
         {entries.map((entry, index) => (
           <View key={entry.id}>
             <View className="flex-row gap-3 px-4 py-3.5">
@@ -396,8 +396,8 @@ function RecentEarningsWidget({
             </View>
           </View>
         ))}
-      </PanelCard.Content>
-    </PanelCard>
+      </Frame.Panel>
+    </Frame>
   );
 }
 
@@ -527,14 +527,15 @@ export default function EarningsScreen(): React.JSX.Element {
               {t("earnings.settledSalesFor", { period: periodLabel })}
             </Typography>
             <PanelSelect
+              triggerClassName="h-12"
               presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
               value={dateRangeValue}
               valueLabel={dateRangeLabel}
               onValueChange={handleRangeChange}
               title={t("earnings.dateRange")}
               placeholder={t("earnings.dateRange")}
-              size="sm"
-              className={isCompact ? "min-w-40" : undefined}
+              size="md"
+              className={isCompact ? "w-full max-w-56" : "w-56"}
             >
               {dateRangeOptions.map((option) => (
                 <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
@@ -575,88 +576,108 @@ export default function EarningsScreen(): React.JSX.Element {
             </View>
           ) : (
             <>
-              <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
-                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("earnings.settledEarnings")}</Kpi.Title>
-                    <Kpi.Icon tone="good">
-                      <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
-                    <PanelTypography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
+              <Frame variant="plain">
+                <Frame.Panel className="p-4">
+                  <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
+                    <View
+                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
                     >
-                      {formatRupiah(totalEarnings)}
-                    </PanelTypography>
-                  </Kpi.Content>
-                </Kpi>
-                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("earnings.settledOrders")}</Kpi.Title>
-                    <Kpi.Icon tone="neutral">
-                      <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
-                    <PanelTypography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
+                      <Kpi>
+                        <Kpi.Header>
+                          <Kpi.Title>{t("earnings.settledEarnings")}</Kpi.Title>
+                          <Kpi.Icon tone="good">
+                            <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+                          </Kpi.Icon>
+                        </Kpi.Header>
+                        <Kpi.Content>
+                          <PanelTypography
+                            type="h4"
+                            weight="bold"
+                            className="tabular-nums"
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.72}
+                          >
+                            {formatRupiah(totalEarnings)}
+                          </PanelTypography>
+                        </Kpi.Content>
+                      </Kpi>
+                    </View>
+                    <View
+                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
                     >
-                      {String(data.length)}
-                    </PanelTypography>
-                  </Kpi.Content>
-                </Kpi>
-                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("earnings.averageOrder")}</Kpi.Title>
-                    <Kpi.Icon tone="flat">
-                      <AppIcon icon={AppIcons.analytics} size={18} color={metricWarning} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
-                    <PanelTypography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
+                      <Kpi>
+                        <Kpi.Header>
+                          <Kpi.Title>{t("earnings.settledOrders")}</Kpi.Title>
+                          <Kpi.Icon tone="neutral">
+                            <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+                          </Kpi.Icon>
+                        </Kpi.Header>
+                        <Kpi.Content>
+                          <PanelTypography
+                            type="h4"
+                            weight="bold"
+                            className="tabular-nums"
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.72}
+                          >
+                            {String(data.length)}
+                          </PanelTypography>
+                        </Kpi.Content>
+                      </Kpi>
+                    </View>
+                    <View
+                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
                     >
-                      {formatRupiah(averageOrder)}
-                    </PanelTypography>
-                  </Kpi.Content>
-                </Kpi>
-                <Kpi className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Kpi.Header>
-                    <Kpi.Title>{t("earnings.itemsSold")}</Kpi.Title>
-                    <Kpi.Icon tone="neutral">
-                      <AppIcon icon={AppIcons.bag} size={18} color={metricDefault} />
-                    </Kpi.Icon>
-                  </Kpi.Header>
-                  <Kpi.Content>
-                    <PanelTypography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
+                      <Kpi>
+                        <Kpi.Header>
+                          <Kpi.Title>{t("earnings.averageOrder")}</Kpi.Title>
+                          <Kpi.Icon tone="flat">
+                            <AppIcon icon={AppIcons.analytics} size={18} color={metricWarning} />
+                          </Kpi.Icon>
+                        </Kpi.Header>
+                        <Kpi.Content>
+                          <PanelTypography
+                            type="h4"
+                            weight="bold"
+                            className="tabular-nums"
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.72}
+                          >
+                            {formatRupiah(averageOrder)}
+                          </PanelTypography>
+                        </Kpi.Content>
+                      </Kpi>
+                    </View>
+                    <View
+                      className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}
                     >
-                      {String(itemCount)}
-                    </PanelTypography>
-                  </Kpi.Content>
-                </Kpi>
-              </View>
+                      <Kpi>
+                        <Kpi.Header>
+                          <Kpi.Title>{t("earnings.itemsSold")}</Kpi.Title>
+                          <Kpi.Icon tone="neutral">
+                            <AppIcon icon={AppIcons.bag} size={18} color={metricDefault} />
+                          </Kpi.Icon>
+                        </Kpi.Header>
+                        <Kpi.Content>
+                          <PanelTypography
+                            type="h4"
+                            weight="bold"
+                            className="tabular-nums"
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.72}
+                          >
+                            {String(itemCount)}
+                          </PanelTypography>
+                        </Kpi.Content>
+                      </Kpi>
+                    </View>
+                  </View>
+                </Frame.Panel>
+              </Frame>
 
               {data.length === 0 ? (
                 <EmptyState className="py-16">

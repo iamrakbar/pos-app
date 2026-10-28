@@ -554,9 +554,7 @@ function PaymentFields({
             </View>
           </PanelRadioGroup>
         )}
-        {errors.payment_id ? (
-          <Field.Error>{errors.payment_id.message}</Field.Error>
-        ) : null}
+        {errors.payment_id ? <Field.Error>{errors.payment_id.message}</Field.Error> : null}
       </View>
 
       {selectedPayment?.tender_input.type === "reference" ? (
@@ -616,9 +614,7 @@ function PaymentFields({
               </Typography>
             </View>
           </View>
-          {errors.tender_value ? (
-            <Field.Error>{errors.tender_value.message}</Field.Error>
-          ) : null}
+          {errors.tender_value ? <Field.Error>{errors.tender_value.message}</Field.Error> : null}
         </View>
       ) : null}
     </>
@@ -691,6 +687,7 @@ function CustomerFields({
       {customerType === "guest" ? (
         <View className="gap-2">
           <PanelSelect
+            triggerClassName="h-12"
             presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
             value={guestId ?? undefined}
             valueLabel={guests.find((guest) => guest.id === guestId)?.name}
@@ -702,9 +699,7 @@ function CustomerFields({
               <PanelSelect.Item key={guest.id} value={guest.id} label={guest.name} />
             ))}
           </PanelSelect>
-          {errors.guest_id ? (
-            <Field.Error>{errors.guest_id.message}</Field.Error>
-          ) : null}
+          {errors.guest_id ? <Field.Error>{errors.guest_id.message}</Field.Error> : null}
         </View>
       ) : null}
 
@@ -731,7 +726,7 @@ function CustomerFields({
               onPress={() => setValue("customer_id", customer.id)}
               className={cn(
                 "rounded-lg px-3 py-2",
-                customerId === customer.id ? "bg-accent/10" : "bg-surface-secondary"
+                customerId === customer.id ? "bg-primary/10" : "bg-surface-secondary"
               )}
             >
               <Typography type="body-sm" weight="semibold">
@@ -744,9 +739,7 @@ function CustomerFields({
               ) : null}
             </Pressable>
           ))}
-          {errors.customer_id ? (
-            <Field.Error>{errors.customer_id.message}</Field.Error>
-          ) : null}
+          {errors.customer_id ? <Field.Error>{errors.customer_id.message}</Field.Error> : null}
         </View>
       ) : null}
     </View>

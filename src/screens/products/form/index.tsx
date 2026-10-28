@@ -266,7 +266,7 @@ function ProductImageCard({
             />
           ) : (
             <>
-              <View className="size-14 items-center justify-center rounded-full bg-accent">
+              <View className="size-14 items-center justify-center rounded-full bg-secondary">
                 <AppIcon icon={AppIcons.image} size={26} color={accentColor} />
               </View>
               <View className="items-center gap-1 px-6">
@@ -333,7 +333,7 @@ function ProductDetailsCard({
                   onValueChange={onChange}
                   disabled={areCategoriesLoading || didCategoriesFail}
                   className="flex-1"
-                  triggerClassName={errors.category_id ? "border-destructive" : undefined}
+                  triggerClassName={errors.category_id ? "h-12 border-destructive" : "h-12"}
                   placeholder={t("productForm.selectCategory")}
                   title={t("productForm.category")}
                 >
@@ -482,7 +482,7 @@ function ProductInventoryFields({
                   return;
                 onChange(next);
               }}
-              triggerClassName={errors.inventory_mode ? "border-destructive" : undefined}
+              triggerClassName={errors.inventory_mode ? "h-12 border-destructive" : "h-12"}
               placeholder={t("productForm.inventoryModePlaceholder")}
               title={t("productForm.inventoryMode")}
             >
@@ -968,6 +968,7 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
       <PanelLabel>{t("productForm.discountOptional")}</PanelLabel>
       <View className="flex-row items-center gap-2">
         <PanelSelect
+          triggerClassName="h-12"
           presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
           value={selectedOption?.value}
           valueLabel={selectedOption?.label}

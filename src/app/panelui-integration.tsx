@@ -151,6 +151,7 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
               />
               <Label>Select sheet</Label>
               <Select
+                triggerClassName="h-12"
                 key={`sheet-${selectGeneration}`}
                 value={value}
                 onValueChange={setValue}
@@ -162,6 +163,7 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
               </Select>
               <Label>Select overlay</Label>
               <Select
+                triggerClassName="h-12"
                 key={`overlay-${selectGeneration}`}
                 value={value}
                 onValueChange={setValue}

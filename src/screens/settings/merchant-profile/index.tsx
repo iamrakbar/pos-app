@@ -291,7 +291,7 @@ function MerchantImageSlot({
           />
         ) : (
           <>
-            <View className="size-12 items-center justify-center rounded-full bg-accent">
+            <View className="size-12 items-center justify-center rounded-full bg-secondary">
               <AppIcon icon={AppIcons.image} size={22} color={accentColor} />
             </View>
             <Typography type="body-sm" weight="semibold">

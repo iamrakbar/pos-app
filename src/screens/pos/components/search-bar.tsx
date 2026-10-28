@@ -107,14 +107,15 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
             />
           </PanelButton>
           <PanelSelect
+            triggerClassName={choicePresentation === "popover" ? "h-12" : "h-8"}
             presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
             value={selectedSort.value}
             valueLabel={selectedSort.label}
             onValueChange={(value) => setProductSort(value as ProductSort)}
             title={t("pos.sortProducts")}
             placeholder={t("pos.sortProducts")}
-            size="xs"
-            className="w-28"
+            size={choicePresentation === "popover" ? "md" : "xs"}
+            className={choicePresentation === "popover" ? "w-56" : "w-28"}
           >
             {sortOptions.map((option) => (
               <PanelSelect.Item key={option.value} value={option.value} label={option.label} />

@@ -73,7 +73,7 @@ export default function CartItemRow({ item, product }: Props): JSX.Element {
           <Typography
             type="body-sm"
             muted={!hasDiscount}
-            className={cn("tabular-nums", hasDiscount && "text-accent")}
+            className={cn("tabular-nums", hasDiscount && "text-primary")}
           >
             {formatRupiah(item.price)}
           </Typography>
