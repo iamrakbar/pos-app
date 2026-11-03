@@ -202,8 +202,9 @@ These checkboxes record completed implementation work. The broader P1 requiremen
 - [x] Replace table capacity Input with PanelUI NumberInput, retaining the minimum of one, integer step, string-valued form state, and live table-seat preview.
 - [x] Convert remaining legacy accent utility classes to PanelUI primary or secondary roles; use `oklch(71.4% 0.122 209.33)` for primary, focus ring, and chart series in both themes, without custom accent overrides.
 - [x] Replace printer connection/paper-width and receipt layout/preview-size, ingredient unit, supplier offer, product category/inventory mode/discount, and preference selectors, POS and discount search fields, and checkout slide-to-pay and payment radio options with PanelUI controls.
-- [x] Replace the receipt preview SplitView with PanelUI SplitView while retaining snap points and its localized resize label.
+- [x] Replace the receipt preview SplitView with PanelUI SplitView, retaining a localized resize label and giving the form more height in portrait.
 - [x] Apply measured bottom safe-area padding to the receipt setup form pane and right inset in landscape; leave the stack header responsible for the top inset and keep extra scroll space above the form action.
+- [x] Use orientation as the receipt setup breakpoint: portrait uses a resizable SplitView with a smaller preview on phone widths; landscape keeps side-by-side panes.
 - [x] Extract POS add-on selection mapping into a nonvisual utility and cover a 25-group, 200-option case, including mixed selection types and stale option IDs; device performance remains unverified.
 - [x] Replace POS add-on notes, typography, surfaces, separators, footer buttons, status chips, and error text with PanelUI while retaining the TrueSheet footer and focus behavior.
 - [x] Refine POS add-on card choices with separate option prices, an explicit None choice for optional single selection, selection progress for capped multiple selection, and measured bottom safe-area padding for the TrueSheet actions.

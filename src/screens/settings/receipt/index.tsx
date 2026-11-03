@@ -185,33 +185,35 @@ function ReceiptPreviewSection({
 
 function ReceiptSetupLayout({
   isPortrait,
+  isCompact,
   children,
-}: React.PropsWithChildren<{ isPortrait: boolean }>) {
+}: React.PropsWithChildren<{ isPortrait: boolean; isCompact: boolean }>) {
   const { t } = useTranslation();
   const [preview, form] = React.Children.toArray(children);
 
-  if (!isPortrait) {
+  if (isPortrait) {
     return (
-      <View className="min-h-0 flex-1 flex-row items-stretch">
-        <View className="min-h-0 flex-1">{preview}</View>
-        <View className="min-h-0 w-1/2 min-w-80">{form}</View>
-      </View>
+      <SplitView
+        className="min-h-0 flex-1"
+        snapPoints={isCompact ? [0.16, 0.24, 0.4] : [0.24, 0.32, 0.42]}
+        defaultSnapIndex={1}
+        minHeight={isCompact ? 0.16 : 0.24}
+        maxHeight={isCompact ? 0.4 : 0.42}
+      >
+        <SplitView.Top className="min-h-0">{preview}</SplitView.Top>
+        <SplitView.DragArea accessibilityLabel={t("receiptSettings.resizePreview")}>
+          <SplitView.Handle />
+        </SplitView.DragArea>
+        <SplitView.Bottom className="min-h-0">{form}</SplitView.Bottom>
+      </SplitView>
     );
   }
 
   return (
-    <SplitView
-      snapPoints={[0.32, 0.42, 0.52]}
-      defaultSnapIndex={1}
-      minHeight={0.28}
-      maxHeight={0.58}
-    >
-      <SplitView.Top className="min-h-0">{preview}</SplitView.Top>
-      <SplitView.DragArea accessibilityLabel={t("receiptSettings.resizePreview")}>
-        <SplitView.Handle />
-      </SplitView.DragArea>
-      <SplitView.Bottom className="min-h-0">{form}</SplitView.Bottom>
-    </SplitView>
+    <View className="min-h-0 flex-1 flex-row items-stretch">
+      <View className="min-h-0 flex-1">{preview}</View>
+      <View className="min-h-0 w-1/2 min-w-80">{form}</View>
+    </View>
   );
 }
 
@@ -227,7 +229,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const configuredPaperWidth = usePrinterStore((state) => state.settings.paperWidth);
   const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const configuredLogoWidthDots = usePrinterStore((state) => state.settings.logoWidthDots);
-  const { isPortrait } = useResponsiveLayout();
+  const { isPortrait, isCompact } = useResponsiveLayout();
   const { choicePresentation } = useOverlayPresentation();
   const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useCSSVariable([
     "--color-muted-foreground",
@@ -321,7 +323,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
     <>
       <View className="flex-1 bg-background">
         <View className="min-h-0 w-full flex-1 self-center">
-          <ReceiptSetupLayout isPortrait={isPortrait}>
+          <ReceiptSetupLayout isPortrait={isPortrait} isCompact={isCompact}>
             <ReceiptPreviewSection
               settings={settings}
               previewPaperWidth={previewPaperWidth}
@@ -333,7 +335,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
             />
 
             <View
-              className="min-h-0 flex-1 overflow-hidden bg-surface"
+              className="min-h-0 flex-1 overflow-hidden bg-background landscape:bg-surface"
               style={{ paddingRight: isPortrait ? 0 : insets.right, paddingBottom: insets.bottom }}
             >
               <KeyboardAwareScrollView
