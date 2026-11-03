@@ -200,6 +200,7 @@ function OrderCancelAction({
             {t("orders.detail.cancelOrderDescription")}
           </PanelDialog.Description>
           <PanelTextarea
+            size="sm"
             label={t("orders.detail.cancellationReason")}
             value={cancelReason}
             onChangeText={(value) => {

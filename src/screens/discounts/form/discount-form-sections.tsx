@@ -1,9 +1,13 @@
-import { Typography ,
+import {
+  Typography,
   Button as PanelButton,
   DatePicker,
   Input as PanelInput,
   Label as PanelLabel,
-  Typography as PanelTypography, Card, Switch } from "panelui-native";
+  Typography as PanelTypography,
+  Card,
+  Switch,
+} from "panelui-native";
 import { formatLocalDate, parseLocalDate } from "@/utils/local-date";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -20,13 +24,11 @@ export function DiscountDetailsCard({
   control,
   errors,
   localeTag,
-  presentation,
   t,
 }: {
   control: Control<DiscountFormValues>;
   errors: FieldErrors<DiscountFormValues>;
   localeTag: string;
-  presentation: "popover" | "bottom-sheet";
   t: Translate;
 }) {
   const unit = useWatch({ control, name: "unit" });
@@ -64,6 +66,7 @@ export function DiscountDetailsCard({
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               label={t("discounts.name")}
               value={value}
@@ -97,6 +100,7 @@ export function DiscountDetailsCard({
           )}
         />
         <PanelInput
+          size="sm"
           ref={discountValueRef}
           label={t("discounts.value")}
           placeholder="0"
@@ -135,7 +139,7 @@ export function DiscountDetailsCard({
                       }
                       onSelect={(date) => onChange(date ? formatLocalDate(date) : "")}
                       locale={localeTag}
-                      presentation={presentation}
+                      presentation="bottom-sheet"
                     >
                       <PanelButton
                         variant="outline"

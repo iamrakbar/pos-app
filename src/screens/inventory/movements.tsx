@@ -76,12 +76,12 @@ const TABLE_COLUMNS = [
   { id: "balance_after", width: 150, label: "movements.balanceAfter" },
   { id: "cost_per_unit", width: 150, label: "movements.costPerUnit" },
   { id: "total_cost", width: 150, label: "movements.totalCost" },
-  { id: "source", width: 150, label: "movements.source" },
+  { id: "source", width: 240, label: "movements.source" },
   { id: "reason", width: 220, label: "movements.reason" },
   { id: "actor", width: 170, label: "movements.actor" },
   { id: "moved_at", width: 180, label: "movements.movedAt" },
 ] as const;
-const SKELETON_COLUMN_WIDTHS = [150, 220, 150, 150, 150, 150, 150, 220, 170, 180];
+const SKELETON_COLUMN_WIDTHS = [150, 220, 150, 150, 150, 150, 240, 220, 170, 180];
 const SKELETON_CELL_WIDTHS = [
   "w-32",
   "w-16",
@@ -94,7 +94,15 @@ const SKELETON_CELL_WIDTHS = [
   "w-28",
 ];
 const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
-const TABLE_WIDTH = TABLE_COLUMNS.reduce((sum, column) => sum + column.width, 0);
+// Table.Row adds 16 points of padding on each side and 12 points between columns.
+const TABLE_WIDTH =
+  TABLE_COLUMNS.reduce((sum, column) => sum + column.width, 0) +
+  32 +
+  (TABLE_COLUMNS.length - 1) * 12;
+const SKELETON_TABLE_WIDTH =
+  SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) +
+  32 +
+  (SKELETON_COLUMN_WIDTHS.length - 1) * 12;
 const MOVEMENT_TYPE_COLORS: Record<
   InventoryMovementType,
   "primary" | "success" | "warning" | "destructive"
@@ -222,12 +230,14 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {query.isLoading ? (
-          <ScrollView className="flex-1" contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6">
-            <ScrollView horizontal>
-              <View
-                style={{ width: SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) }}
-                accessibilityRole="progressbar"
-              >
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+          >
+            <ScrollView horizontal scrollEnabled={false} showsHorizontalScrollIndicator={false}>
+              <View style={{ width: SKELETON_TABLE_WIDTH }} accessibilityRole="progressbar">
                 <Table.Frame columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
                   <Table.Header>
                     <Table.Row>
@@ -327,7 +337,11 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                           return (
                             <Table.Row key={movement.id}>
                               <Table.Cell>
-                                <Chip size="sm" variant={MOVEMENT_TYPE_COLORS[movement.type]}>
+                                <Chip
+                                  size="sm"
+                                  variant={MOVEMENT_TYPE_COLORS[movement.type]}
+                                  labelClassName="text-nowrap"
+                                >
                                   {t(`movements.types.${movement.type}` as TranslationKey)}
                                 </Chip>
                               </Table.Cell>
@@ -342,7 +356,9 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                                     {formatSignedQuantity(movement.quantity)}
                                   </PanelTypography>
                                   {movement.ingredient?.base_unit ? (
-                                    <Chip size="sm">{movement.ingredient.base_unit}</Chip>
+                                    <Chip size="sm" labelClassName="text-nowrap">
+                                      {movement.ingredient.base_unit}
+                                    </Chip>
                                   ) : null}
                                 </View>
                               </Table.Cell>
@@ -361,7 +377,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                               </Table.Cell>
                               <Table.Cell>
                                 {movement.source ? (
-                                  <Chip size="sm">
+                                  <Chip size="sm" labelClassName="text-nowrap">
                                     {sourceKey
                                       ? t(sourceKey)
                                       : normalizeInventorySource(movement.source)}

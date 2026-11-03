@@ -45,7 +45,6 @@ function CartOrderControls({
   checkoutForm,
   selectedTable,
   choicePresentation,
-  pickerPresentation,
   locale,
   t,
   colorAccent,
@@ -54,7 +53,6 @@ function CartOrderControls({
   checkoutForm: CheckoutFormState;
   selectedTable: POSTable | undefined;
   choicePresentation: OverlayChoicePresentation;
-  pickerPresentation: OverlayChoicePresentation;
   locale: Locale;
   t: ReturnType<typeof useTranslation>["t"];
   colorAccent: string;
@@ -75,13 +73,14 @@ function CartOrderControls({
     : undefined;
 
   return (
-    <View className="h-12 min-w-0 flex-1 flex-row items-center gap-2">
+    <View className="min-h-12 min-w-0 flex-1 flex-row items-center gap-2">
       <PanelSelect
-        triggerClassName="h-12"
-        className={choicePresentation === "popover" ? "w-32 shrink-0" : "min-w-0 flex-1"}
-        presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+        triggerClassName="w-full"
+        className={choicePresentation === "popover" ? "w-40 shrink-0" : "min-w-0 flex-1"}
+        presentation="sheet"
         value={checkoutForm.order_type}
-        size="md"
+        size="sm"
+        contentWidth="content"
         title={t("orders.detail.orderType")}
         onValueChange={(value) => {
           const orderType = value as "dine-in" | "takeaway";
@@ -97,8 +96,8 @@ function CartOrderControls({
           });
         }}
       >
-        <PanelSelect.Item value="dine-in" label={t("pos.dineIn")} />
-        <PanelSelect.Item value="takeaway" label={t("pos.takeaway")} />
+        <PanelSelect.Item value="dine-in" label={t("pos.dineIn")} labelClassName="text-nowrap" />
+        <PanelSelect.Item value="takeaway" label={t("pos.takeaway")} labelClassName="text-nowrap" />
       </PanelSelect>
 
       {checkoutForm.order_type === "dine-in" ? (
@@ -108,7 +107,7 @@ function CartOrderControls({
           hourCycle={24}
           minuteStep={TIME_PICKER_INTERVAL_MINUTES}
           locale={getLocaleTag(locale)}
-          presentation={pickerPresentation}
+          presentation="bottom-sheet"
           value={pickupValue}
           minTime={minimumPickupValue}
           disabled={!nextPickupTime}
@@ -121,8 +120,8 @@ function CartOrderControls({
         >
           <PanelButton
             variant="outline"
-            size="md"
-            className="h-12"
+            size="sm"
+            className="min-h-10"
             endContent={<AppIcon icon={AppIcons.time} size={12} color={colorAccent} />}
           >
             {checkoutForm.pickup_time ?? t("pos.pickupTime")}
@@ -140,7 +139,6 @@ function CartHeader({
   cartProducts,
   selectedTable,
   choicePresentation,
-  pickerPresentation,
   locale,
   t,
   colorAccent,
@@ -152,7 +150,6 @@ function CartHeader({
   cartProducts: CartItem[];
   selectedTable: POSTable | undefined;
   choicePresentation: OverlayChoicePresentation;
-  pickerPresentation: OverlayChoicePresentation;
   locale: Locale;
   t: ReturnType<typeof useTranslation>["t"];
   colorAccent: string;
@@ -182,7 +179,6 @@ function CartHeader({
             checkoutForm={checkoutForm}
             selectedTable={selectedTable}
             choicePresentation={choicePresentation}
-            pickerPresentation={pickerPresentation}
             locale={locale}
             t={t}
             colorAccent={colorAccent}
@@ -330,7 +326,7 @@ export default function CartContent(): JSX.Element {
   const { present } = useTrueSheet();
   const { isCompact, isPortrait } = useResponsiveLayout();
   const { locale, t } = useTranslation();
-  const { choicePresentation, pickerPresentation } = useOverlayPresentation();
+  const { choicePresentation } = useOverlayPresentation();
   const [colorAccent, colorMuted, colorDanger] = useCSSVariable([
     "--color-primary",
     "--color-muted-foreground",
@@ -368,7 +364,6 @@ export default function CartContent(): JSX.Element {
         cartProducts={cartProducts}
         selectedTable={selectedTable}
         choicePresentation={choicePresentation}
-        pickerPresentation={pickerPresentation}
         locale={locale}
         t={t}
         colorAccent={colorAccent}

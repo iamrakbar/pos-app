@@ -84,6 +84,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
         <DrawerMenuButton />
         <View className="flex-1">
           <PanelSearchBar
+            size="sm"
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder={t("pos.searchProducts")}
@@ -107,18 +108,23 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
             />
           </PanelButton>
           <PanelSelect
-            triggerClassName="h-12"
-            presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+            presentation="sheet"
             value={selectedSort.value}
             valueLabel={selectedSort.label}
             onValueChange={(value) => setProductSort(value as ProductSort)}
             title={t("pos.sortProducts")}
             placeholder={t("pos.sortProducts")}
-            size="md"
+            size="sm"
+            contentWidth="content"
             className={choicePresentation === "popover" ? "w-56" : "w-28"}
           >
             {sortOptions.map((option) => (
-              <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
+              <PanelSelect.Item
+                key={option.value}
+                value={option.value}
+                label={option.label}
+                labelClassName="text-nowrap"
+              />
             ))}
           </PanelSelect>
         </View>

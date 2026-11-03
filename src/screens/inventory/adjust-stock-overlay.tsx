@@ -122,6 +122,7 @@ export default function AdjustStockOverlay({
   const content = (
     <View className="gap-4 px-5">
       <PanelInput
+        size="sm"
         label={t("ingredients.targetBalance")}
         placeholder={t("ingredients.targetBalancePlaceholder")}
         keyboardType="decimal-pad"
@@ -160,6 +161,7 @@ export default function AdjustStockOverlay({
         name="reason"
         render={({ field: { value, onChange } }) => (
           <PanelTextarea
+            size="sm"
             label={t("ingredients.reason")}
             placeholder={t("ingredients.reasonPlaceholder")}
             errorMessage={errors.reason?.message}

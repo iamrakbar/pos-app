@@ -24,7 +24,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
   Controller,
   useController,
@@ -109,7 +108,6 @@ function PrinterDetailsCard({
   onConnectionChange: (connection: ConnectionType) => void;
 }) {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
 
   return (
     <Card className="p-4">
@@ -124,13 +122,13 @@ function PrinterDetailsCard({
             name="name"
             render={({ field: { value, onChange } }) => (
               <PanelInput
+                size="sm"
                 label={t("printerForm.name")}
                 isRequired
                 errorMessage={errors.name?.message}
                 value={value}
                 onChangeText={onChange}
                 placeholder={t("printerForm.namePlaceholder")}
-
               />
             )}
           />
@@ -145,9 +143,9 @@ function PrinterDetailsCard({
             name="connection"
             render={({ field: { value, onChange } }) => (
               <PanelSelect
-                triggerClassName="h-12"
+                size="sm"
                 value={value}
-                presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                presentation="sheet"
                 placeholder={t("printerForm.selectConnection")}
                 title={t("printerForm.connectionType")}
                 onValueChange={(next) => {
@@ -294,13 +292,13 @@ function PrinterConnectionCard({
                 name="macAddress"
                 render={({ field: { value, onChange } }) => (
                   <PanelInput
+                    size="sm"
                     label={t("printerForm.macAddress")}
                     errorMessage={errors.macAddress?.message}
                     value={value}
                     onChangeText={onChange}
                     placeholder="00:00:00:00:00:00"
                     autoCapitalize="characters"
-
                   />
                 )}
               />
@@ -314,6 +312,7 @@ function PrinterConnectionCard({
                 name="ipAddress"
                 render={({ field: { value, onChange } }) => (
                   <PanelInput
+                    size="sm"
                     label={t("printerForm.ipAddress")}
                     isRequired
                     errorMessage={errors.ipAddress?.message}
@@ -321,7 +320,6 @@ function PrinterConnectionCard({
                     onChangeText={onChange}
                     placeholder="192.168.1.100"
                     keyboardType="decimal-pad"
-
                   />
                 )}
               />
@@ -329,6 +327,7 @@ function PrinterConnectionCard({
 
             <View>
               <PanelInput
+                size="sm"
                 ref={portFieldRef}
                 label={t("printerForm.port")}
                 placeholder={PORT}
@@ -353,7 +352,6 @@ function ReceiptSetupCard({
   paperWidth,
 }: PrinterFieldsProps & { paperWidth: PaperWidth }) {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
   const {
     field: {
       value: charactersFieldValue,
@@ -403,9 +401,9 @@ function ReceiptSetupCard({
             name="paperWidth"
             render={({ field: { value, onChange } }) => (
               <PanelSelect
-                triggerClassName="h-12"
+                size="sm"
                 value={value}
-                presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                presentation="sheet"
                 placeholder={t("printerForm.selectSize")}
                 title={t("printerForm.receiptSize")}
                 onValueChange={(next) => {
@@ -430,6 +428,7 @@ function ReceiptSetupCard({
 
         <View>
           <PanelInput
+            size="sm"
             ref={charactersFieldRef}
             label={t("printerForm.charactersPerLine")}
             description={t("printerForm.charactersRecommendation")}
@@ -444,6 +443,7 @@ function ReceiptSetupCard({
 
         <View>
           <PanelInput
+            size="sm"
             ref={logoWidthFieldRef}
             label={t("printerForm.logoWidth")}
             description={t("printerForm.logoRecommendation")}

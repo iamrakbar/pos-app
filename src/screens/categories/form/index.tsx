@@ -1,4 +1,5 @@
-import { Typography ,
+import {
+  Typography,
   Spinner as PanelLoadingSpinner,
   Typography as PanelLoadingText,
   Button as PanelButton,
@@ -9,7 +10,9 @@ import { Typography ,
   useToast,
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
-  Textarea as PanelTextarea, Card } from "panelui-native";
+  Textarea as PanelTextarea,
+  Card,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
@@ -222,6 +225,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
               name="name"
               render={({ field: { value, onChange, onBlur, ref } }) => (
                 <PanelInput
+                  size="sm"
                   label={t("categories.name")}
                   isRequired
                   errorMessage={errors.name?.message}
@@ -239,6 +243,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
               name="description"
               render={({ field: { value, onChange, onBlur, ref } }) => (
                 <PanelTextarea
+                  size="sm"
                   label={t("categories.description")}
                   errorMessage={errors.description?.message}
                   ref={ref}
@@ -251,6 +256,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
             />
 
             <PanelInput
+              size="sm"
               ref={positionFieldRef}
               label={t("categories.position")}
               description={t("categories.positionDescription")}
@@ -299,7 +305,11 @@ export default function CategoryFormScreen(): React.JSX.Element {
           <PanelButton variant="ghost" onPress={() => router.back()} disabled={isSaving}>
             {t("common.cancel")}
           </PanelButton>
-          <PanelButton className="flex-1" onPress={handleSubmit(submitCategory)} disabled={isSaving}>
+          <PanelButton
+            className="flex-1"
+            onPress={handleSubmit(submitCategory)}
+            disabled={isSaving}
+          >
             {isSaving ? t("common.saving") : t("categories.save")}
           </PanelButton>
         </View>

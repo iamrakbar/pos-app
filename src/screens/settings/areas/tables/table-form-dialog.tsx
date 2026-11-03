@@ -153,6 +153,7 @@ export default function TableFormDialog({
         name="name"
         render={({ field: { value, onChange } }) => (
           <PanelInput
+            size="sm"
             label={t("areasManagement.name")}
             placeholder={t("areasManagement.tableNamePlaceholder")}
             errorMessage={errors.name?.message}
@@ -172,6 +173,7 @@ export default function TableFormDialog({
           />
         </Animated.View>
         <NumberInput
+          size="sm"
           label={t("areasManagement.capacity")}
           errorMessage={errors.pax?.message}
           isRequired

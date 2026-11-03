@@ -1,10 +1,13 @@
-import { Typography ,
+import {
+  Typography,
   Spinner as PanelLoadingSpinner,
   Typography as PanelLoadingText,
   useToast,
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
-  Input as PanelInput, Card } from "panelui-native";
+  Input as PanelInput,
+  Card,
+} from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAccountProfile, useUpdateAccountProfile } from "@/hooks/db/use-account-profile";
 import { createAccountSchema, type AccountFormValues } from "@/schemas/account";
@@ -183,6 +186,7 @@ function AccountForm({
               name="name"
               render={({ field: { value, onChange, onBlur, ref } }) => (
                 <PanelInput
+                  size="sm"
                   ref={ref}
                   label={t("profile.name")}
                   value={value}
@@ -200,6 +204,7 @@ function AccountForm({
               name="email"
               render={({ field: { value } }) => (
                 <PanelInput
+                  size="sm"
                   label={t("profile.email")}
                   value={value}
                   editable={false}
@@ -210,6 +215,7 @@ function AccountForm({
             />
 
             <PanelInput
+              size="sm"
               label={t("profile.role")}
               value={roleOption?.label ?? t("profile.role")}
               editable={false}
@@ -217,6 +223,7 @@ function AccountForm({
               description={t("profile.readOnly")}
             />
             <PanelInput
+              size="sm"
               label={t("profile.merchants")}
               value={
                 merchantOptions.map((merchant) => merchant.label).join(", ") ||
@@ -239,7 +246,11 @@ function AccountForm({
             <PanelErrorButton variant="ghost" onPress={onCancel} disabled={isPending}>
               {t("common.cancel")}
             </PanelErrorButton>
-            <PanelErrorButton className="flex-1" onPress={onSubmit} disabled={!isDirty || isPending}>
+            <PanelErrorButton
+              className="flex-1"
+              onPress={onSubmit}
+              disabled={!isDirty || isPending}
+            >
               {isPending ? t("common.saving") : t("profile.saveChanges")}
             </PanelErrorButton>
           </View>

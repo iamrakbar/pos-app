@@ -42,7 +42,6 @@ import type { Control, FieldErrors } from "react-hook-form";
 import { Controller, useController, useForm } from "react-hook-form";
 import { Pressable as ActiveFieldPressable, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 
 const INGREDIENT_FIELDS = new Set<keyof IngredientFormValues>([
   "name",
@@ -122,7 +121,6 @@ function IngredientFormCard({
   errors: FieldErrors<IngredientFormValues>;
   t: Translate;
 }): React.JSX.Element {
-  const { choicePresentation } = useOverlayPresentation();
   const {
     field: {
       value: costFieldValue,
@@ -180,6 +178,7 @@ function IngredientFormCard({
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               label={t("ingredients.name")}
               value={value}
@@ -193,6 +192,7 @@ function IngredientFormCard({
         />
 
         <PanelInput
+          size="sm"
           ref={costFieldRef}
           label={t("ingredients.costPerUnit")}
           placeholder={t("ingredients.costPerUnitPlaceholder")}
@@ -217,12 +217,13 @@ function IngredientFormCard({
                 {t("ingredients.unit")}
               </PanelLabel>
               <PanelSelect
-                presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                size="sm"
+                presentation="sheet"
                 value={value}
                 onValueChange={onChange}
                 placeholder={t("ingredients.unitPlaceholder")}
                 title={t("ingredients.unit")}
-                triggerClassName={errors.base_unit ? "h-12 border-destructive" : "h-12"}
+                triggerClassName={errors.base_unit ? "border-destructive" : undefined}
               >
                 {unitOptions.map((option) => (
                   <PanelSelect.Item key={option.value} {...option} />
@@ -251,6 +252,7 @@ function IngredientFormCard({
               -
             </PanelButton>
             <PanelInput
+              size="sm"
               className="flex-1"
               label={t("ingredients.reorderPoint")}
               keyboardType="decimal-pad"
@@ -291,6 +293,7 @@ function IngredientFormCard({
                 -
               </PanelButton>
               <PanelInput
+                size="sm"
                 className="flex-1"
                 label={t("ingredients.initialQuantity")}
                 keyboardType="decimal-pad"

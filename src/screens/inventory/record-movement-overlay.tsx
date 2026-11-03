@@ -31,7 +31,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { Controller, useController, useForm } from "react-hook-form";
 import { View } from "react-native";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
   mapServerErrors,
   QUANTITY_FORMAT_OPTIONS,
@@ -49,7 +48,6 @@ export default function RecordMovementOverlay({
 }): React.JSX.Element {
   const { locale, t } = useTranslation();
   const { toast } = useToast();
-  const { choicePresentation } = useOverlayPresentation();
   const mutation = useRecordIngredientMovement(ingredient.id);
   const schema = createIngredientMovementSchema(t);
   const movementOptions = INGREDIENT_MOVEMENT_TYPES.map((type) => ({
@@ -156,12 +154,13 @@ export default function RecordMovementOverlay({
               {t("ingredients.movementType")}
             </PanelLabel>
             <PanelSelect
-              presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+              size="sm"
+              presentation="sheet"
               value={value}
               onValueChange={onChange}
               placeholder={t("ingredients.movementTypePlaceholder")}
               title={t("ingredients.movementType")}
-              triggerClassName={errors.type ? "h-12 border-destructive" : "h-12"}
+              triggerClassName={errors.type ? "border-destructive" : undefined}
             >
               {movementOptions.map((option) => (
                 <PanelSelect.Item key={option.value} {...option} />
@@ -177,6 +176,7 @@ export default function RecordMovementOverlay({
       />
 
       <PanelInput
+        size="sm"
         label={t("ingredients.quantity")}
         placeholder={t("ingredients.quantityPlaceholder")}
         keyboardType="decimal-pad"
@@ -211,6 +211,7 @@ export default function RecordMovementOverlay({
       />
 
       <PanelInput
+        size="sm"
         ref={costRef}
         label={t("ingredients.movementCostPerUnit")}
         placeholder={t("ingredients.movementCostPerUnitPlaceholder")}
@@ -235,6 +236,7 @@ export default function RecordMovementOverlay({
         name="reason"
         render={({ field: { value, onChange } }) => (
           <PanelTextarea
+            size="sm"
             label={t("ingredients.reason")}
             placeholder={t("ingredients.reasonPlaceholder")}
             errorMessage={errors.reason?.message}

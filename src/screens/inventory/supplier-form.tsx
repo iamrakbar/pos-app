@@ -90,6 +90,7 @@ function SupplierFormCard({
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               label={t("suppliers.name")}
               isRequired
               errorMessage={errors.name?.message}
@@ -107,6 +108,7 @@ function SupplierFormCard({
           name="contact_name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               label={t("suppliers.contactName")}
               errorMessage={errors.contact_name?.message}
               ref={ref}
@@ -124,6 +126,7 @@ function SupplierFormCard({
             name="email"
             render={({ field: { value, onChange, onBlur, ref } }) => (
               <PanelInput
+                size="sm"
                 containerClassName="flex-1"
                 label={t("suppliers.email")}
                 errorMessage={errors.email?.message}
@@ -143,6 +146,7 @@ function SupplierFormCard({
             name="phone"
             render={({ field: { value, onChange, onBlur, ref } }) => (
               <PanelInput
+                size="sm"
                 containerClassName="flex-1"
                 label={t("suppliers.phone")}
                 errorMessage={errors.phone?.message}
@@ -172,6 +176,7 @@ function SupplierFormCard({
                 -
               </PanelButton>
               <PanelInput
+                size="sm"
                 className="flex-1"
                 label={t("suppliers.leadTime")}
                 placeholder={t("suppliers.leadTimePlaceholder")}
@@ -203,6 +208,7 @@ function SupplierFormCard({
             name="payment_terms"
             render={({ field: { value, onChange, onBlur, ref } }) => (
               <PanelInput
+                size="sm"
                 containerClassName="flex-1"
                 label={t("suppliers.paymentTerms")}
                 errorMessage={errors.payment_terms?.message}

@@ -67,6 +67,7 @@ export default function SignInScreen(): JSX.Element {
                       <AppIcon icon={AppIcons.person} size={16} color={themeColorMuted} />
                     </InputGroup.Prefix>
                     <InputGroup.Input
+                      size="sm"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder={t("auth.emailPlaceholder")}
@@ -90,6 +91,7 @@ export default function SignInScreen(): JSX.Element {
                       <AppIcon icon={AppIcons.lockClosed} size={16} color={themeColorMuted} />
                     </InputGroup.Prefix>
                     <InputGroup.Input
+                      size="sm"
                       value={field.value}
                       onChangeText={field.onChange}
                       placeholder={t("auth.passwordPlaceholder")}

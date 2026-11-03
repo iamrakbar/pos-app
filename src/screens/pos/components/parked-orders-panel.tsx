@@ -2,6 +2,7 @@ import {
   Surface,
   Typography,
   Button as PanelDialogButton,
+  BottomSheet as PanelBottomSheet,
   Dialog as PanelDialog,
   Input as PanelInput,
 } from "panelui-native";
@@ -101,8 +102,8 @@ export default function ParkedOrdersPanel({
     <>
       <PanelDialogButton
         variant={mode === "park" ? "ghost" : "outline"}
-        size={mode === "park" ? "icon" : "md"}
-        className="h-12"
+        size="sm"
+        className={mode === "park" ? "min-h-10 w-10" : "min-h-10"}
         disabled={isDisabled || !merchantId}
         onPress={openPanel}
         accessibilityLabel={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
@@ -121,85 +122,82 @@ export default function ParkedOrdersPanel({
         )}
       </PanelDialogButton>
 
-      <PanelDialog open={isOpen} onOpenChange={setIsOpen}>
-        <PanelDialog.Content className="w-full max-w-md self-center">
-          <PanelDialogButton
-            variant="ghost"
-            size="icon"
-            accessibilityLabel={t("common.close")}
-            className="absolute right-3 top-3 z-50"
-            onPress={() => setIsOpen(false)}
-          >
-            <AppIcon icon={AppIcons.close} size={20} />
-          </PanelDialogButton>
-          <PanelDialog.Title className="pr-10">
-            {mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
-          </PanelDialog.Title>
-          <PanelDialog.Description>
-            {mode === "park" ? t("pos.parkOrderDescription") : t("pos.parkedOrdersDescription")}
-          </PanelDialog.Description>
-
-          {mode === "park" ? (
-            <View className="mt-5 gap-4">
-              <PanelInput
-                label={t("pos.parkedOrderName")}
-                value={label}
-                onChangeText={setLabel}
-                placeholder={t("pos.parkedOrderNamePlaceholder")}
-                returnKeyType="done"
-              />
-              <PanelDialogButton onPress={handlePark}>{t("pos.parkOrder")}</PanelDialogButton>
-            </View>
-          ) : (
-            <View className="mt-5 gap-3">
-              {merchantDrafts.length === 0 ? (
-                <Surface variant="secondary" className="items-center gap-1 p-5">
-                  <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
-                  <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
-                  <Typography type="body-sm" muted align="center">
-                    {t("pos.parkedOrdersEmptyDescription")}
-                  </Typography>
-                </Surface>
-              ) : (
-                merchantDrafts.map((draft) => (
-                  <Surface
-                    key={draft.id}
-                    variant="secondary"
-                    className="flex-row items-center gap-3 p-3"
-                  >
-                    <View className="min-w-0 flex-1 gap-0.5">
-                      <Typography weight="semibold" numberOfLines={1}>
-                        {draft.label}
-                      </Typography>
-                      <Typography type="body-xs" muted>
-                        {t("pos.parkedOrderMeta", {
-                          count: draft.cart.products.reduce((total, item) => total + item.qty, 0),
-                          time: formatDraftTime(draft.updated_at),
-                        })}
-                      </Typography>
-                    </View>
-                    <PanelDialogButton
-                      size="sm"
-                      variant="primary"
-                      onPress={() => handleRestore(draft)}
-                    >
-                      {t("pos.resumeOrder")}
-                    </PanelDialogButton>
-                    <PanelDialogButton
-                      size="icon"
-                      variant="ghost"
-                      onPress={() => setDeleteTarget(draft)}
-                      accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
-                    >
-                      <AppIcon icon={AppIcons.trash} size={17} color={colorDanger} />
-                    </PanelDialogButton>
+      <PanelBottomSheet open={isOpen} onOpenChange={setIsOpen}>
+        <PanelBottomSheet.Content size="auto">
+          <PanelBottomSheet.Header
+            title={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
+            description={
+              mode === "park" ? t("pos.parkOrderDescription") : t("pos.parkedOrdersDescription")
+            }
+          />
+          <PanelBottomSheet.Body>
+            {mode === "park" ? (
+              <View className="gap-4">
+                <PanelInput
+                  size="sm"
+                  label={t("pos.parkedOrderName")}
+                  value={label}
+                  onChangeText={setLabel}
+                  placeholder={t("pos.parkedOrderNamePlaceholder")}
+                  returnKeyType="done"
+                />
+              </View>
+            ) : (
+              <View className="gap-3">
+                {merchantDrafts.length === 0 ? (
+                  <Surface variant="secondary" className="items-center gap-1 p-5">
+                    <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
+                    <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
+                    <Typography type="body-sm" muted align="center">
+                      {t("pos.parkedOrdersEmptyDescription")}
+                    </Typography>
                   </Surface>
-                ))
-              )}
-            </View>
-          )}
-        </PanelDialog.Content>
-      </PanelDialog>
+                ) : (
+                  merchantDrafts.map((draft) => (
+                    <Surface
+                      key={draft.id}
+                      variant="secondary"
+                      className="flex-row items-center gap-3 p-3"
+                    >
+                      <View className="min-w-0 flex-1 gap-0.5">
+                        <Typography weight="semibold" numberOfLines={1}>
+                          {draft.label}
+                        </Typography>
+                        <Typography type="body-xs" muted>
+                          {t("pos.parkedOrderMeta", {
+                            count: draft.cart.products.reduce((total, item) => total + item.qty, 0),
+                            time: formatDraftTime(draft.updated_at),
+                          })}
+                        </Typography>
+                      </View>
+                      <PanelDialogButton
+                        size="sm"
+                        variant="primary"
+                        onPress={() => handleRestore(draft)}
+                      >
+                        {t("pos.resumeOrder")}
+                      </PanelDialogButton>
+                      <PanelDialogButton
+                        size="icon"
+                        variant="ghost"
+                        onPress={() => setDeleteTarget(draft)}
+                        accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
+                      >
+                        <AppIcon icon={AppIcons.trash} size={17} color={colorDanger} />
+                      </PanelDialogButton>
+                    </Surface>
+                  ))
+                )}
+              </View>
+            )}
+          </PanelBottomSheet.Body>
+          {mode === "park" ? (
+            <PanelBottomSheet.Footer>
+              <PanelDialogButton onPress={handlePark}>{t("pos.parkOrder")}</PanelDialogButton>
+            </PanelBottomSheet.Footer>
+          ) : null}
+        </PanelBottomSheet.Content>
+      </PanelBottomSheet>
 
       <PanelDialog
         open={deleteTarget !== null}

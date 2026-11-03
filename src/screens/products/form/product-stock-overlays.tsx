@@ -158,6 +158,7 @@ export function ProductOpeningBalanceOverlay({
   const content = (
     <View className="gap-4 px-5">
       <PanelInput
+        size="sm"
         label={t("productForm.openingQuantity")}
         placeholder={t("productForm.openingQuantityPlaceholder")}
         keyboardType="number-pad"
@@ -191,6 +192,7 @@ export function ProductOpeningBalanceOverlay({
         }
       />
       <PanelInput
+        size="sm"
         ref={costRef}
         label={t("productForm.inventoryCost")}
         placeholder={t("productForm.inventoryCostPlaceholder")}
@@ -375,6 +377,7 @@ export function ProductAdjustStockOverlay({
   const content = (
     <View className="gap-4 px-5">
       <PanelInput
+        size="sm"
         label={t("productForm.targetBalance")}
         placeholder={t("productForm.targetBalancePlaceholder")}
         keyboardType="number-pad"
@@ -412,6 +415,7 @@ export function ProductAdjustStockOverlay({
         name="reason"
         render={({ field: { value, onChange } }) => (
           <PanelTextarea
+            size="sm"
             label={t("productForm.reason")}
             placeholder={t("productForm.reasonPlaceholder")}
             errorMessage={errors.reason?.message}

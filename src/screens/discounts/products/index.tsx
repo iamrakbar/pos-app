@@ -68,6 +68,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
             </View>
 
             <PanelSearchBar
+              size="sm"
               value={search}
               onChangeText={setSearch}
               placeholder={t("discounts.searchProductsPlaceholder")}

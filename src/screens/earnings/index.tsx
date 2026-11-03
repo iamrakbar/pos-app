@@ -22,7 +22,6 @@ import { useCSSVariable } from "uniwind";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useEarnings } from "@/hooks/db/use-earnings";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatDateTime, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
@@ -125,7 +124,6 @@ function CustomDateRangeDialog({
     isOpen,
     onOpenChange
   );
-  const pickerPresentation = isPhonePortrait ? "bottom-sheet" : "popover";
 
   const footer = (
     <View
@@ -168,7 +166,7 @@ function CustomDateRangeDialog({
               selected={field.value ? parseLocalDate(field.value) : undefined}
               onSelect={(date) => field.onChange(date ? formatLocalDate(date) : undefined)}
               format={(date) => (date ? toDateOption(formatLocalDate(date)).label : "")}
-              presentation={pickerPresentation}
+              presentation="bottom-sheet"
               maxDate={startOfToday()}
               weekStartsOn={1}
               locale={localeTag}
@@ -391,8 +389,8 @@ function RecentEarningsWidget({
                   </Typography>
                 </View>
               </View>
-              {index < entries.length - 1 ? <Separator /> : null}
             </View>
+            {index < entries.length - 1 ? <Separator /> : null}
           </View>
         ))}
       </Frame.Panel>
@@ -408,7 +406,6 @@ export default function EarningsScreen(): React.JSX.Element {
   }));
   const { width, height, isCompact, horizontalPagePadding } = useResponsiveLayout();
   const isPhone = Math.min(width, height) <= COMPACT_LAYOUT_MAX_WIDTH;
-  const { choicePresentation } = useOverlayPresentation();
   const { toast } = useToast();
   const [dateRangeValue, setDateRangeValue] = React.useState<DateRangeValue>("last-7-days");
   const [appliedRange, setAppliedRange] = React.useState<AppliedDateRange>(() =>
@@ -526,14 +523,13 @@ export default function EarningsScreen(): React.JSX.Element {
               {t("earnings.settledSalesFor", { period: periodLabel })}
             </Typography>
             <PanelSelect
-              triggerClassName="h-12"
-              presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+              presentation="sheet"
               value={dateRangeValue}
               valueLabel={dateRangeLabel}
               onValueChange={handleRangeChange}
               title={t("earnings.dateRange")}
               placeholder={t("earnings.dateRange")}
-              size="md"
+              size="sm"
               className={isCompact ? "w-full max-w-56" : "w-56"}
             >
               {dateRangeOptions.map((option) => (

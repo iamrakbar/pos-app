@@ -21,7 +21,7 @@ export const MOVEMENT_TABLE_COLUMNS = [140, 150, 150, 160, 160, 220, 170, 180].m
 export const MOVEMENT_TABLE_WIDTH = MOVEMENT_TABLE_COLUMNS.reduce(
   (total, column) => total + column.width,
   0
-);
+) + 32 + (MOVEMENT_TABLE_COLUMNS.length - 1) * 12;
 
 export function formatSignedQuantity(value: number): string {
   const quantity = formatInventoryQuantity(Math.abs(value));

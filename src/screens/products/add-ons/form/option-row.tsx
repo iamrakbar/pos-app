@@ -83,6 +83,7 @@ export default function OptionRow({
           name={`options.${index}.name`}
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               containerClassName="flex-1 w-full"
               label={t("addOnManagement.option")}
@@ -97,6 +98,7 @@ export default function OptionRow({
           )}
         />
         <PanelInput
+          size="sm"
           ref={priceFieldRef}
           containerClassName="flex-1 w-full"
           label={t("addOnManagement.price")}

@@ -113,6 +113,7 @@ export default function QuickCategoryFormOverlay({
         name="name"
         render={({ field: { value, onChange } }) => (
           <PanelInput
+            size="sm"
             label={t("categories.name")}
             placeholder={t("categories.namePlaceholder")}
             errorMessage={errors.name?.message}
@@ -128,6 +129,7 @@ export default function QuickCategoryFormOverlay({
         name="description"
         render={({ field: { value, onChange, ref } }) => (
           <PanelTextarea
+            size="sm"
             ref={ref}
             label={t("categories.description")}
             value={value}

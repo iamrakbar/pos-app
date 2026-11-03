@@ -131,6 +131,7 @@ export default function AreaFormDialog({
         name="name"
         render={({ field: { value, onChange } }) => (
           <PanelInput
+            size="sm"
             label={t("areasManagement.name")}
             placeholder={t("areasManagement.areaNamePlaceholder")}
             errorMessage={errors.name?.message}

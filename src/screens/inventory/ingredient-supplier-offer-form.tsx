@@ -45,7 +45,6 @@ import {
 } from "react-hook-form";
 import { Pressable as ActiveFieldPressable, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
   mapServerErrors,
   QUANTITY_FORMAT_OPTIONS,
@@ -93,12 +92,6 @@ type SupplierOption = { value: string; label: string };
 
 function getRouteParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function getSupplierSelectPresentation(
-  presentation: "bottom-sheet" | "dialog" | "popover"
-): "dialog" | "popover" {
-  return presentation === "bottom-sheet" ? "dialog" : presentation;
 }
 
 function getSupplierOptions(
@@ -213,7 +206,6 @@ function SupplierOfferFormCard({
   control,
   errors,
   supplierOptions,
-  supplierSelectPresentation,
   suppliersLoading,
   suppliersError,
   suppliersErrorValue,
@@ -223,7 +215,6 @@ function SupplierOfferFormCard({
   control: Control<SupplierOfferFormValues>;
   errors: FieldErrors<SupplierOfferFormValues>;
   supplierOptions: SupplierOption[];
-  supplierSelectPresentation: "dialog" | "popover";
   suppliersLoading: boolean;
   suppliersError: boolean;
   suppliersErrorValue: unknown;
@@ -295,13 +286,14 @@ function SupplierOfferFormCard({
                 {t("ingredients.supplierOfferSupplier")}
               </PanelLabel>
               <PanelSelect
-                presentation={supplierSelectPresentation === "popover" ? "overlay" : "sheet"}
+                size="sm"
+                presentation="sheet"
                 value={value}
                 onValueChange={onChange}
                 disabled={
                   suppliersLoading || suppliersError || supplierOptions.length === 0 || isPending
                 }
-                triggerClassName={errors.supplier_id ? "h-12 border-destructive" : "h-12"}
+                triggerClassName={errors.supplier_id ? "border-destructive" : undefined}
                 placeholder={t("ingredients.supplierOfferSupplierPlaceholder")}
                 title={t("ingredients.supplierOfferSupplier")}
               >
@@ -334,6 +326,7 @@ function SupplierOfferFormCard({
             name="purchase_unit"
             render={({ field: { value, onChange, onBlur, ref } }) => (
               <PanelInput
+                size="sm"
                 ref={ref}
                 containerClassName="w-full md:flex-1"
 
@@ -352,6 +345,7 @@ function SupplierOfferFormCard({
             name="supplier_sku"
             render={({ field: { value, onChange, onBlur, ref } }) => (
               <PanelInput
+                size="sm"
                 ref={ref}
                 containerClassName="w-full md:flex-1"
 
@@ -368,6 +362,7 @@ function SupplierOfferFormCard({
 
         <View className="gap-4 md:flex-row">
           <PanelInput
+            size="sm"
             containerClassName="w-full md:flex-1"
             label={t("ingredients.supplierOfferPackQuantity")}
             placeholder={t("ingredients.supplierOfferPackQuantityPlaceholder")}
@@ -402,6 +397,7 @@ function SupplierOfferFormCard({
             }
           />
           <PanelInput
+            size="sm"
             containerClassName="w-full md:flex-1"
             label={t("ingredients.supplierOfferMinimumOrderQuantity")}
             placeholder={t("ingredients.supplierOfferMinimumOrderQuantityPlaceholder")}
@@ -438,6 +434,7 @@ function SupplierOfferFormCard({
 
         <View className="gap-4 md:flex-row">
           <PanelInput
+            size="sm"
             ref={priceRef}
             containerClassName="w-full md:flex-1"
             label={t("ingredients.supplierOfferLastPurchasePrice")}
@@ -458,6 +455,7 @@ function SupplierOfferFormCard({
             }}
           />
           <PanelInput
+            size="sm"
             containerClassName="w-full md:flex-1"
             label={t("ingredients.supplierOfferLeadTime")}
             placeholder={t("ingredients.supplierOfferLeadTimePlaceholder")}
@@ -556,8 +554,6 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
   const offerId = getRouteParam(params.offerId);
   const router = useRouter();
   const { toast } = useToast();
-  const { choicePresentation } = useOverlayPresentation();
-  const supplierSelectPresentation = getSupplierSelectPresentation(choicePresentation);
   const isEditing = Boolean(offerId);
   const supplierOffersQuery = useIngredientSupplierOffers(ingredientId, isEditing);
   const offer = supplierOffersQuery.data?.find((item) => String(item.id) === offerId);
@@ -713,7 +709,6 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
               control={control}
               errors={errors}
               supplierOptions={supplierOptions}
-              supplierSelectPresentation={supplierSelectPresentation}
               suppliersLoading={suppliersQuery.isLoading}
               suppliersError={suppliersQuery.isError}
               suppliersErrorValue={suppliersQuery.error}

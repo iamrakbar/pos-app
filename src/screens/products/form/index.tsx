@@ -27,7 +27,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import {
   Controller,
   useController,
@@ -309,7 +308,6 @@ function ProductDetailsCard({
   onAddCategory: () => void;
 }) {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
   const [themeColorForeground] = useCSSVariable(["--color-foreground"]) as [string];
 
   return (
@@ -329,12 +327,13 @@ function ProductDetailsCard({
               </PanelLabel>
               <View className="flex-row items-center gap-2">
                 <PanelSelect
-                  presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                  size="sm"
+                  presentation="sheet"
                   value={value}
                   onValueChange={onChange}
                   disabled={areCategoriesLoading || didCategoriesFail}
                   className="flex-1"
-                  triggerClassName={errors.category_id ? "h-12 border-destructive" : "h-12"}
+                  triggerClassName={errors.category_id ? "border-destructive" : undefined}
                   placeholder={t("productForm.selectCategory")}
                   title={t("productForm.category")}
                 >
@@ -382,6 +381,7 @@ function ProductDetailsCard({
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               label={t("productForm.name")}
               placeholder={t("productForm.namePlaceholder")}
@@ -399,6 +399,7 @@ function ProductDetailsCard({
           name="description"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelTextarea
+              size="sm"
               ref={ref}
               label={t("productForm.description")}
               placeholder={t("productForm.descriptionPlaceholder")}
@@ -433,7 +434,6 @@ function ProductInventoryFields({
   inventoryRecipeEnabled: boolean;
 }): React.JSX.Element {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
   const inventoryMode = useWatch({ control, name: "inventory_mode" });
   const {
     field: { value: costValue, onChange: costChange, onBlur: costBlur, ref: costRef },
@@ -469,14 +469,15 @@ function ProductInventoryFields({
               {t("productForm.inventoryMode")}
             </PanelLabel>
             <PanelSelect
-              presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+              size="sm"
+              presentation="sheet"
               value={value}
               onValueChange={(next) => {
                 if (next === "recipe" && !inventoryRecipeEnabled && inventoryMode !== "recipe")
                   return;
                 onChange(next);
               }}
-              triggerClassName={errors.inventory_mode ? "h-12 border-destructive" : "h-12"}
+              triggerClassName={errors.inventory_mode ? "border-destructive" : undefined}
               placeholder={t("productForm.inventoryModePlaceholder")}
               title={t("productForm.inventoryMode")}
             >
@@ -493,6 +494,7 @@ function ProductInventoryFields({
       {capabilities.showInventoryCost ? (
         <View className="flex-row flex-wrap gap-3">
           <PanelInput
+            size="sm"
             ref={costRef}
             containerClassName="flex-1"
             label={t("productForm.inventoryCost")}
@@ -511,6 +513,7 @@ function ProductInventoryFields({
           />
           {capabilities.showStockAlert ? (
             <NumberInput
+              size="sm"
               containerClassName="flex-1"
               label={t("productForm.lowStockAlert")}
               description={t("productForm.lowStockDescription")}
@@ -720,6 +723,7 @@ function InventoryCard({
           name="code"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               label={t("productForm.code")}
               placeholder={t("productForm.codePlaceholder")}
@@ -803,6 +807,7 @@ function PricingCard({
       <Card.Content className="gap-4 p-0">
         <View className="flex-row flex-wrap gap-3">
           <PanelInput
+            size="sm"
             ref={priceRef}
             containerClassName="flex-1"
             label={t("productForm.price")}
@@ -875,7 +880,6 @@ function getProductDiscountOptions(
 
 function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: () => void }) {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
   const { toast } = useToast();
   const [themeColorForeground, themeColorMuted] = useCSSVariable([
     "--color-foreground",
@@ -935,8 +939,8 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
       <PanelLabel>{t("productForm.discountOptional")}</PanelLabel>
       <View className="flex-row items-center gap-2">
         <PanelSelect
-          triggerClassName="h-12"
-          presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+          size="sm"
+          presentation="sheet"
           value={selectedOption?.value}
           valueLabel={selectedOption?.label}
           placeholder={t("productForm.selectDiscount")}

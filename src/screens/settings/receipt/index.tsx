@@ -26,7 +26,6 @@ import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useTranslation } from "@/stores/use-locale";
 import type { Translate, TranslationKey } from "@/locales";
 
@@ -134,7 +133,6 @@ function ReceiptPreviewSection({
   surfaceColor: string;
 }) {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
 
   return (
     <View className="min-h-0 flex-1">
@@ -149,9 +147,9 @@ function ReceiptPreviewSection({
               {t("receiptSettings.preview")}
             </Typography>
             <PanelSelect
-              triggerClassName="h-12"
+              size="sm"
               className="w-32"
-              presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+              presentation="sheet"
               value={previewPaperWidth}
               onValueChange={(value) => onPaperWidthChange(value as PaperWidth)}
               placeholder={t("receiptSettings.paperSize")}
@@ -230,7 +228,6 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const configuredLogoWidthDots = usePrinterStore((state) => state.settings.logoWidthDots);
   const { isPortrait, isCompact } = useResponsiveLayout();
-  const { choicePresentation } = useOverlayPresentation();
   const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useCSSVariable([
     "--color-muted-foreground",
     "--color-foreground",
@@ -357,8 +354,8 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   <View>
                     <PanelLabel className="mb-1.5">{t("receiptSettings.layout")}</PanelLabel>
                     <PanelSelect
-                      triggerClassName="h-12"
-                      presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+                      size="sm"
+                      presentation="sheet"
                       value={settings.layout}
                       onValueChange={(value) =>
                         updateSettings({
@@ -416,6 +413,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
 
                   <View>
                     <PanelInput
+                      size="sm"
                       label={t("receiptSettings.storeName")}
                       value={settings.storeName}
                       onChangeText={(storeName) => updateSettings({ storeName })}
@@ -425,6 +423,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
 
                   <View>
                     <PanelTextarea
+                      size="sm"
                       label={t("receiptSettings.header")}
                       value={settings.header}
                       onChangeText={(header) => updateSettings({ header })}
@@ -435,6 +434,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
 
                   <View>
                     <PanelTextarea
+                      size="sm"
                       label={t("receiptSettings.footer")}
                       value={settings.footer}
                       onChangeText={(footer) => updateSettings({ footer })}

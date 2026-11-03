@@ -387,6 +387,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
               name="notes"
               render={({ field }) => (
                 <PanelTextarea
+                  size="sm"
                   ref={field.ref}
                   label={t("addOns.notes")}
                   value={field.value}

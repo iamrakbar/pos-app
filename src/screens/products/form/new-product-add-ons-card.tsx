@@ -68,6 +68,7 @@ function NewProductAddOnGroup({
           name={`add_ons.${index}.name`}
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               containerClassName="flex-1"
               label={t("addOnManagement.groupName")}
@@ -156,6 +157,7 @@ function NewProductAddOnGroup({
         <View className="flex-row gap-3">
           {required ? (
             <NumberInput
+              size="sm"
               containerClassName="flex-1"
               label={t("addOnManagement.minimum")}
               value={Number(minValue || 1)}
@@ -168,6 +170,7 @@ function NewProductAddOnGroup({
             />
           ) : null}
           <NumberInput
+            size="sm"
             containerClassName="flex-1"
             label={t("addOnManagement.maximum")}
             value={Number(maxValue || 2)}
@@ -195,6 +198,7 @@ function NewProductAddOnGroup({
               name={`add_ons.${index}.options.${optionIndex}.name`}
               render={({ field: { value, onChange, onBlur, ref } }) => (
                 <PanelInput
+                  size="sm"
                   ref={ref}
                   containerClassName="flex-1"
                   label={t("addOnManagement.option")}
@@ -213,6 +217,7 @@ function NewProductAddOnGroup({
               name={`add_ons.${index}.options.${optionIndex}.price`}
               render={({ field: { value, onChange, onBlur, ref } }) => (
                 <PanelInput
+                  size="sm"
                   ref={ref}
                   containerClassName="flex-1"
                   label={t("addOnManagement.price")}

@@ -328,6 +328,7 @@ function GeneralTab({
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               label={t("merchantProfile.name")}
               value={value}
@@ -344,6 +345,7 @@ function GeneralTab({
           name="description"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelTextarea
+              size="sm"
               ref={ref}
               label={t("merchantProfile.description")}
               value={value}
@@ -361,6 +363,7 @@ function GeneralTab({
             name="phone"
             render={({ field: { value, onChange, onBlur, ref } }) => (
               <PanelInput
+                size="sm"
                 ref={ref}
                 label={t("merchantProfile.phone")}
                 value={value}
@@ -378,6 +381,7 @@ function GeneralTab({
             name="email"
             render={({ field: { value, onChange, onBlur, ref } }) => (
               <PanelInput
+                size="sm"
                 ref={ref}
                 label={t("merchantProfile.email")}
                 value={value}
@@ -397,6 +401,7 @@ function GeneralTab({
           name="website"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               label={t("merchantProfile.website")}
               value={value}
@@ -414,6 +419,7 @@ function GeneralTab({
           name="terms"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelTextarea
+              size="sm"
               ref={ref}
               label={t("merchantProfile.terms")}
               value={value}
@@ -564,6 +570,7 @@ function TaxTab({
                 name="tax_name"
                 render={({ field: { value, onChange, onBlur, ref } }) => (
                   <PanelInput
+                    size="sm"
                     ref={ref}
                     label={t("merchantProfile.taxName")}
                     value={value}
@@ -576,6 +583,7 @@ function TaxTab({
                 )}
               />
               <PanelInput
+                size="sm"
                 ref={taxFieldRef}
                 containerClassName="flex-1"
                 label={t("merchantProfile.taxValue")}

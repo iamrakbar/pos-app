@@ -151,8 +151,9 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
               />
               <Label>Select sheet</Label>
               <Select
-                triggerClassName="h-12"
+                size="sm"
                 key={`sheet-${selectGeneration}`}
+                presentation="sheet"
                 value={value}
                 onValueChange={setValue}
                 title="Pick a value"
@@ -161,13 +162,13 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
                 <Select.Item value="first" label="First" />
                 <Select.Item value="second" label="Second" />
               </Select>
-              <Label>Select overlay</Label>
+              <Label>Select sheet (second control)</Label>
               <Select
-                triggerClassName="h-12"
+                size="sm"
                 key={`overlay-${selectGeneration}`}
                 value={value}
                 onValueChange={setValue}
-                presentation="overlay"
+                presentation="sheet"
                 onOpenChange={setHostVisible}
               >
                 <Select.Item value="first" label="First" />

@@ -157,6 +157,7 @@ function RecipeEditor({
             </View>
             <View className="flex-row gap-3">
               <PanelInput
+                size="sm"
                 containerClassName="flex-1"
                 label={t("productForm.recipeQuantity")}
                 keyboardType="decimal-pad"

@@ -44,6 +44,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
             <PanelInput
+              size="sm"
               ref={ref}
               label={t("addOnManagement.groupName")}
               value={value}
@@ -117,6 +118,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
           <View className="flex-row gap-3">
             {required ? (
               <NumberInput
+                size="sm"
                 containerClassName="flex-1"
                 label={t("addOnManagement.minimum")}
                 value={Number(minValue || 1)}
@@ -129,6 +131,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
               />
             ) : null}
             <NumberInput
+              size="sm"
               containerClassName="flex-1"
               label={t("addOnManagement.maximum")}
               value={Number(maxValue || 2)}

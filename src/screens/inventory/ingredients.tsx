@@ -83,7 +83,15 @@ const SKELETON_CELL_WIDTHS = [
   "w-28",
 ];
 const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
-const TABLE_WIDTH = TABLE_COLUMNS.reduce((sum, column) => sum + column.width, 0);
+// Table.Row adds 16 points of padding on each side and 12 points between columns.
+const TABLE_WIDTH =
+  TABLE_COLUMNS.reduce((sum, column) => sum + column.width, 0) +
+  32 +
+  (TABLE_COLUMNS.length - 1) * 12;
+const SKELETON_TABLE_WIDTH =
+  SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) +
+  32 +
+  (SKELETON_COLUMN_WIDTHS.length - 1) * 12;
 
 function getIngredientSort(
   descriptor: TableSortDescriptor
@@ -174,12 +182,14 @@ function IngredientsTable({
 
   if (query.isLoading) {
     return (
-      <ScrollView className="flex-1" contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6">
-        <ScrollView horizontal>
-          <View
-            style={{ width: SKELETON_COLUMN_WIDTHS.reduce((sum, width) => sum + width, 0) }}
-            accessibilityRole="progressbar"
-          >
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
+        scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <ScrollView horizontal scrollEnabled={false} showsHorizontalScrollIndicator={false}>
+          <View style={{ width: SKELETON_TABLE_WIDTH }} accessibilityRole="progressbar">
             <Table.Frame columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
               <Table.Header>
                 <Table.Row>

@@ -60,7 +60,6 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
@@ -565,6 +564,7 @@ function PaymentFields({
       {selectedPayment?.tender_input.type === "reference" ? (
         <View className="gap-2">
           <PanelInput
+            size="sm"
             isRequired={selectedPayment.tender_input.required}
             label={selectedPayment.tender_input.label ?? t("checkout.paymentReference")}
             value={tenderValue}
@@ -598,6 +598,7 @@ function PaymentFields({
           </View>
           <View className="flex-row items-end gap-4">
             <PanelInput
+              size="sm"
               containerClassName="flex-1"
               label={t("checkout.otherAmount")}
               placeholder={selectedPayment.tender_input.placeholder ?? "Rp0"}
@@ -646,7 +647,6 @@ function CustomerFields({
   setValue: UseFormSetValue<CheckoutFormValues>;
 }) {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
   const selectCustomerType = (type: CheckoutFormValues["customer_type"]) => {
     setValue("customer_type", type);
     setValue("guest_id", null);
@@ -692,8 +692,8 @@ function CustomerFields({
       {customerType === "guest" ? (
         <View className="gap-2">
           <PanelSelect
-            triggerClassName="h-12"
-            presentation={choicePresentation === "popover" ? "overlay" : "sheet"}
+            size="sm"
+            presentation="sheet"
             value={guestId ?? undefined}
             valueLabel={guests.find((guest) => guest.id === guestId)?.name}
             onValueChange={(value) => setValue("guest_id", value || null)}
@@ -821,6 +821,7 @@ function CheckoutFormScrollContent({
             name="notes"
             render={({ field }) => (
               <PanelTextarea
+                size="sm"
                 ref={field.ref}
                 onBlur={field.onBlur}
                 value={field.value}

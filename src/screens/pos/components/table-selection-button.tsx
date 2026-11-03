@@ -21,8 +21,8 @@ export default function TableSelectionButton({
   return (
     <Button
       variant="outline"
-      size="md"
-      className="h-12 min-w-0 flex-1"
+      size="sm"
+      className="min-h-10 min-w-0 flex-1"
       startContent={<AppIcon icon={AppIcons.diningTable} size={18} color={colorAccent} />}
       onPress={() => router.push("/pos/table-selection")}
       accessibilityLabel={

@@ -24,7 +24,6 @@ import {
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { getLocaleTag } from "@/locales";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useForm } from "react-hook-form";
@@ -47,7 +46,6 @@ export default function DiscountFormScreen(): React.JSX.Element {
   const muted = useCSSVariable("--color-muted-foreground") as string;
   const danger = useCSSVariable("--color-destructive") as string;
   const localeTag = getLocaleTag(locale);
-  const { pickerPresentation } = useOverlayPresentation();
   const discountQuery = useDiscount(id);
   const productsQuery = useManagementProducts();
   const createMutation = useCreateDiscount();
@@ -203,13 +201,7 @@ export default function DiscountFormScreen(): React.JSX.Element {
         contentContainerClassName="items-center gap-3 px-4 py-6 pb-10 md:px-6"
         keyboardShouldPersistTaps="handled"
       >
-        <DiscountDetailsCard
-          control={control}
-          errors={errors}
-          localeTag={localeTag}
-          presentation={pickerPresentation}
-          t={t}
-        />
+        <DiscountDetailsCard control={control} errors={errors} localeTag={localeTag} t={t} />
         <DiscountProductsCard
           selectedProductIds={selectedProductIds}
           selectedProducts={selectedProducts}

@@ -157,6 +157,7 @@ export default function QuickDiscountFormOverlay({
         name="name"
         render={({ field: { value, onChange, ref } }) => (
           <PanelInput
+            size="sm"
             ref={ref}
             label={t("discounts.name")}
             value={value}
@@ -192,6 +193,7 @@ export default function QuickDiscountFormOverlay({
       />
 
       <PanelInput
+        size="sm"
         ref={discountRef}
         label={t("discounts.value")}
         placeholder="0"

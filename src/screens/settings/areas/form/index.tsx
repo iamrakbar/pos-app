@@ -1,4 +1,5 @@
-import { Typography ,
+import {
+  Typography,
   Spinner as PanelLoadingSpinner,
   Typography as PanelLoadingText,
   Button as PanelButton,
@@ -6,7 +7,9 @@ import { Typography ,
   useToast,
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
-  Input as PanelInput, Card } from "panelui-native";
+  Input as PanelInput,
+  Card,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useArea, useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
@@ -161,6 +164,7 @@ export default function AreaFormScreen(): React.JSX.Element {
               name="name"
               render={({ field: { value, onChange, onBlur, ref } }) => (
                 <PanelInput
+                  size="sm"
                   ref={ref}
                   label={t("areasManagement.name")}
                   value={value}
@@ -179,7 +183,10 @@ export default function AreaFormScreen(): React.JSX.Element {
               </Typography>
             ) : null}
             {!isNew ? (
-              <PanelButton variant="outline" onPress={() => router.push(`/settings/areas/${id}/tables`)}>
+              <PanelButton
+                variant="outline"
+                onPress={() => router.push(`/settings/areas/${id}/tables`)}
+              >
                 {t("areasManagement.manageTables")}
               </PanelButton>
             ) : null}
