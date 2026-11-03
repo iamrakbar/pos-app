@@ -3,7 +3,6 @@ import {
   Button as PanelErrorButton,
   Card as PanelCard,
   Skeleton as PanelSkeleton,
-  ScrollFade,
   EmptyState,
 } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
@@ -105,60 +104,58 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
             accessibilityLabel={t("pos.loadingProducts")}
           />
         ) : (
-          <ScrollFade className="flex-1">
-            <FlatList
-              data={isError ? [] : productRows}
-              keyExtractor={(row) => row[0].id}
-              renderItem={({ item: row }) => (
-                <View className="flex-row">
-                  {row.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onPress={onSelectProduct}
-                      width={cardWidth}
-                    />
-                  ))}
+          <FlatList
+            data={isError ? [] : productRows}
+            keyExtractor={(row) => row[0].id}
+            renderItem={({ item: row }) => (
+              <View className="flex-row">
+                {row.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onPress={onSelectProduct}
+                    width={cardWidth}
+                  />
+                ))}
+              </View>
+            )}
+            contentContainerClassName="flex-grow gap-2 px-3"
+            contentInset={{ bottom: listBottomInset }}
+            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+            showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              Platform.OS === "ios" ? null : <View style={{ height: listBottomInset }} />
+            }
+            ListEmptyComponent={
+              isError ? (
+                <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
+                  <PanelErrorAlert variant="destructive">
+                    <PanelErrorAlert.Indicator />
+                    <PanelErrorAlert.Content>
+                      <PanelErrorAlert.Description>
+                        {getErrorMessage(error)}
+                      </PanelErrorAlert.Description>
+                    </PanelErrorAlert.Content>
+                  </PanelErrorAlert>
+                  <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+                    {t("common.retry")}
+                  </PanelErrorButton>
                 </View>
-              )}
-              contentContainerClassName="flex-grow gap-2 px-3"
-              contentInset={{ bottom: listBottomInset }}
-              refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-              showsVerticalScrollIndicator={false}
-              ListFooterComponent={
-                Platform.OS === "ios" ? null : <View style={{ height: listBottomInset }} />
-              }
-              ListEmptyComponent={
-                isError ? (
-                  <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-                    <PanelErrorAlert variant="destructive">
-                      <PanelErrorAlert.Indicator />
-                      <PanelErrorAlert.Content>
-                        <PanelErrorAlert.Description>
-                          {getErrorMessage(error)}
-                        </PanelErrorAlert.Description>
-                      </PanelErrorAlert.Content>
-                    </PanelErrorAlert>
-                    <PanelErrorButton variant="outline" onPress={() => void refetch()}>
-                      {t("common.retry")}
-                    </PanelErrorButton>
-                  </View>
-                ) : (
-                  <EmptyState className="py-20">
-                    <EmptyState.Header>
-                      <EmptyState.Media variant="icon">
-                        <AppIcon icon={AppIcons.food} size={20} color={themeColorMuted} />
-                      </EmptyState.Media>
-                      <EmptyState.Title>{t("pos.noProducts")}</EmptyState.Title>
-                      <EmptyState.Description>
-                        {t("pos.noProductsDescription")}
-                      </EmptyState.Description>
-                    </EmptyState.Header>
-                  </EmptyState>
-                )
-              }
-            />
-          </ScrollFade>
+              ) : (
+                <EmptyState className="py-20">
+                  <EmptyState.Header>
+                    <EmptyState.Media variant="icon">
+                      <AppIcon icon={AppIcons.food} size={20} color={themeColorMuted} />
+                    </EmptyState.Media>
+                    <EmptyState.Title>{t("pos.noProducts")}</EmptyState.Title>
+                    <EmptyState.Description>
+                      {t("pos.noProductsDescription")}
+                    </EmptyState.Description>
+                  </EmptyState.Header>
+                </EmptyState>
+              )
+            }
+          />
         )
       ) : null}
     </View>
