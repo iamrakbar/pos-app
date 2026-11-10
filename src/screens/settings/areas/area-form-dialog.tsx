@@ -1,5 +1,6 @@
 import { AppIcons } from "@/components/common/app-icons";
 import AppIcon from "@/components/common/app-icon";
+import SheetOverlayHost from "@/components/common/sheet-overlay-host";
 import {
   Typography,
   Button as PanelDialogButton,
@@ -16,8 +17,9 @@ import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
+import { useCSSVariable } from "uniwind";
 
 type AreaData = App.Data.Merchant.Area.AreaData;
 
@@ -33,6 +35,7 @@ export default function AreaFormDialog({
   onOpenChange,
 }: AreaFormDialogProps): React.JSX.Element {
   const { locale, t } = useTranslation();
+  const surfaceColor = useCSSVariable("--color-surface") as string;
   const { toast } = useToast();
   const createMutation = useCreateArea();
   const updateMutation = useUpdateArea(area?.id ?? "");
@@ -156,8 +159,9 @@ export default function AreaFormDialog({
       {isPhonePortrait ? (
         <TrueSheet
           ref={sheetRef}
-          detents={[0.9]}
+          detents={[0.6, 0.9]}
           scrollable
+          backgroundColor={surfaceColor}
           cornerRadius={24}
           grabber
           dimmed
@@ -183,7 +187,9 @@ export default function AreaFormDialog({
           }
           footer={<View className="bg-surface">{footer}</View>}
         >
-          {content}
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-4">
+            {content}
+          </ScrollView>
         </TrueSheet>
       ) : (
         <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -211,41 +217,47 @@ export default function AreaFormDialog({
         </PanelDialog>
       )}
 
-      <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
-          <PanelDialogButton
-            variant="ghost"
-            size="icon"
-            accessibilityLabel={t("common.close")}
-            className="absolute right-3 top-3 z-50"
-            onPress={() => setIsDeleteOpen(false)}
-          >
-            <AppIcon icon={AppIcons.close} size={20} />
-          </PanelDialogButton>
-          <View className="mb-5 gap-1.5">
-            <View className="pr-10">
-              <PanelDialog.Title>{t("areasManagement.deleteAreaTitle")}</PanelDialog.Title>
-            </View>
-            <PanelDialog.Description>
-              {t("areasManagement.deleteAreaDescription")}
-            </PanelDialog.Description>
-          </View>
-          <View className="flex-row items-center gap-3">
-            <PanelDialogButton variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
-              {t("common.cancel")}
-            </PanelDialogButton>
+      <SheetOverlayHost
+        enabled={isPhonePortrait}
+        visible={isDeleteOpen}
+        onRequestClose={() => setIsDeleteOpen(false)}
+      >
+        <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+          <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
             <PanelDialogButton
-              variant="destructive"
-              size="sm"
-              className="flex-1"
-              disabled={deleteMutation.isPending}
-              onPress={handleDelete}
+              variant="ghost"
+              size="icon"
+              accessibilityLabel={t("common.close")}
+              className="absolute right-3 top-3 z-50"
+              onPress={() => setIsDeleteOpen(false)}
             >
-              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+              <AppIcon icon={AppIcons.close} size={20} />
             </PanelDialogButton>
-          </View>
-        </PanelDialog.Content>
-      </PanelDialog>
+            <View className="mb-5 gap-1.5">
+              <View className="pr-10">
+                <PanelDialog.Title>{t("areasManagement.deleteAreaTitle")}</PanelDialog.Title>
+              </View>
+              <PanelDialog.Description>
+                {t("areasManagement.deleteAreaDescription")}
+              </PanelDialog.Description>
+            </View>
+            <View className="flex-row items-center gap-3">
+              <PanelDialogButton variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
+                {t("common.cancel")}
+              </PanelDialogButton>
+              <PanelDialogButton
+                variant="destructive"
+                size="sm"
+                className="flex-1"
+                disabled={deleteMutation.isPending}
+                onPress={handleDelete}
+              >
+                {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+              </PanelDialogButton>
+            </View>
+          </PanelDialog.Content>
+        </PanelDialog>
+      </SheetOverlayHost>
     </>
   );
 }

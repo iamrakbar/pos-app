@@ -230,7 +230,7 @@ export default function AppDrawerContent({
           <PanelPopover.Content
             placement="top"
             align="center"
-            width={choicePresentation === "popover" ? "trigger" : undefined}
+            width={choicePresentation === "popover" ? "trigger" : "full"}
             className={choicePresentation === "popover" ? "gap-2 p-2" : "gap-2 px-4 pb-safe pt-2"}
           >
             <PanelButton
@@ -240,7 +240,7 @@ export default function AppDrawerContent({
                 navigation.closeDrawer();
                 navigation.navigate("settings", { screen: "account" });
               }}
-              className="flex-1 items-center justify-between"
+              className="w-full flex-row items-center justify-between"
             >
               {t("profile.account")}
               <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />

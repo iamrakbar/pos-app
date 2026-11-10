@@ -25,6 +25,7 @@ import { useEarnings } from "@/hooks/db/use-earnings";
 import { COMPACT_LAYOUT_MAX_WIDTH, useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { formatDate, formatDateTime, formatRupiah } from "@/utils/format";
 import AppIcon from "@/components/common/app-icon";
+import SheetOverlayHost from "@/components/common/sheet-overlay-host";
 import { AppIcons } from "@/components/common/app-icons";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -120,6 +121,8 @@ function CustomDateRangeDialog({
 }) {
   const { locale, t } = useTranslation();
   const localeTag = getLocaleTag(locale);
+  const surfaceColor = useCSSVariable("--color-surface") as string;
+  const [openDateField, setOpenDateField] = React.useState<"start" | "end" | null>(null);
   const { isPhonePortrait, sheetRef, handleDidDismiss } = useAdaptiveOverlayPresentation(
     isOpen,
     onOpenChange
@@ -154,15 +157,27 @@ function CustomDateRangeDialog({
     <View className="gap-4 px-5">
       <View className={isPhonePortrait ? "gap-4" : "flex-row flex-wrap items-start gap-4"}>
         {[
-          { key: "start", label: t("earnings.from"), value: start, onChange: onStartChange },
-          { key: "end", label: t("earnings.to"), value: end, onChange: onEndChange },
+          {
+            key: "start" as const,
+            label: t("earnings.from"),
+            value: start,
+            onChange: onStartChange,
+          },
+          { key: "end" as const, label: t("earnings.to"), value: end, onChange: onEndChange },
         ].map((field) => (
-          <View key={field.key} className="min-w-55 flex-1 gap-1.5">
+          <View
+            key={field.key}
+            className={isPhonePortrait ? "w-full gap-1.5" : "min-w-55 flex-1 gap-1.5"}
+          >
             <PanelLabel isRequired isInvalid={error !== null}>
               {field.label}
             </PanelLabel>
             <PanelDatePicker
               className="w-full"
+              open={isPhonePortrait ? openDateField === field.key : undefined}
+              onOpenChange={
+                isPhonePortrait ? (open) => setOpenDateField(open ? field.key : null) : undefined
+              }
               selected={field.value ? parseLocalDate(field.value) : undefined}
               onSelect={(date) => field.onChange(date ? formatLocalDate(date) : undefined)}
               format={(date) => (date ? toDateOption(formatLocalDate(date)).label : "")}
@@ -192,12 +207,16 @@ function CustomDateRangeDialog({
     return (
       <TrueSheet
         ref={sheetRef}
-        detents={[0.9]}
+        detents={[0.75, 0.9]}
         scrollable
+        backgroundColor={surfaceColor}
         cornerRadius={24}
         grabber
         dimmed
-        onDidDismiss={handleDidDismiss}
+        onDidDismiss={() => {
+          setOpenDateField(null);
+          handleDidDismiss();
+        }}
         header={
           <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
             <Typography type="h4" weight="semibold">
@@ -219,7 +238,16 @@ function CustomDateRangeDialog({
         }
         footer={<View className="bg-surface">{footer}</View>}
       >
-        {content}
+        <SheetOverlayHost
+          visible={openDateField !== null}
+          onRequestClose={() => setOpenDateField(null)}
+        >
+          <View className="flex-grow">
+            <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-4">
+              {content}
+            </ScrollView>
+          </View>
+        </SheetOverlayHost>
       </TrueSheet>
     );
   }
