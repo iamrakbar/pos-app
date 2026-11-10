@@ -71,8 +71,7 @@ export default function TableSelectionScreen(): JSX.Element {
     return (
       <View className="flex-1 bg-background">
         <View
-          className="flex-1 flex-row flex-wrap content-start gap-y-4 py-6"
-          style={{ paddingHorizontal: 16, columnGap: 12 }}
+          className="flex-1 flex-row flex-wrap content-start gap-x-3 gap-y-4 px-4 py-6"
           accessibilityRole="progressbar"
         >
           {Array.from({ length: (width >= 520 ? 3 : 2) * 2 }, (_, index) => (

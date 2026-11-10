@@ -194,7 +194,7 @@ export default function AreaFormScreen(): React.JSX.Element {
               <PanelButton variant="ghost" onPress={() => router.back()}>
                 {t("common.cancel")}
               </PanelButton>
-              <PanelButton onPress={handleSubmit(submitArea)} disabled={isSaving}>
+              <PanelButton onPress={() => void handleSubmit(submitArea)()} disabled={isSaving}>
                 {isSaving ? t("common.saving") : t("areasManagement.saveArea")}
               </PanelButton>
             </View>

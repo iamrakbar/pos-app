@@ -82,17 +82,17 @@ const TABLE_COLUMNS = [
   { id: "moved_at", width: 180, label: "movements.movedAt" },
 ] as const;
 const SKELETON_COLUMN_WIDTHS = [150, 220, 150, 150, 150, 150, 240, 220, 170, 180];
-const SKELETON_CELL_WIDTHS = [
-  "w-32",
-  "w-16",
-  "w-20",
-  "w-20",
-  "w-24",
-  "w-32",
-  "w-20",
-  "w-28",
-  "w-28",
-];
+const SKELETON_CELL_WIDTHS: Record<number, string> = {
+  0: "w-32",
+  1: "w-16",
+  2: "w-20",
+  3: "w-20",
+  4: "w-24",
+  5: "w-32",
+  6: "w-20",
+  7: "w-28",
+  8: "w-28",
+};
 const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
 // Table.Row adds 16 points of padding on each side and 12 points between columns.
 const TABLE_WIDTH =
@@ -288,7 +288,10 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
             className="flex-1"
             contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
             refreshControl={
-              <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
+              <RefreshControl
+                refreshing={query.isRefetching}
+                onRefresh={() => void query.refetch()}
+              />
             }
           >
             <View className="flex-1 items-center w-full">
@@ -337,11 +340,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                           return (
                             <Table.Row key={movement.id}>
                               <Table.Cell>
-                                <Chip
-                                  size="sm"
-                                  variant={MOVEMENT_TYPE_COLORS[movement.type]}
-                                  labelClassName="text-nowrap"
-                                >
+                                <Chip size="sm" variant={MOVEMENT_TYPE_COLORS[movement.type]}>
                                   {t(`movements.types.${movement.type}` as TranslationKey)}
                                 </Chip>
                               </Table.Cell>
@@ -356,9 +355,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                                     {formatSignedQuantity(movement.quantity)}
                                   </PanelTypography>
                                   {movement.ingredient?.base_unit ? (
-                                    <Chip size="sm" labelClassName="text-nowrap">
-                                      {movement.ingredient.base_unit}
-                                    </Chip>
+                                    <Chip size="sm">{movement.ingredient.base_unit}</Chip>
                                   ) : null}
                                 </View>
                               </Table.Cell>
@@ -377,7 +374,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                               </Table.Cell>
                               <Table.Cell>
                                 {movement.source ? (
-                                  <Chip size="sm" labelClassName="text-nowrap">
+                                  <Chip size="sm">
                                     {sourceKey
                                       ? t(sourceKey)
                                       : normalizeInventorySource(movement.source)}

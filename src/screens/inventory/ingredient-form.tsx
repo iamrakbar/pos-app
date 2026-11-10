@@ -223,7 +223,7 @@ function IngredientFormCard({
                 onValueChange={onChange}
                 placeholder={t("ingredients.unitPlaceholder")}
                 title={t("ingredients.unit")}
-                triggerClassName={errors.base_unit ? "border-destructive" : undefined}
+                triggerClassName={errors.base_unit ? "border-destructive" : ""}
               >
                 {unitOptions.map((option) => (
                   <PanelSelect.Item key={option.value} {...option} />

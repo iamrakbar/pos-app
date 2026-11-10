@@ -30,7 +30,7 @@ export async function configureNotifications(): Promise<void> {
     Notifications.setNotificationChannelAsync(ORDER_NOTIFICATION_CHANNEL_ID, {
       name: "Orders",
       description: "New order notifications",
-      importance: Notifications.AndroidImportance.HIGH,
+      importance: Notifications.AndroidImportance.HIGH, // eslint-disable-line import/namespace
       enableVibrate: true,
       vibrationPattern: [0, 250, 150, 250],
       showBadge: true,
@@ -39,7 +39,7 @@ export async function configureNotifications(): Promise<void> {
     Notifications.setNotificationChannelAsync(GENERAL_NOTIFICATION_CHANNEL_ID, {
       name: "General",
       description: "Application notifications",
-      importance: Notifications.AndroidImportance.DEFAULT,
+      importance: Notifications.AndroidImportance.DEFAULT, // eslint-disable-line import/namespace
       enableVibrate: true,
       showBadge: true,
     }),

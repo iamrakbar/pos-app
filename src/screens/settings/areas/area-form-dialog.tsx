@@ -116,7 +116,7 @@ export default function AreaFormDialog({
         ) : null}
         <PanelDialogButton
           className="flex-1"
-          onPress={handleSubmit(submitArea)}
+          onPress={() => void handleSubmit(submitArea)()}
           disabled={isSaving}
         >
           {isSaving ? t("common.saving") : t("areasManagement.saveArea")}

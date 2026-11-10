@@ -18,7 +18,7 @@ import * as Linking from "expo-linking";
 import * as Sharing from "expo-sharing";
 import React from "react";
 import { Platform, View } from "react-native";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import { captureRef } from "react-native-view-shot";
 
 type TableData = App.Data.Merchant.Area.TableData;
@@ -32,7 +32,6 @@ type TableQrOverlayProps = {
 
 const QR_EXPORT_SIZE = 1024;
 const QR_CODE_SIZE = 240;
-const QR_LOGO_SIZE = 48;
 const SOEAT_LOGO = require("../../../../../assets/images/logo.svg");
 
 function getTableNumberLabel(tableName: string): string {
@@ -113,7 +112,7 @@ export default function TableQrOverlay({
     "--color-primary-foreground",
   ]) as [string, string, string];
   const [activeAction, setActiveAction] = React.useState<QrAction>(null);
-  const qrRef = React.useRef<View>(null);
+  const qrRef = React.useRef<React.ComponentRef<typeof View>>(null);
   const orderUrl = table ? getTableOrderUrl(table.id) : null;
   const tableNumberLabel = table ? getTableNumberLabel(table.name) : "TABLE";
   const isUnavailable = !orderUrl;
@@ -258,7 +257,7 @@ export default function TableQrOverlay({
     <View className="px-5 gap-4">
       {orderUrl ? (
         <View
-          className="rounded-3xl border border-border bg-white p-4"
+          className="rounded-3xl border border-border bg-paper p-4"
           accessible
           accessibilityRole="image"
           accessibilityLabel={t("areasManagement.tableQrImageAccessibility", {
@@ -271,16 +270,12 @@ export default function TableQrOverlay({
                 <QRCode.Panel>
                   <QRCode.Canvas pixelSize={QR_CODE_SIZE} />
                   <QRCode.Logo>
-                    <Image
-                      source={SOEAT_LOGO}
-                      style={{ width: QR_LOGO_SIZE, height: QR_LOGO_SIZE }}
-                      contentFit="contain"
-                    />
+                    <Image source={SOEAT_LOGO} className="size-12" contentFit="contain" />
                   </QRCode.Logo>
                 </QRCode.Panel>
               </QRCode>
             </View>
-            <Typography type="h6" weight="bold" className="text-black" align="center">
+            <Typography type="h6" weight="bold" className="text-paper-black" align="center">
               {tableNumberLabel}
             </Typography>
           </View>

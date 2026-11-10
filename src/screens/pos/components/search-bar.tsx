@@ -119,12 +119,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
             className={choicePresentation === "popover" ? "w-56" : "w-28"}
           >
             {sortOptions.map((option) => (
-              <PanelSelect.Item
-                key={option.value}
-                value={option.value}
-                label={option.label}
-                labelClassName="text-nowrap"
-              />
+              <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
             ))}
           </PanelSelect>
         </View>

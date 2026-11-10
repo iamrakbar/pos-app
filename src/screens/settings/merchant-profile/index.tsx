@@ -32,7 +32,7 @@ import {
 } from "@/schemas/merchant-profile";
 import { useTranslation } from "@/stores/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import { File as ExpoFile } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -284,11 +284,7 @@ function MerchantImageSlot({
         className="w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-surface-secondary active:opacity-80"
       >
         {imageUri ? (
-          <Image
-            source={{ uri: imageUri }}
-            style={{ width: "100%", height: "100%" }}
-            contentFit="cover"
-          />
+          <Image source={{ uri: imageUri }} className="size-full" contentFit="cover" />
         ) : (
           <>
             <View className="size-12 items-center justify-center rounded-full bg-secondary">

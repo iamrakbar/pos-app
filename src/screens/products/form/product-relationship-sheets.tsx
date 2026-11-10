@@ -245,11 +245,7 @@ function RecipePickerTrigger({
       disabled={disabled}
       accessibilityLabel={label}
     >
-      <Typography
-        type="body-sm"
-        numberOfLines={1}
-        className={value ? undefined : "text-muted-foreground"}
-      >
+      <Typography type="body-sm" numberOfLines={1} className={value ? "" : "text-muted-foreground"}>
         {value ?? children}
       </Typography>
       <AppIcon icon={AppIcons.chevronDown} size={17} color={themeColorMuted} />
@@ -619,7 +615,7 @@ function RecipeEditingFooter({
   const isDisabled = isLoadingIngredients || hasIngredientError || isSaving;
 
   return (
-    <View className="border-t border-separator bg-surface px-4 pb-safe pt-3">
+    <View className="border-t border-border bg-surface px-4 pb-safe pt-3">
       <View className="flex-row gap-2">
         <PanelButton
           size="sm"
@@ -648,7 +644,7 @@ function RecipeReadFooter({ onEdit }: { onEdit: () => void }): React.JSX.Element
   const { t } = useTranslation();
 
   return (
-    <View className="border-t border-separator bg-surface px-4 pb-safe pt-3">
+    <View className="border-t border-border bg-surface px-4 pb-safe pt-3">
       <PanelButton size="sm" variant="outline" onPress={onEdit}>
         {t("productForm.recipeEdit")}
       </PanelButton>
@@ -784,7 +780,7 @@ function RecipeSheetBody({
             </>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator>
-              <View style={{ width: 710 }}>
+              <View className="w-ingredient-movements-table">
                 <PanelMovementTable
                   className="bg-secondary"
                   columns={[220, 150, 150, 190].map((width) => ({ width }))}

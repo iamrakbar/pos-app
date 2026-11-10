@@ -143,7 +143,7 @@ export default function QuickDiscountFormOverlay({
       </PanelButton>
       <PanelButton
         className="flex-1"
-        onPress={handleSubmit(submit)}
+        onPress={() => void handleSubmit(submit)()}
         disabled={createMutation.isPending}
       >
         {createMutation.isPending ? t("common.saving") : t("discounts.create")}

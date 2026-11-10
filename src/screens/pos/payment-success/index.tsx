@@ -166,7 +166,7 @@ function PaymentSuccessActions({
             onValueChange={(enabled) => updateReceiptSettings({ autoPrintOnSuccess: enabled })}
           />
         </View>
-        <View className={cn("gap-3", !isCompact && "flex-row")}>
+        <View className={cn("gap-3", !isCompact ? "flex-row" : "")}>
           {!receiptSettings.autoPrintOnSuccess ? (
             <PanelButton
               variant="outline"

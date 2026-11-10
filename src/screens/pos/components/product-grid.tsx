@@ -121,10 +121,12 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
             )}
             contentContainerClassName="flex-grow gap-2 px-3"
             contentInset={{ bottom: listBottomInset }}
-            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+            refreshControl={
+              <RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />
+            }
             showsVerticalScrollIndicator={false}
             ListFooterComponent={
-              Platform.OS === "ios" ? null : <View style={{ height: listBottomInset }} />
+              Platform.OS === "ios" ? undefined : <View style={{ height: listBottomInset }} />
             }
             ListEmptyComponent={
               isError ? (

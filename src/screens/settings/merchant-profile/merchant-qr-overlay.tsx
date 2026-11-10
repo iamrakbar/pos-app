@@ -19,7 +19,7 @@ import * as Linking from "expo-linking";
 import { Asset, requestPermissionsAsync } from "expo-media-library";
 import React from "react";
 import { Platform, View } from "react-native";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import { captureRef } from "react-native-view-shot";
 
 type MerchantQrOverlayProps = {
@@ -86,7 +86,7 @@ export default function MerchantQrOverlay({
     "--color-primary-foreground",
   ]) as [string, string];
   const [isDownloading, setIsDownloading] = React.useState(false);
-  const qrRef = React.useRef<View>(null);
+  const qrRef = React.useRef<React.ComponentRef<typeof View>>(null);
   const orderUrl = getMerchantOrderUrl(slug);
   const isUnavailable = !orderUrl;
   const { isPhonePortrait, sheetRef, handleDidDismiss } = useAdaptiveOverlayPresentation(
@@ -139,17 +139,13 @@ export default function MerchantQrOverlay({
   const content = (
     <View className="gap-4 px-5">
       {orderUrl ? (
-        <View className="items-center self-center rounded-3xl border border-border bg-white p-4">
+        <View className="items-center self-center rounded-3xl border border-border bg-paper p-4">
           <View ref={qrRef} collapsable={false}>
             <QRCode value={orderUrl} size="lg" errorCorrection="H">
               <QRCode.Panel>
                 <QRCode.Canvas pixelSize={QR_CODE_SIZE} />
                 <QRCode.Logo>
-                  <Image
-                    source={SOEAT_LOGO}
-                    style={{ width: 44, height: 44 }}
-                    contentFit="contain"
-                  />
+                  <Image source={SOEAT_LOGO} className="size-11" contentFit="contain" />
                 </QRCode.Logo>
               </QRCode.Panel>
             </QRCode>

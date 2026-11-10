@@ -6,13 +6,12 @@ import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
 import { PanelUIProvider, Typography as PanelTypography } from "panelui-native";
 import { useEffect, type JSX } from "react";
-import { Platform, StatusBar as NativeStatusBar, View } from "react-native";
+import { Platform, View } from "react-native";
 import { useCSSVariable, useUniwind } from "uniwind";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuth, setQueryClientRef } from "@/stores/use-auth";
 import { isApiError } from "@/api/api-error";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { useNavigationTheme } from "@/utils/navigation-theme";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useNetworkStore } from "@/stores/use-network-store";
@@ -45,7 +44,6 @@ function RootLayout(): JSX.Element {
   const { theme } = useUniwind();
   const isDarkMode = theme === "dark";
   const session = !!token;
-  const navigationTheme = useNavigationTheme();
   const isAppReady = hasHydrated;
   const { markInteractive } = useObserve();
 
@@ -59,13 +57,6 @@ function RootLayout(): JSX.Element {
   useEffect(() => {
     setQueryClientRef(queryClient);
   }, []);
-
-  useEffect(() => {
-    if (Platform.OS === "android") {
-      NativeStatusBar.setBackgroundColor(navigationTheme.background, true);
-      NativeStatusBar.setTranslucent(false);
-    }
-  }, [navigationTheme.background]);
 
   if (__DEV__ && session && process.env.EXPO_PUBLIC_PANELUI_SPIKE === "1") {
     return (

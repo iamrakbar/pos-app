@@ -3,7 +3,7 @@ import { useCSSVariable } from "uniwind";
 import type { POSProduct } from "@/types/pos";
 import { formatRupiah } from "@/utils/format";
 
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import type { JSX } from "react";
 import { Pressable, View } from "react-native";
 import AppIcon from "@/components/common/app-icon";
@@ -34,7 +34,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
       style={{
         width: width - 12,
       }}
-      className={cn("m-1.5 active:opacity-85", isOutOfStock && "opacity-50")}
+      className={cn("m-1.5 active:opacity-85", isOutOfStock ? "opacity-50" : "")}
       accessibilityRole="button"
       accessibilityLabel={t("pos.addProduct", { product: product.name })}
     >
@@ -43,7 +43,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
           {product.image?.thumbnail ? (
             <Image
               source={{ uri: product.image.thumbnail }}
-              style={{ width: "100%", height: "100%" }}
+              className="size-full"
               contentFit="cover"
             />
           ) : (
@@ -59,7 +59,7 @@ function ProductCard({ product, onPress, width }: Props): JSX.Element {
               <Typography
                 type="body-xs"
                 muted={!isOutOfStock}
-                className={isOutOfStock ? "text-destructive" : undefined}
+                className={isOutOfStock ? "text-destructive" : ""}
               >
                 {isOutOfStock
                   ? t("pos.outOfStock")

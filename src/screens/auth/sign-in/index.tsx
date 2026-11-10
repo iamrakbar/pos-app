@@ -131,7 +131,7 @@ export default function SignInScreen(): JSX.Element {
 
             <Button
               className="w-full"
-              onPress={handleSubmit(onSubmit)}
+              onPress={() => void handleSubmit(onSubmit)()}
               loading={login.isPending}
               disabled={login.isPending}
             >

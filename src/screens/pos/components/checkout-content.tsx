@@ -34,7 +34,7 @@ import {
 } from "@/api/mappers/checkout";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TrueSheet, useTrueSheet } from "@lodev09/react-native-true-sheet";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import type { ComponentProps, JSX, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -544,7 +544,7 @@ function PaymentFields({
                       {payment.image ? (
                         <Image
                           source={{ uri: payment.image }}
-                          style={{ width: 24, height: 24 }}
+                          className="size-6"
                           contentFit="contain"
                           accessible={false}
                         />

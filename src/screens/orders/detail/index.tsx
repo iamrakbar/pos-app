@@ -60,17 +60,18 @@ import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import { ActivityIndicator, Linking, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useEffect, useRef, useState } from "react";
-import type { View as ViewType } from "react-native";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { TranslationKey } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
 import { hasMerchantFeature } from "@/utils/merchant-features";
+
+type ViewType = import("react").ComponentRef<typeof View>;
 
 function formatPickupTime(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -257,8 +258,8 @@ function PaymentQrDialog({
     <>
       <Separator />
       <View className="items-center gap-3 p-6">
-        <View className="h-64 w-64 items-center justify-center rounded-lg border border-border bg-white">
-          <Image source={{ uri: qrUrl }} style={{ width: 240, height: 240 }} contentFit="contain" />
+        <View className="h-64 w-64 items-center justify-center rounded-lg border border-border bg-paper">
+          <Image source={{ uri: qrUrl }} className="size-60" contentFit="contain" />
         </View>
         <Typography type="body" weight="semibold">
           {formatRupiah(total)}
@@ -624,7 +625,7 @@ function OrderOverview({
   return (
     <>
       <Surface className="w-full p-5">
-        <View className={cn("gap-4", !isCompact && "flex-row items-start justify-between")}>
+        <View className={cn("gap-4", !isCompact ? "flex-row items-start justify-between" : "")}>
           <View className="flex-1 gap-2">
             <View className="flex-row items-center gap-2 flex-wrap">
               <Typography type="h4" weight="bold" className="font-mono tabular-nums">
@@ -801,10 +802,12 @@ function OrderItemsPanel({
               key={`${order.products[index]?.product_id}-${item.name}-${item.subtotal}`}
               className={cn(
                 "gap-2 px-4 py-3.5",
-                index < items.length - 1 && "border-b border-border"
+                index < items.length - 1 ? "border-b border-border" : ""
               )}
             >
-              <View className={cn("gap-2", !isCompact && "flex-row items-start justify-between")}>
+              <View
+                className={cn("gap-2", !isCompact ? "flex-row items-start justify-between" : "")}
+              >
                 <View className="flex-1 gap-0.5">
                   <Typography type="body-sm" weight="semibold">
                     {item.name}
@@ -986,10 +989,10 @@ function OrderPaymentQrPanel({
           <Typography type="body-sm" weight="semibold" className="self-start">
             {t("orders.detail.qrisCode")}
           </Typography>
-          <View className="rounded-xl bg-white p-3">
+          <View className="rounded-xl bg-paper p-3">
             <Image
               source={{ uri: paymentQrUrl }}
-              style={{ width: 220, height: 220 }}
+              className="size-55"
               contentFit="contain"
               accessibilityLabel={t("orders.detail.qrisCode")}
             />

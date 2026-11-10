@@ -4,6 +4,7 @@ import { Directory, File, Paths } from "expo-file-system";
 import { captureRef, releaseCapture } from "react-native-view-shot";
 import type { RefObject } from "react";
 import type { View } from "react-native";
+type ViewRef = import("react").ComponentRef<typeof View>;
 
 const RECEIPT_CACHE_PREFIX = "receipt-";
 const RECEIPT_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -63,7 +64,7 @@ async function cleanupReceiptCache(): Promise<void> {
 }
 
 export async function captureReceiptPng(
-  ref: RefObject<View | null>,
+  ref: RefObject<ViewRef | null>,
   orderCode: string,
   width: number
 ): Promise<ReceiptExportResult> {

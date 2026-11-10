@@ -1,10 +1,14 @@
-import { Typography , Separator ,
+import {
+  Typography,
+  Separator,
   Fab,
   PlusIcon,
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
   Skeleton as PanelListSkeleton,
- EmptyState, Chip } from "panelui-native";
+  EmptyState,
+  Chip,
+} from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
@@ -111,7 +115,10 @@ export default function DiscountsScreen(): React.JSX.Element {
             keyExtractor={(discount) => discount.id}
             contentContainerClassName="py-2 pb-24"
             refreshControl={
-              <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
+              <RefreshControl
+                refreshing={query.isRefetching}
+                onRefresh={() => void query.refetch()}
+              />
             }
             ItemSeparatorComponent={() => <Separator className="mx-5" />}
             renderItem={({ item: discount }) => (

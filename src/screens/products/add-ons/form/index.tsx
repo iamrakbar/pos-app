@@ -1,11 +1,14 @@
-import { Typography ,
+import {
+  Typography,
   Spinner as PanelLoadingSpinner,
   Typography as PanelLoadingText,
   Button as PanelButton,
   Dialog as PanelDialog,
   useToast,
   Alert as PanelErrorAlert,
-  Button as PanelErrorButton, Card } from "panelui-native";
+  Button as PanelErrorButton,
+  Card,
+} from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import { useAddOn, useCreateAddOn, useDeleteAddOn, useUpdateAddOn } from "@/hooks/db/use-add-ons";
@@ -239,7 +242,11 @@ export default function AddOnFormScreen(): React.JSX.Element {
               <PanelButton variant="ghost" onPress={() => router.back()}>
                 {t("common.cancel")}
               </PanelButton>
-              <PanelButton className="flex-1" onPress={handleSubmit(submitAddOn)} disabled={isSaving}>
+              <PanelButton
+                className="flex-1"
+                onPress={() => void handleSubmit(submitAddOn)()}
+                disabled={isSaving}
+              >
                 {isSaving ? t("common.saving") : t("addOnManagement.save")}
               </PanelButton>
             </View>

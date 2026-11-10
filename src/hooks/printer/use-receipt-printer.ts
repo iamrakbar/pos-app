@@ -28,8 +28,7 @@ export function useReceiptPrinter() {
   const openBluetoothSettings = async () => {
     if (Platform.OS === "android") {
       try {
-        const IntentLauncher =
-          require("expo-intent-launcher") as typeof import("expo-intent-launcher");
+        const IntentLauncher = await import("expo-intent-launcher");
         await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.BLUETOOTH_SETTINGS);
         return;
       } catch {

@@ -7,7 +7,7 @@ required: boolean;
 multiple: boolean;
 min: number;
 max: number;
-options: Array<App.Data.Merchant.AddOn.OptionData>;
+options: App.Data.Merchant.AddOn.OptionData[];
 options_count: number;
 created_at: string;
 updated_at: string;
@@ -53,7 +53,7 @@ access_token: string;
 token_type: string;
 expires_in: number;
 user: App.Data.Merchant.Auth.MerchantUserProfileData;
-merchants: Array<App.Data.Merchant.Auth.MerchantAuthSummaryData>;
+merchants: App.Data.Merchant.Auth.MerchantAuthSummaryData[];
 };
 export type MerchantAuthSummaryData = {
 id: string;
@@ -67,14 +67,14 @@ tax_is_enable: boolean;
 tax_name: string | null;
 tax_value: number | null;
 charge_app_payment_fee_to_customer: boolean;
-features: Array<'dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe'>;
+features: ('dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe')[];
 readiness: App.Data.Merchant.Auth.MerchantReadinessSummaryData;
 };
 export type MerchantReadinessSummaryData = {
 ready: boolean;
 accepting_orders: boolean;
 progress: { completed: number; total: number; percentage: number };
-issue_keys: Array<string>;
+issue_keys: string[];
 };
 export type MerchantSummaryData = {
 id: string;
@@ -88,7 +88,7 @@ tax_is_enable: boolean;
 tax_name: string | null;
 tax_value: number | null;
 charge_app_payment_fee_to_customer: boolean;
-features: Array<'dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe'>;
+features: ('dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe')[];
 };
 export type MerchantUserProfileData = {
 id: string;
@@ -104,7 +104,7 @@ id: string;
 order_id: string;
 reason: string | null;
 rejection_reason: string | null;
-status: Array<any>;
+status: any[];
 reviewed_at: string | null;
 created_at: string;
 };
@@ -148,9 +148,9 @@ pickup_time: string | null;
 payment_id: string;
 payment: App.Data.Merchant.Order.OrderPaymentData;
 notes: string | null;
-products: Array<App.Data.Merchant.Checkout.CheckoutProductData>;
+products: App.Data.Merchant.Checkout.CheckoutProductData[];
 pricing: App.Data.Merchant.Checkout.CheckoutPricingData;
-coupons: Array<App.Data.Merchant.Checkout.CheckoutCouponData>;
+coupons: App.Data.Merchant.Checkout.CheckoutCouponData[];
 payment_details: App.Data.Merchant.Order.OrderPaymentDetailsData;
 created_at: string;
 };
@@ -169,7 +169,7 @@ label: string;
 };
 export type CheckoutPricingData = {
 subtotal: number;
-fees: Array<App.Data.Merchant.Checkout.CheckoutPricingFeeData>;
+fees: App.Data.Merchant.Checkout.CheckoutPricingFeeData[];
 total: number;
 };
 export type CheckoutPricingFeeData = {
@@ -183,7 +183,7 @@ name: string;
 price: number;
 qty: number;
 notes: string | null;
-add_ons: Array<App.Data.Merchant.Order.OrderProductAddOnData>;
+add_ons: App.Data.Merchant.Order.OrderProductAddOnData[];
 subtotal: number;
 };
 export type CheckoutTableData = {
@@ -230,8 +230,8 @@ orders_today: number;
 revenue_today: number;
 pending_orders: number;
 completed_orders: number;
-orders_chart: Array<{ date: string; count: number }>;
-best_sellers: Array<{ product_id: string; name: string; qty_sold: number; revenue: number }>;
+orders_chart: { date: string; count: number }[];
+best_sellers: { product_id: string; name: string; qty_sold: number; revenue: number }[];
 period: { start: string; end: string };
 };
 }
@@ -254,7 +254,7 @@ expires_at: string;
 current_attempt_id: string | null;
 requires_provider_cancellation: boolean;
 cancellation_charge_known: boolean;
-options: Array<App.Data.Merchant.Delivery.CourierChangeOptionData>;
+options: App.Data.Merchant.Delivery.CourierChangeOptionData[];
 };
 export type CourierChangeStateData = {
 operation_id: string;
@@ -266,13 +266,13 @@ actual_merchant_adjustment: number;
 };
 export type DeliveryDetailData = {
 waybill_id: string | null;
-tracking_status: Array<any> | null;
+tracking_status: any[] | null;
 dispatched_at: string | null;
 can_dispatch: boolean;
 delivery_mode: string | null;
-courier: Array<any> | null;
-driver: Array<any> | null;
-address: Array<any> | null;
+courier: any[] | null;
+driver: any[] | null;
+address: any[] | null;
 delivery_fee: number;
 courier_change: App.Data.Merchant.Delivery.CourierChangeStateData | null;
 };
@@ -280,25 +280,25 @@ export type DeliveryTrackingData = {
 order_id: string;
 order_code: string;
 waybill_id: string | null;
-current_status: Array<any> | null;
+current_status: any[] | null;
 dispatched_at: string | null;
-courier: Array<any> | null;
-driver: Array<any> | null;
-tracking_history: Array<any>;
+courier: any[] | null;
+driver: any[] | null;
+tracking_history: any[];
 };
 export type DispatchDeliveryData = {
 order_id: string;
 order_code: string;
-tracking_status: Array<any> | null;
+tracking_status: any[] | null;
 delivery_mode: string;
-courier: Array<any> | null;
+courier: any[] | null;
 };
 export type SubmitWaybillData = {
 order_id: string;
 order_code: string;
 waybill_id: string;
 courier_code: string;
-tracking_status: Array<any> | null;
+tracking_status: any[] | null;
 };
 }
 declare namespace App.Data.Merchant.Discount {
@@ -361,7 +361,7 @@ declare namespace App.Data.Merchant.Gallery {
 export type GalleryData = {
 id: string;
 name: string;
-category: Array<any>;
+category: any[];
 active: boolean;
 image_url: string;
 thumbnail_url: string;
@@ -431,7 +431,7 @@ failure_reason: string | null;
 created_at: string;
 processed_at: string | null;
 failed_at: string | null;
-movements: Array<App.Data.Merchant.Inventory.InventoryMovementData> | null;
+movements: App.Data.Merchant.Inventory.InventoryMovementData[] | null;
 };
 export type InventoryOverviewData = {
 low_stock_ingredient_count: number;
@@ -448,7 +448,7 @@ product_id: string;
 inventory_mode: 'unlimited' | 'manual' | 'recipe';
 has_recipe: boolean;
 estimated_unit_cogs: number;
-ingredients: Array<App.Data.Merchant.Inventory.RecipeIngredientData>;
+ingredients: App.Data.Merchant.Inventory.RecipeIngredientData[];
 };
 export type RecipeIngredientData = {
 ingredient_id: string;
@@ -492,7 +492,7 @@ declare namespace App.Data.Merchant.Order {
 export type KitchenTicketAddOnData = {
 id: string;
 name: string;
-options: Array<App.Data.Merchant.Order.KitchenTicketOptionData>;
+options: App.Data.Merchant.Order.KitchenTicketOptionData[];
 };
 export type KitchenTicketData = {
 id: string;
@@ -515,7 +515,7 @@ total: number;
 products_count: number;
 order_type: string;
 order_status: App.Data.Merchant.Order.KitchenTicketOrderStatusData;
-products: Array<App.Data.Merchant.Order.KitchenTicketProductData>;
+products: App.Data.Merchant.Order.KitchenTicketProductData[];
 created_at: string;
 };
 export type KitchenTicketOrderStatusData = {
@@ -531,7 +531,7 @@ product_id: string;
 name: string;
 qty: number;
 notes: string | null;
-add_ons: Array<App.Data.Merchant.Order.KitchenTicketAddOnData>;
+add_ons: App.Data.Merchant.Order.KitchenTicketAddOnData[];
 };
 export type KitchenTicketStatusData = {
 value: string;
@@ -555,7 +555,7 @@ cancellation_reason_code: string | null;
 kitchen_ticket: App.Data.Merchant.Order.OrderKitchenTicketData | null;
 payment_status: App.Data.Merchant.Order.OrderPaymentStatusDetailData;
 notes: string | null;
-products: Array<App.Data.Merchant.Order.OrderProductData>;
+products: App.Data.Merchant.Order.OrderProductData[];
 subtotal: number;
 tax: App.Data.Merchant.Order.OrderTaxData;
 delivery_fee: App.Data.Merchant.Order.OrderDeliveryFeeData | null;
@@ -594,16 +594,16 @@ export type OrderListData = {
 id: string;
 code: string;
 merchant: App.Data.Merchant.Auth.MerchantSummaryData;
-customer: Array<any>;
-payment: Array<any>;
+customer: any[];
+payment: any[];
 order_type: string;
-order_status: Array<any>;
+order_status: any[];
 cancellation_reason_code: string | null;
 kitchen_ticket: App.Data.Merchant.Order.OrderKitchenTicketData | null;
-payment_status: Array<any>;
+payment_status: any[];
 total: number;
 products_count: number;
-orderable: Array<any> | null;
+orderable: any[] | null;
 created_at: string;
 };
 export type OrderOrderableAddressData = {
@@ -678,7 +678,7 @@ is_successful: boolean;
 export type OrderProductAddOnData = {
 id: string;
 name: string;
-options: Array<App.Data.Merchant.Order.OrderProductOptionData>;
+options: App.Data.Merchant.Order.OrderProductOptionData[];
 };
 export type OrderProductData = {
 product_id: string;
@@ -687,7 +687,7 @@ price: number;
 discount: App.Data.Merchant.Order.OrderProductDiscountData | null;
 qty: number;
 notes: string | null;
-add_ons: Array<App.Data.Merchant.Order.OrderProductAddOnData>;
+add_ons: App.Data.Merchant.Order.OrderProductAddOnData[];
 subtotal: number;
 };
 export type OrderProductDiscountData = {
@@ -703,7 +703,7 @@ price: number;
 export type OrderStatusData = {
 id: string;
 code: string;
-order_status: Array<any>;
+order_status: any[];
 cancellation_reason_code: string | null;
 cancelled_at: string | null;
 updated_at: string;
@@ -723,7 +723,7 @@ amount: number | null;
 export type PaymentStatusData = {
 order_id: string;
 order_code: string;
-payment: Array<any>;
+payment: any[];
 payment_status: string;
 payment_status_label: string;
 is_successful: boolean;
@@ -794,7 +794,7 @@ stock: App.Data.Merchant.Pos.ProductStockData;
 inventory_mode: 'unlimited' | 'manual' | 'recipe';
 image: App.Data.Merchant.Pos.ProductImageData;
 category: App.Data.Merchant.Pos.ProductCategoryData | null;
-add_ons: Array<any>;
+add_ons: any[];
 is_active: boolean;
 is_po: boolean;
 po_availability: App.Data.Merchant.Pos.ProductPoAvailabilityData | null;
@@ -828,7 +828,7 @@ min: number;
 max: number;
 required: boolean;
 multiple: boolean;
-options: Array<App.Data.Merchant.Product.ProductOptionData>;
+options: App.Data.Merchant.Product.ProductOptionData[];
 };
 export type ProductCategoryData = {
 id: string;
@@ -852,7 +852,7 @@ active: boolean;
 image: App.Data.Merchant.Product.ProductImageData;
 category: App.Data.Merchant.Product.ProductCategoryData | null;
 discount: App.Data.Merchant.Product.ProductDiscountData | null;
-add_ons: Array<App.Data.Merchant.Product.ProductAddOnData>;
+add_ons: App.Data.Merchant.Product.ProductAddOnData[];
 created_at: string;
 updated_at: string;
 };
@@ -907,8 +907,8 @@ logo_url: string | null;
 cover_url: string | null;
 address: App.Data.Merchant.Profile.MerchantAddressData | null;
 has_schedule: boolean;
-schedule: Record<string, Array<{ open: string; close: string }>>;
-features: Array<'dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe'>;
+schedule: Record<string, { open: string; close: string }[]>;
+features: ('dine_in' | 'takeaway' | 'delivery' | 'pos' | 'users' | 'customers' | 'galleries' | 'review' | 'discount' | 'coupon' | 'cancellation' | 'rejection' | 'kds' | 'inventory' | 'inventory_recipe')[];
 created_at: string;
 updated_at: string;
 };
@@ -922,7 +922,7 @@ ready: boolean;
 accepting_orders: boolean;
 progress: { completed: number; total: number; percentage: number };
 channels: { dine_in: boolean; takeaway: boolean; delivery: boolean };
-issues: Array<App.Data.Merchant.Readiness.MerchantReadinessIssueData>;
+issues: App.Data.Merchant.Readiness.MerchantReadinessIssueData[];
 checked_at: string;
 };
 export type MerchantReadinessIssueData = {
@@ -939,7 +939,7 @@ customer_name: string | null;
 rating: number;
 title: string | null;
 text: string | null;
-status: Array<any>;
+status: any[];
 created_at: string;
 };
 }
@@ -949,7 +949,7 @@ id: string;
 name: string;
 email: string;
 phone: string | null;
-role: Array<any>;
+role: any[];
 created_at: string;
 };
 }
@@ -958,7 +958,7 @@ export type SubscriptionData = {
 id: string;
 plan_key: string;
 plan_name: string | null;
-status: Array<any>;
+status: any[];
 is_active: boolean;
 is_trial: boolean;
 days_remaining: number;

@@ -36,7 +36,7 @@ import {
   type FieldErrors,
   type UseFormSetValue,
 } from "react-hook-form";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import { Platform, Pressable, View } from "react-native";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
@@ -259,11 +259,7 @@ function ProductImageCard({
           className="aspect-video w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-surface-secondary active:opacity-80"
         >
           {imageUri ? (
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: "100%", height: "100%" }}
-              contentFit="contain"
-            />
+            <Image source={{ uri: imageUri }} className="size-full" contentFit="contain" />
           ) : (
             <>
               <View className="size-14 items-center justify-center rounded-full bg-secondary">
@@ -333,7 +329,7 @@ function ProductDetailsCard({
                   onValueChange={onChange}
                   disabled={areCategoriesLoading || didCategoriesFail}
                   className="flex-1"
-                  triggerClassName={errors.category_id ? "border-destructive" : undefined}
+                  triggerClassName={errors.category_id ? "border-destructive" : ""}
                   placeholder={t("productForm.selectCategory")}
                   title={t("productForm.category")}
                 >
@@ -477,7 +473,7 @@ function ProductInventoryFields({
                   return;
                 onChange(next);
               }}
-              triggerClassName={errors.inventory_mode ? "border-destructive" : undefined}
+              triggerClassName={errors.inventory_mode ? "border-destructive" : ""}
               placeholder={t("productForm.inventoryModePlaceholder")}
               title={t("productForm.inventoryMode")}
             >

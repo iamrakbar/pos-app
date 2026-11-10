@@ -77,13 +77,17 @@ function TicketCard({
   const primaryForegroundColor = useCSSVariable("--color-primary-foreground") as string;
   const order = ticket.order;
   const statusColor = normalizeStatusColor(ticket.status);
-  const statusBackground = KDS_STATUS_HEADER_BACKGROUNDS[ticketStatus(ticket)] ?? "bg-secondary";
   const actionLane = lane === "all" ? ticketStatus(ticket) : lane;
   const action = LANE_ACTION[actionLane as ActionLane];
 
   return (
     <Surface className="w-full h-full gap-0 p-0">
-      <View className={cn("flex-row items-start justify-between gap-3 p-4", statusBackground)}>
+      <View
+        className={cn(
+          "flex-row items-start justify-between gap-3 p-4",
+          KDS_STATUS_HEADER_BACKGROUNDS[ticketStatus(ticket)] ?? "bg-secondary"
+        )}
+      >
         <View className="flex-1 gap-1">
           <View className="flex-row items-center justify-between">
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
@@ -361,7 +365,7 @@ export default function KdsScreen(): React.JSX.Element {
             )}
             contentContainerClassName={cn(
               "gap-3 pb-10 pt-4 px-4 md:px-6",
-              activeTickets.length === 0 && "flex-grow"
+              activeTickets.length === 0 ? "flex-grow" : ""
             )}
             columnWrapperStyle={gridColumns > 1 ? { gap: gridGap } : undefined}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
@@ -385,7 +389,7 @@ export default function KdsScreen(): React.JSX.Element {
                     </View>
                   ))}
                 </View>
-              ) : null
+              ) : undefined
             }
             ListEmptyComponent={
               <View className="w-full">

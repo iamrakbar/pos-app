@@ -138,7 +138,7 @@ export default function TableFormDialog({
         ) : null}
         <PanelDialogButton
           className="flex-1"
-          onPress={handleSubmit(submitTable)}
+          onPress={() => void handleSubmit(submitTable)()}
           disabled={isSaving}
         >
           {isSaving ? t("common.saving") : t("areasManagement.saveTable")}

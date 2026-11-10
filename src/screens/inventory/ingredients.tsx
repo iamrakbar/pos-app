@@ -71,17 +71,17 @@ const TABLE_COLUMNS = [
   { id: "updated_at", width: 180, label: "ingredients.updatedAt" },
 ] as const;
 const SKELETON_COLUMN_WIDTHS = [230, 125, 150, 150, 150, 220, 130, 180, 180];
-const SKELETON_CELL_WIDTHS = [
-  "w-32",
-  "w-16",
-  "w-20",
-  "w-20",
-  "w-24",
-  "w-32",
-  "w-20",
-  "w-28",
-  "w-28",
-];
+const SKELETON_CELL_WIDTHS: Record<number, string> = {
+  0: "w-32",
+  1: "w-16",
+  2: "w-20",
+  3: "w-20",
+  4: "w-24",
+  5: "w-32",
+  6: "w-20",
+  7: "w-28",
+  8: "w-28",
+};
 const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
 // Table.Row adds 16 points of padding on each side and 12 points between columns.
 const TABLE_WIDTH =
@@ -246,7 +246,9 @@ function IngredientsTable({
     <ScrollView
       className="flex-1"
       contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
-      refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />}
+      refreshControl={
+        <RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} />
+      }
     >
       <View className="flex-1 items-center w-full">
         <ScrollView horizontal showsHorizontalScrollIndicator className="w-full">

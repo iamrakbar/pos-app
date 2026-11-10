@@ -96,8 +96,8 @@ function CartOrderControls({
           });
         }}
       >
-        <PanelSelect.Item value="dine-in" label={t("pos.dineIn")} labelClassName="text-nowrap" />
-        <PanelSelect.Item value="takeaway" label={t("pos.takeaway")} labelClassName="text-nowrap" />
+        <PanelSelect.Item value="dine-in" label={t("pos.dineIn")} />
+        <PanelSelect.Item value="takeaway" label={t("pos.takeaway")} />
       </PanelSelect>
 
       {checkoutForm.order_type === "dine-in" ? (

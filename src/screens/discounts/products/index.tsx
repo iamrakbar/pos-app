@@ -161,7 +161,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                           className={
                             selected ? "min-h-16 px-4 py-3 bg-secondary" : "min-h-16 px-4 py-3"
                           }
-                          labelClassName={selected ? "font-semibold" : undefined}
+                          labelClassName={selected ? "font-semibold" : ""}
                           descriptionClassName="tabular-nums"
                         />
                         {index < products.length - 1 ? <Separator className="mx-4" /> : null}

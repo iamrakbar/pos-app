@@ -432,7 +432,7 @@ export default function SupplierFormScreen(): React.JSX.Element {
           </PanelButton>
           <PanelButton
             className="flex-1"
-            onPress={handleSubmit(submitSupplier)}
+            onPress={() => void handleSubmit(submitSupplier)()}
             disabled={isSaving}
           >
             {isSaving ? t("common.saving") : t("suppliers.save")}

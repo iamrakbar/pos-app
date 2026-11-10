@@ -215,7 +215,11 @@ export default function DiscountFormScreen(): React.JSX.Element {
           <PanelButton variant="ghost" onPress={() => router.back()} disabled={saving}>
             {t("common.cancel")}
           </PanelButton>
-          <PanelButton className="flex-1" onPress={handleSubmit(submit)} disabled={saving}>
+          <PanelButton
+            className="flex-1"
+            onPress={() => void handleSubmit(submit)()}
+            disabled={saving}
+          >
             {saving ? t("common.saving") : t("common.save")}
           </PanelButton>
         </View>

@@ -20,7 +20,7 @@ import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import * as ImagePicker from "expo-image-picker";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -228,11 +228,13 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
   const configuredCharactersPerLine = usePrinterStore((state) => state.settings.charactersPerLine);
   const configuredLogoWidthDots = usePrinterStore((state) => state.settings.logoWidthDots);
   const { isPortrait, isCompact } = useResponsiveLayout();
-  const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary] = useCSSVariable([
-    "--color-muted-foreground",
-    "--color-foreground",
-    "--color-surface-secondary",
-  ]) as [string, string, string];
+  const [themeColorMuted, themeColorForeground, themeColorSurfaceSecondary, paperColor] =
+    useCSSVariable([
+      "--color-muted-foreground",
+      "--color-foreground",
+      "--color-surface-secondary",
+      "--color-paper",
+    ]) as [string, string, string, string];
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
   const [previewPaperWidth, setPreviewPaperWidth] = useState<PaperWidth>(configuredPaperWidth);
   const receiptLayouts = RECEIPT_LAYOUTS.map((item) => ({
@@ -390,11 +392,11 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                         <>
                           <Image
                             source={{ uri: settings.storeLogo }}
-                            style={{ width: 160, height: 80 }}
+                            className="w-40 h-20"
                             contentFit="contain"
                           />
-                          <View className="absolute right-2 bottom-2 rounded-full bg-black/60 p-2">
-                            <AppIcon icon={AppIcons.camera} size={15} color="white" />
+                          <View className="absolute right-2 bottom-2 rounded-full bg-paper-black/60 p-2">
+                            <AppIcon icon={AppIcons.camera} size={15} color={paperColor} />
                           </View>
                         </>
                       ) : (

@@ -325,12 +325,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
         showsVerticalScrollIndicator
-        contentContainerStyle={{
-          gap: 24,
-          paddingHorizontal: 24,
-          paddingTop: 24,
-          paddingBottom: 24,
-        }}
+        contentContainerClassName="gap-6 p-6"
         ListHeaderComponent={
           hasSubmitError ? (
             <Alert variant="destructive">
@@ -339,7 +334,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
                 <Alert.Title>{t("addOns.completeRequired")}</Alert.Title>
               </Alert.Content>
             </Alert>
-          ) : null
+          ) : undefined
         }
         renderItem={({ item: group }) => {
           const error =

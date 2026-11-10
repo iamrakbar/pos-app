@@ -5,7 +5,9 @@ import {
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
   Skeleton as PanelGridSkeleton,
- EmptyState, Card } from "panelui-native";
+  EmptyState,
+  Card,
+} from "panelui-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import { useAreas } from "@/hooks/db/use-areas";
@@ -105,7 +107,7 @@ export default function AreasScreen(): React.JSX.Element {
           paddingBottom: 104,
           flexGrow: areas.length === 0 ? 1 : undefined,
         }}
-        columnWrapperClassName={columnCount > 1 ? "gap-4" : undefined}
+        columnWrapperClassName={columnCount > 1 ? "gap-4" : ""}
         ItemSeparatorComponent={() => <View className="h-4" />}
         renderItem={({ item: area }) => (
           <Card className="gap-4 p-4" style={{ width: cardWidth }}>

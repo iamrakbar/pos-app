@@ -1,9 +1,13 @@
 import { statusChipVariant } from "@/utils/status-chip-variant";
-import { Typography , Separator ,
+import {
+  Typography,
+  Separator,
   Alert as PanelErrorAlert,
   Button as PanelErrorButton,
   Skeleton as PanelListSkeleton,
- EmptyState, Chip as PanelChip } from "panelui-native";
+  EmptyState,
+  Chip as PanelChip,
+} from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import { useOrders } from "@/hooks/db/use-orders";
@@ -140,7 +144,9 @@ export default function OrdersScreen(): React.JSX.Element {
             data={orders}
             keyExtractor={(order) => order.id}
             contentContainerClassName="py-2"
-            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+            refreshControl={
+              <RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />
+            }
             onEndReachedThreshold={0.5}
             onEndReached={() => {
               if (hasNextPage && !isFetchingNextPage) fetchNextPage();
@@ -175,7 +181,7 @@ export default function OrdersScreen(): React.JSX.Element {
                     </View>
                   ))}
                 </View>
-              ) : null
+              ) : undefined
             }
           />
         )}

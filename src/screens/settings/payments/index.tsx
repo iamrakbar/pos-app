@@ -16,7 +16,7 @@ import { AppIcons } from "@/components/common/app-icons";
 import { useMerchantPayments, useReorderMerchantPayments } from "@/hooks/db/use-payments";
 import { useTranslation } from "@/stores/use-locale";
 import { useFocusEffect } from "expo-router";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
@@ -99,10 +99,7 @@ function PaymentSettingsRow({
           <Image
             source={{ uri: payment.image ?? "" }}
             contentFit="contain"
-            style={{
-              flex: 1,
-              width: "100%",
-            }}
+            className="flex-1 w-full"
           />
         </View>
       </Frame.Media>

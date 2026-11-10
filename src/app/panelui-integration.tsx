@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { FlatList, Modal, ScrollView, View } from "react-native";
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import { EncodingType, File as ExpoFile, Paths } from "expo-file-system";
 import { captureRef } from "react-native-view-shot";
 import { useLocale } from "@/stores/use-locale";
@@ -33,7 +33,7 @@ import {
 export default function PanelUIIntegrationScreen({ standalone = false }: { standalone?: boolean }) {
   const locale = useLocale((state) => state.locale);
   const sheet = useRef<TrueSheet>(null);
-  const qrCapture = useRef<View>(null);
+  const qrCapture = useRef<import("react").ComponentRef<typeof View>>(null);
   const [qrCaptureStatus, setQrCaptureStatus] = useState("");
   const [value, setValue] = useState("first");
   const [searchFixture, setSearchFixture] = useState("");
@@ -103,7 +103,7 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
         <SlideButton.Label>Slide fixture</SlideButton.Label>
       </SlideButton>
       <Typography>Completed: {slideCount}</Typography>
-      <ScrollFade style={{ height: 100 }}>
+      <ScrollFade className="h-25">
         <FlatList
           data={Array.from({ length: 12 }, (_, index) => index)}
           keyExtractor={(item) => String(item)}
@@ -137,11 +137,8 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
       <Button onPress={() => void sheet.current?.present()}>Open TrueSheet</Button>
       <TrueSheet ref={sheet} detents={[0.75, 1]} scrollable grabber>
         <PortalProvider>
-          <View style={{ flex: 1 }}>
-            <ScrollView
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ padding: 24, gap: 16 }}
-            >
+          <View className="flex-1">
+            <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="p-6 gap-4">
               <Typography>PanelUI inside the native TrueSheet</Typography>
               <Label>Keyboard reachability</Label>
               <Input
@@ -243,14 +240,14 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
               <Button variant="outline" onPress={() => toast.hideAll()}>
                 Dismiss toasts
               </Button>
-              <View ref={qrCapture} collapsable={false} style={{ alignSelf: "center" }}>
+              <View ref={qrCapture} collapsable={false} className="self-center">
                 <QRCode value="https://example.com/panelui-qr-test" size="lg" errorCorrection="H">
                   <QRCode.Panel>
                     <QRCode.Canvas pixelSize={240} />
                     <QRCode.Logo>
                       <Image
                         source={require("../../assets/images/logo.svg")}
-                        style={{ width: 40, height: 40 }}
+                        className="size-10"
                         contentFit="contain"
                       />
                     </QRCode.Logo>
@@ -296,7 +293,7 @@ export default function PanelUIIntegrationScreen({ standalone = false }: { stand
                 setHostVisible(false);
               }}
             >
-              <View style={{ flex: 1 }} pointerEvents="box-none">
+              <View className="flex-1" pointerEvents="box-none">
                 <PortalHost />
               </View>
             </Modal>

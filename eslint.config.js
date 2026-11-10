@@ -1,12 +1,16 @@
 const expoConfig = require("eslint-config-expo/flat");
 const globals = require("globals");
+const panelwind = require("panelwind").default;
 
 module.exports = [
   ...expoConfig,
+  ...panelwind.configs.recommended,
+  { rules: { "panelwind/no-restyle": "off" } },
   {
     ignores: [
       "dist/**",
       ".expo/**",
+      ".agents/**",
       "node_modules/**",
       "vendor/**",
       "expo-env.d.ts",

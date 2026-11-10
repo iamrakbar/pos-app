@@ -129,7 +129,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
             paddingBottom: 104,
             flexGrow: tables.length === 0 ? 1 : undefined,
           }}
-          columnWrapperClassName={columnCount > 1 ? "items-stretch" : undefined}
+          columnWrapperClassName={columnCount > 1 ? "items-stretch" : ""}
           renderItem={({ item: table }) => {
             const pax = Number(table.pax);
             const seats = t(pax === 1 ? "areasManagement.seatOne" : "areasManagement.seatOther", {

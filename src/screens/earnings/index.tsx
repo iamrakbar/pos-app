@@ -135,14 +135,14 @@ function CustomDateRangeDialog({
       <PanelButton
         variant="ghost"
         size="sm"
-        className={isPhonePortrait ? "w-full" : undefined}
+        className={isPhonePortrait ? "w-full" : ""}
         onPress={onCancel}
       >
         {t("common.cancel")}
       </PanelButton>
       <PanelButton
         size="sm"
-        className={isPhonePortrait ? "w-full" : undefined}
+        className={isPhonePortrait ? "w-full" : ""}
         onPress={onApply}
         disabled={isApplying}
       >
@@ -515,7 +515,9 @@ export default function EarningsScreen(): React.JSX.Element {
         className="flex-1 bg-background"
         contentContainerClassName="py-6 pb-10"
         contentContainerStyle={{ paddingHorizontal: horizontalPagePadding }}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />
+        }
       >
         <View className="w-full gap-6">
           <View className="flex-col landscape:flex-row items-start landscape:items-center justify-between gap-3">

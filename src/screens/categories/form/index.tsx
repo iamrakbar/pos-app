@@ -307,7 +307,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
           </PanelButton>
           <PanelButton
             className="flex-1"
-            onPress={handleSubmit(submitCategory)}
+            onPress={() => void handleSubmit(submitCategory)()}
             disabled={isSaving}
           >
             {isSaving ? t("common.saving") : t("categories.save")}

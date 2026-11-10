@@ -9,10 +9,8 @@ import { useProducts } from "@/hooks/db/use-products";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import type { POSProduct } from "@/types/pos";
 import type { JSX } from "react";
-import { useFocusEffect } from "expo-router";
-import { Platform, StatusBar, View } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigationTheme } from "@/utils/navigation-theme";
 import { paymentGroupsQueryOptions } from "@/hooks/db/use-payments";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -29,7 +27,6 @@ export default function POSScreen(): JSX.Element {
   const productsQuery = useProducts();
   const categoriesQuery = useCategories();
   const isCatalogLoading = productsQuery.isLoading || categoriesQuery.isLoading;
-  const theme = useNavigationTheme();
   const queryClient = useQueryClient();
   const merchantId = useAuth((state) => state.merchantId);
   const cartPanelWidth = Math.min(Math.max(Math.floor(viewportWidth * 0.34), 340), 460);
@@ -37,13 +34,6 @@ export default function POSScreen(): JSX.Element {
   useEffect(() => {
     if (merchantId) void queryClient.prefetchQuery(paymentGroupsQueryOptions(merchantId));
   }, [merchantId, queryClient]);
-
-  useFocusEffect(() => {
-    if (Platform.OS !== "android") return;
-
-    StatusBar.setBackgroundColor(theme.surface, true);
-    return () => StatusBar.setBackgroundColor(theme.background, true);
-  });
 
   const handleSelectProduct = (product: POSProduct) => {
     if (product.add_ons.length > 0) {

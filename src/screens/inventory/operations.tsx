@@ -70,17 +70,17 @@ const TABLE_COLUMNS = [
   { id: "failed_at", width: 180, label: "operations.failedAt" },
 ] as const;
 const SKELETON_COLUMN_WIDTHS = [180, 140, 130, 120, 180, 260, 180, 180, 180];
-const SKELETON_CELL_WIDTHS = [
-  "w-32",
-  "w-16",
-  "w-20",
-  "w-20",
-  "w-24",
-  "w-32",
-  "w-20",
-  "w-28",
-  "w-28",
-];
+const SKELETON_CELL_WIDTHS: Record<number, string> = {
+  0: "w-32",
+  1: "w-16",
+  2: "w-20",
+  3: "w-20",
+  4: "w-24",
+  5: "w-32",
+  6: "w-20",
+  7: "w-28",
+  8: "w-28",
+};
 const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
 // Table.Row adds 16 points of padding on each side and 12 points between columns.
 const TABLE_WIDTH =
@@ -259,7 +259,10 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
             className="flex-1"
             contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
             refreshControl={
-              <RefreshControl refreshing={query.isRefetching} onRefresh={query.refetch} />
+              <RefreshControl
+                refreshing={query.isRefetching}
+                onRefresh={() => void query.refetch()}
+              />
             }
           >
             <View className="flex-1 items-center w-full">

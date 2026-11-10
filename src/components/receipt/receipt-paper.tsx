@@ -39,16 +39,9 @@ export type ReceiptPreviewData = {
 
 const styles = StyleSheet.create({
   text: {
-    color: "#171717",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     fontSize: 12,
     lineHeight: 17,
-  },
-  small: {
-    color: "#525252",
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-    fontSize: 10,
-    lineHeight: 15,
   },
 });
 
@@ -71,6 +64,7 @@ function ReceiptLines({
         return (
           <Text
             key={`${value}-${occurrence}`}
+            className="text-paper-ink"
             style={[styles.text, { textAlign: align }, bold && { fontWeight: "700" }]}
           >
             {value}
@@ -81,7 +75,7 @@ function ReceiptLines({
   );
 }
 
-export type ReceiptPaperRef = View;
+export type ReceiptPaperRef = import("react").ComponentRef<typeof View>;
 
 type ReceiptItem = ReceiptPreviewData["items"][number];
 
@@ -166,7 +160,7 @@ function ReceiptItemLines({
       <ReceiptItemDiscount item={item} row={row} />
       <ReceiptItemAddOns item={item} row={row} />
       <ReceiptItemNote item={item} wrapped={wrapped} noteLabel={noteLabel} />
-      {!isCompact && !isLast ? <View className="h-[17px]" /> : null}
+      {!isCompact && !isLast ? <View className="h-receipt-line" /> : null}
     </View>
   );
 }
@@ -323,7 +317,7 @@ function ReceiptNotesFooter({
     <>
       {data.notes ? (
         <>
-          <View className="h-[17px]" />
+          <View className="h-receipt-line" />
           <ReceiptLines lines={wrapped(`${noteLabel}: ${data.notes}`)} />
         </>
       ) : null}
@@ -331,7 +325,7 @@ function ReceiptNotesFooter({
         <>
           <View className={gapClass} />
           <ReceiptLines lines={[separator]} />
-          <View className="h-[17px]" />
+          <View className="h-receipt-line" />
           <ReceiptLines lines={wrapped(settings.footer)} align="center" />
         </>
       ) : null}
@@ -368,7 +362,7 @@ export const ReceiptPaper = forwardRef<
         ? parsedColumns
         : fallbackColumns;
     const separator = "-".repeat(columns);
-    const gapClass = isCompact ? "h-0" : "h-[17px]";
+    const gapClass = isCompact ? "h-0" : "h-receipt-line";
     const wrapped = (value: string) => wrapReceiptText(value, columns);
     const row = (left: string, right: string) => formatReceiptRow(left, right, columns);
 
@@ -376,7 +370,7 @@ export const ReceiptPaper = forwardRef<
       <View
         ref={ref}
         collapsable={false}
-        className={cn("max-w-full self-center items-center bg-white", isCompact ? "py-6" : "py-10")}
+        className={cn("max-w-full self-center items-center bg-paper", isCompact ? "py-6" : "py-10")}
         style={{ width: widthOverride ?? (paperWidth === "58mm" ? 300 : 400) }}
       >
         <ReceiptHeaderBlock

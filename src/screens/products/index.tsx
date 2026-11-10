@@ -21,7 +21,7 @@ import { getToolbarIcon } from "@/utils/toolbar-icons";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 
-import { Image } from "expo-image";
+import { StyledImage as Image } from "@/components/common/styled-image";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { Stack, useRouter } from "expo-router";
@@ -179,7 +179,7 @@ export default function ProductsScreen(): React.JSX.Element {
                         {product.image?.thumbnail ? (
                           <Image
                             source={{ uri: product.image.thumbnail }}
-                            style={{ width: "100%", height: "100%" }}
+                            className="size-full"
                             contentFit="cover"
                           />
                         ) : (
@@ -237,7 +237,7 @@ export default function ProductsScreen(): React.JSX.Element {
                           <Typography
                             type="body-sm"
                             weight="semibold"
-                            className={cn("tabular-nums", isDiscounted && "text-primary")}
+                            className={cn("tabular-nums", isDiscounted ? "text-primary" : "")}
                           >
                             {(() => {
                               const effective = product.discount?.price ?? product.price;

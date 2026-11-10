@@ -4,6 +4,16 @@
 
 @source "../node_modules/panelui-native/src";
 
+/* Stable colors for printed receipts, scannable QR codes, and image overlays. */
+@theme {
+  --color-paper: #ffffff;
+  --color-paper-ink: #171717;
+  --color-paper-black: #000000;
+  --spacing-receipt-line: 17px;
+  --spacing-supplier-offers-table: 1290px;
+  --spacing-ingredient-movements-table: 710px;
+}
+
 @layer theme {
   :root {
     @variant light {

@@ -75,7 +75,7 @@ export default function IngredientSupplierOffersScreen({
           </View>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator>
-            <View style={{ width: 1290 }}>
+            <View className="w-supplier-offers-table">
               <PanelTable
                 columns={[180, 150, 160, 150, 160, 180, 130, 180].map((width) => ({ width }))}
               >

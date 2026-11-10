@@ -101,7 +101,10 @@ export default function QuickCategoryFormOverlay({
 
   const footer = (
     <View className="px-5 pb-safe pt-4">
-      <PanelButton onPress={handleSubmit(submitCategory)} disabled={createMutation.isPending}>
+      <PanelButton
+        onPress={() => void handleSubmit(submitCategory)()}
+        disabled={createMutation.isPending}
+      >
         {createMutation.isPending ? t("common.saving") : t("productForm.createCategory")}
       </PanelButton>
     </View>
