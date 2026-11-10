@@ -106,5 +106,8 @@
         ]
       }
     }
+  },
+  "patchedDependencies": {
+    "@haroldtran/react-native-thermal-printer@1.2.0": "patches/@haroldtran%2Freact-native-thermal-printer@1.2.0.patch"
   }
 }
