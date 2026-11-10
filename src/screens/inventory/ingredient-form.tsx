@@ -1,16 +1,7 @@
-import {
-  Typography,
-  Spinner,
-  Button,
-  Dialog,
-  Input,
-  Select,
-  Label,
-  Switch,
-  useToast,
-  Alert,
-  Card,
-} from "panelui-native";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import SwitchFieldRow from "@/components/common/switch-field-row";
+import RequestError from "@/components/common/request-error";
+import { Typography, Spinner, Button, Input, Select, Label, useToast, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
@@ -37,7 +28,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller, useController, useForm } from "react-hook-form";
-import { Pressable as ActiveFieldPressable, View } from "react-native";
+import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const INGREDIENT_FIELDS = new Set<keyof IngredientFormValues>([
@@ -321,26 +312,12 @@ function IngredientFormCard({
           control={control}
           name="active"
           render={({ field: { value, onChange } }) => (
-            <ActiveFieldPressable
-              accessible={false}
-              onPress={() => onChange(!value)}
-              className="flex-row items-center justify-between gap-4 py-1"
-            >
-              <View className="flex-1">
-                <Typography type="body-sm" weight="semibold">
-                  {t("common.active")}
-                </Typography>
-                <Typography type="body-xs" muted>
-                  {t("ingredients.activeDescription")}
-                </Typography>
-              </View>
-              <Switch
-                value={Boolean(value)}
-                onValueChange={onChange}
-                accessibilityLabel={t("common.active")}
-                accessibilityHint={t("ingredients.activeDescription")}
-              />
-            </ActiveFieldPressable>
+            <SwitchFieldRow
+              value={Boolean(value)}
+              onValueChange={onChange}
+              label={t("common.active")}
+              description={t("ingredients.activeDescription")}
+            />
           )}
         />
 
@@ -436,22 +413,15 @@ function IngredientFormContent({
         </View>
       </KeyboardAwareScrollView>
 
-      <Dialog open={isConfirmingDelete} onOpenChange={onConfirmingDeleteChange}>
-        <Dialog.Content>
-          <Dialog.Title>{t("ingredients.deleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("ingredients.deleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button variant="destructive" size="sm" disabled={isDeletePending} onPress={onDelete}>
-              {isDeletePending ? t("common.deleting") : t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <ConfirmationDialog
+        open={isConfirmingDelete}
+        onOpenChange={onConfirmingDeleteChange}
+        title={t("ingredients.deleteTitle")}
+        description={t("ingredients.deleteDescription")}
+        onConfirm={onDelete}
+        confirmLabel={isDeletePending ? t("common.deleting") : t("common.delete")}
+        disabled={isDeletePending}
+      />
     </>
   );
 }
@@ -522,17 +492,7 @@ export default function IngredientFormScreen(): React.JSX.Element {
 
   if (!isNew && ingredientQuery.isError) {
     return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(ingredientQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void ingredientQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
+      <RequestError error={ingredientQuery.error} onRetry={() => void ingredientQuery.refetch()} />
     );
   }
 

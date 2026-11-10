@@ -1,15 +1,5 @@
-import {
-  Typography,
-  Separator,
-  Alert,
-  Button,
-  AreaChart,
-  Frame,
-  Chip,
-  EmptyState,
-  Spinner,
-} from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
+import RequestError from "@/components/common/request-error";
+import { Typography, Separator, AreaChart, Frame, Chip, EmptyState, Spinner } from "panelui-native";
 import { normalizeChartRange } from "@/utils/dashboard-chart";
 import { formatLocalDate } from "@/utils/local-date";
 import { useCSSVariable } from "uniwind";
@@ -53,6 +43,196 @@ function getPeriodRange(period: Period): AppliedDateRange {
   return { startDate: formatLocalDate(start), endDate: formatLocalDate(end) };
 }
 
+function DashboardMetrics({
+  dashboard,
+  isCompact,
+  metricAccent,
+  metricSuccess,
+  metricWarning,
+}: {
+  dashboard: ReturnType<typeof useDashboard>;
+  isCompact: boolean;
+  metricAccent: string;
+  metricSuccess: string;
+  metricWarning: string;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <View className={isCompact ? "gap-4" : "flex-row flex-wrap gap-4"}>
+      <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("dashboard.revenue")}</Frame.Title>
+              <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {formatRupiah(dashboard.data?.revenue_today ?? 0)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+      <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("dashboard.orders")}</Frame.Title>
+              <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {String(dashboard.data?.orders_today ?? 0)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+      <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("dashboard.pending")}</Frame.Title>
+              <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {String(dashboard.data?.pending_orders ?? 0)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+      <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("dashboard.completed")}</Frame.Title>
+              <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {String(dashboard.data?.completed_orders ?? 0)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+    </View>
+  );
+}
+
+function DashboardActivity({
+  chart,
+  isCompact,
+  width,
+  horizontalPagePadding,
+  themeColorMuted,
+  dateRangeLabel,
+}: {
+  chart: ReturnType<typeof normalizeChartRange>;
+  isCompact: boolean;
+  width: number;
+  horizontalPagePadding: number;
+  themeColorMuted: string;
+  dateRangeLabel: string;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const chartHeight = isCompact ? 192 : 224;
+  const chartContentWidth = Math.max(1, Math.min(width - horizontalPagePadding * 2, 1280) - 32);
+  const chartMax = Math.max(1, ...chart.map((point) => point.count));
+  const chartDomainMax = Math.max(5, Math.ceil(chartMax / 5) * 5);
+  const hasOrderActivity = chart.some((point) => point.count > 0);
+  // A one-point SVG path has no length or area; repeat the value only for drawing.
+  const chartDisplayData = chart.length === 1 ? [chart[0], chart[0]] : chart;
+  return (
+    <Frame className="w-full">
+      <Frame.Header>
+        <View className="gap-0.5">
+          <Frame.Title>{t("dashboard.orderActivity")}</Frame.Title>
+          <Frame.Description>{t("dashboard.orderActivityDescription")}</Frame.Description>
+        </View>
+      </Frame.Header>
+      <Frame.Panel className="p-4">
+        {!hasOrderActivity ? (
+          <EmptyState className="py-12">
+            <EmptyState.Header>
+              <EmptyState.Media variant="icon">
+                <AppIcon icon={AppIcons.analytics} size={20} color={themeColorMuted} />
+              </EmptyState.Media>
+              <EmptyState.Title>{t("dashboard.noOrderActivity")}</EmptyState.Title>
+              <EmptyState.Description>
+                {t("dashboard.noOrderActivityDescription")}
+              </EmptyState.Description>
+            </EmptyState.Header>
+          </EmptyState>
+        ) : (
+          <AreaChart
+            data={chartDisplayData}
+            accessible={chart.length > 1}
+            xDataKey="date"
+            yDomain={[0, chartDomainMax]}
+            aspectRatio={chartContentWidth / chartHeight}
+            accessibilityLabel={t("dashboard.orderActivity")}
+            accessibilityLabelForDatum={(point) =>
+              `${formatChartDate(String(point.date))}, ${t("dashboard.orders")}: ${Number(point.count)}`
+            }
+          >
+            <AreaChart.Grid rows={5} />
+            <AreaChart.Area dataKey="count" colorIndex={1} />
+            <AreaChart.XAxis
+              ticks={chart.length === 1 ? 0 : Math.min(chart.length, isCompact ? 4 : 8)}
+              format={(point) => formatChartDate(String(point.date))}
+            />
+            <AreaChart.YAxis ticks={5} format={(value) => String(Math.round(value))} />
+            <AreaChart.Legend labels={{ count: t("dashboard.orders") }} />
+            <AreaChart.Tooltip
+              formatX={(point) => formatChartDate(String(point.date))}
+              formatValue={(value) => String(Math.round(value))}
+            />
+          </AreaChart>
+        )}
+      </Frame.Panel>
+      <Frame.Footer>
+        <Frame.Description>
+          {chart.length === 1 && hasOrderActivity
+            ? `${dateRangeLabel} · ${t("dashboard.orders")}: ${chart[0]?.count ?? 0}`
+            : dateRangeLabel}
+        </Frame.Description>
+      </Frame.Footer>
+    </Frame>
+  );
+}
+
 export default function DashboardScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { width, isCompact, horizontalPagePadding } = useResponsiveLayout();
@@ -74,13 +254,6 @@ export default function DashboardScreen(): React.JSX.Element {
     appliedRange.startDate,
     appliedRange.endDate
   );
-  const chartHeight = isCompact ? 192 : 224;
-  const chartContentWidth = Math.max(1, Math.min(width - horizontalPagePadding * 2, 1280) - 32);
-  const chartMax = Math.max(1, ...chart.map((point) => point.count));
-  const chartDomainMax = Math.max(5, Math.ceil(chartMax / 5) * 5);
-  const hasOrderActivity = chart.some((point) => point.count > 0);
-  // A one-point SVG path has no length or area; repeat the value only for drawing.
-  const chartDisplayData = chart.length === 1 ? [chart[0], chart[0]] : chart;
   const bestSellers = dashboard.data?.best_sellers ?? [];
   const dateRangeLabel = t(`dashboard.periods.${period}`);
 
@@ -128,165 +301,25 @@ export default function DashboardScreen(): React.JSX.Element {
         </View>
 
         {dashboard.isError ? (
-          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <Alert variant="destructive">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Description>{getErrorMessage(dashboard.error)}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-            <Button variant="outline" onPress={() => void dashboard.refetch()}>
-              {t("common.retry")}
-            </Button>
-          </View>
+          <RequestError error={dashboard.error} onRetry={() => void dashboard.refetch()} />
         ) : (
           <>
-            <View className={isCompact ? "gap-4" : "flex-row flex-wrap gap-4"}>
-              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Frame className="w-full">
-                  <Frame.Header>
-                    <View className="flex-1 flex-row justify-between">
-                      <Frame.Title>{t("dashboard.revenue")}</Frame.Title>
-                      <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
-                    </View>
-                  </Frame.Header>
-                  <Frame.Panel className="p-4">
-                    <Typography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {formatRupiah(dashboard.data?.revenue_today ?? 0)}
-                    </Typography>
-                  </Frame.Panel>
-                </Frame>
-              </View>
-              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Frame className="w-full">
-                  <Frame.Header>
-                    <View className="flex-1 flex-row justify-between">
-                      <Frame.Title>{t("dashboard.orders")}</Frame.Title>
-                      <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
-                    </View>
-                  </Frame.Header>
-                  <Frame.Panel className="p-4">
-                    <Typography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {String(dashboard.data?.orders_today ?? 0)}
-                    </Typography>
-                  </Frame.Panel>
-                </Frame>
-              </View>
-              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Frame className="w-full">
-                  <Frame.Header>
-                    <View className="flex-1 flex-row justify-between">
-                      <Frame.Title>{t("dashboard.pending")}</Frame.Title>
-                      <AppIcon icon={AppIcons.time} size={18} color={metricWarning} />
-                    </View>
-                  </Frame.Header>
-                  <Frame.Panel className="p-4">
-                    <Typography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {String(dashboard.data?.pending_orders ?? 0)}
-                    </Typography>
-                  </Frame.Panel>
-                </Frame>
-              </View>
-              <View className={isCompact ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                <Frame className="w-full">
-                  <Frame.Header>
-                    <View className="flex-1 flex-row justify-between">
-                      <Frame.Title>{t("dashboard.completed")}</Frame.Title>
-                      <AppIcon icon={AppIcons.checkmarkCircle} size={18} color={metricSuccess} />
-                    </View>
-                  </Frame.Header>
-                  <Frame.Panel className="p-4">
-                    <Typography
-                      type="h4"
-                      weight="bold"
-                      className="tabular-nums"
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.72}
-                    >
-                      {String(dashboard.data?.completed_orders ?? 0)}
-                    </Typography>
-                  </Frame.Panel>
-                </Frame>
-              </View>
-            </View>
+            <DashboardMetrics
+              dashboard={dashboard}
+              isCompact={isCompact}
+              metricAccent={metricAccent}
+              metricSuccess={metricSuccess}
+              metricWarning={metricWarning}
+            />
 
-            <Frame className="w-full">
-              <Frame.Header>
-                <View className="gap-0.5">
-                  <Frame.Title>{t("dashboard.orderActivity")}</Frame.Title>
-                  <Frame.Description>{t("dashboard.orderActivityDescription")}</Frame.Description>
-                </View>
-              </Frame.Header>
-              <Frame.Panel className="p-4">
-                {!hasOrderActivity ? (
-                  <EmptyState className="py-12">
-                    <EmptyState.Header>
-                      <EmptyState.Media variant="icon">
-                        <AppIcon icon={AppIcons.analytics} size={20} color={themeColorMuted} />
-                      </EmptyState.Media>
-                      <EmptyState.Title>{t("dashboard.noOrderActivity")}</EmptyState.Title>
-                      <EmptyState.Description>
-                        {t("dashboard.noOrderActivityDescription")}
-                      </EmptyState.Description>
-                    </EmptyState.Header>
-                  </EmptyState>
-                ) : (
-                  <AreaChart
-                    data={chartDisplayData}
-                    accessible={chart.length > 1}
-                    xDataKey="date"
-                    yDomain={[0, chartDomainMax]}
-                    aspectRatio={chartContentWidth / chartHeight}
-                    accessibilityLabel={t("dashboard.orderActivity")}
-                    accessibilityLabelForDatum={(point) =>
-                      `${formatChartDate(String(point.date))}, ${t("dashboard.orders")}: ${Number(point.count)}`
-                    }
-                  >
-                    <AreaChart.Grid rows={5} />
-                    <AreaChart.Area dataKey="count" colorIndex={1} />
-                    <AreaChart.XAxis
-                      ticks={chart.length === 1 ? 0 : Math.min(chart.length, isCompact ? 4 : 8)}
-                      format={(point) => formatChartDate(String(point.date))}
-                    />
-                    <AreaChart.YAxis ticks={5} format={(value) => String(Math.round(value))} />
-                    <AreaChart.Legend labels={{ count: t("dashboard.orders") }} />
-                    <AreaChart.Tooltip
-                      formatX={(point) => formatChartDate(String(point.date))}
-                      formatValue={(value) => String(Math.round(value))}
-                    />
-                  </AreaChart>
-                )}
-              </Frame.Panel>
-              <Frame.Footer>
-                <Frame.Description>
-                  {chart.length === 1 && hasOrderActivity
-                    ? `${dateRangeLabel} · ${t("dashboard.orders")}: ${chart[0]?.count ?? 0}`
-                    : dateRangeLabel}
-                </Frame.Description>
-              </Frame.Footer>
-            </Frame>
+            <DashboardActivity
+              chart={chart}
+              isCompact={isCompact}
+              width={width}
+              horizontalPagePadding={horizontalPagePadding}
+              themeColorMuted={themeColorMuted}
+              dateRangeLabel={dateRangeLabel}
+            />
 
             <Frame className="w-full">
               <Frame.Header>

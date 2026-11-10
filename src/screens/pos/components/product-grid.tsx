@@ -1,5 +1,5 @@
-import { Alert, Button, Card, Skeleton, EmptyState } from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
+import RequestError from "@/components/common/request-error";
+import { Card, Skeleton, EmptyState } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useProducts } from "@/hooks/db/use-products";
@@ -124,17 +124,7 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
             }
             ListEmptyComponent={
               isError ? (
-                <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-                  <Alert variant="destructive">
-                    <Alert.Indicator />
-                    <Alert.Content>
-                      <Alert.Description>{getErrorMessage(error)}</Alert.Description>
-                    </Alert.Content>
-                  </Alert>
-                  <Button variant="outline" onPress={() => void refetch()}>
-                    {t("common.retry")}
-                  </Button>
-                </View>
+                <RequestError error={error} onRetry={() => void refetch()} />
               ) : (
                 <EmptyState className="py-20">
                   <EmptyState.Header>

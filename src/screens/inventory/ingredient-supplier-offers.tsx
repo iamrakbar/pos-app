@@ -1,15 +1,6 @@
-import {
-  Table,
-  Chip,
-  Typography,
-  Spinner,
-  Fab,
-  PlusIcon,
-  Alert,
-  Button,
-  EmptyState,
-} from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
+import TableHeadings from "@/components/common/table-headings";
+import RequestError from "@/components/common/request-error";
+import { Table, Chip, Typography, Spinner, Fab, PlusIcon, EmptyState } from "panelui-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
@@ -59,33 +50,26 @@ export default function IngredientSupplierOffersScreen({
             </Typography>
           </View>
         ) : supplierOffersQuery.isError ? (
-          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <Alert variant="destructive">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Description>{getErrorMessage(supplierOffersQuery.error)}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-            <Button variant="outline" onPress={() => void supplierOffersQuery.refetch()}>
-              {t("common.retry")}
-            </Button>
-          </View>
+          <RequestError
+            error={supplierOffersQuery.error}
+            onRetry={() => void supplierOffersQuery.refetch()}
+          />
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator>
             <View className="w-supplier-offers-table">
               <Table columns={[180, 150, 160, 150, 160, 180, 130, 180].map((width) => ({ width }))}>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.Head>{t("ingredients.supplierOfferSupplier")}</Table.Head>
-                    <Table.Head>{t("ingredients.supplierOfferSku")}</Table.Head>
-                    <Table.Head>{t("ingredients.supplierOfferPurchaseUnit")}</Table.Head>
-                    <Table.Head>{t("ingredients.supplierOfferPackQuantity")}</Table.Head>
-                    <Table.Head>{t("ingredients.supplierOfferMinimumOrderQuantity")}</Table.Head>
-                    <Table.Head>{t("ingredients.supplierOfferLastPurchasePrice")}</Table.Head>
-                    <Table.Head>{t("ingredients.supplierOfferLeadTime")}</Table.Head>
-                    <Table.Head>{t("suppliers.status")}</Table.Head>
-                  </Table.Row>
-                </Table.Header>
+                <TableHeadings
+                  columns={[
+                    "ingredients.supplierOfferSupplier",
+                    "ingredients.supplierOfferSku",
+                    "ingredients.supplierOfferPurchaseUnit",
+                    "ingredients.supplierOfferPackQuantity",
+                    "ingredients.supplierOfferMinimumOrderQuantity",
+                    "ingredients.supplierOfferLastPurchasePrice",
+                    "ingredients.supplierOfferLeadTime",
+                    "suppliers.status",
+                  ]}
+                />
                 {offers.length ? (
                   <Table.Body>
                     {offers.map((offer) => (

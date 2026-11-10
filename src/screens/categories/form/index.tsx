@@ -1,15 +1,7 @@
-import {
-  Typography,
-  Spinner,
-  Button,
-  Dialog,
-  Input,
-  Switch,
-  useToast,
-  Alert,
-  Textarea,
-  Card,
-} from "panelui-native";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import SwitchFieldRow from "@/components/common/switch-field-row";
+import RequestError from "@/components/common/request-error";
+import { Typography, Spinner, Button, Input, useToast, Textarea, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
@@ -29,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Controller, useController, useForm } from "react-hook-form";
-import { Pressable as ActiveFieldPressable, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
@@ -112,17 +104,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
 
   if (!isNew && categoryQuery.isError) {
     return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(categoryQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void categoryQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
+      <RequestError error={categoryQuery.error} onRetry={() => void categoryQuery.refetch()} />
     );
   }
 
@@ -265,26 +247,12 @@ export default function CategoryFormScreen(): React.JSX.Element {
               control={control}
               name="active"
               render={({ field: { value, onChange } }) => (
-                <ActiveFieldPressable
-                  accessible={false}
-                  onPress={() => onChange(!value)}
-                  className="flex-row items-center justify-between gap-4 py-1"
-                >
-                  <View className="flex-1">
-                    <Typography type="body-sm" weight="semibold">
-                      {t("common.active")}
-                    </Typography>
-                    <Typography type="body-xs" muted>
-                      {t("categories.activeDescription")}
-                    </Typography>
-                  </View>
-                  <Switch
-                    value={Boolean(value)}
-                    onValueChange={onChange}
-                    accessibilityLabel={t("common.active")}
-                    accessibilityHint={t("categories.activeDescription")}
-                  />
-                </ActiveFieldPressable>
+                <SwitchFieldRow
+                  value={Boolean(value)}
+                  onValueChange={onChange}
+                  label={t("common.active")}
+                  description={t("categories.activeDescription")}
+                />
               )}
             />
 
@@ -310,27 +278,15 @@ export default function CategoryFormScreen(): React.JSX.Element {
         </View>
       </KeyboardAwareScrollView>
 
-      <Dialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
-        <Dialog.Content>
-          <Dialog.Title>{t("categories.deleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("categories.deleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={deleteMutation.isPending}
-              onPress={handleDelete}
-            >
-              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <ConfirmationDialog
+        open={isConfirmingDelete}
+        onOpenChange={setIsConfirmingDelete}
+        title={t("categories.deleteTitle")}
+        description={t("categories.deleteDescription")}
+        onConfirm={handleDelete}
+        confirmLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+        disabled={deleteMutation.isPending}
+      />
     </>
   );
 }

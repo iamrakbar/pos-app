@@ -1,3 +1,6 @@
+import FormDialog from "@/components/common/form-dialog";
+import LoadingListSkeleton from "@/components/common/loading-list-skeleton";
+import RequestError from "@/components/common/request-error";
 import {
   Typography,
   Separator,
@@ -5,16 +8,12 @@ import {
   Chip,
   EmptyState,
   useToast,
-  Alert,
   Button,
-  Skeleton,
   cn,
   DatePicker,
   Label,
-  Dialog,
   Select,
 } from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
 import { formatLocalDate, inclusiveLocalCalendarDays, parseLocalDate } from "@/utils/local-date";
 import { useCSSVariable } from "uniwind";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
@@ -251,28 +250,16 @@ function CustomDateRangeDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Content
-        dismissible={false}
-        className="w-full max-w-lg self-center overflow-hidden p-0"
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          accessibilityLabel={t("common.close")}
-          className="absolute right-3 top-3 z-50"
-          onPress={() => onOpenChange(false)}
-        >
-          <AppIcon icon={AppIcons.close} size={20} />
-        </Button>
-        <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <Dialog.Title>{title}</Dialog.Title>
-          <Dialog.Description>{description}</Dialog.Description>
-        </View>
-        {content}
-        {footer}
-      </Dialog.Content>
-    </Dialog>
+    <FormDialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      footer={footer}
+      wide
+    >
+      {content}
+    </FormDialog>
   );
 }
 
@@ -424,6 +411,122 @@ function RecentEarningsWidget({
   );
 }
 
+function EarningsMetrics({
+  isPhone,
+  metricSuccess,
+  metricAccent,
+  metricWarning,
+  metricDefault,
+  totalEarnings,
+  orderCount,
+  averageOrder,
+  itemCount,
+}: {
+  isPhone: boolean;
+  metricSuccess: string;
+  metricAccent: string;
+  metricWarning: string;
+  metricDefault: string;
+  totalEarnings: number;
+  orderCount: number;
+  averageOrder: number;
+  itemCount: number;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
+      <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("earnings.settledEarnings")}</Frame.Title>
+              <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {formatRupiah(totalEarnings)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+      <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("earnings.settledOrders")}</Frame.Title>
+              <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {String(orderCount)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+      <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("earnings.averageOrder")}</Frame.Title>
+              <AppIcon icon={AppIcons.analytics} size={18} color={metricWarning} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {formatRupiah(averageOrder)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+      <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
+        <Frame className="w-full">
+          <Frame.Header>
+            <View className="flex-1 flex-row justify-between">
+              <Frame.Title>{t("earnings.itemsSold")}</Frame.Title>
+              <AppIcon icon={AppIcons.bag} size={18} color={metricDefault} />
+            </View>
+          </Frame.Header>
+          <Frame.Panel className="p-4">
+            <Typography
+              type="h4"
+              weight="bold"
+              className="tabular-nums"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {String(itemCount)}
+            </Typography>
+          </Frame.Panel>
+        </Frame>
+      </View>
+    </View>
+  );
+}
+
 export default function EarningsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const dateRangeOptions: DateRangeOption[] = DATE_RANGE_VALUES.map((value) => ({
@@ -567,126 +670,22 @@ export default function EarningsScreen(): React.JSX.Element {
           </View>
 
           {isLoading ? (
-            <View className="gap-px py-2" accessibilityRole="progressbar">
-              {Array.from({ length: 5 }, (_, index) => (
-                <View
-                  key={`loading-row-${index}`}
-                  className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
-                >
-                  <Skeleton className="size-11 shrink-0 rounded-xl" />
-                  <View className="flex-1 gap-2">
-                    <Skeleton className="h-4 w-3/5 rounded-md" />
-                    <Skeleton className="h-3 w-2/5 rounded-md" />
-                    <Skeleton className="h-3 w-1/3 rounded-md" />
-                  </View>
-                  <Skeleton className="size-4 rounded-full" />
-                </View>
-              ))}
-            </View>
+            <LoadingListSkeleton count={5} />
           ) : isError ? (
-            <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-              <Alert variant="destructive">
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Description>{getErrorMessage(error)}</Alert.Description>
-                </Alert.Content>
-              </Alert>
-              <Button variant="outline" onPress={() => void refetch()}>
-                {t("common.retry")}
-              </Button>
-            </View>
+            <RequestError error={error} onRetry={() => void refetch()} />
           ) : (
             <>
-              <View className={isPhone ? "gap-4" : "flex-row flex-wrap gap-4"}>
-                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Frame className="w-full">
-                    <Frame.Header>
-                      <View className="flex-1 flex-row justify-between">
-                        <Frame.Title>{t("earnings.settledEarnings")}</Frame.Title>
-                        <AppIcon icon={AppIcons.wallet} size={18} color={metricSuccess} />
-                      </View>
-                    </Frame.Header>
-                    <Frame.Panel className="p-4">
-                      <Typography
-                        type="h4"
-                        weight="bold"
-                        className="tabular-nums"
-                        numberOfLines={1}
-                        adjustsFontSizeToFit
-                        minimumFontScale={0.72}
-                      >
-                        {formatRupiah(totalEarnings)}
-                      </Typography>
-                    </Frame.Panel>
-                  </Frame>
-                </View>
-                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Frame className="w-full">
-                    <Frame.Header>
-                      <View className="flex-1 flex-row justify-between">
-                        <Frame.Title>{t("earnings.settledOrders")}</Frame.Title>
-                        <AppIcon icon={AppIcons.receipt} size={18} color={metricAccent} />
-                      </View>
-                    </Frame.Header>
-                    <Frame.Panel className="p-4">
-                      <Typography
-                        type="h4"
-                        weight="bold"
-                        className="tabular-nums"
-                        numberOfLines={1}
-                        adjustsFontSizeToFit
-                        minimumFontScale={0.72}
-                      >
-                        {String(data.length)}
-                      </Typography>
-                    </Frame.Panel>
-                  </Frame>
-                </View>
-                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Frame className="w-full">
-                    <Frame.Header>
-                      <View className="flex-1 flex-row justify-between">
-                        <Frame.Title>{t("earnings.averageOrder")}</Frame.Title>
-                        <AppIcon icon={AppIcons.analytics} size={18} color={metricWarning} />
-                      </View>
-                    </Frame.Header>
-                    <Frame.Panel className="p-4">
-                      <Typography
-                        type="h4"
-                        weight="bold"
-                        className="tabular-nums"
-                        numberOfLines={1}
-                        adjustsFontSizeToFit
-                        minimumFontScale={0.72}
-                      >
-                        {formatRupiah(averageOrder)}
-                      </Typography>
-                    </Frame.Panel>
-                  </Frame>
-                </View>
-                <View className={isPhone ? "w-full" : "grow shrink basis-2/5 landscape:basis-1/5"}>
-                  <Frame className="w-full">
-                    <Frame.Header>
-                      <View className="flex-1 flex-row justify-between">
-                        <Frame.Title>{t("earnings.itemsSold")}</Frame.Title>
-                        <AppIcon icon={AppIcons.bag} size={18} color={metricDefault} />
-                      </View>
-                    </Frame.Header>
-                    <Frame.Panel className="p-4">
-                      <Typography
-                        type="h4"
-                        weight="bold"
-                        className="tabular-nums"
-                        numberOfLines={1}
-                        adjustsFontSizeToFit
-                        minimumFontScale={0.72}
-                      >
-                        {String(itemCount)}
-                      </Typography>
-                    </Frame.Panel>
-                  </Frame>
-                </View>
-              </View>
+              <EarningsMetrics
+                isPhone={isPhone}
+                metricSuccess={metricSuccess}
+                metricAccent={metricAccent}
+                metricWarning={metricWarning}
+                metricDefault={metricDefault}
+                totalEarnings={totalEarnings}
+                orderCount={data.length}
+                averageOrder={averageOrder}
+                itemCount={itemCount}
+              />
 
               {data.length === 0 ? (
                 <EmptyState className="py-16">

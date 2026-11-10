@@ -1,14 +1,7 @@
-import {
-  Typography,
-  Spinner,
-  Button,
-  Dialog,
-  Switch,
-  useToast,
-  Alert,
-  Input,
-  Card,
-} from "panelui-native";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import SwitchFieldRow from "@/components/common/switch-field-row";
+import RequestError from "@/components/common/request-error";
+import { Typography, Spinner, Button, useToast, Input, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
@@ -29,7 +22,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller, useController, useForm } from "react-hook-form";
-import { Pressable as ActiveFieldPressable, View } from "react-native";
+import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import type { Translate } from "@/locales";
 import { useTranslation } from "@/stores/use-locale";
@@ -223,26 +216,12 @@ function SupplierFormCard({
           control={control}
           name="active"
           render={({ field: { value, onChange } }) => (
-            <ActiveFieldPressable
-              accessible={false}
-              onPress={() => onChange(!value)}
-              className="flex-row items-center justify-between gap-4 py-1"
-            >
-              <View className="flex-1">
-                <Typography type="body-sm" weight="semibold">
-                  {t("common.active")}
-                </Typography>
-                <Typography type="body-xs" muted>
-                  {t("suppliers.activeDescription")}
-                </Typography>
-              </View>
-              <Switch
-                value={Boolean(value)}
-                onValueChange={onChange}
-                accessibilityLabel={t("common.active")}
-                accessibilityHint={t("suppliers.activeDescription")}
-              />
-            </ActiveFieldPressable>
+            <SwitchFieldRow
+              value={Boolean(value)}
+              onValueChange={onChange}
+              label={t("common.active")}
+              description={t("suppliers.activeDescription")}
+            />
           )}
         />
 
@@ -323,17 +302,7 @@ export default function SupplierFormScreen(): React.JSX.Element {
 
   if (!isNew && supplierQuery.isError) {
     return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(supplierQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void supplierQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
+      <RequestError error={supplierQuery.error} onRetry={() => void supplierQuery.refetch()} />
     );
   }
 
@@ -435,27 +404,15 @@ export default function SupplierFormScreen(): React.JSX.Element {
         </View>
       </KeyboardAwareScrollView>
 
-      <Dialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
-        <Dialog.Content>
-          <Dialog.Title>{t("suppliers.deleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("suppliers.deleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={deleteMutation.isPending}
-              onPress={handleDelete}
-            >
-              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <ConfirmationDialog
+        open={isConfirmingDelete}
+        onOpenChange={setIsConfirmingDelete}
+        title={t("suppliers.deleteTitle")}
+        description={t("suppliers.deleteDescription")}
+        onConfirm={handleDelete}
+        confirmLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+        disabled={deleteMutation.isPending}
+      />
     </>
   );
 }

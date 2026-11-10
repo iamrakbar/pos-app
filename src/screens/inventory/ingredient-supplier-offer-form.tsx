@@ -1,3 +1,5 @@
+import { ConfirmationDialogContent } from "@/components/common/confirmation-dialog";
+import SwitchFieldRow from "@/components/common/switch-field-row";
 import {
   Typography,
   Spinner,
@@ -6,7 +8,6 @@ import {
   Input,
   Select,
   Label,
-  Switch,
   useToast,
   Alert,
   Card,
@@ -39,7 +40,7 @@ import {
   type Control,
   type FieldErrors,
 } from "react-hook-form";
-import { Pressable as ActiveFieldPressable, View } from "react-native";
+import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import {
   mapServerErrors,
@@ -198,24 +199,12 @@ function getSupplierOfferLoadState({
   return null;
 }
 
-function SupplierOfferFormCard({
+function SupplierOfferNumericFields({
   control,
   errors,
-  supplierOptions,
-  suppliersLoading,
-  suppliersError,
-  suppliersErrorValue,
-  isPending,
-  isEditing,
 }: {
   control: Control<SupplierOfferFormValues>;
   errors: FieldErrors<SupplierOfferFormValues>;
-  supplierOptions: SupplierOption[];
-  suppliersLoading: boolean;
-  suppliersError: boolean;
-  suppliersErrorValue: unknown;
-  isPending: boolean;
-  isEditing: boolean;
 }): React.JSX.Element {
   const { t } = useTranslation();
   const {
@@ -261,6 +250,162 @@ function SupplierOfferFormCard({
     minValue: 0,
     inputProps: { onBlur: blurLead },
   });
+
+  return (
+    <>
+      <View className="gap-4 md:flex-row">
+        <Input
+          size="sm"
+          containerClassName="w-full md:flex-1"
+          label={t("ingredients.supplierOfferPackQuantity")}
+          placeholder={t("ingredients.supplierOfferPackQuantityPlaceholder")}
+          keyboardType="decimal-pad"
+          errorMessage={errors.pack_quantity?.message}
+          isRequired
+          {...packInput}
+          startContent={
+            <Button
+              size="icon"
+              variant="ghost"
+              accessibilityLabel={t("productForm.decreaseAccessibility", {
+                field: t("ingredients.supplierOfferPackQuantity"),
+              })}
+              disabled={Number.isFinite(packNumber) && packNumber <= 0}
+              onPress={() => changePack(String(Math.max(0, (packNumber || 0) - 1)))}
+            >
+              −
+            </Button>
+          }
+          endContent={
+            <Button
+              size="icon"
+              variant="ghost"
+              accessibilityLabel={t("productForm.increaseAccessibility", {
+                field: t("ingredients.supplierOfferPackQuantity"),
+              })}
+              onPress={() => changePack(String((packNumber || 0) + 1))}
+            >
+              +
+            </Button>
+          }
+        />
+        <Input
+          size="sm"
+          containerClassName="w-full md:flex-1"
+          label={t("ingredients.supplierOfferMinimumOrderQuantity")}
+          placeholder={t("ingredients.supplierOfferMinimumOrderQuantityPlaceholder")}
+          keyboardType="decimal-pad"
+          errorMessage={errors.minimum_order_quantity?.message}
+          {...minimumInput}
+          startContent={
+            <Button
+              size="icon"
+              variant="ghost"
+              accessibilityLabel={t("productForm.decreaseAccessibility", {
+                field: t("ingredients.supplierOfferMinimumOrderQuantity"),
+              })}
+              disabled={Number.isFinite(minimumNumber) && minimumNumber <= 0}
+              onPress={() => changeMinimum(String(Math.max(0, (minimumNumber || 0) - 1)))}
+            >
+              −
+            </Button>
+          }
+          endContent={
+            <Button
+              size="icon"
+              variant="ghost"
+              accessibilityLabel={t("productForm.increaseAccessibility", {
+                field: t("ingredients.supplierOfferMinimumOrderQuantity"),
+              })}
+              onPress={() => changeMinimum(String((minimumNumber || 0) + 1))}
+            >
+              +
+            </Button>
+          }
+        />
+      </View>
+
+      <View className="gap-4 md:flex-row">
+        <Input
+          size="sm"
+          ref={priceRef}
+          containerClassName="w-full md:flex-1"
+          label={t("ingredients.supplierOfferLastPurchasePrice")}
+          placeholder={t("ingredients.supplierOfferLastPurchasePricePlaceholder")}
+          errorMessage={errors.last_purchase_price?.message}
+
+          keyboardType="numeric"
+          startContent={
+            <Typography type="body-sm" weight="medium" muted>
+              {RUPIAH_PREFIX}
+            </Typography>
+          }
+          interactiveContent={false}
+
+          {...priceInput}
+          onBlur={(event) => {
+            priceInput.onBlur(event);
+          }}
+        />
+        <Input
+          size="sm"
+          containerClassName="w-full md:flex-1"
+          label={t("ingredients.supplierOfferLeadTime")}
+          placeholder={t("ingredients.supplierOfferLeadTimePlaceholder")}
+          keyboardType="decimal-pad"
+          errorMessage={errors.lead_time_days?.message}
+          {...leadInput}
+          startContent={
+            <Button
+              size="icon"
+              variant="ghost"
+              accessibilityLabel={t("productForm.decreaseAccessibility", {
+                field: t("ingredients.supplierOfferLeadTime"),
+              })}
+              disabled={Number.isFinite(leadNumber) && leadNumber <= 0}
+              onPress={() => changeLead(String(Math.max(0, (leadNumber || 0) - 1)))}
+            >
+              −
+            </Button>
+          }
+          endContent={
+            <Button
+              size="icon"
+              variant="ghost"
+              accessibilityLabel={t("productForm.increaseAccessibility", {
+                field: t("ingredients.supplierOfferLeadTime"),
+              })}
+              onPress={() => changeLead(String((leadNumber || 0) + 1))}
+            >
+              +
+            </Button>
+          }
+        />
+      </View>
+    </>
+  );
+}
+
+function SupplierOfferFormCard({
+  control,
+  errors,
+  supplierOptions,
+  suppliersLoading,
+  suppliersError,
+  suppliersErrorValue,
+  isPending,
+  isEditing,
+}: {
+  control: Control<SupplierOfferFormValues>;
+  errors: FieldErrors<SupplierOfferFormValues>;
+  supplierOptions: SupplierOption[];
+  suppliersLoading: boolean;
+  suppliersError: boolean;
+  suppliersErrorValue: unknown;
+  isPending: boolean;
+  isEditing: boolean;
+}): React.JSX.Element {
+  const { t } = useTranslation();
 
   return (
     <Card className="w-full gap-4 overflow-hidden p-4">
@@ -356,186 +501,30 @@ function SupplierOfferFormCard({
           />
         </View>
 
-        <View className="gap-4 md:flex-row">
-          <Input
-            size="sm"
-            containerClassName="w-full md:flex-1"
-            label={t("ingredients.supplierOfferPackQuantity")}
-            placeholder={t("ingredients.supplierOfferPackQuantityPlaceholder")}
-            keyboardType="decimal-pad"
-            errorMessage={errors.pack_quantity?.message}
-            isRequired
-            {...packInput}
-            startContent={
-              <Button
-                size="icon"
-                variant="ghost"
-                accessibilityLabel={t("productForm.decreaseAccessibility", {
-                  field: t("ingredients.supplierOfferPackQuantity"),
-                })}
-                disabled={Number.isFinite(packNumber) && packNumber <= 0}
-                onPress={() => changePack(String(Math.max(0, (packNumber || 0) - 1)))}
-              >
-                −
-              </Button>
-            }
-            endContent={
-              <Button
-                size="icon"
-                variant="ghost"
-                accessibilityLabel={t("productForm.increaseAccessibility", {
-                  field: t("ingredients.supplierOfferPackQuantity"),
-                })}
-                onPress={() => changePack(String((packNumber || 0) + 1))}
-              >
-                +
-              </Button>
-            }
-          />
-          <Input
-            size="sm"
-            containerClassName="w-full md:flex-1"
-            label={t("ingredients.supplierOfferMinimumOrderQuantity")}
-            placeholder={t("ingredients.supplierOfferMinimumOrderQuantityPlaceholder")}
-            keyboardType="decimal-pad"
-            errorMessage={errors.minimum_order_quantity?.message}
-            {...minimumInput}
-            startContent={
-              <Button
-                size="icon"
-                variant="ghost"
-                accessibilityLabel={t("productForm.decreaseAccessibility", {
-                  field: t("ingredients.supplierOfferMinimumOrderQuantity"),
-                })}
-                disabled={Number.isFinite(minimumNumber) && minimumNumber <= 0}
-                onPress={() => changeMinimum(String(Math.max(0, (minimumNumber || 0) - 1)))}
-              >
-                −
-              </Button>
-            }
-            endContent={
-              <Button
-                size="icon"
-                variant="ghost"
-                accessibilityLabel={t("productForm.increaseAccessibility", {
-                  field: t("ingredients.supplierOfferMinimumOrderQuantity"),
-                })}
-                onPress={() => changeMinimum(String((minimumNumber || 0) + 1))}
-              >
-                +
-              </Button>
-            }
-          />
-        </View>
-
-        <View className="gap-4 md:flex-row">
-          <Input
-            size="sm"
-            ref={priceRef}
-            containerClassName="w-full md:flex-1"
-            label={t("ingredients.supplierOfferLastPurchasePrice")}
-            placeholder={t("ingredients.supplierOfferLastPurchasePricePlaceholder")}
-            errorMessage={errors.last_purchase_price?.message}
-
-            keyboardType="numeric"
-            startContent={
-              <Typography type="body-sm" weight="medium" muted>
-                {RUPIAH_PREFIX}
-              </Typography>
-            }
-            interactiveContent={false}
-
-            {...priceInput}
-            onBlur={(event) => {
-              priceInput.onBlur(event);
-            }}
-          />
-          <Input
-            size="sm"
-            containerClassName="w-full md:flex-1"
-            label={t("ingredients.supplierOfferLeadTime")}
-            placeholder={t("ingredients.supplierOfferLeadTimePlaceholder")}
-            keyboardType="decimal-pad"
-            errorMessage={errors.lead_time_days?.message}
-            {...leadInput}
-            startContent={
-              <Button
-                size="icon"
-                variant="ghost"
-                accessibilityLabel={t("productForm.decreaseAccessibility", {
-                  field: t("ingredients.supplierOfferLeadTime"),
-                })}
-                disabled={Number.isFinite(leadNumber) && leadNumber <= 0}
-                onPress={() => changeLead(String(Math.max(0, (leadNumber || 0) - 1)))}
-              >
-                −
-              </Button>
-            }
-            endContent={
-              <Button
-                size="icon"
-                variant="ghost"
-                accessibilityLabel={t("productForm.increaseAccessibility", {
-                  field: t("ingredients.supplierOfferLeadTime"),
-                })}
-                onPress={() => changeLead(String((leadNumber || 0) + 1))}
-              >
-                +
-              </Button>
-            }
-          />
-        </View>
+        <SupplierOfferNumericFields control={control} errors={errors} />
 
         <Controller
           control={control}
           name="is_preferred"
           render={({ field: { value, onChange } }) => (
-            <ActiveFieldPressable
-              accessible={false}
-              onPress={() => onChange(!value)}
-              className="flex-row items-center justify-between gap-4 py-1"
-            >
-              <View className="flex-1">
-                <Typography type="body-sm" weight="semibold">
-                  {t("ingredients.supplierOfferPreferred")}
-                </Typography>
-                <Typography type="body-xs" muted>
-                  {t("ingredients.supplierOfferPreferredDescription")}
-                </Typography>
-              </View>
-              <Switch
-                value={Boolean(value)}
-                onValueChange={onChange}
-                accessibilityLabel={t("ingredients.supplierOfferPreferred")}
-                accessibilityHint={t("ingredients.supplierOfferPreferredDescription")}
-              />
-            </ActiveFieldPressable>
+            <SwitchFieldRow
+              value={Boolean(value)}
+              onValueChange={onChange}
+              label={t("ingredients.supplierOfferPreferred")}
+              description={t("ingredients.supplierOfferPreferredDescription")}
+            />
           )}
         />
         <Controller
           control={control}
           name="active"
           render={({ field: { value, onChange } }) => (
-            <ActiveFieldPressable
-              accessible={false}
-              onPress={() => onChange(!value)}
-              className="flex-row items-center justify-between gap-4 py-1"
-            >
-              <View className="flex-1">
-                <Typography type="body-sm" weight="semibold">
-                  {t("common.active")}
-                </Typography>
-                <Typography type="body-xs" muted>
-                  {t("ingredients.supplierOfferActiveDescription")}
-                </Typography>
-              </View>
-              <Switch
-                value={Boolean(value)}
-                onValueChange={onChange}
-                accessibilityLabel={t("common.active")}
-                accessibilityHint={t("ingredients.supplierOfferActiveDescription")}
-              />
-            </ActiveFieldPressable>
+            <SwitchFieldRow
+              value={Boolean(value)}
+              onValueChange={onChange}
+              label={t("common.active")}
+              description={t("ingredients.supplierOfferActiveDescription")}
+            />
           )}
         />
       </Card.Content>
@@ -727,25 +716,13 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
           if (!isOpen && !deleteMutation.isPending) setIsConfirmingDelete(false);
         }}
       >
-        <Dialog.Content>
-          <Dialog.Title>{t("ingredients.supplierOfferDeleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("ingredients.supplierOfferDeleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={deleteMutation.isPending}
-              onPress={handleDelete}
-            >
-              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
+        <ConfirmationDialogContent
+          title={t("ingredients.supplierOfferDeleteTitle")}
+          description={t("ingredients.supplierOfferDeleteDescription")}
+          disabled={deleteMutation.isPending}
+          onConfirm={handleDelete}
+          confirmLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+        />
       </Dialog>
     </>
   );

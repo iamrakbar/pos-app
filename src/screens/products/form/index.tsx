@@ -1,16 +1,16 @@
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import RequestError from "@/components/common/request-error";
 import {
   Typography,
   Separator,
   Spinner,
   Button,
   Label,
-  Dialog,
   Input,
   NumberInput,
   Select,
   Textarea,
   useToast,
-  Alert,
   Card,
   Switch,
 } from "panelui-native";
@@ -1337,22 +1337,15 @@ function ProductFormContent({
         />
       ) : null}
 
-      <Dialog open={isDeleteOpen} onOpenChange={onDeleteChange}>
-        <Dialog.Content>
-          <Dialog.Title>{t("productForm.deleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("productForm.deleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button variant="destructive" size="sm" disabled={isDeleting} onPress={onDelete}>
-              {isDeleting ? t("common.deleting") : t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <ConfirmationDialog
+        open={isDeleteOpen}
+        onOpenChange={onDeleteChange}
+        title={t("productForm.deleteTitle")}
+        description={t("productForm.deleteDescription")}
+        onConfirm={onDelete}
+        confirmLabel={isDeleting ? t("common.deleting") : t("common.delete")}
+        disabled={isDeleting}
+      />
     </>
   );
 }
@@ -1405,19 +1398,7 @@ function getProductFormLoadState({
   }
 
   if (!isNew && productQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(productQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void productQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={productQuery.error} onRetry={() => void productQuery.refetch()} />;
   }
 
   if (!isNew && inventoryEnabled && productInventoryQuery.isLoading) {
@@ -1433,17 +1414,10 @@ function getProductFormLoadState({
 
   if (!isNew && inventoryEnabled && productInventoryQuery.isError) {
     return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(productInventoryQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void productInventoryQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
+      <RequestError
+        error={productInventoryQuery.error}
+        onRetry={() => void productInventoryQuery.refetch()}
+      />
     );
   }
 

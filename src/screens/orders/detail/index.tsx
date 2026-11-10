@@ -1,3 +1,4 @@
+import RequestError from "@/components/common/request-error";
 import { statusChipVariant } from "@/utils/status-chip-variant";
 import {
   Surface,
@@ -10,7 +11,6 @@ import {
   Dialog,
   Textarea,
   useToast,
-  Alert,
   EmptyState,
   cn,
   Chip,
@@ -59,6 +59,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StyledImage as Image } from "@/components/common/styled-image";
 import { ActivityIndicator, Linking, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useRef, useState } from "react";
 import Constants from "expo-constants";
 import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
@@ -387,6 +388,7 @@ function ReceiptPreviewSheet({
   type ReceiptSheetLifecycle = "closed" | "presenting" | "presented" | "dismissing";
 
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { toast } = useToast();
   const receiptSettings = useReceiptStore((state) => state.settings);
   const printerSettings = usePrinterStore((state) => state.settings);
@@ -515,7 +517,14 @@ function ReceiptPreviewSheet({
         </View>
       }
       footer={
-        <View className="flex-row gap-2 bg-surface border-t border-border px-4 pb-safe pt-3">
+        <View
+          className="flex-row gap-2 bg-surface border-t border-border pt-3"
+          style={{
+            paddingBottom: Math.max(insets.bottom, 12),
+            paddingLeft: Math.max(insets.left, 16),
+            paddingRight: Math.max(insets.right, 16),
+          }}
+        >
           <Button
             size="sm"
             className="min-w-0 flex-1 px-1"
@@ -1264,20 +1273,7 @@ export default function OrderDetailScreen() {
         </Typography>
       </View>
     );
-  if (isError)
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+  if (isError) return <RequestError error={error} onRetry={() => void refetch()} />;
   if (!order) {
     return <OrderNotFound iconColor={themeColorMuted} onBack={() => router.back()} />;
   }

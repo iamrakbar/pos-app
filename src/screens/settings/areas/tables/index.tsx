@@ -1,8 +1,8 @@
-import { getErrorMessage } from "@/api/api-error";
+import RequestError from "@/components/common/request-error";
+import { LOADING_PLACEHOLDER_KEYS } from "@/components/common/loading-placeholder-keys";
 import {
   Fab,
   PlusIcon,
-  Alert,
   Button,
   Chip,
   Typography,
@@ -72,9 +72,9 @@ export default function AreaTablesScreen(): React.JSX.Element {
           style={{ paddingHorizontal: horizontalPagePadding - 6, columnGap: 12 }}
           accessibilityRole="progressbar"
         >
-          {Array.from({ length: columnCount * 2 }, (_, index) => (
+          {LOADING_PLACEHOLDER_KEYS.slice(0, columnCount * 2).map((slot) => (
             <View
-              key={`loading-grid-${index}`}
+              key={slot}
               style={{
                 width: Math.max(
                   0,
@@ -92,19 +92,7 @@ export default function AreaTablesScreen(): React.JSX.Element {
     );
   }
   if (tablesQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(tablesQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void tablesQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={tablesQuery.error} onRetry={() => void tablesQuery.refetch()} />;
   }
 
   const tables = tablesQuery.data ?? [];

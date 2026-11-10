@@ -1,13 +1,5 @@
-import {
-  Surface,
-  Typography,
-  Button,
-  Dialog,
-  ScrollFade,
-  Avatar,
-  Popover,
-  cn,
-} from "panelui-native";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import { Surface, Typography, Button, ScrollFade, Avatar, Popover, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import Logo from "@/components/common/logo";
 import { useAccountProfile } from "@/hooks/db/use-account-profile";
@@ -280,22 +272,14 @@ export default function AppDrawerContent({
             </Button>
           </Popover.Content>
         </Popover>
-        <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
-          <Dialog.Content>
-            <Dialog.Title>{t("logout.title")}</Dialog.Title>
-            <Dialog.Description>{t("logout.description")}</Dialog.Description>
-            <Dialog.Footer>
-              <Dialog.Close>
-                <Button variant="ghost" size="sm">
-                  {t("common.cancel")}
-                </Button>
-              </Dialog.Close>
-              <Button variant="destructive" size="sm" onPress={logout}>
-                {t("logout.confirm")}
-              </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog>
+        <ConfirmationDialog
+          open={isLogoutOpen}
+          onOpenChange={setIsLogoutOpen}
+          title={t("logout.title")}
+          description={t("logout.description")}
+          onConfirm={logout}
+          confirmLabel={t("logout.confirm")}
+        />
       </View>
     </View>
   );

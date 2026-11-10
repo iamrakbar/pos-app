@@ -1,16 +1,6 @@
-import {
-  Typography,
-  Separator,
-  Fab,
-  PlusIcon,
-  Alert,
-  Button,
-  Skeleton,
-  EmptyState,
-  cn,
-  Chip,
-} from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
+import LoadingListSkeleton from "@/components/common/loading-list-skeleton";
+import RequestError from "@/components/common/request-error";
+import { Typography, Separator, Fab, PlusIcon, EmptyState, cn, Chip } from "panelui-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import { useManagementProducts } from "@/hooks/db/use-products";
@@ -123,34 +113,9 @@ export default function ProductsScreen(): React.JSX.Element {
       <View className="flex-1 bg-background">
         {/* Product list */}
         {isLoading ? (
-          <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
-            {Array.from({ length: 6 }, (_, index) => (
-              <View
-                key={`loading-row-${index}`}
-                className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
-              >
-                <Skeleton className="size-11 shrink-0 rounded-xl" />
-                <View className="flex-1 gap-2">
-                  <Skeleton className="h-4 w-3/5 rounded-md" />
-                  <Skeleton className="h-3 w-2/5 rounded-md" />
-                  <Skeleton className="h-3 w-1/3 rounded-md" />
-                </View>
-                <Skeleton className="size-4 rounded-full" />
-              </View>
-            ))}
-          </View>
+          <LoadingListSkeleton count={6} fill />
         ) : isError ? (
-          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <Alert variant="destructive">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Description>{getErrorMessage(error)}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-            <Button variant="outline" onPress={() => void refetch()}>
-              {t("common.retry")}
-            </Button>
-          </View>
+          <RequestError error={error} onRetry={() => void refetch()} />
         ) : (
           <ScrollView className="flex-1" contentContainerClassName="py-2 pb-24">
             {filtered.length === 0 ? (

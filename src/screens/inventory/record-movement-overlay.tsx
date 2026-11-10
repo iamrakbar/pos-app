@@ -1,17 +1,7 @@
-import { AppIcons } from "@/components/common/app-icons";
-import AppIcon from "@/components/common/app-icon";
-import {
-  Typography,
-  Button,
-  Dialog,
-  Input,
-  Label,
-  Select,
-  Textarea,
-  useToast,
-} from "panelui-native";
+import FormSheet from "@/components/common/form-sheet";
+import FormDialog from "@/components/common/form-dialog";
+import { Typography, Button, Input, Label, Select, Textarea, useToast } from "panelui-native";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { getErrorMessage } from "@/api/api-error";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { IDR_NUMBER_FIELD_FORMAT_OPTIONS, RUPIAH_PREFIX } from "@/utils/format";
@@ -254,63 +244,30 @@ export default function RecordMovementOverlay({
 
   if (isPhonePortrait) {
     return (
-      <TrueSheet
-        ref={sheetRef}
+      <FormSheet
+        sheetRef={sheetRef}
         detents={[0.9]}
-        scrollable
-        cornerRadius={24}
-        grabber
-        dimmed
         onDidDismiss={handleDidDismiss}
-        header={
-          <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
-            <Typography type="h4" weight="semibold">
-              {title}
-            </Typography>
-            <Typography type="body-sm" muted>
-              {description}
-            </Typography>
-            <Button
-              variant="ghost"
-              size="icon"
-              accessibilityLabel={t("common.close")}
-              className="absolute right-3 top-3"
-              onPress={() => handleOpenChange(false)}
-            >
-              <AppIcon icon={AppIcons.close} size={20} />
-            </Button>
-          </View>
-        }
-        footer={<View className="bg-surface">{footer}</View>}
+        onClose={() => handleOpenChange(false)}
+        title={title}
+        description={description}
+        footer={footer}
       >
         {content}
-      </TrueSheet>
+      </FormSheet>
     );
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <Dialog.Content
-        dismissible={false}
-        className="w-full max-w-md self-center overflow-hidden p-0"
-        style={dialogKeyboardStyle}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          accessibilityLabel={t("common.close")}
-          className="absolute right-3 top-3 z-50"
-          onPress={() => handleOpenChange(false)}
-        >
-          <AppIcon icon={AppIcons.close} size={20} />
-        </Button>
-        <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <Dialog.Title>{title}</Dialog.Title>
-          <Dialog.Description>{description}</Dialog.Description>
-        </View>
-        {content}
-        {footer}
-      </Dialog.Content>
-    </Dialog>
+    <FormDialog
+      open={isOpen}
+      onOpenChange={handleOpenChange}
+      title={title}
+      description={description}
+      footer={footer}
+      style={dialogKeyboardStyle}
+    >
+      {content}
+    </FormDialog>
   );
 }

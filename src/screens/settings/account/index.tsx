@@ -1,4 +1,5 @@
-import { Typography, Spinner, useToast, Alert, Button, Input, Card } from "panelui-native";
+import RequestError from "@/components/common/request-error";
+import { Typography, Spinner, useToast, Button, Input, Card } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAccountProfile, useUpdateAccountProfile } from "@/hooks/db/use-account-profile";
 import { createAccountSchema, type AccountFormValues } from "@/schemas/account";
@@ -72,19 +73,7 @@ export default function AccountScreen(): React.JSX.Element {
   }
 
   if (profileQuery.isError || !profileQuery.data) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(profileQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void profileQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={profileQuery.error} onRetry={() => void profileQuery.refetch()} />;
   }
 
   const roleOption = formValues.role

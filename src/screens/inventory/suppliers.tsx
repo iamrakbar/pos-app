@@ -1,7 +1,7 @@
+import RequestError from "@/components/common/request-error";
 import {
   Button,
   Typography,
-  Alert,
   Chip,
   EmptyState,
   Fab,
@@ -9,7 +9,6 @@ import {
   Table,
   Skeleton,
 } from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
 import { compareTableValues } from "@/utils/table-sort";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
@@ -142,6 +141,137 @@ function sortSuppliers(items: Supplier[], descriptor: TableSortDescriptor): Supp
   });
 }
 
+function SupplierTableLoading(): React.JSX.Element {
+  return (
+    <ScrollView
+      className="flex-1"
+      contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
+      scrollEnabled={false}
+      showsVerticalScrollIndicator={false}
+    >
+      <ScrollView horizontal scrollEnabled={false} showsHorizontalScrollIndicator={false}>
+        <View style={{ width: SKELETON_TABLE_WIDTH }} accessibilityRole="progressbar">
+          <Table.Frame columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
+            <Table.Header>
+              <Table.Row>
+                {[...TABLE_COLUMNS, { id: "loading-extra" }].map(({ id }) => (
+                  <Table.Head key={id}>
+                    <Skeleton className="h-3 w-20 rounded-md" />
+                  </Table.Head>
+                ))}
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {Array.from({ length: 6 }, (_, rowIndex) => (
+                <Table.Row key={`row-${rowIndex}`}>
+                  {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
+                    <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
+                      <Skeleton
+                        className={
+                          columnIndex === 6
+                            ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
+                            : `h-4 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-md`
+                        }
+                      />
+                    </Table.Cell>
+                  ))}
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Frame>
+        </View>
+      </ScrollView>
+    </ScrollView>
+  );
+}
+
+function SupplierTableRows({
+  sortedSuppliers,
+  themeColorMuted,
+}: {
+  sortedSuppliers: Supplier[];
+  themeColorMuted: string;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const router = useRouter();
+  return (
+    <>
+      {sortedSuppliers.length ? (
+        <Table.Body>
+          {sortedSuppliers.map((supplier) => (
+            <Table.Row
+              key={supplier.id}
+              accessibilityLabel={t("suppliers.editAccessibility", {
+                supplier: supplier.name,
+              })}
+              onPress={() => router.push(`/settings/inventory/suppliers/${supplier.id}`)}
+            >
+              <Table.Cell>
+                <Typography type="body-sm" weight="semibold" numberOfLines={1}>
+                  {supplier.name}
+                </Typography>
+              </Table.Cell>
+              <Table.Cell>
+                <Typography type="body-sm" numberOfLines={1}>
+                  {supplier.contact_name ?? "—"}
+                </Typography>
+              </Table.Cell>
+              <Table.Cell>
+                <Typography type="body-sm" numberOfLines={1}>
+                  {supplier.email ?? "—"}
+                </Typography>
+              </Table.Cell>
+              <Table.Cell>{supplier.phone ?? "—"}</Table.Cell>
+              <Table.Cell labelClassName="tabular-nums">
+                {supplier.lead_time_days === null
+                  ? "—"
+                  : t("suppliers.days", {
+                      count: formatInventoryQuantity(supplier.lead_time_days),
+                    })}
+              </Table.Cell>
+              <Table.Cell>{supplier.payment_terms ?? "—"}</Table.Cell>
+              <Table.Cell labelClassName="tabular-nums">
+                {formatInventoryQuantity(supplier.active_offer_count)}
+              </Table.Cell>
+              <Table.Cell>
+                <Chip size="sm" variant={supplier.active ? "success" : "destructive"}>
+                  {supplier.active ? t("common.active") : t("common.inactive")}
+                </Chip>
+              </Table.Cell>
+              <Table.Cell labelClassName="tabular-nums">
+                {formatDateTime(supplier.created_at, {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </Table.Cell>
+              <Table.Cell labelClassName="tabular-nums">
+                {formatDateTime(supplier.updated_at, {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      ) : (
+        <Table.Empty>
+          <EmptyState className="py-16">
+            <EmptyState.Header>
+              <EmptyState.Media variant="icon">
+                <AppIcon icon={AppIcons.storefront} size={22} color={themeColorMuted} />
+              </EmptyState.Media>
+              <EmptyState.Title>{t("suppliers.empty")}</EmptyState.Title>
+              <EmptyState.Description>{t("suppliers.emptyDescription")}</EmptyState.Description>
+            </EmptyState.Header>
+          </EmptyState>
+        </Table.Empty>
+      )}
+    </>
+  );
+}
+
 export default function InventorySuppliersScreen(): React.JSX.Element {
   const fabInsets = useSafeAreaInsets();
   const { t } = useTranslation();
@@ -201,57 +331,9 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {query.isLoading ? (
-          <ScrollView
-            className="flex-1"
-            contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
-            scrollEnabled={false}
-            showsVerticalScrollIndicator={false}
-          >
-            <ScrollView horizontal scrollEnabled={false} showsHorizontalScrollIndicator={false}>
-              <View style={{ width: SKELETON_TABLE_WIDTH }} accessibilityRole="progressbar">
-                <Table.Frame columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
-                  <Table.Header>
-                    <Table.Row>
-                      {SKELETON_COLUMN_WIDTHS.map((_, index) => (
-                        <Table.Head key={`heading-${index}`}>
-                          <Skeleton className="h-3 w-20 rounded-md" />
-                        </Table.Head>
-                      ))}
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {Array.from({ length: 6 }, (_, rowIndex) => (
-                      <Table.Row key={`row-${rowIndex}`}>
-                        {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
-                          <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
-                            <Skeleton
-                              className={
-                                columnIndex === 6
-                                  ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
-                                  : `h-4 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-md`
-                              }
-                            />
-                          </Table.Cell>
-                        ))}
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Frame>
-              </View>
-            </ScrollView>
-          </ScrollView>
+          <SupplierTableLoading />
         ) : query.isError ? (
-          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <Alert variant="destructive">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-            <Button variant="outline" onPress={() => void query.refetch()}>
-              {t("common.retry")}
-            </Button>
-          </View>
+          <RequestError error={query.error} onRetry={() => void query.refetch()} />
         ) : (
           <ScrollView
             className="flex-1"
@@ -296,86 +378,10 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                         ))}
                       </Table.Row>
                     </Table.Header>
-                    {sortedSuppliers.length ? (
-                      <Table.Body>
-                        {sortedSuppliers.map((supplier) => (
-                          <Table.Row
-                            key={supplier.id}
-                            accessibilityLabel={t("suppliers.editAccessibility", {
-                              supplier: supplier.name,
-                            })}
-                            onPress={() =>
-                              router.push(`/settings/inventory/suppliers/${supplier.id}`)
-                            }
-                          >
-                            <Table.Cell>
-                              <Typography type="body-sm" weight="semibold" numberOfLines={1}>
-                                {supplier.name}
-                              </Typography>
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Typography type="body-sm" numberOfLines={1}>
-                                {supplier.contact_name ?? "—"}
-                              </Typography>
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Typography type="body-sm" numberOfLines={1}>
-                                {supplier.email ?? "—"}
-                              </Typography>
-                            </Table.Cell>
-                            <Table.Cell>{supplier.phone ?? "—"}</Table.Cell>
-                            <Table.Cell labelClassName="tabular-nums">
-                              {supplier.lead_time_days === null
-                                ? "—"
-                                : t("suppliers.days", {
-                                    count: formatInventoryQuantity(supplier.lead_time_days),
-                                  })}
-                            </Table.Cell>
-                            <Table.Cell>{supplier.payment_terms ?? "—"}</Table.Cell>
-                            <Table.Cell labelClassName="tabular-nums">
-                              {formatInventoryQuantity(supplier.active_offer_count)}
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Chip size="sm" variant={supplier.active ? "success" : "destructive"}>
-                                {supplier.active ? t("common.active") : t("common.inactive")}
-                              </Chip>
-                            </Table.Cell>
-                            <Table.Cell labelClassName="tabular-nums">
-                              {formatDateTime(supplier.created_at, {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </Table.Cell>
-                            <Table.Cell labelClassName="tabular-nums">
-                              {formatDateTime(supplier.updated_at, {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </Table.Cell>
-                          </Table.Row>
-                        ))}
-                      </Table.Body>
-                    ) : (
-                      <Table.Empty>
-                        <EmptyState className="py-16">
-                          <EmptyState.Header>
-                            <EmptyState.Media variant="icon">
-                              <AppIcon
-                                icon={AppIcons.storefront}
-                                size={22}
-                                color={themeColorMuted}
-                              />
-                            </EmptyState.Media>
-                            <EmptyState.Title>{t("suppliers.empty")}</EmptyState.Title>
-                            <EmptyState.Description>
-                              {t("suppliers.emptyDescription")}
-                            </EmptyState.Description>
-                          </EmptyState.Header>
-                        </EmptyState>
-                      </Table.Empty>
-                    )}
+                    <SupplierTableRows
+                      sortedSuppliers={sortedSuppliers}
+                      themeColorMuted={themeColorMuted}
+                    />
                   </Table.Frame>
                 </View>
               </ScrollView>

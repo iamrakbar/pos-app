@@ -1,10 +1,10 @@
-import { AppIcons } from "@/components/common/app-icons";
-import AppIcon from "@/components/common/app-icon";
+import FormSheet from "@/components/common/form-sheet";
+import FormDialog from "@/components/common/form-dialog";
+import SheetDeleteConfirmation from "@/components/common/sheet-delete-confirmation";
 import SheetOverlayHost from "@/components/common/sheet-overlay-host";
-import { Typography, Button, Dialog, Input, useToast, cn } from "panelui-native";
+import { Typography, Button, Input, useToast, cn } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
 import { createAreaSchema, type AreaFormValues } from "@/schemas/area";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -150,64 +150,31 @@ export default function AreaFormDialog({
   return (
     <>
       {isPhonePortrait ? (
-        <TrueSheet
-          ref={sheetRef}
+        <FormSheet
+          sheetRef={sheetRef}
           detents={[0.6, 0.9]}
-          scrollable
           backgroundColor={surfaceColor}
-          cornerRadius={24}
-          grabber
-          dimmed
           onDidDismiss={handleDidDismiss}
-          header={
-            <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
-              <Typography type="h4" weight="semibold">
-                {title}
-              </Typography>
-              <Typography type="body-sm" muted>
-                {description}
-              </Typography>
-              <Button
-                variant="ghost"
-                size="icon"
-                accessibilityLabel={t("common.close")}
-                className="absolute right-3 top-3"
-                onPress={() => onOpenChange(false)}
-              >
-                <AppIcon icon={AppIcons.close} size={20} />
-              </Button>
-            </View>
-          }
-          footer={<View className="bg-surface">{footer}</View>}
+          onClose={() => onOpenChange(false)}
+          title={title}
+          description={description}
+          footer={footer}
         >
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-4">
             {content}
           </ScrollView>
-        </TrueSheet>
+        </FormSheet>
       ) : (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
-          <Dialog.Content
-            dismissible={false}
-            className="w-full max-w-md self-center overflow-hidden p-0"
-            style={dialogKeyboardStyle}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              accessibilityLabel={t("common.close")}
-              className="absolute right-3 top-3 z-50"
-              onPress={() => onOpenChange(false)}
-            >
-              <AppIcon icon={AppIcons.close} size={20} />
-            </Button>
-            <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-              <Dialog.Title>{title}</Dialog.Title>
-              <Dialog.Description>{description}</Dialog.Description>
-            </View>
-            {content}
-            {footer}
-          </Dialog.Content>
-        </Dialog>
+        <FormDialog
+          open={isOpen}
+          onOpenChange={onOpenChange}
+          title={title}
+          description={description}
+          footer={footer}
+          style={dialogKeyboardStyle}
+        >
+          {content}
+        </FormDialog>
       )}
 
       <SheetOverlayHost
@@ -215,39 +182,14 @@ export default function AreaFormDialog({
         visible={isDeleteOpen}
         onRequestClose={() => setIsDeleteOpen(false)}
       >
-        <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <Dialog.Content dismissible={false} className="w-full max-w-md self-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              accessibilityLabel={t("common.close")}
-              className="absolute right-3 top-3 z-50"
-              onPress={() => setIsDeleteOpen(false)}
-            >
-              <AppIcon icon={AppIcons.close} size={20} />
-            </Button>
-            <View className="mb-5 gap-1.5">
-              <View className="pr-10">
-                <Dialog.Title>{t("areasManagement.deleteAreaTitle")}</Dialog.Title>
-              </View>
-              <Dialog.Description>{t("areasManagement.deleteAreaDescription")}</Dialog.Description>
-            </View>
-            <View className="flex-row items-center gap-3">
-              <Button variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="flex-1"
-                disabled={deleteMutation.isPending}
-                onPress={handleDelete}
-              >
-                {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-              </Button>
-            </View>
-          </Dialog.Content>
-        </Dialog>
+        <SheetDeleteConfirmation
+          open={isDeleteOpen}
+          onOpenChange={setIsDeleteOpen}
+          title={t("areasManagement.deleteAreaTitle")}
+          description={t("areasManagement.deleteAreaDescription")}
+          isPending={deleteMutation.isPending}
+          onDelete={handleDelete}
+        />
       </SheetOverlayHost>
     </>
   );

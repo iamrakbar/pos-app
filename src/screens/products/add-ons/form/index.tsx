@@ -1,4 +1,6 @@
-import { Typography, Spinner, Button, Dialog, useToast, Alert, Card } from "panelui-native";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import RequestError from "@/components/common/request-error";
+import { Typography, Spinner, Button, useToast, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import { useAddOn, useCreateAddOn, useDeleteAddOn, useUpdateAddOn } from "@/hooks/db/use-add-ons";
@@ -98,19 +100,7 @@ export default function AddOnFormScreen(): React.JSX.Element {
     );
   }
   if (!isNew && addOnQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(addOnQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void addOnQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={addOnQuery.error} onRetry={() => void addOnQuery.refetch()} />;
   }
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -242,27 +232,15 @@ export default function AddOnFormScreen(): React.JSX.Element {
         </View>
       </KeyboardAwareScrollView>
 
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <Dialog.Content>
-          <Dialog.Title>{t("addOnManagement.deleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("addOnManagement.deleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={deleteMutation.isPending}
-              onPress={handleDelete}
-            >
-              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <ConfirmationDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title={t("addOnManagement.deleteTitle")}
+        description={t("addOnManagement.deleteDescription")}
+        onConfirm={handleDelete}
+        confirmLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+        disabled={deleteMutation.isPending}
+      />
     </>
   );
 }

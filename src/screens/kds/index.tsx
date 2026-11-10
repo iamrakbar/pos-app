@@ -1,7 +1,9 @@
+import LoadingListSkeleton from "@/components/common/loading-list-skeleton";
+import RequestError from "@/components/common/request-error";
+import { LOADING_PLACEHOLDER_KEYS } from "@/components/common/loading-placeholder-keys";
 import {
   Surface,
   Typography,
-  Alert,
   Button,
   Chip,
   Skeleton,
@@ -249,9 +251,9 @@ export default function KdsScreen(): React.JSX.Element {
           style={{ paddingHorizontal: horizontalPagePadding, columnGap: gridGap }}
           accessibilityRole="progressbar"
         >
-          {Array.from({ length: gridColumns * 2 }, (_, index) => (
+          {LOADING_PLACEHOLDER_KEYS.slice(0, gridColumns * 2).map((slot) => (
             <View
-              key={`loading-grid-${index}`}
+              key={slot}
               style={{
                 width: Math.max(
                   0,
@@ -269,19 +271,7 @@ export default function KdsScreen(): React.JSX.Element {
     );
   }
   if (ticketsQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(ticketsQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void ticketsQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={ticketsQuery.error} onRetry={() => void ticketsQuery.refetch()} />;
   }
 
   return (
@@ -369,24 +359,7 @@ export default function KdsScreen(): React.JSX.Element {
             onEndReachedThreshold={0.5}
             onEndReached={handleEndReached}
             ListFooterComponent={
-              ticketsQuery.isFetchingNextPage ? (
-                <View className="gap-px py-2" accessibilityRole="progressbar">
-                  {Array.from({ length: 1 }, (_, index) => (
-                    <View
-                      key={`loading-row-${index}`}
-                      className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
-                    >
-                      <Skeleton className="size-11 shrink-0 rounded-xl" />
-                      <View className="flex-1 gap-2">
-                        <Skeleton className="h-4 w-3/5 rounded-md" />
-                        <Skeleton className="h-3 w-2/5 rounded-md" />
-                        <Skeleton className="h-3 w-1/3 rounded-md" />
-                      </View>
-                      <Skeleton className="size-4 rounded-full" />
-                    </View>
-                  ))}
-                </View>
-              ) : undefined
+              ticketsQuery.isFetchingNextPage ? <LoadingListSkeleton count={1} /> : undefined
             }
             ListEmptyComponent={
               <View className="w-full">

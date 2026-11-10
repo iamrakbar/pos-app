@@ -1,5 +1,6 @@
-import { Button, Typography, Alert, Chip, EmptyState, Table, Skeleton } from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
+import InventoryTableSkeleton from "@/components/common/inventory-table-skeleton";
+import RequestError from "@/components/common/request-error";
+import { Button, Typography, Chip, EmptyState, Table } from "panelui-native";
 import { compareTableValues } from "@/utils/table-sort";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
@@ -60,17 +61,6 @@ const TABLE_COLUMNS = [
   { id: "failed_at", width: 180, label: "operations.failedAt" },
 ] as const;
 const SKELETON_COLUMN_WIDTHS = [180, 140, 130, 120, 180, 260, 180, 180, 180];
-const SKELETON_CELL_WIDTHS: Record<number, string> = {
-  0: "w-32",
-  1: "w-16",
-  2: "w-20",
-  3: "w-20",
-  4: "w-24",
-  5: "w-32",
-  6: "w-20",
-  7: "w-28",
-  8: "w-28",
-};
 const COLUMN_LAYOUT = TABLE_COLUMNS.map(({ width }) => ({ width }));
 // Table.Row adds 16 points of padding on each side and 12 points between columns.
 const TABLE_WIDTH =
@@ -191,57 +181,13 @@ export default function InventoryOperationsScreen(): React.JSX.Element {
 
       <View className="flex-1 bg-background">
         {query.isLoading ? (
-          <ScrollView
-            className="flex-1"
-            contentContainerClassName="w-full px-4 py-4 pb-24 md:px-6"
-            scrollEnabled={false}
-            showsVerticalScrollIndicator={false}
-          >
-            <ScrollView horizontal scrollEnabled={false} showsHorizontalScrollIndicator={false}>
-              <View style={{ width: SKELETON_TABLE_WIDTH }} accessibilityRole="progressbar">
-                <Table.Frame columns={SKELETON_COLUMN_WIDTHS.map((width) => ({ width }))}>
-                  <Table.Header>
-                    <Table.Row>
-                      {SKELETON_COLUMN_WIDTHS.map((_, index) => (
-                        <Table.Head key={`heading-${index}`}>
-                          <Skeleton className="h-3 w-20 rounded-md" />
-                        </Table.Head>
-                      ))}
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {Array.from({ length: 6 }, (_, rowIndex) => (
-                      <Table.Row key={`row-${rowIndex}`}>
-                        {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
-                          <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
-                            <Skeleton
-                              className={
-                                columnIndex === 6
-                                  ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
-                                  : `h-4 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-md`
-                              }
-                            />
-                          </Table.Cell>
-                        ))}
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Frame>
-              </View>
-            </ScrollView>
-          </ScrollView>
+          <InventoryTableSkeleton
+            headings={TABLE_COLUMNS}
+            columnWidths={SKELETON_COLUMN_WIDTHS}
+            tableWidth={SKELETON_TABLE_WIDTH}
+          />
         ) : query.isError ? (
-          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <Alert variant="destructive">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-            <Button variant="outline" onPress={() => void query.refetch()}>
-              {t("common.retry")}
-            </Button>
-          </View>
+          <RequestError error={query.error} onRetry={() => void query.refetch()} />
         ) : (
           <ScrollView
             className="flex-1"

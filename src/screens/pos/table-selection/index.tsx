@@ -1,3 +1,4 @@
+import { LOADING_PLACEHOLDER_KEYS } from "@/components/common/loading-placeholder-keys";
 import { Button, Chip, Typography, Skeleton, ScrollFade, EmptyState, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
@@ -66,9 +67,9 @@ export default function TableSelectionScreen(): JSX.Element {
           className="flex-1 flex-row flex-wrap content-start gap-x-3 gap-y-4 px-4 py-6"
           accessibilityRole="progressbar"
         >
-          {Array.from({ length: (width >= 520 ? 3 : 2) * 2 }, (_, index) => (
+          {LOADING_PLACEHOLDER_KEYS.slice(0, (width >= 520 ? 3 : 2) * 2).map((slot) => (
             <View
-              key={`loading-grid-${index}`}
+              key={slot}
               style={{
                 width: Math.max(
                   0,

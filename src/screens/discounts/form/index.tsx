@@ -1,4 +1,6 @@
-import { Spinner, Typography, Button, Dialog, useToast, Alert } from "panelui-native";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import RequestError from "@/components/common/request-error";
+import { Spinner, Typography, Button, useToast } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import {
   useDiscount,
@@ -13,7 +15,7 @@ import {
   toDiscountRequest,
   type DiscountFormValues,
 } from "@/schemas/discount";
-import { getErrorMessage, isApiError } from "@/api/api-error";
+import { isApiError } from "@/api/api-error";
 import { getLocaleTag } from "@/locales";
 import { getToolbarIcon } from "@/utils/toolbar-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -99,17 +101,7 @@ export default function DiscountFormScreen(): React.JSX.Element {
     );
   if (!isNew && discountQuery.isError)
     return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(discountQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void discountQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
+      <RequestError error={discountQuery.error} onRetry={() => void discountQuery.refetch()} />
     );
 
   const submit = async (values: DiscountFormValues) => {
@@ -210,27 +202,15 @@ export default function DiscountFormScreen(): React.JSX.Element {
           </Button>
         </View>
       </KeyboardAwareScrollView>
-      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <Dialog.Content>
-          <Dialog.Title>{t("discounts.deleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("discounts.deleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={deleteMutation.isPending}
-              onPress={handleDelete}
-            >
-              {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <ConfirmationDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={t("discounts.deleteTitle")}
+        description={t("discounts.deleteDescription")}
+        onConfirm={handleDelete}
+        confirmLabel={deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+        disabled={deleteMutation.isPending}
+      />
     </>
   );
 }

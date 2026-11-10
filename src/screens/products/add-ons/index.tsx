@@ -1,14 +1,6 @@
-import {
-  Typography,
-  Separator,
-  Fab,
-  PlusIcon,
-  Alert,
-  Button,
-  Skeleton,
-  EmptyState,
-} from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
+import LoadingListSkeleton from "@/components/common/loading-list-skeleton";
+import RequestError from "@/components/common/request-error";
+import { Typography, Separator, Fab, PlusIcon, EmptyState } from "panelui-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import { useAddOns } from "@/hooks/db/use-add-ons";
@@ -32,39 +24,9 @@ export default function ProductAddOnsScreen(): React.JSX.Element {
   ]) as [string, string];
   const addOnsQuery = useAddOns(productId);
 
-  if (addOnsQuery.isLoading)
-    return (
-      <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
-        {Array.from({ length: 6 }, (_, index) => (
-          <View
-            key={`loading-row-${index}`}
-            className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
-          >
-            <Skeleton className="size-11 shrink-0 rounded-xl" />
-            <View className="flex-1 gap-2">
-              <Skeleton className="h-4 w-3/5 rounded-md" />
-              <Skeleton className="h-3 w-2/5 rounded-md" />
-              <Skeleton className="h-3 w-1/3 rounded-md" />
-            </View>
-            <Skeleton className="size-4 rounded-full" />
-          </View>
-        ))}
-      </View>
-    );
+  if (addOnsQuery.isLoading) return <LoadingListSkeleton count={6} fill />;
   if (addOnsQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(addOnsQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void addOnsQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={addOnsQuery.error} onRetry={() => void addOnsQuery.refetch()} />;
   }
 
   const addOns = addOnsQuery.data ?? [];

@@ -1,16 +1,15 @@
+import LoadingListSkeleton from "@/components/common/loading-list-skeleton";
+import RequestError from "@/components/common/request-error";
 import {
   Button,
   Chip,
   Typography,
   Separator,
-  Alert,
-  Skeleton,
   SearchBar,
   Checkbox,
   EmptyState,
   Card,
 } from "panelui-native";
-import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -105,34 +104,12 @@ export default function DiscountProductsScreen(): React.JSX.Element {
             </View>
 
             {productsQuery.isLoading ? (
-              <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <View
-                    key={`loading-row-${index}`}
-                    className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
-                  >
-                    <Skeleton className="size-11 shrink-0 rounded-xl" />
-                    <View className="flex-1 gap-2">
-                      <Skeleton className="h-4 w-3/5 rounded-md" />
-                      <Skeleton className="h-3 w-2/5 rounded-md" />
-                      <Skeleton className="h-3 w-1/3 rounded-md" />
-                    </View>
-                    <Skeleton className="size-4 rounded-full" />
-                  </View>
-                ))}
-              </View>
+              <LoadingListSkeleton count={5} fill />
             ) : productsQuery.isError ? (
-              <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-                <Alert variant="destructive">
-                  <Alert.Indicator />
-                  <Alert.Content>
-                    <Alert.Description>{getErrorMessage(productsQuery.error)}</Alert.Description>
-                  </Alert.Content>
-                </Alert>
-                <Button variant="outline" onPress={() => void productsQuery.refetch()}>
-                  {t("common.retry")}
-                </Button>
-              </View>
+              <RequestError
+                error={productsQuery.error}
+                onRetry={() => void productsQuery.refetch()}
+              />
             ) : products.length === 0 ? (
               <EmptyState className="py-12">
                 <EmptyState.Header>

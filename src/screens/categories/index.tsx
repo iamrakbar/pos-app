@@ -1,12 +1,12 @@
+import LoadingListSkeleton from "@/components/common/loading-list-skeleton";
+import RequestError from "@/components/common/request-error";
 import {
   Typography,
   Separator,
-  Alert,
   Button,
   Fab,
   PlusIcon,
   useToast,
-  Skeleton,
   EmptyState,
   Chip,
 } from "panelui-native";
@@ -217,34 +217,9 @@ function CategoriesContent({
         ) : null}
 
         {categoryQuery.isLoading ? (
-          <View className="flex-1 gap-px py-2" accessibilityRole="progressbar">
-            {Array.from({ length: 6 }, (_, index) => (
-              <View
-                key={`loading-row-${index}`}
-                className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
-              >
-                <Skeleton className="size-11 shrink-0 rounded-xl" />
-                <View className="flex-1 gap-2">
-                  <Skeleton className="h-4 w-3/5 rounded-md" />
-                  <Skeleton className="h-3 w-2/5 rounded-md" />
-                  <Skeleton className="h-3 w-1/3 rounded-md" />
-                </View>
-                <Skeleton className="size-4 rounded-full" />
-              </View>
-            ))}
-          </View>
+          <LoadingListSkeleton count={6} fill />
         ) : categoryQuery.isError ? (
-          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <Alert variant="destructive">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Description>{getErrorMessage(categoryQuery.error)}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-            <Button variant="outline" onPress={() => void categoryQuery.refetch()}>
-              {t("common.retry")}
-            </Button>
-          </View>
+          <RequestError error={categoryQuery.error} onRetry={() => void categoryQuery.refetch()} />
         ) : (
           <ScrollView className="flex-1" contentContainerClassName="py-2 pb-24">
             {orderedCategories.length === 0 ? (

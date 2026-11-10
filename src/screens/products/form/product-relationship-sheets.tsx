@@ -1,22 +1,16 @@
+import MovementTable from "@/components/common/movement-table";
+import RequestError from "@/components/common/request-error";
 import {
   Typography,
   Spinner,
-  Chip,
   EmptyState,
   Table,
   useToast,
-  Alert,
   Button,
   Label,
   Input,
 } from "panelui-native";
-import {
-  MOVEMENT_TYPE_COLORS,
-  MOVEMENT_TABLE_COLUMNS,
-  MOVEMENT_TABLE_WIDTH,
-  formatSignedQuantity,
-} from "@/utils/inventory-movement-table";
-import { getErrorMessage } from "@/api/api-error";
+import { MOVEMENT_TABLE_WIDTH } from "@/utils/inventory-movement-table";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -33,12 +27,7 @@ import {
   type RecipeDraftLine,
 } from "@/schemas/product-recipe";
 import { useTranslation } from "@/stores/use-locale";
-import {
-  formatDateTime,
-  formatInventoryQuantity,
-  formatRupiah,
-  normalizeInventorySource,
-} from "@/utils/format";
+import { formatInventoryQuantity, formatRupiah } from "@/utils/format";
 import type { TranslationKey } from "@/locales";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import React from "react";
@@ -369,7 +358,6 @@ function ProductMovementsSheet({
   movements: Movement[];
 }): React.JSX.Element {
   const { t } = useTranslation();
-  const themeColorMuted = useCSSVariable("--color-muted-foreground") as string;
 
   return (
     <TrueSheet
@@ -397,94 +385,16 @@ function ProductMovementsSheet({
             <Spinner size="sm" label={t("movements.loadingMore")} />
           </View>
         ) : query.isError ? (
-          <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <Alert variant="destructive">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-            <Button variant="outline" onPress={() => void query.refetch()}>
-              {t("common.retry")}
-            </Button>
-          </View>
+          <RequestError error={query.error} onRetry={() => void query.refetch()} />
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator>
             <View style={{ width: MOVEMENT_TABLE_WIDTH }}>
-              <Table columns={MOVEMENT_TABLE_COLUMNS} className="bg-secondary">
-                <Table.Header>
-                  <Table.Row>
-                    <Table.Head>{t("movements.type")}</Table.Head>
-                    <Table.Head>{t("movements.quantity")}</Table.Head>
-                    <Table.Head>{t("movements.balanceAfter")}</Table.Head>
-                    <Table.Head>{t("movements.costPerUnit")}</Table.Head>
-                    <Table.Head>{t("movements.source")}</Table.Head>
-                    <Table.Head>{t("movements.reason")}</Table.Head>
-                    <Table.Head>{t("movements.actor")}</Table.Head>
-                    <Table.Head>{t("movements.movedAt")}</Table.Head>
-                  </Table.Row>
-                </Table.Header>
-                {movements.length ? (
-                  <Table.Body>
-                    {movements.map((movement) => (
-                      <Table.Row key={movement.id}>
-                        <Table.Cell>
-                          <Chip variant={MOVEMENT_TYPE_COLORS[movement.type]} size="sm">
-                            {t(`movements.types.${movement.type}` as TranslationKey)}
-                          </Chip>
-                        </Table.Cell>
-                        <Table.Cell labelClassName="tabular-nums">
-                          {formatSignedQuantity(movement.quantity)}
-                        </Table.Cell>
-                        <Table.Cell labelClassName="tabular-nums">
-                          {formatInventoryQuantity(movement.balance_after)}
-                        </Table.Cell>
-                        <Table.Cell labelClassName="tabular-nums">
-                          {movement.cost_per_unit === null
-                            ? "—"
-                            : formatRupiah(movement.cost_per_unit)}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Chip variant="default" size="sm">
-                            <Typography type="body-xs" numberOfLines={1}>
-                              {normalizeInventorySource(movement.source)}
-                            </Typography>
-                          </Chip>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Typography type="body-sm" numberOfLines={1}>
-                            {movement.reason ?? "—"}
-                          </Typography>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Typography type="body-sm" numberOfLines={1}>
-                            {movement.actor?.name ?? "—"}
-                          </Typography>
-                        </Table.Cell>
-                        <Table.Cell labelClassName="tabular-nums">
-                          {formatDateTime(movement.moved_at)}
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                ) : (
-                  <Table.Empty>
-                    <EmptyState className="py-16">
-                      <EmptyState.Header>
-                        <EmptyState.Media variant="icon">
-                          <AppIcon icon={AppIcons.swapVertical} size={22} color={themeColorMuted} />
-                        </EmptyState.Media>
-                        <EmptyState.Title>
-                          {t("productForm.inventoryMovementsEmpty")}
-                        </EmptyState.Title>
-                        <EmptyState.Description>
-                          {t("productForm.inventoryMovementsEmptyDescription")}
-                        </EmptyState.Description>
-                      </EmptyState.Header>
-                    </EmptyState>
-                  </Table.Empty>
-                )}
-              </Table>
+              <MovementTable
+                movements={movements}
+                emptyTitle={t("productForm.inventoryMovementsEmpty")}
+                emptyDescription={t("productForm.inventoryMovementsEmptyDescription")}
+                className="bg-secondary"
+              />
             </View>
           </ScrollView>
         )}
@@ -669,17 +579,10 @@ function RecipeSheetEditingBody({
     );
   if (ingredientsQuery.isError) {
     return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(ingredientsQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void ingredientsQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
+      <RequestError
+        error={ingredientsQuery.error}
+        onRetry={() => void ingredientsQuery.refetch()}
+      />
     );
   }
   return (
@@ -690,6 +593,71 @@ function RecipeSheetEditingBody({
       onRemove={onRemove}
       onOpenPicker={onOpenPicker}
     />
+  );
+}
+
+function RecipeReadTable({
+  recipe,
+}: {
+  recipe: ReturnType<typeof useProductRecipe>["data"];
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const recipeEmptyColor = useCSSVariable("--color-muted-foreground") as string;
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator>
+      <View className="w-ingredient-movements-table">
+        <Table className="bg-secondary" columns={[220, 150, 150, 190].map((width) => ({ width }))}>
+          <Table.Header>
+            <Table.Row>
+              <Table.Head>{t("productForm.recipeIngredient")}</Table.Head>
+              <Table.Head>{t("productForm.recipeQuantity")}</Table.Head>
+              <Table.Head>{t("productForm.recipeUnit")}</Table.Head>
+              <Table.Head>{t("productForm.recipeCostContribution")}</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          {recipe?.ingredients.length ? (
+            <Table.Body>
+              {recipe.ingredients.map((ingredient) => (
+                <Table.Row key={ingredient.ingredient_id}>
+                  <Table.Cell>
+                    <Typography weight="semibold" numberOfLines={1}>
+                      {ingredient.name}
+                    </Typography>
+                  </Table.Cell>
+                  <Table.Cell labelClassName="tabular-nums">
+                    {formatInventoryQuantity(ingredient.quantity)}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Typography numberOfLines={1}>
+                      {t(`ingredients.units.${ingredient.unit}` as TranslationKey)}
+                    </Typography>
+                  </Table.Cell>
+                  <Table.Cell labelClassName="tabular-nums">
+                    {ingredient.cost_contribution === null
+                      ? "—"
+                      : formatRupiah(ingredient.cost_contribution)}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          ) : (
+            <Table.Empty>
+              <EmptyState className="py-16">
+                <EmptyState.Header>
+                  <EmptyState.Media variant="icon">
+                    <AppIcon icon={AppIcons.restaurant} size={22} color={recipeEmptyColor} />
+                  </EmptyState.Media>
+                  <EmptyState.Title>{t("productForm.recipeEmpty")}</EmptyState.Title>
+                  <EmptyState.Description>
+                    {t("productForm.recipeEmptyDescription")}
+                  </EmptyState.Description>
+                </EmptyState.Header>
+              </EmptyState>
+            </Table.Empty>
+          )}
+        </Table>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -717,7 +685,6 @@ function RecipeSheetBody({
   onOpenPicker: (kind: RecipePickerKind, index: number) => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
-  const recipeEmptyColor = useCSSVariable("--color-muted-foreground") as string;
 
   return (
     <ScrollView
@@ -730,17 +697,7 @@ function RecipeSheetBody({
           <Spinner size="sm" label={t("movements.loadingMore")} />
         </View>
       ) : query.isError ? (
-        <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-          <Alert variant="destructive">
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
-            </Alert.Content>
-          </Alert>
-          <Button variant="outline" onPress={() => void query.refetch()}>
-            {t("common.retry")}
-          </Button>
-        </View>
+        <RequestError error={query.error} onRetry={() => void query.refetch()} />
       ) : (
         <>
           {recipe ? (
@@ -768,67 +725,7 @@ function RecipeSheetBody({
               ) : null}
             </>
           ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator>
-              <View className="w-ingredient-movements-table">
-                <Table
-                  className="bg-secondary"
-                  columns={[220, 150, 150, 190].map((width) => ({ width }))}
-                >
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.Head>{t("productForm.recipeIngredient")}</Table.Head>
-                      <Table.Head>{t("productForm.recipeQuantity")}</Table.Head>
-                      <Table.Head>{t("productForm.recipeUnit")}</Table.Head>
-                      <Table.Head>{t("productForm.recipeCostContribution")}</Table.Head>
-                    </Table.Row>
-                  </Table.Header>
-                  {recipe?.ingredients.length ? (
-                    <Table.Body>
-                      {recipe.ingredients.map((ingredient) => (
-                        <Table.Row key={ingredient.ingredient_id}>
-                          <Table.Cell>
-                            <Typography weight="semibold" numberOfLines={1}>
-                              {ingredient.name}
-                            </Typography>
-                          </Table.Cell>
-                          <Table.Cell labelClassName="tabular-nums">
-                            {formatInventoryQuantity(ingredient.quantity)}
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Typography numberOfLines={1}>
-                              {t(`ingredients.units.${ingredient.unit}` as TranslationKey)}
-                            </Typography>
-                          </Table.Cell>
-                          <Table.Cell labelClassName="tabular-nums">
-                            {ingredient.cost_contribution === null
-                              ? "—"
-                              : formatRupiah(ingredient.cost_contribution)}
-                          </Table.Cell>
-                        </Table.Row>
-                      ))}
-                    </Table.Body>
-                  ) : (
-                    <Table.Empty>
-                      <EmptyState className="py-16">
-                        <EmptyState.Header>
-                          <EmptyState.Media variant="icon">
-                            <AppIcon
-                              icon={AppIcons.restaurant}
-                              size={22}
-                              color={recipeEmptyColor}
-                            />
-                          </EmptyState.Media>
-                          <EmptyState.Title>{t("productForm.recipeEmpty")}</EmptyState.Title>
-                          <EmptyState.Description>
-                            {t("productForm.recipeEmptyDescription")}
-                          </EmptyState.Description>
-                        </EmptyState.Header>
-                      </EmptyState>
-                    </Table.Empty>
-                  )}
-                </Table>
-              </View>
-            </ScrollView>
+            <RecipeReadTable recipe={recipe} />
           )}
         </>
       )}

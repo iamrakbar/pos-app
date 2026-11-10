@@ -1,13 +1,5 @@
-import {
-  Surface,
-  Typography,
-  Spinner,
-  Separator,
-  Button,
-  Dialog,
-  Switch,
-  cn,
-} from "panelui-native";
+import PrinterPromptDialog from "@/components/common/printer-prompt-dialog";
+import { Surface, Typography, Spinner, Separator, Button, Switch, cn } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
 import { useReceiptPrinter } from "@/hooks/printer/use-receipt-printer";
@@ -264,24 +256,11 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         />
       </View>
 
-      <Dialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-        <Dialog.Content>
-          <Dialog.Title>{prompt?.title}</Dialog.Title>
-          {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {prompt?.actionLabel ? t("common.cancel") : t("common.close")}
-              </Button>
-            </Dialog.Close>
-            {prompt?.actionLabel ? (
-              <Button size="sm" onPress={handlePromptAction}>
-                {prompt.actionLabel}
-              </Button>
-            ) : null}
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <PrinterPromptDialog
+        prompt={prompt}
+        onClose={() => setPrompt(null)}
+        onAction={handlePromptAction}
+      />
     </>
   );
 }

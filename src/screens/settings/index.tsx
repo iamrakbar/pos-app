@@ -1,4 +1,6 @@
-import { Typography, Button, Dialog, Frame } from "panelui-native";
+import NavigationFrameRow from "@/components/common/navigation-frame-row";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
+import { Typography, Button, Frame } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -143,21 +145,14 @@ export default function SettingsScreen(): JSX.Element {
                 <Frame variant="plain">
                   <Frame.Panel>
                     {group.items.map((item) => (
-                      <Frame.Row
+                      <NavigationFrameRow
                         key={item.id}
-                        chevron
+                        icon={item.icon}
+                        color={themeColorMuted}
+                        label={item.label}
+                        description={item.description}
                         onPress={() => router.push(item.href as never)}
-                      >
-                        <Frame.Media>
-                          <AppIcon icon={item.icon} size={21} color={themeColorMuted} />
-                        </Frame.Media>
-                        <Frame.Content>
-                          <Frame.Title>{item.label}</Frame.Title>
-                          <Frame.Description numberOfLines={2}>
-                            {item.description}
-                          </Frame.Description>
-                        </Frame.Content>
-                      </Frame.Row>
+                      />
                     ))}
                   </Frame.Panel>
                 </Frame>
@@ -171,22 +166,14 @@ export default function SettingsScreen(): JSX.Element {
           </Button>
         </View>
       </ScrollView>
-      <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
-        <Dialog.Content>
-          <Dialog.Title>{t("logout.title")}</Dialog.Title>
-          <Dialog.Description>{t("logout.description")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button variant="destructive" size="sm" onPress={logout}>
-              {t("logout.confirm")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <ConfirmationDialog
+        open={isLogoutOpen}
+        onOpenChange={setIsLogoutOpen}
+        title={t("logout.title")}
+        description={t("logout.description")}
+        onConfirm={logout}
+        confirmLabel={t("logout.confirm")}
+      />
     </>
   );
 }

@@ -1,8 +1,9 @@
+import PrinterPromptDialog from "@/components/common/printer-prompt-dialog";
+import ConfirmationDialog from "@/components/common/confirmation-dialog";
 import {
   Typography,
   Separator,
   Button,
-  Dialog,
   Input,
   Label,
   Switch,
@@ -637,40 +638,19 @@ function PrinterDialogs({
 
   return (
     <>
-      <Dialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-        <Dialog.Content>
-          <Dialog.Title>{prompt?.title}</Dialog.Title>
-          {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {prompt?.actionLabel ? t("common.cancel") : t("common.close")}
-              </Button>
-            </Dialog.Close>
-            {prompt?.actionLabel ? (
-              <Button size="sm" onPress={handlePromptAction}>
-                {prompt.actionLabel}
-              </Button>
-            ) : null}
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
-      <Dialog open={deletePromptOpen} onOpenChange={setDeletePromptOpen}>
-        <Dialog.Content>
-          <Dialog.Title>{t("printerForm.deleteTitle")}</Dialog.Title>
-          <Dialog.Description>{t("printerForm.deleteDescription")}</Dialog.Description>
-          <Dialog.Footer>
-            <Dialog.Close>
-              <Button variant="ghost" size="sm">
-                {t("common.cancel")}
-              </Button>
-            </Dialog.Close>
-            <Button variant="destructive" size="sm" onPress={onDelete}>
-              {t("common.delete")}
-            </Button>
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog>
+      <PrinterPromptDialog
+        prompt={prompt}
+        onClose={() => setPrompt(null)}
+        onAction={handlePromptAction}
+      />
+      <ConfirmationDialog
+        open={deletePromptOpen}
+        onOpenChange={setDeletePromptOpen}
+        title={t("printerForm.deleteTitle")}
+        description={t("printerForm.deleteDescription")}
+        onConfirm={onDelete}
+        confirmLabel={t("common.delete")}
+      />
     </>
   );
 }

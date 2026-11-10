@@ -18,25 +18,25 @@ export type PrinterPrompt = {
   onAction?: () => void | Promise<void>;
 };
 
+async function openBluetoothSettings() {
+  if (Platform.OS === "android") {
+    try {
+      const IntentLauncher = await import("expo-intent-launcher");
+      await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.BLUETOOTH_SETTINGS);
+      return;
+    } catch {
+      // Fall through to app settings when the platform intent is unavailable.
+    }
+  }
+  await Linking.openSettings();
+}
+
 export function useReceiptPrinter() {
   const { t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
   const [isPrinting, setIsPrinting] = useState(false);
   const [prompt, setPrompt] = useState<PrinterPrompt | null>(null);
-
-  const openBluetoothSettings = async () => {
-    if (Platform.OS === "android") {
-      try {
-        const IntentLauncher = await import("expo-intent-launcher");
-        await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.BLUETOOTH_SETTINGS);
-        return;
-      } catch {
-        // Fall through to app settings when the platform intent is unavailable.
-      }
-    }
-    await Linking.openSettings();
-  };
 
   const printReceipt = async (
     order: ReceiptOrder,

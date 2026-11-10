@@ -1,3 +1,4 @@
+import NavigationFrameRow from "@/components/common/navigation-frame-row";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -77,15 +78,14 @@ export default function InventoryOverviewScreen(): JSX.Element {
             <Frame variant="plain">
               <Frame.Panel>
                 {manageItems.map((item) => (
-                  <Frame.Row key={item.id} chevron onPress={() => router.push(item.href as never)}>
-                    <Frame.Media>
-                      <AppIcon icon={item.icon} size={21} color={themeColorMuted} />
-                    </Frame.Media>
-                    <Frame.Content>
-                      <Frame.Title>{item.label}</Frame.Title>
-                      <Frame.Description numberOfLines={2}>{item.description}</Frame.Description>
-                    </Frame.Content>
-                  </Frame.Row>
+                  <NavigationFrameRow
+                    key={item.id}
+                    icon={item.icon}
+                    color={themeColorMuted}
+                    label={item.label}
+                    description={item.description}
+                    onPress={() => router.push(item.href as never)}
+                  />
                 ))}
               </Frame.Panel>
             </Frame>
@@ -99,15 +99,14 @@ export default function InventoryOverviewScreen(): JSX.Element {
           <Frame variant="plain">
             <Frame.Panel>
               {monitorItems.map((item) => (
-                <Frame.Row key={item.id} chevron onPress={() => router.push(item.href as never)}>
-                  <Frame.Media>
-                    <AppIcon icon={item.icon} size={21} color={themeColorMuted} />
-                  </Frame.Media>
-                  <Frame.Content>
-                    <Frame.Title>{item.label}</Frame.Title>
-                    <Frame.Description numberOfLines={2}>{item.description}</Frame.Description>
-                  </Frame.Content>
-                </Frame.Row>
+                <NavigationFrameRow
+                  key={item.id}
+                  icon={item.icon}
+                  color={themeColorMuted}
+                  label={item.label}
+                  description={item.description}
+                  onPress={() => router.push(item.href as never)}
+                />
               ))}
             </Frame.Panel>
           </Frame>

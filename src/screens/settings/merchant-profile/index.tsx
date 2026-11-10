@@ -1,3 +1,4 @@
+import RequestError from "@/components/common/request-error";
 import {
   Button,
   Label,
@@ -7,7 +8,6 @@ import {
   Input,
   Textarea,
   useToast,
-  Alert,
   Card,
   Switch,
 } from "panelui-native";
@@ -804,19 +804,7 @@ export default function MerchantProfileScreen(): React.JSX.Element {
   }
 
   if (profileQuery.isError || !profile) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(profileQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void profileQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={profileQuery.error} onRetry={() => void profileQuery.refetch()} />;
   }
 
   const pickImage = async (kind: ImageKind) => {

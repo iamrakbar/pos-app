@@ -1,5 +1,6 @@
-import { getErrorMessage } from "@/api/api-error";
-import { Fab, PlusIcon, Alert, Button, Skeleton, EmptyState, Card } from "panelui-native";
+import RequestError from "@/components/common/request-error";
+import { LOADING_PLACEHOLDER_KEYS } from "@/components/common/loading-placeholder-keys";
+import { Fab, PlusIcon, Button, Skeleton, EmptyState, Card } from "panelui-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import { useAreas } from "@/hooks/db/use-areas";
@@ -46,9 +47,9 @@ export default function AreasScreen(): React.JSX.Element {
           style={{ paddingHorizontal: horizontalPagePadding, columnGap: 16 }}
           accessibilityRole="progressbar"
         >
-          {Array.from({ length: columnCount * 2 }, (_, index) => (
+          {LOADING_PLACEHOLDER_KEYS.slice(0, columnCount * 2).map((slot) => (
             <View
-              key={`loading-grid-${index}`}
+              key={slot}
               style={{
                 width: Math.max(
                   0,
@@ -66,19 +67,7 @@ export default function AreasScreen(): React.JSX.Element {
     );
   }
   if (areasQuery.isError) {
-    return (
-      <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <Alert variant="destructive">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Description>{getErrorMessage(areasQuery.error)}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button variant="outline" onPress={() => void areasQuery.refetch()}>
-          {t("common.retry")}
-        </Button>
-      </View>
-    );
+    return <RequestError error={areasQuery.error} onRetry={() => void areasQuery.refetch()} />;
   }
 
   const areas = areasQuery.data ?? [];
