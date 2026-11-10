@@ -1,16 +1,13 @@
 import {
   Typography,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-  Switch as PanelSwitch,
-  Typography as PanelTypography,
+  Spinner,
+  Button,
+  Dialog,
+  Input,
+  Switch,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Textarea as PanelTextarea,
+  Alert,
+  Textarea,
   Card,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
@@ -105,10 +102,10 @@ export default function CategoryFormScreen(): React.JSX.Element {
   if (!isNew && categoryQuery.isLoading) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("categories.loadingOne")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
@@ -116,17 +113,15 @@ export default function CategoryFormScreen(): React.JSX.Element {
   if (!isNew && categoryQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(categoryQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void categoryQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(categoryQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void categoryQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -224,7 +219,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
               control={control}
               name="name"
               render={({ field: { value, onChange, onBlur, ref } }) => (
-                <PanelInput
+                <Input
                   size="sm"
                   label={t("categories.name")}
                   isRequired
@@ -242,7 +237,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
               control={control}
               name="description"
               render={({ field: { value, onChange, onBlur, ref } }) => (
-                <PanelTextarea
+                <Textarea
                   size="sm"
                   label={t("categories.description")}
                   errorMessage={errors.description?.message}
@@ -255,7 +250,7 @@ export default function CategoryFormScreen(): React.JSX.Element {
               )}
             />
 
-            <PanelInput
+            <Input
               size="sm"
               ref={positionFieldRef}
               label={t("categories.position")}
@@ -276,14 +271,14 @@ export default function CategoryFormScreen(): React.JSX.Element {
                   className="flex-row items-center justify-between gap-4 py-1"
                 >
                   <View className="flex-1">
-                    <PanelTypography type="body-sm" weight="semibold">
+                    <Typography type="body-sm" weight="semibold">
                       {t("common.active")}
-                    </PanelTypography>
-                    <PanelTypography type="body-xs" muted>
+                    </Typography>
+                    <Typography type="body-xs" muted>
                       {t("categories.activeDescription")}
-                    </PanelTypography>
+                    </Typography>
                   </View>
-                  <PanelSwitch
+                  <Switch
                     value={Boolean(value)}
                     onValueChange={onChange}
                     accessibilityLabel={t("common.active")}
@@ -302,40 +297,40 @@ export default function CategoryFormScreen(): React.JSX.Element {
         </Card>
 
         <View className="flex-row gap-3 pt-2 w-full max-w-3xl">
-          <PanelButton variant="ghost" onPress={() => router.back()} disabled={isSaving}>
+          <Button variant="ghost" onPress={() => router.back()} disabled={isSaving}>
             {t("common.cancel")}
-          </PanelButton>
-          <PanelButton
+          </Button>
+          <Button
             className="flex-1"
             onPress={() => void handleSubmit(submitCategory)()}
             disabled={isSaving}
           >
             {isSaving ? t("common.saving") : t("categories.save")}
-          </PanelButton>
+          </Button>
         </View>
       </KeyboardAwareScrollView>
 
-      <PanelDialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("categories.deleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>{t("categories.deleteDescription")}</PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
+        <Dialog.Content>
+          <Dialog.Title>{t("categories.deleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("categories.deleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton
+              </Button>
+            </Dialog.Close>
+            <Button
               variant="destructive"
               size="sm"
               disabled={deleteMutation.isPending}
               onPress={handleDelete}
             >
               {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

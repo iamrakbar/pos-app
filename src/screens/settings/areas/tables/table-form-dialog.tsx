@@ -2,12 +2,12 @@ import { AppIcons } from "@/components/common/app-icons";
 import AppIcon from "@/components/common/app-icon";
 import SheetOverlayHost from "@/components/common/sheet-overlay-host";
 import {
-  Button as PanelDialogButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
+  Button,
+  Dialog,
+  Input,
   NumberInput,
-  Switch as PanelSwitch,
-  Typography as PanelTypography,
+  Switch,
+  Typography,
   useToast,
   cn,
 } from "panelui-native";
@@ -134,17 +134,17 @@ export default function TableFormDialog({
     >
       <View className="flex-1 flex-row items-center gap-3">
         {table ? (
-          <PanelDialogButton variant="destructive" onPress={() => setIsDeleteOpen(true)}>
+          <Button variant="destructive" onPress={() => setIsDeleteOpen(true)}>
             {t("common.delete")}
-          </PanelDialogButton>
+          </Button>
         ) : null}
-        <PanelDialogButton
+        <Button
           className="flex-1"
           onPress={() => void handleSubmit(submitTable)()}
           disabled={isSaving}
         >
           {isSaving ? t("common.saving") : t("areasManagement.saveTable")}
-        </PanelDialogButton>
+        </Button>
       </View>
     </View>
   );
@@ -154,7 +154,7 @@ export default function TableFormDialog({
         control={control}
         name="name"
         render={({ field: { value, onChange } }) => (
-          <PanelInput
+          <Input
             size="sm"
             label={t("areasManagement.name")}
             placeholder={t("areasManagement.tableNamePlaceholder")}
@@ -197,14 +197,14 @@ export default function TableFormDialog({
             className="flex-row items-center justify-between gap-4 py-1"
           >
             <View className="flex-1">
-              <PanelTypography type="body-sm" weight="semibold">
+              <Typography type="body-sm" weight="semibold">
                 {t("common.active")}
-              </PanelTypography>
-              <PanelTypography type="body-xs" muted>
+              </Typography>
+              <Typography type="body-xs" muted>
                 {t("areasManagement.tableActiveDescription")}
-              </PanelTypography>
+              </Typography>
             </View>
-            <PanelSwitch
+            <Switch
               value={Boolean(value)}
               onValueChange={onChange}
               accessibilityLabel={t("common.active")}
@@ -219,9 +219,9 @@ export default function TableFormDialog({
   const description = t("areasManagement.tableDescription");
 
   const deleteDialog = (
-    <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-      <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
-        <PanelDialogButton
+    <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+      <Dialog.Content dismissible={false} className="w-full max-w-md self-center">
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -229,20 +229,18 @@ export default function TableFormDialog({
           onPress={() => setIsDeleteOpen(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelDialogButton>
+        </Button>
         <View className="mb-5 gap-1.5">
           <View className="pr-10">
-            <PanelDialog.Title>{t("areasManagement.deleteTableTitle")}</PanelDialog.Title>
+            <Dialog.Title>{t("areasManagement.deleteTableTitle")}</Dialog.Title>
           </View>
-          <PanelDialog.Description>
-            {t("areasManagement.deleteTableDescription")}
-          </PanelDialog.Description>
+          <Dialog.Description>{t("areasManagement.deleteTableDescription")}</Dialog.Description>
         </View>
         <View className="flex-row items-center gap-3">
-          <PanelDialogButton variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
+          <Button variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
             {t("common.cancel")}
-          </PanelDialogButton>
-          <PanelDialogButton
+          </Button>
+          <Button
             variant="destructive"
             size="sm"
             className="flex-1"
@@ -250,10 +248,10 @@ export default function TableFormDialog({
             onPress={handleDelete}
           >
             {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-          </PanelDialogButton>
+          </Button>
         </View>
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 
   return (
@@ -270,13 +268,13 @@ export default function TableFormDialog({
           onDidDismiss={handleDidDismiss}
           header={
             <View className="bg-surface gap-2 px-6 pb-5 pr-16 pt-8">
-              <PanelTypography type="h4" weight="semibold">
+              <Typography type="h4" weight="semibold">
                 {title}
-              </PanelTypography>
-              <PanelTypography type="body-sm" muted>
+              </Typography>
+              <Typography type="body-sm" muted>
                 {description}
-              </PanelTypography>
-              <PanelDialogButton
+              </Typography>
+              <Button
                 variant="ghost"
                 size="icon"
                 accessibilityLabel={t("common.close")}
@@ -284,7 +282,7 @@ export default function TableFormDialog({
                 onPress={() => onOpenChange(false)}
               >
                 <AppIcon icon={AppIcons.close} size={20} />
-              </PanelDialogButton>
+              </Button>
             </View>
           }
           footer={<View className="bg-surface">{footer}</View>}
@@ -294,13 +292,13 @@ export default function TableFormDialog({
           </ScrollView>
         </TrueSheet>
       ) : (
-        <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
-          <PanelDialog.Content
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+          <Dialog.Content
             dismissible={false}
             className="w-full max-w-md self-center overflow-hidden p-0"
             style={dialogKeyboardStyle}
           >
-            <PanelDialogButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -308,15 +306,15 @@ export default function TableFormDialog({
               onPress={() => onOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelDialogButton>
+            </Button>
             <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-              <PanelDialog.Title>{title}</PanelDialog.Title>
-              <PanelDialog.Description>{description}</PanelDialog.Description>
+              <Dialog.Title>{title}</Dialog.Title>
+              <Dialog.Description>{description}</Dialog.Description>
             </View>
             {content}
             {footer}
-          </PanelDialog.Content>
-        </PanelDialog>
+          </Dialog.Content>
+        </Dialog>
       )}
       {isPhonePortrait ? (
         <SheetOverlayHost visible={isDeleteOpen} onRequestClose={() => setIsDeleteOpen(false)}>

@@ -1,18 +1,14 @@
 import {
   Typography,
-  Typography as PanelFieldText,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-  Select as PanelSelect,
-  Label as PanelLabel,
-  Switch as PanelSwitch,
-  Typography as PanelTypography,
+  Spinner,
+  Button,
+  Dialog,
+  Input,
+  Select,
+  Label,
+  Switch,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
   Card,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
@@ -73,16 +69,16 @@ function SupplierOfferSaveActions({
         </Typography>
       ) : null}
       <View className="flex-row gap-3">
-        <PanelButton variant="ghost" onPress={onCancel} disabled={isPending}>
+        <Button variant="ghost" onPress={onCancel} disabled={isPending}>
           {t("common.cancel")}
-        </PanelButton>
-        <PanelButton className="flex-1" onPress={onSubmit} disabled={isPending}>
+        </Button>
+        <Button className="flex-1" onPress={onSubmit} disabled={isPending}>
           {isPending
             ? t("common.saving")
             : isEditing
               ? t("ingredients.updateSupplierOffer")
               : t("common.save")}
-        </PanelButton>
+        </Button>
       </View>
     </View>
   );
@@ -170,34 +166,34 @@ function getSupplierOfferLoadState({
   if (isLoading)
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {loadingMessage}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   if (isError)
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>{getErrorMessage(error)}</PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void onRetry()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void onRetry()}>
           {retryLabel}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   if (!offer)
     return (
-      <PanelErrorAlert variant="destructive">
-        <PanelErrorAlert.Indicator />
-        <PanelErrorAlert.Content>
-          <PanelErrorAlert.Description>{notFoundMessage}</PanelErrorAlert.Description>
-        </PanelErrorAlert.Content>
-      </PanelErrorAlert>
+      <Alert variant="destructive">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Description>{notFoundMessage}</Alert.Description>
+        </Alert.Content>
+      </Alert>
     );
   return null;
 }
@@ -282,10 +278,10 @@ function SupplierOfferFormCard({
           name="supplier_id"
           render={({ field: { value, onChange } }) => (
             <View className="gap-1.5">
-              <PanelLabel isRequired isInvalid={Boolean(errors.supplier_id)}>
+              <Label isRequired isInvalid={Boolean(errors.supplier_id)}>
                 {t("ingredients.supplierOfferSupplier")}
-              </PanelLabel>
-              <PanelSelect
+              </Label>
+              <Select
                 size="sm"
                 presentation="sheet"
                 value={value}
@@ -298,13 +294,13 @@ function SupplierOfferFormCard({
                 title={t("ingredients.supplierOfferSupplier")}
               >
                 {supplierOptions.map((option) => (
-                  <PanelSelect.Item key={option.value} {...option} />
+                  <Select.Item key={option.value} {...option} />
                 ))}
-              </PanelSelect>
+              </Select>
               {errors.supplier_id?.message ? (
-                <PanelFieldText type="body-xs" className="text-destructive">
+                <Typography type="body-xs" className="text-destructive">
                   {errors.supplier_id?.message}
-                </PanelFieldText>
+                </Typography>
               ) : null}
               {!errors.supplier_id &&
               (suppliersLoading || suppliersError || supplierOptions.length === 0) ? (
@@ -325,7 +321,7 @@ function SupplierOfferFormCard({
             control={control}
             name="purchase_unit"
             render={({ field: { value, onChange, onBlur, ref } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 ref={ref}
                 containerClassName="w-full md:flex-1"
@@ -344,7 +340,7 @@ function SupplierOfferFormCard({
             control={control}
             name="supplier_sku"
             render={({ field: { value, onChange, onBlur, ref } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 ref={ref}
                 containerClassName="w-full md:flex-1"
@@ -361,7 +357,7 @@ function SupplierOfferFormCard({
         </View>
 
         <View className="gap-4 md:flex-row">
-          <PanelInput
+          <Input
             size="sm"
             containerClassName="w-full md:flex-1"
             label={t("ingredients.supplierOfferPackQuantity")}
@@ -371,7 +367,7 @@ function SupplierOfferFormCard({
             isRequired
             {...packInput}
             startContent={
-              <PanelButton
+              <Button
                 size="icon"
                 variant="ghost"
                 accessibilityLabel={t("productForm.decreaseAccessibility", {
@@ -381,10 +377,10 @@ function SupplierOfferFormCard({
                 onPress={() => changePack(String(Math.max(0, (packNumber || 0) - 1)))}
               >
                 −
-              </PanelButton>
+              </Button>
             }
             endContent={
-              <PanelButton
+              <Button
                 size="icon"
                 variant="ghost"
                 accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -393,10 +389,10 @@ function SupplierOfferFormCard({
                 onPress={() => changePack(String((packNumber || 0) + 1))}
               >
                 +
-              </PanelButton>
+              </Button>
             }
           />
-          <PanelInput
+          <Input
             size="sm"
             containerClassName="w-full md:flex-1"
             label={t("ingredients.supplierOfferMinimumOrderQuantity")}
@@ -405,7 +401,7 @@ function SupplierOfferFormCard({
             errorMessage={errors.minimum_order_quantity?.message}
             {...minimumInput}
             startContent={
-              <PanelButton
+              <Button
                 size="icon"
                 variant="ghost"
                 accessibilityLabel={t("productForm.decreaseAccessibility", {
@@ -415,10 +411,10 @@ function SupplierOfferFormCard({
                 onPress={() => changeMinimum(String(Math.max(0, (minimumNumber || 0) - 1)))}
               >
                 −
-              </PanelButton>
+              </Button>
             }
             endContent={
-              <PanelButton
+              <Button
                 size="icon"
                 variant="ghost"
                 accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -427,13 +423,13 @@ function SupplierOfferFormCard({
                 onPress={() => changeMinimum(String((minimumNumber || 0) + 1))}
               >
                 +
-              </PanelButton>
+              </Button>
             }
           />
         </View>
 
         <View className="gap-4 md:flex-row">
-          <PanelInput
+          <Input
             size="sm"
             ref={priceRef}
             containerClassName="w-full md:flex-1"
@@ -443,9 +439,9 @@ function SupplierOfferFormCard({
 
             keyboardType="numeric"
             startContent={
-              <PanelTypography type="body-sm" weight="medium" muted>
+              <Typography type="body-sm" weight="medium" muted>
                 {RUPIAH_PREFIX}
-              </PanelTypography>
+              </Typography>
             }
             interactiveContent={false}
 
@@ -454,7 +450,7 @@ function SupplierOfferFormCard({
               priceInput.onBlur(event);
             }}
           />
-          <PanelInput
+          <Input
             size="sm"
             containerClassName="w-full md:flex-1"
             label={t("ingredients.supplierOfferLeadTime")}
@@ -463,7 +459,7 @@ function SupplierOfferFormCard({
             errorMessage={errors.lead_time_days?.message}
             {...leadInput}
             startContent={
-              <PanelButton
+              <Button
                 size="icon"
                 variant="ghost"
                 accessibilityLabel={t("productForm.decreaseAccessibility", {
@@ -473,10 +469,10 @@ function SupplierOfferFormCard({
                 onPress={() => changeLead(String(Math.max(0, (leadNumber || 0) - 1)))}
               >
                 −
-              </PanelButton>
+              </Button>
             }
             endContent={
-              <PanelButton
+              <Button
                 size="icon"
                 variant="ghost"
                 accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -485,7 +481,7 @@ function SupplierOfferFormCard({
                 onPress={() => changeLead(String((leadNumber || 0) + 1))}
               >
                 +
-              </PanelButton>
+              </Button>
             }
           />
         </View>
@@ -500,14 +496,14 @@ function SupplierOfferFormCard({
               className="flex-row items-center justify-between gap-4 py-1"
             >
               <View className="flex-1">
-                <PanelTypography type="body-sm" weight="semibold">
+                <Typography type="body-sm" weight="semibold">
                   {t("ingredients.supplierOfferPreferred")}
-                </PanelTypography>
-                <PanelTypography type="body-xs" muted>
+                </Typography>
+                <Typography type="body-xs" muted>
                   {t("ingredients.supplierOfferPreferredDescription")}
-                </PanelTypography>
+                </Typography>
               </View>
-              <PanelSwitch
+              <Switch
                 value={Boolean(value)}
                 onValueChange={onChange}
                 accessibilityLabel={t("ingredients.supplierOfferPreferred")}
@@ -526,14 +522,14 @@ function SupplierOfferFormCard({
               className="flex-row items-center justify-between gap-4 py-1"
             >
               <View className="flex-1">
-                <PanelTypography type="body-sm" weight="semibold">
+                <Typography type="body-sm" weight="semibold">
                   {t("common.active")}
-                </PanelTypography>
-                <PanelTypography type="body-xs" muted>
+                </Typography>
+                <Typography type="body-xs" muted>
                   {t("ingredients.supplierOfferActiveDescription")}
-                </PanelTypography>
+                </Typography>
               </View>
-              <PanelSwitch
+              <Switch
                 value={Boolean(value)}
                 onValueChange={onChange}
                 accessibilityLabel={t("common.active")}
@@ -725,34 +721,32 @@ export default function IngredientSupplierOfferFormScreen(): React.JSX.Element {
           </View>
         </KeyboardAwareScrollView>
       </View>
-      <PanelDialog
+      <Dialog
         open={isConfirmingDelete}
         onOpenChange={(isOpen) => {
           if (!isOpen && !deleteMutation.isPending) setIsConfirmingDelete(false);
         }}
       >
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("ingredients.supplierOfferDeleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>
-            {t("ingredients.supplierOfferDeleteDescription")}
-          </PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+        <Dialog.Content>
+          <Dialog.Title>{t("ingredients.supplierOfferDeleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("ingredients.supplierOfferDeleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton
+              </Button>
+            </Dialog.Close>
+            <Button
               variant="destructive"
               size="sm"
               disabled={deleteMutation.isPending}
               onPress={handleDelete}
             >
               {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

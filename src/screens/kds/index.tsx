@@ -1,11 +1,10 @@
 import {
   Surface,
   Typography,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Button as PanelButton,
-  Chip as PanelChip,
-  Skeleton as PanelListSkeleton,
+  Alert,
+  Button,
+  Chip,
+  Skeleton,
   ScrollFade,
   EmptyState,
   cn,
@@ -93,9 +92,9 @@ function TicketCard({
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            <PanelChip variant={statusChipVariant(statusColor)} size="sm">
+            <Chip variant={statusChipVariant(statusColor)} size="sm">
               {t(`kds.status.${ticketStatus(ticket)}` as TranslationKey)}
-            </PanelChip>
+            </Chip>
           </View>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-1.5">
@@ -157,7 +156,7 @@ function TicketCard({
 
       {action ? (
         <View className="p-4">
-          <PanelButton
+          <Button
             size="sm"
             onPress={onAction}
             disabled={isPending}
@@ -170,7 +169,7 @@ function TicketCard({
             }
           >
             {t(action === "start" ? "kds.start" : "kds.markReady")}
-          </PanelButton>
+          </Button>
         </View>
       ) : null}
     </Surface>
@@ -262,7 +261,7 @@ export default function KdsScreen(): React.JSX.Element {
               }}
               className="overflow-hidden rounded-2xl"
             >
-              <PanelListSkeleton className="h-full w-full rounded-2xl" />
+              <Skeleton className="h-full w-full rounded-2xl" />
             </View>
           ))}
         </View>
@@ -272,17 +271,15 @@ export default function KdsScreen(): React.JSX.Element {
   if (ticketsQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(ticketsQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void ticketsQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(ticketsQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void ticketsQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -320,7 +317,7 @@ export default function KdsScreen(): React.JSX.Element {
               {LANES.map((lane) => {
                 const isActive = activeLane === lane;
                 return (
-                  <PanelChip
+                  <Chip
                     key={lane}
                     variant={isActive ? "primary" : "default"}
                     selected={isActive}
@@ -328,7 +325,7 @@ export default function KdsScreen(): React.JSX.Element {
                     accessibilityLabel={t(`kds.${lane}` as TranslationKey)}
                   >
                     {lane === "all" ? t("common.all") : t(`kds.${lane}` as TranslationKey)}
-                  </PanelChip>
+                  </Chip>
                 );
               })}
             </View>
@@ -379,13 +376,13 @@ export default function KdsScreen(): React.JSX.Element {
                       key={`loading-row-${index}`}
                       className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
                     >
-                      <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                      <Skeleton className="size-11 shrink-0 rounded-xl" />
                       <View className="flex-1 gap-2">
-                        <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-                        <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-                        <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                        <Skeleton className="h-4 w-3/5 rounded-md" />
+                        <Skeleton className="h-3 w-2/5 rounded-md" />
+                        <Skeleton className="h-3 w-1/3 rounded-md" />
                       </View>
-                      <PanelListSkeleton className="size-4 rounded-full" />
+                      <Skeleton className="size-4 rounded-full" />
                     </View>
                   ))}
                 </View>

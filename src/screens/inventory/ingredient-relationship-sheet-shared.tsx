@@ -1,4 +1,4 @@
-import { Button as PanelButton, Typography } from "panelui-native";
+import { Button, Typography } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -33,7 +33,7 @@ export function SheetHeader({
         </View>
         {action}
       </View>
-      <PanelButton
+      <Button
         variant="ghost"
         size="icon"
 
@@ -42,7 +42,7 @@ export function SheetHeader({
         accessibilityLabel={t("common.close")}
       >
         <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
-      </PanelButton>
+      </Button>
     </View>
   );
 }

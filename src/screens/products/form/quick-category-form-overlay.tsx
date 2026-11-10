@@ -1,13 +1,6 @@
 import { AppIcons } from "@/components/common/app-icons";
 import AppIcon from "@/components/common/app-icon";
-import {
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Typography,
-  Input as PanelInput,
-  Textarea as PanelTextarea,
-  useToast,
-} from "panelui-native";
+import { Button, Dialog, Typography, Input, Textarea, useToast } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
@@ -101,12 +94,12 @@ export default function QuickCategoryFormOverlay({
 
   const footer = (
     <View className="px-5 pb-safe pt-4">
-      <PanelButton
+      <Button
         onPress={() => void handleSubmit(submitCategory)()}
         disabled={createMutation.isPending}
       >
         {createMutation.isPending ? t("common.saving") : t("productForm.createCategory")}
-      </PanelButton>
+      </Button>
     </View>
   );
   const content = (
@@ -115,7 +108,7 @@ export default function QuickCategoryFormOverlay({
         control={control}
         name="name"
         render={({ field: { value, onChange } }) => (
-          <PanelInput
+          <Input
             size="sm"
             label={t("categories.name")}
             placeholder={t("categories.namePlaceholder")}
@@ -131,7 +124,7 @@ export default function QuickCategoryFormOverlay({
         control={control}
         name="description"
         render={({ field: { value, onChange, ref } }) => (
-          <PanelTextarea
+          <Textarea
             size="sm"
             ref={ref}
             label={t("categories.description")}
@@ -171,7 +164,7 @@ export default function QuickCategoryFormOverlay({
             <Typography type="body-sm" muted>
               {description}
             </Typography>
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -179,7 +172,7 @@ export default function QuickCategoryFormOverlay({
               onPress={() => handleOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -190,13 +183,13 @@ export default function QuickCategoryFormOverlay({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-md self-center overflow-hidden p-0"
         style={dialogKeyboardStyle}
       >
-        <PanelButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -204,14 +197,14 @@ export default function QuickCategoryFormOverlay({
           onPress={() => handleOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{title}</PanelDialog.Title>
-          <PanelDialog.Description>{description}</PanelDialog.Description>
+          <Dialog.Title>{title}</Dialog.Title>
+          <Dialog.Description>{description}</Dialog.Description>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }

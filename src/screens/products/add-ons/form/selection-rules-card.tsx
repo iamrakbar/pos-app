@@ -1,10 +1,4 @@
-import {
-  Typography,
-  Input as PanelInput,
-  Switch as PanelSwitch,
-  Card,
-  NumberInput,
-} from "panelui-native";
+import { Typography, Input, Switch, Card, NumberInput } from "panelui-native";
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import { Controller, useController, useWatch } from "react-hook-form";
 import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
@@ -43,7 +37,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
           control={control}
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               label={t("addOnManagement.groupName")}
@@ -69,7 +63,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
                   {t("addOnManagement.requiredSelectionDescription")}
                 </Typography>
               </View>
-              <PanelSwitch
+              <Switch
                 accessibilityLabel={t("addOnManagement.requiredSelection")}
                 value={value}
                 onValueChange={(selected) => {
@@ -96,7 +90,7 @@ export default function SelectionRulesCard({ control, errors, setValue }: Select
                   {t("addOnManagement.allowMultipleDescription")}
                 </Typography>
               </View>
-              <PanelSwitch
+              <Switch
                 accessibilityLabel={t("addOnManagement.allowMultiple")}
                 value={value}
                 onValueChange={(selected) => {

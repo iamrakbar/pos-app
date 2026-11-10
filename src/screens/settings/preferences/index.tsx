@@ -1,4 +1,4 @@
-import { Frame, Select as PanelSelect } from "panelui-native";
+import { Frame, Select } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -52,7 +52,7 @@ export default function PreferencesScreen(): JSX.Element {
                 </Frame.Description>
               </Frame.Content>
               <Frame.Actions>
-                <PanelSelect
+                <Select
                   size="sm"
                   triggerClassName="w-40"
                   key={`theme-${locale}`}
@@ -63,9 +63,9 @@ export default function PreferencesScreen(): JSX.Element {
                   title={t("settings.appearance")}
                 >
                   {themeOptions.map((option) => (
-                    <PanelSelect.Item key={option.value} {...option} />
+                    <Select.Item key={option.value} {...option} />
                   ))}
-                </PanelSelect>
+                </Select>
               </Frame.Actions>
             </Frame.Row>
 
@@ -80,7 +80,7 @@ export default function PreferencesScreen(): JSX.Element {
                 </Frame.Description>
               </Frame.Content>
               <Frame.Actions>
-                <PanelSelect
+                <Select
                   size="sm"
                   triggerClassName="w-40"
                   key={`language-${locale}`}
@@ -91,9 +91,9 @@ export default function PreferencesScreen(): JSX.Element {
                   title={t("settings.language")}
                 >
                   {languageOptions.map((option) => (
-                    <PanelSelect.Item key={option.value} {...option} />
+                    <Select.Item key={option.value} {...option} />
                   ))}
-                </PanelSelect>
+                </Select>
               </Frame.Actions>
             </Frame.Row>
 

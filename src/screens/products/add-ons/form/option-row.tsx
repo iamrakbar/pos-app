@@ -1,10 +1,4 @@
-import {
-  Button as PanelButton,
-  Surface,
-  Typography,
-  Input as PanelInput,
-  Typography as PanelTypography,
-} from "panelui-native";
+import { Button, Surface, Typography, Input } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import type { AddOnManagementValues } from "@/schemas/add-on-management";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
@@ -59,16 +53,16 @@ export default function OptionRow({
         <Typography type="body-sm" muted className="flex-1" strike>
           {t("addOnManagement.removedOption")}
         </Typography>
-        <PanelButton size="sm" variant="ghost" onPress={onRestore} disabled={!canRestore}>
+        <Button size="sm" variant="ghost" onPress={onRestore} disabled={!canRestore}>
           {t("addOnManagement.restore")}
-        </PanelButton>
+        </Button>
       </View>
     );
   }
 
   return (
     <Surface variant="transparent" className="gap-3 border border-border">
-      <PanelButton
+      <Button
         size="icon"
         variant="ghost"
         onPress={onRemove}
@@ -76,13 +70,13 @@ export default function OptionRow({
         accessibilityLabel={t("addOnManagement.removeOption")}
       >
         <AppIcon icon={AppIcons.close} size={20} color={dangerSoftForeground} />
-      </PanelButton>
+      </Button>
       <View className="flex-1 flex-col md:flex-row items-center gap-3">
         <Controller
           control={control}
           name={`options.${index}.name`}
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               containerClassName="flex-1 w-full"
@@ -97,7 +91,7 @@ export default function OptionRow({
             />
           )}
         />
-        <PanelInput
+        <Input
           size="sm"
           ref={priceFieldRef}
           containerClassName="flex-1 w-full"
@@ -107,9 +101,9 @@ export default function OptionRow({
           isRequired
           keyboardType="numeric"
           startContent={
-            <PanelTypography type="body-sm" weight="medium" muted>
+            <Typography type="body-sm" weight="medium" muted>
               {RUPIAH_PREFIX}
-            </PanelTypography>
+            </Typography>
           }
           interactiveContent={false}
           {...priceInput}

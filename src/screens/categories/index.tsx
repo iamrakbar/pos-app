@@ -1,14 +1,12 @@
 import {
   Typography,
   Separator,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Button as PanelButton,
+  Alert,
+  Button,
   Fab,
   PlusIcon,
-  Typography as PanelTypography,
   useToast,
-  Skeleton as PanelListSkeleton,
+  Skeleton,
   EmptyState,
   Chip,
 } from "panelui-native";
@@ -199,21 +197,21 @@ function CategoriesContent({
       <View className="flex-1 bg-background">
         {isOrderDirty ? (
           <View className="flex-row items-center justify-between gap-3 border-b border-border bg-card px-4 py-3 md:px-6">
-            <PanelTypography type="body-sm" muted className="flex-1">
+            <Typography type="body-sm" muted className="flex-1">
               {t("categories.unsavedOrder")}
-            </PanelTypography>
+            </Typography>
             <View className="flex-row gap-2">
-              <PanelButton
+              <Button
                 size="sm"
                 variant="ghost"
                 onPress={handleCancelOrder}
                 disabled={reorderMutation.isPending}
               >
                 {t("common.cancel")}
-              </PanelButton>
-              <PanelButton size="sm" onPress={handleSaveOrder} disabled={reorderMutation.isPending}>
+              </Button>
+              <Button size="sm" onPress={handleSaveOrder} disabled={reorderMutation.isPending}>
                 {reorderMutation.isPending ? t("common.saving") : t("categories.saveOrder")}
-              </PanelButton>
+              </Button>
             </View>
           </View>
         ) : null}
@@ -225,29 +223,27 @@ function CategoriesContent({
                 key={`loading-row-${index}`}
                 className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
               >
-                <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                <Skeleton className="size-11 shrink-0 rounded-xl" />
                 <View className="flex-1 gap-2">
-                  <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-                  <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-                  <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                  <Skeleton className="h-4 w-3/5 rounded-md" />
+                  <Skeleton className="h-3 w-2/5 rounded-md" />
+                  <Skeleton className="h-3 w-1/3 rounded-md" />
                 </View>
-                <PanelListSkeleton className="size-4 rounded-full" />
+                <Skeleton className="size-4 rounded-full" />
               </View>
             ))}
           </View>
         ) : categoryQuery.isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>
-                  {getErrorMessage(categoryQuery.error)}
-                </PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void categoryQuery.refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(categoryQuery.error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void categoryQuery.refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : (
           <ScrollView className="flex-1" contentContainerClassName="py-2 pb-24">
@@ -307,7 +303,7 @@ function CategoriesContent({
 
                     {canReorder ? (
                       <View className="flex-row">
-                        <PanelButton
+                        <Button
                           size="sm"
                           variant="ghost"
                           accessibilityLabel={t("categories.moveUpAccessibility", {
@@ -317,8 +313,8 @@ function CategoriesContent({
                           onPress={() => handleMove(index, -1)}
                         >
                           <AppIcon icon={AppIcons.chevronUp} size={18} color={mutedColor} />
-                        </PanelButton>
-                        <PanelButton
+                        </Button>
+                        <Button
                           size="sm"
                           variant="ghost"
                           accessibilityLabel={t("categories.moveDownAccessibility", {
@@ -330,7 +326,7 @@ function CategoriesContent({
                           onPress={() => handleMove(index, 1)}
                         >
                           <AppIcon icon={AppIcons.chevronDown} size={18} color={mutedColor} />
-                        </PanelButton>
+                        </Button>
                       </View>
                     ) : (
                       <AppIcon icon={AppIcons.chevronForward} size={17} color={mutedColor} />

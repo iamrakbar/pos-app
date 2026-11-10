@@ -1,12 +1,4 @@
-import {
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-} from "panelui-native";
+import { Spinner, Typography, Button, Dialog, useToast, Alert } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import {
   useDiscount,
@@ -99,26 +91,24 @@ export default function DiscountFormScreen(): React.JSX.Element {
   if (!isNew && discountQuery.isLoading)
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("discounts.loadingOne")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   if (!isNew && discountQuery.isError)
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(discountQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void discountQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(discountQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void discountQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
 
@@ -212,39 +202,35 @@ export default function DiscountFormScreen(): React.JSX.Element {
         />
         <DiscountStatusCard control={control} t={t} />
         <View className="w-full max-w-3xl flex-row gap-3 pt-2">
-          <PanelButton variant="ghost" onPress={() => router.back()} disabled={saving}>
+          <Button variant="ghost" onPress={() => router.back()} disabled={saving}>
             {t("common.cancel")}
-          </PanelButton>
-          <PanelButton
-            className="flex-1"
-            onPress={() => void handleSubmit(submit)()}
-            disabled={saving}
-          >
+          </Button>
+          <Button className="flex-1" onPress={() => void handleSubmit(submit)()} disabled={saving}>
             {saving ? t("common.saving") : t("common.save")}
-          </PanelButton>
+          </Button>
         </View>
       </KeyboardAwareScrollView>
-      <PanelDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("discounts.deleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>{t("discounts.deleteDescription")}</PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <Dialog.Content>
+          <Dialog.Title>{t("discounts.deleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("discounts.deleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton
+              </Button>
+            </Dialog.Close>
+            <Button
               variant="destructive"
               size="sm"
               disabled={deleteMutation.isPending}
               onPress={handleDelete}
             >
               {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

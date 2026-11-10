@@ -1,8 +1,8 @@
 import {
-  Button as PanelButton,
-  Chip as PanelChip,
-  Select as PanelSelect,
-  SearchBar as PanelSearchBar,
+  Button,
+  Chip,
+  Select,
+  SearchBar,
   ScrollFade,
   Skeleton,
   BottomSheet,
@@ -26,7 +26,7 @@ type SearchBarProps = {
 
 const CATEGORY_SKELETON_WIDTHS = [64, 88, 72, 104, 80];
 
-export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.Element {
+export default function ProductSearchBar({ isLoading = false }: SearchBarProps): JSX.Element {
   const { t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
       <View className="flex-row items-center gap-2 px-4 py-3">
         <DrawerMenuButton />
         <View className="flex-1">
-          <PanelSearchBar
+          <SearchBar
             size="sm"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -96,7 +96,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
           />
         </View>
         <View className="flex-row items-center gap-0.5">
-          <PanelButton
+          <Button
             variant="ghost"
             size="icon"
             onPress={toggleCategories}
@@ -109,10 +109,10 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
               size={22}
               color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
             />
-          </PanelButton>
+          </Button>
           {isCompact ? (
             <BottomSheet open={isSortOpen} onOpenChange={setIsSortOpen}>
-              <PanelButton
+              <Button
                 variant="outline"
                 size="sm"
                 className="min-h-11 flex-row items-center gap-1 px-2.5"
@@ -124,7 +124,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
               >
                 <AppIcon icon={AppIcons.swapVertical} size={18} color={themeColorForeground} />
                 {t("pos.sortAction")}
-              </PanelButton>
+              </Button>
               <BottomSheet.Content>
                 <BottomSheet.Header title={t("pos.sortProducts")} />
                 <View accessibilityRole="radiogroup" className="pb-2">
@@ -152,7 +152,7 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
               </BottomSheet.Content>
             </BottomSheet>
           ) : (
-            <PanelSelect
+            <Select
               presentation="sheet"
               value={selectedSort.value}
               valueLabel={selectedSort.label}
@@ -164,9 +164,9 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
               className="w-56"
             >
               {sortOptions.map((option) => (
-                <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
+                <Select.Item key={option.value} value={option.value} label={option.label} />
               ))}
-            </PanelSelect>
+            </Select>
           )}
         </View>
       </View>
@@ -178,22 +178,22 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
             showsHorizontalScrollIndicator={false}
             contentContainerClassName="gap-2 px-5 pb-4"
           >
-            <PanelChip
+            <Chip
               variant={categoryId === null ? "primary" : "default"}
               selected={categoryId === null}
               onPress={() => setCategoryId(null)}
             >
               {t("common.all")}
-            </PanelChip>
+            </Chip>
             {categoriesList.map((category) => (
-              <PanelChip
+              <Chip
                 key={category.id}
                 variant={categoryId === category.id ? "primary" : "default"}
                 selected={categoryId === category.id}
                 onPress={() => setCategoryId(category.id)}
               >
                 {category.name}
-              </PanelChip>
+              </Chip>
             ))}
           </ScrollView>
         </ScrollFade>

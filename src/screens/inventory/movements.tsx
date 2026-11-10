@@ -1,14 +1,4 @@
-import {
-  Button as PanelButton,
-  Typography,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Chip,
-  EmptyState,
-  Table,
-  Typography as PanelTypography,
-  Skeleton as PanelTableSkeleton,
-} from "panelui-native";
+import { Button, Typography, Alert, Chip, EmptyState, Table, Skeleton } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { compareTableValues } from "@/utils/table-sort";
 import { useCSSVariable } from "uniwind";
@@ -243,7 +233,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                     <Table.Row>
                       {SKELETON_COLUMN_WIDTHS.map((_, index) => (
                         <Table.Head key={`heading-${index}`}>
-                          <PanelTableSkeleton className="h-3 w-20 rounded-md" />
+                          <Skeleton className="h-3 w-20 rounded-md" />
                         </Table.Head>
                       ))}
                     </Table.Row>
@@ -253,7 +243,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                       <Table.Row key={`row-${rowIndex}`}>
                         {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
                           <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
-                            <PanelTableSkeleton
+                            <Skeleton
                               className={
                                 columnIndex === 6
                                   ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
@@ -271,17 +261,15 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
           </ScrollView>
         ) : query.isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>
-                  {getErrorMessage(query.error)}
-                </PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void query.refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : (
           <ScrollView
@@ -345,15 +333,15 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                                 </Chip>
                               </Table.Cell>
                               <Table.Cell>
-                                <PanelTypography type="body-sm" weight="semibold" numberOfLines={1}>
+                                <Typography type="body-sm" weight="semibold" numberOfLines={1}>
                                   {getMovementItem(movement)}
-                                </PanelTypography>
+                                </Typography>
                               </Table.Cell>
                               <Table.Cell>
                                 <View className="flex-row items-center gap-2">
-                                  <PanelTypography type="body-sm" className="tabular-nums">
+                                  <Typography type="body-sm" className="tabular-nums">
                                     {formatSignedQuantity(movement.quantity)}
-                                  </PanelTypography>
+                                  </Typography>
                                   {movement.ingredient?.base_unit ? (
                                     <Chip size="sm">{movement.ingredient.base_unit}</Chip>
                                   ) : null}
@@ -384,14 +372,14 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                                 )}
                               </Table.Cell>
                               <Table.Cell>
-                                <PanelTypography type="body-sm" numberOfLines={1}>
+                                <Typography type="body-sm" numberOfLines={1}>
                                   {movement.reason ?? "—"}
-                                </PanelTypography>
+                                </Typography>
                               </Table.Cell>
                               <Table.Cell>
-                                <PanelTypography type="body-sm" numberOfLines={1}>
+                                <Typography type="body-sm" numberOfLines={1}>
                                   {movement.actor?.name ?? "—"}
-                                </PanelTypography>
+                                </Typography>
                               </Table.Cell>
                               <Table.Cell labelClassName="tabular-nums">
                                 {formatDateTime(movement.moved_at)}
@@ -427,7 +415,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                   <Typography type="body-xs" muted>
                     {t("movements.loadedCount", { count: sortedMovements.length })}
                   </Typography>
-                  <PanelButton
+                  <Button
                     size="sm"
                     variant="ghost"
                     onPress={() => query.fetchNextPage()}
@@ -436,7 +424,7 @@ export default function InventoryMovementsScreen(): React.JSX.Element {
                     {query.isFetchingNextPage
                       ? t("movements.loadingMore")
                       : t("movements.loadMore")}
-                  </PanelButton>
+                  </Button>
                 </View>
               ) : null}
             </View>

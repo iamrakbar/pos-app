@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
-import { PanelUIProvider, Typography as PanelTypography } from "panelui-native";
+import { PanelUIProvider, Typography } from "panelui-native";
 import { useEffect, type JSX } from "react";
 import { Platform, View } from "react-native";
 import { useCSSVariable, useUniwind } from "uniwind";
@@ -100,20 +100,12 @@ function RootLayout(): JSX.Element {
               <View className="bg-warning/10 px-4 py-2 flex-row items-center gap-2 pb-safe">
                 <AppIcon icon={AppIcons.cloudOffline} size={16} color={warningForeground} />
                 <View className="flex-1">
-                  <PanelTypography
-                    type="body-xs"
-                    weight="semibold"
-                    className="text-warning-foreground"
-                  >
+                  <Typography type="body-xs" weight="semibold" className="text-warning-foreground">
                     {t("offline.title")}
-                  </PanelTypography>
-                  <PanelTypography
-                    type="body-xs"
-                    className="text-warning-foreground"
-                    numberOfLines={1}
-                  >
+                  </Typography>
+                  <Typography type="body-xs" className="text-warning-foreground" numberOfLines={1}>
                     {t("offline.description")}
-                  </PanelTypography>
+                  </Typography>
                 </View>
               </View>
             ) : null}

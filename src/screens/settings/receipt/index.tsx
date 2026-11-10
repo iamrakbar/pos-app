@@ -1,13 +1,13 @@
 import {
-  Button as PanelButton,
+  Button,
   Typography,
   useToast,
   ScrollFade,
-  Select as PanelSelect,
+  Select,
   SplitView,
-  Input as PanelInput,
-  Textarea as PanelTextarea,
-  Label as PanelLabel,
+  Input,
+  Textarea,
+  Label,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { ReceiptPaper, type ReceiptPreviewData } from "@/components/receipt/receipt-paper";
@@ -108,10 +108,10 @@ function getMerchantHeader(merchant: unknown): string {
 function PrinterSetupButton({ color, onPress }: { color: string; onPress: () => void }) {
   const { t } = useTranslation();
   return (
-    <PanelButton className="w-full" variant="outline" onPress={onPress}>
+    <Button className="w-full" variant="outline" onPress={onPress}>
       <AppIcon icon={AppIcons.print} size={18} color={color} />
       {t("receiptSettings.setupPrinter")}
-    </PanelButton>
+    </Button>
   );
 }
 
@@ -146,7 +146,7 @@ function ReceiptPreviewSection({
             <Typography type="body-sm" weight="semibold">
               {t("receiptSettings.preview")}
             </Typography>
-            <PanelSelect
+            <Select
               size="sm"
               className="w-32"
               presentation="sheet"
@@ -156,9 +156,9 @@ function ReceiptPreviewSection({
               title={t("receiptSettings.previewSize")}
             >
               {PAPER_WIDTHS.map((paperWidth) => (
-                <PanelSelect.Item key={paperWidth} value={paperWidth} label={paperWidth} />
+                <Select.Item key={paperWidth} value={paperWidth} label={paperWidth} />
               ))}
-            </PanelSelect>
+            </Select>
           </View>
           <ReceiptPaper
             settings={settings}
@@ -354,8 +354,8 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                 </View>
                 <View className="gap-5">
                   <View>
-                    <PanelLabel className="mb-1.5">{t("receiptSettings.layout")}</PanelLabel>
-                    <PanelSelect
+                    <Label className="mb-1.5">{t("receiptSettings.layout")}</Label>
+                    <Select
                       size="sm"
                       presentation="sheet"
                       value={settings.layout}
@@ -368,12 +368,12 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                       title={t("receiptSettings.layout")}
                     >
                       {receiptLayouts.map((item) => (
-                        <PanelSelect.Item key={item.value} value={item.value} label={item.label} />
+                        <Select.Item key={item.value} value={item.value} label={item.label} />
                       ))}
-                    </PanelSelect>
+                    </Select>
                   </View>
                   <View>
-                    <PanelLabel className="mb-1.5">{t("receiptSettings.storeLogo")}</PanelLabel>
+                    <Label className="mb-1.5">{t("receiptSettings.storeLogo")}</Label>
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={t("receiptSettings.changeLogoAccessibility")}
@@ -414,7 +414,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   </View>
 
                   <View>
-                    <PanelInput
+                    <Input
                       size="sm"
                       label={t("receiptSettings.storeName")}
                       value={settings.storeName}
@@ -424,7 +424,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   </View>
 
                   <View>
-                    <PanelTextarea
+                    <Textarea
                       size="sm"
                       label={t("receiptSettings.header")}
                       value={settings.header}
@@ -435,7 +435,7 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                   </View>
 
                   <View>
-                    <PanelTextarea
+                    <Textarea
                       size="sm"
                       label={t("receiptSettings.footer")}
                       value={settings.footer}
@@ -452,9 +452,9 @@ export default function ReceiptSetupScreen(): React.JSX.Element {
                 </View>
               </KeyboardAwareScrollView>
               <View className="bg-surface px-5 py-4">
-                <PanelButton className="w-full" onPress={() => router.back()}>
+                <Button className="w-full" onPress={() => router.back()}>
                   {t("common.done")}
-                </PanelButton>
+                </Button>
               </View>
             </View>
           </ReceiptSetupLayout>

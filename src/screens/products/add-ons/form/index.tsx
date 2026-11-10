@@ -1,14 +1,4 @@
-import {
-  Typography,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Card,
-} from "panelui-native";
+import { Typography, Spinner, Button, Dialog, useToast, Alert, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import { useAddOn, useCreateAddOn, useDeleteAddOn, useUpdateAddOn } from "@/hooks/db/use-add-ons";
@@ -100,27 +90,25 @@ export default function AddOnFormScreen(): React.JSX.Element {
   if (!isNew && addOnQuery.isLoading) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("addOnManagement.loadingOne")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
   if (!isNew && addOnQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(addOnQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void addOnQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(addOnQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void addOnQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -225,10 +213,10 @@ export default function AddOnFormScreen(): React.JSX.Element {
                   {errors.options.root.message}
                 </Typography>
               ) : null}
-              <PanelButton variant="outline" onPress={() => append(EMPTY_OPTION)}>
+              <Button variant="outline" onPress={() => append(EMPTY_OPTION)}>
                 <AppIcon icon={AppIcons.add} size={16} color={foregroundColor} />
                 {t("addOnManagement.addOption")}
-              </PanelButton>
+              </Button>
             </Card.Content>
           </Card>
 
@@ -239,44 +227,42 @@ export default function AddOnFormScreen(): React.JSX.Element {
               </Typography>
             ) : null}
             <View className="flex-row gap-3 pt-2">
-              <PanelButton variant="ghost" onPress={() => router.back()}>
+              <Button variant="ghost" onPress={() => router.back()}>
                 {t("common.cancel")}
-              </PanelButton>
-              <PanelButton
+              </Button>
+              <Button
                 className="flex-1"
                 onPress={() => void handleSubmit(submitAddOn)()}
                 disabled={isSaving}
               >
                 {isSaving ? t("common.saving") : t("addOnManagement.save")}
-              </PanelButton>
+              </Button>
             </View>
           </View>
         </View>
       </KeyboardAwareScrollView>
 
-      <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("addOnManagement.deleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>
-            {t("addOnManagement.deleteDescription")}
-          </PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <Dialog.Content>
+          <Dialog.Title>{t("addOnManagement.deleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("addOnManagement.deleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton
+              </Button>
+            </Dialog.Close>
+            <Button
               variant="destructive"
               size="sm"
               disabled={deleteMutation.isPending}
               onPress={handleDelete}
             >
               {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

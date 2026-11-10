@@ -1,13 +1,4 @@
-import {
-  Typography,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Input as PanelInput,
-  Card,
-} from "panelui-native";
+import { Typography, Spinner, useToast, Alert, Button, Input, Card } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAccountProfile, useUpdateAccountProfile } from "@/hooks/db/use-account-profile";
 import { createAccountSchema, type AccountFormValues } from "@/schemas/account";
@@ -72,10 +63,10 @@ export default function AccountScreen(): React.JSX.Element {
   if (profileQuery.isLoading || (profileQuery.isFetching && !profileQuery.isFetchedAfterMount)) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("profile.loading")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
@@ -83,17 +74,15 @@ export default function AccountScreen(): React.JSX.Element {
   if (profileQuery.isError || !profileQuery.data) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(profileQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void profileQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(profileQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void profileQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -185,7 +174,7 @@ function AccountForm({
               control={control}
               name="name"
               render={({ field: { value, onChange, onBlur, ref } }) => (
-                <PanelInput
+                <Input
                   size="sm"
                   ref={ref}
                   label={t("profile.name")}
@@ -203,7 +192,7 @@ function AccountForm({
               control={control}
               name="email"
               render={({ field: { value } }) => (
-                <PanelInput
+                <Input
                   size="sm"
                   label={t("profile.email")}
                   value={value}
@@ -214,7 +203,7 @@ function AccountForm({
               )}
             />
 
-            <PanelInput
+            <Input
               size="sm"
               label={t("profile.role")}
               value={roleOption?.label ?? t("profile.role")}
@@ -222,7 +211,7 @@ function AccountForm({
               accessibilityState={{ disabled: true }}
               description={t("profile.readOnly")}
             />
-            <PanelInput
+            <Input
               size="sm"
               label={t("profile.merchants")}
               value={
@@ -243,16 +232,12 @@ function AccountForm({
             </Typography>
           ) : null}
           <View className="flex-col gap-3 md:flex-row">
-            <PanelErrorButton variant="ghost" onPress={onCancel} disabled={isPending}>
+            <Button variant="ghost" onPress={onCancel} disabled={isPending}>
               {t("common.cancel")}
-            </PanelErrorButton>
-            <PanelErrorButton
-              className="flex-1"
-              onPress={onSubmit}
-              disabled={!isDirty || isPending}
-            >
+            </Button>
+            <Button className="flex-1" onPress={onSubmit} disabled={!isDirty || isPending}>
               {isPending ? t("common.saving") : t("profile.saveChanges")}
-            </PanelErrorButton>
+            </Button>
           </View>
         </View>
       </View>

@@ -1,10 +1,4 @@
-import {
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Typography,
-  QRCode,
-  useToast,
-} from "panelui-native";
+import { Button, Dialog, Typography, QRCode, useToast } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
@@ -126,14 +120,14 @@ export default function MerchantQrOverlay({
 
   const footer = (
     <View className="px-5 pb-5 pt-4">
-      <PanelButton
+      <Button
         className="w-full"
         disabled={isUnavailable || isDownloading}
         onPress={handleDownload}
         startContent={<AppIcon icon={AppIcons.download} size={18} color={primaryForegroundColor} />}
       >
         {isDownloading ? t("merchantProfile.downloading") : t("merchantProfile.download")}
-      </PanelButton>
+      </Button>
     </View>
   );
   const content = (
@@ -168,7 +162,7 @@ export default function MerchantQrOverlay({
               {orderUrl ?? t("merchantProfile.urlUnavailable")}
             </Typography>
           </View>
-          <PanelButton
+          <Button
             variant="ghost"
             size="icon"
             disabled={isUnavailable}
@@ -176,7 +170,7 @@ export default function MerchantQrOverlay({
             accessibilityLabel={t("merchantProfile.orderUrl")}
           >
             <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
-          </PanelButton>
+          </Button>
         </View>
       </View>
     </View>
@@ -197,7 +191,7 @@ export default function MerchantQrOverlay({
             <Typography type="h4" weight="semibold">
               {t("merchantProfile.qrTitle")}
             </Typography>
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -205,7 +199,7 @@ export default function MerchantQrOverlay({
               onPress={() => onOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -216,12 +210,12 @@ export default function MerchantQrOverlay({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-sm self-center overflow-hidden p-0"
       >
-        <PanelButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -229,13 +223,13 @@ export default function MerchantQrOverlay({
           onPress={() => onOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelButton>
+        </Button>
         <View className="px-5 pb-4 pr-14 pt-5">
-          <PanelDialog.Title>{t("merchantProfile.qrTitle")}</PanelDialog.Title>
+          <Dialog.Title>{t("merchantProfile.qrTitle")}</Dialog.Title>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }

@@ -1,12 +1,12 @@
 import {
   Typography,
   Separator,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-  Label as PanelLabel,
-  Switch as PanelSwitch,
-  Select as PanelSelect,
+  Button,
+  Dialog,
+  Input,
+  Label,
+  Switch,
+  Select,
   EmptyState,
   Card,
   cn,
@@ -121,7 +121,7 @@ function PrinterDetailsCard({
             control={control}
             name="name"
             render={({ field: { value, onChange } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 label={t("printerForm.name")}
                 isRequired
@@ -135,14 +135,14 @@ function PrinterDetailsCard({
         </View>
 
         <View>
-          <PanelLabel isRequired className="mb-1.5">
+          <Label isRequired className="mb-1.5">
             {t("printerForm.connection")}
-          </PanelLabel>
+          </Label>
           <Controller
             control={control}
             name="connection"
             render={({ field: { value, onChange } }) => (
-              <PanelSelect
+              <Select
                 size="sm"
                 value={value}
                 presentation="sheet"
@@ -156,9 +156,9 @@ function PrinterDetailsCard({
                 }}
               >
                 {CONNECTION_TYPES.map((option) => (
-                  <PanelSelect.Item key={option.value} {...option} />
+                  <Select.Item key={option.value} {...option} />
                 ))}
-              </PanelSelect>
+              </Select>
             )}
           />
         </View>
@@ -219,8 +219,8 @@ function PrinterConnectionCard({
           <View className="gap-3">
             <View>
               <View className="flex-row items-center justify-between mb-2">
-                <PanelLabel>{t("printerForm.device")}</PanelLabel>
-                <PanelButton
+                <Label>{t("printerForm.device")}</Label>
+                <Button
                   variant="ghost"
                   size="icon"
 
@@ -229,7 +229,7 @@ function PrinterConnectionCard({
                   accessibilityLabel={t("printerForm.scanAccessibility")}
                 >
                   <AppIcon icon={AppIcons.refresh} size={18} color={colors.foreground} />
-                </PanelButton>
+                </Button>
               </View>
 
               <View className="bg-surface-secondary rounded-2xl overflow-hidden">
@@ -291,7 +291,7 @@ function PrinterConnectionCard({
                 control={control}
                 name="macAddress"
                 render={({ field: { value, onChange } }) => (
-                  <PanelInput
+                  <Input
                     size="sm"
                     label={t("printerForm.macAddress")}
                     errorMessage={errors.macAddress?.message}
@@ -311,7 +311,7 @@ function PrinterConnectionCard({
                 control={control}
                 name="ipAddress"
                 render={({ field: { value, onChange } }) => (
-                  <PanelInput
+                  <Input
                     size="sm"
                     label={t("printerForm.ipAddress")}
                     isRequired
@@ -326,7 +326,7 @@ function PrinterConnectionCard({
             </View>
 
             <View>
-              <PanelInput
+              <Input
                 size="sm"
                 ref={portFieldRef}
                 label={t("printerForm.port")}
@@ -393,14 +393,14 @@ function ReceiptSetupCard({
       />
       <Card.Content className="gap-4 p-0">
         <View>
-          <PanelLabel isRequired className="mb-1.5">
+          <Label isRequired className="mb-1.5">
             {t("printerForm.receiptSize")}
-          </PanelLabel>
+          </Label>
           <Controller
             control={control}
             name="paperWidth"
             render={({ field: { value, onChange } }) => (
-              <PanelSelect
+              <Select
                 size="sm"
                 value={value}
                 presentation="sheet"
@@ -419,15 +419,15 @@ function ReceiptSetupCard({
                 }}
               >
                 {PAPER_WIDTHS.map((option) => (
-                  <PanelSelect.Item key={option.value} {...option} />
+                  <Select.Item key={option.value} {...option} />
                 ))}
-              </PanelSelect>
+              </Select>
             )}
           />
         </View>
 
         <View>
-          <PanelInput
+          <Input
             size="sm"
             ref={charactersFieldRef}
             label={t("printerForm.charactersPerLine")}
@@ -442,7 +442,7 @@ function ReceiptSetupCard({
         </View>
 
         <View>
-          <PanelInput
+          <Input
             size="sm"
             ref={logoWidthFieldRef}
             label={t("printerForm.logoWidth")}
@@ -491,7 +491,7 @@ function HardwareOptionsCard({ control }: Pick<PrinterFieldsProps, "control">) {
                       {t("printerForm.hardwareOptionDescription")}
                     </Typography>
                   </View>
-                  <PanelSwitch
+                  <Switch
                     value={value}
                     onValueChange={onChange}
                     accessibilityLabel={
@@ -532,15 +532,15 @@ function PrinterDiagnosticsCard({
         description={t("printerForm.diagnosticsDescription")}
       />
       <Card.Content className="gap-3 p-0">
-        <PanelButton
+        <Button
           variant="outline"
           onPress={onTestConnection}
           disabled={connecting}
           startContent={<AppIcon icon={AppIcons.link} size={16} color={foregroundColor} />}
         >
           {connecting ? t("printerForm.connecting") : t("printerForm.testConnection")}
-        </PanelButton>
-        <PanelButton
+        </Button>
+        <Button
           variant="outline"
           onPress={onPrintCalibration}
           disabled={printingCalibration || connecting}
@@ -550,7 +550,7 @@ function PrinterDiagnosticsCard({
           {printingCalibration
             ? t("printerForm.printingCalibration")
             : t("printerForm.printCalibration")}
-        </PanelButton>
+        </Button>
       </Card.Content>
     </Card>
   );
@@ -637,42 +637,40 @@ function PrinterDialogs({
 
   return (
     <>
-      <PanelDialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{prompt?.title}</PanelDialog.Title>
-          {prompt?.message ? (
-            <PanelDialog.Description>{prompt.message}</PanelDialog.Description>
-          ) : null}
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
+        <Dialog.Content>
+          <Dialog.Title>{prompt?.title}</Dialog.Title>
+          {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {prompt?.actionLabel ? t("common.cancel") : t("common.close")}
-              </PanelButton>
-            </PanelDialog.Close>
+              </Button>
+            </Dialog.Close>
             {prompt?.actionLabel ? (
-              <PanelButton size="sm" onPress={handlePromptAction}>
+              <Button size="sm" onPress={handlePromptAction}>
                 {prompt.actionLabel}
-              </PanelButton>
+              </Button>
             ) : null}
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
-      <PanelDialog open={deletePromptOpen} onOpenChange={setDeletePromptOpen}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("printerForm.deleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>{t("printerForm.deleteDescription")}</PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
+      <Dialog open={deletePromptOpen} onOpenChange={setDeletePromptOpen}>
+        <Dialog.Content>
+          <Dialog.Title>{t("printerForm.deleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("printerForm.deleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton variant="destructive" size="sm" onPress={onDelete}>
+              </Button>
+            </Dialog.Close>
+            <Button variant="destructive" size="sm" onPress={onDelete}>
               {t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }
@@ -851,12 +849,12 @@ function PrinterFormView(props: PrinterFormViewProps) {
                 </Typography>
               ) : null}
               <View className={cn("gap-3", !isCompact ? "flex-row" : "")}>
-                <PanelButton variant="ghost" onPress={props.onCancel}>
+                <Button variant="ghost" onPress={props.onCancel}>
                   {t("common.cancel")}
-                </PanelButton>
-                <PanelButton className="flex-1" onPress={props.onSave} disabled={isSubmitting}>
+                </Button>
+                <Button className="flex-1" onPress={props.onSave} disabled={isSubmitting}>
                   {isCreate ? t("printerForm.save") : t("printerForm.update")}
-                </PanelButton>
+                </Button>
               </View>
             </View>
           </View>

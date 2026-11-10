@@ -1,17 +1,15 @@
 import {
-  Button as PanelButton,
-  Label as PanelLabel,
-  Tabs as PanelTabs,
+  Button,
+  Label,
+  Tabs,
   Typography,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Input as PanelInput,
-  Textarea as PanelTextarea,
+  Spinner,
+  Input,
+  Textarea,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
   Card,
-  Switch as PanelSwitch,
+  Switch,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
@@ -275,7 +273,7 @@ function MerchantImageSlot({
 
   return (
     <View className="gap-2">
-      <PanelLabel>{title}</PanelLabel>
+      <Label>{title}</Label>
       <Pressable
         accessibilityRole="button"
         onPress={onSelect}
@@ -323,7 +321,7 @@ function GeneralTab({
           control={control}
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               label={t("merchantProfile.name")}
@@ -340,7 +338,7 @@ function GeneralTab({
           control={control}
           name="description"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelTextarea
+            <Textarea
               size="sm"
               ref={ref}
               label={t("merchantProfile.description")}
@@ -358,7 +356,7 @@ function GeneralTab({
             control={control}
             name="phone"
             render={({ field: { value, onChange, onBlur, ref } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 ref={ref}
                 label={t("merchantProfile.phone")}
@@ -376,7 +374,7 @@ function GeneralTab({
             control={control}
             name="email"
             render={({ field: { value, onChange, onBlur, ref } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 ref={ref}
                 label={t("merchantProfile.email")}
@@ -396,7 +394,7 @@ function GeneralTab({
           control={control}
           name="website"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               label={t("merchantProfile.website")}
@@ -414,7 +412,7 @@ function GeneralTab({
           control={control}
           name="terms"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelTextarea
+            <Textarea
               size="sm"
               ref={ref}
               label={t("merchantProfile.terms")}
@@ -502,7 +500,7 @@ function TypeTab({ control }: { control: Control<MerchantProfileFormValues> }) {
                 <Typography type="body-sm" weight="semibold">
                   {row.label}
                 </Typography>
-                <PanelSwitch value={value} onValueChange={onChange} label={row.label} />
+                <Switch value={value} onValueChange={onChange} label={row.label} />
               </View>
             )}
           />
@@ -550,7 +548,7 @@ function TaxTab({
                 <Typography type="body-sm" weight="semibold">
                   {t("merchantProfile.taxEnable")}
                 </Typography>
-                <PanelSwitch
+                <Switch
                   value={value}
                   onValueChange={onChange}
                   label={t("merchantProfile.taxEnable")}
@@ -565,7 +563,7 @@ function TaxTab({
                 control={control}
                 name="tax_name"
                 render={({ field: { value, onChange, onBlur, ref } }) => (
-                  <PanelInput
+                  <Input
                     size="sm"
                     ref={ref}
                     label={t("merchantProfile.taxName")}
@@ -578,7 +576,7 @@ function TaxTab({
                   />
                 )}
               />
-              <PanelInput
+              <Input
                 size="sm"
                 ref={taxFieldRef}
                 containerClassName="flex-1"
@@ -604,7 +602,7 @@ function TaxTab({
                 <Typography type="body-sm" weight="semibold">
                   {t("merchantProfile.chargeFeeToCustomer")}
                 </Typography>
-                <PanelSwitch
+                <Switch
                   value={value}
                   onValueChange={onChange}
                   label={t("merchantProfile.chargeFeeToCustomer")}
@@ -665,39 +663,32 @@ function MerchantProfileContent({
       <Stack.Screen
         options={{
           headerRight: () => (
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               onPress={() => onQrChange(true)}
               accessibilityLabel={t("merchantProfile.qrTitle")}
             >
               <AppIcon icon={AppIcons.qrCode} size={20} color={foregroundColor} />
-            </PanelButton>
+            </Button>
           ),
         }}
       />
       <MerchantQrOverlay slug={profile.slug} isOpen={isQrOpen} onOpenChange={onQrChange} />
       <View className="w-full max-w-3xl gap-6">
         <View className="flex-1 gap-6">
-          <PanelTabs
-            defaultValue="general"
-            value={activeTab}
-            onValueChange={onTabChange}
-            keepMounted
-          >
-            <PanelTabs.List scrollable>
-              <PanelTabs.Trigger value="general">
-                {t("merchantProfile.tabGeneral")}
-              </PanelTabs.Trigger>
-              <PanelTabs.Trigger value="images">{t("merchantProfile.tabImages")}</PanelTabs.Trigger>
-              <PanelTabs.Trigger value="type">{t("merchantProfile.tabType")}</PanelTabs.Trigger>
-              <PanelTabs.Trigger value="tax">{t("merchantProfile.tabTax")}</PanelTabs.Trigger>
-            </PanelTabs.List>
+          <Tabs defaultValue="general" value={activeTab} onValueChange={onTabChange} keepMounted>
+            <Tabs.List scrollable>
+              <Tabs.Trigger value="general">{t("merchantProfile.tabGeneral")}</Tabs.Trigger>
+              <Tabs.Trigger value="images">{t("merchantProfile.tabImages")}</Tabs.Trigger>
+              <Tabs.Trigger value="type">{t("merchantProfile.tabType")}</Tabs.Trigger>
+              <Tabs.Trigger value="tax">{t("merchantProfile.tabTax")}</Tabs.Trigger>
+            </Tabs.List>
 
-            <PanelTabs.Content value="general" className="pt-4">
+            <Tabs.Content value="general" className="pt-4">
               <GeneralTab control={control} errors={errors} />
-            </PanelTabs.Content>
-            <PanelTabs.Content value="images" className="pt-4">
+            </Tabs.Content>
+            <Tabs.Content value="images" className="pt-4">
               <ImagesTab
                 logoUri={profile.logo_url}
                 coverUri={profile.cover_url}
@@ -706,14 +697,14 @@ function MerchantProfileContent({
                 onSelectLogo={onSelectLogo}
                 onSelectCover={onSelectCover}
               />
-            </PanelTabs.Content>
-            <PanelTabs.Content value="type" className="pt-4">
+            </Tabs.Content>
+            <Tabs.Content value="type" className="pt-4">
               <TypeTab control={control} />
-            </PanelTabs.Content>
-            <PanelTabs.Content value="tax" className="pt-4">
+            </Tabs.Content>
+            <Tabs.Content value="tax" className="pt-4">
               <TaxTab control={control} errors={errors} />
-            </PanelTabs.Content>
-          </PanelTabs>
+            </Tabs.Content>
+          </Tabs>
 
           {activeTab !== "images" ? (
             <View className="gap-3">
@@ -724,12 +715,12 @@ function MerchantProfileContent({
               ) : null}
 
               <View className="flex-col gap-3 md:flex-row">
-                <PanelButton variant="ghost" onPress={onCancel} disabled={isSaving}>
+                <Button variant="ghost" onPress={onCancel} disabled={isSaving}>
                   {t("common.cancel")}
-                </PanelButton>
-                <PanelButton className="flex-1" onPress={onSubmit} disabled={!isDirty || isSaving}>
+                </Button>
+                <Button className="flex-1" onPress={onSubmit} disabled={!isDirty || isSaving}>
                   {isSaving ? t("common.saving") : t("merchantProfile.saveChanges")}
-                </PanelButton>
+                </Button>
               </View>
             </View>
           ) : null}
@@ -804,10 +795,10 @@ export default function MerchantProfileScreen(): React.JSX.Element {
   if (profileQuery.isLoading || (profileQuery.isFetching && !profileQuery.isFetchedAfterMount)) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("merchantProfile.loading")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
@@ -815,17 +806,15 @@ export default function MerchantProfileScreen(): React.JSX.Element {
   if (profileQuery.isError || !profile) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(profileQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void profileQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(profileQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void profileQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }

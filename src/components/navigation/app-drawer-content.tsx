@@ -1,11 +1,11 @@
 import {
   Surface,
   Typography,
-  Button as PanelButton,
-  Dialog as PanelDialog,
+  Button,
+  Dialog,
   ScrollFade,
-  Avatar as PanelAvatar,
-  Popover as PanelPopover,
+  Avatar,
+  Popover,
   cn,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
@@ -193,12 +193,12 @@ export default function AppDrawerContent({
       </ScrollFade>
 
       <View className="gap-4 p-3 pt-0">
-        <PanelPopover
+        <Popover
           presentation={choicePresentation}
           open={isProfileOpen}
           onOpenChange={setIsProfileOpen}
         >
-          <PanelPopover.Trigger>
+          <Popover.Trigger>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t("profile.openMenu")}
@@ -208,7 +208,7 @@ export default function AppDrawerContent({
                 variant={isProfileOpen ? "default" : "transparent"}
                 className="min-h-12 flex-row items-center gap-3 px-3 py-2"
               >
-                <PanelAvatar
+                <Avatar
                   fallback={(user?.name || activeMerchant?.name || "SO").slice(0, 2).toUpperCase()}
                 />
                 <View className="flex-1">
@@ -226,14 +226,14 @@ export default function AppDrawerContent({
                 />
               </Surface>
             </Pressable>
-          </PanelPopover.Trigger>
-          <PanelPopover.Content
+          </Popover.Trigger>
+          <Popover.Content
             placement="top"
             align="center"
             width={choicePresentation === "popover" ? "trigger" : "full"}
             className={choicePresentation === "popover" ? "gap-2 p-2" : "gap-2 px-4 pb-safe pt-2"}
           >
-            <PanelButton
+            <Button
               variant="ghost"
               onPress={() => {
                 setIsProfileOpen(false);
@@ -244,13 +244,13 @@ export default function AppDrawerContent({
             >
               {t("profile.account")}
               <AppIcon icon={AppIcons.chevronForward} size={18} color={themeColorMuted} />
-            </PanelButton>
+            </Button>
 
             <View className="flex-row gap-1 rounded-full bg-surface-secondary p-1">
               {themeActions.map((action) => {
                 const isSelected = themeMode === action.value;
                 return (
-                  <PanelButton
+                  <Button
                     key={action.value}
                     size="sm"
                     variant={isSelected ? "primary" : "ghost"}
@@ -264,11 +264,11 @@ export default function AppDrawerContent({
                       size={19}
                       color={isSelected ? themeColorAccentForeground : themeColorMuted}
                     />
-                  </PanelButton>
+                  </Button>
                 );
               })}
             </View>
-            <PanelButton
+            <Button
               variant="destructive"
               onPress={() => {
                 setIsProfileOpen(false);
@@ -277,25 +277,25 @@ export default function AppDrawerContent({
             >
               <AppIcon icon={AppIcons.logout} size={18} color={themeColorDanger} />
               {t("settings.logout")}
-            </PanelButton>
-          </PanelPopover.Content>
-        </PanelPopover>
-        <PanelDialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
-          <PanelDialog.Content>
-            <PanelDialog.Title>{t("logout.title")}</PanelDialog.Title>
-            <PanelDialog.Description>{t("logout.description")}</PanelDialog.Description>
-            <PanelDialog.Footer>
-              <PanelDialog.Close>
-                <PanelButton variant="ghost" size="sm">
+            </Button>
+          </Popover.Content>
+        </Popover>
+        <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
+          <Dialog.Content>
+            <Dialog.Title>{t("logout.title")}</Dialog.Title>
+            <Dialog.Description>{t("logout.description")}</Dialog.Description>
+            <Dialog.Footer>
+              <Dialog.Close>
+                <Button variant="ghost" size="sm">
                   {t("common.cancel")}
-                </PanelButton>
-              </PanelDialog.Close>
-              <PanelButton variant="destructive" size="sm" onPress={logout}>
+                </Button>
+              </Dialog.Close>
+              <Button variant="destructive" size="sm" onPress={logout}>
                 {t("logout.confirm")}
-              </PanelButton>
-            </PanelDialog.Footer>
-          </PanelDialog.Content>
-        </PanelDialog>
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog>
       </View>
     </View>
   );

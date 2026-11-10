@@ -2,7 +2,7 @@ import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import * as Updates from "expo-updates";
-import { Alert as PanelAlert, Button, Card, Spinner, Typography } from "panelui-native";
+import { Alert, Button, Card, Spinner, Typography } from "panelui-native";
 import { useState, type JSX } from "react";
 import { Alert as NativeAlert, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
@@ -161,12 +161,12 @@ function UpdateBanner({
 
   return (
     <View className="absolute left-4 right-4 bottom-4">
-      <PanelAlert variant="info" className="items-center shadow-lg">
-        <PanelAlert.Indicator />
-        <PanelAlert.Content>
-          <PanelAlert.Title>{t("updates.ready")}</PanelAlert.Title>
-          <PanelAlert.Description>{t("updates.readyDescription")}</PanelAlert.Description>
-        </PanelAlert.Content>
+      <Alert variant="info" className="items-center shadow-lg">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>{t("updates.ready")}</Alert.Title>
+          <Alert.Description>{t("updates.readyDescription")}</Alert.Description>
+        </Alert.Content>
         <View className="flex-row gap-2">
           <Button size="sm" variant="ghost" onPress={onDismiss}>
             {t("updates.later")}
@@ -175,7 +175,7 @@ function UpdateBanner({
             {t("updates.restart")}
           </Button>
         </View>
-      </PanelAlert>
+      </Alert>
     </View>
   );
 }

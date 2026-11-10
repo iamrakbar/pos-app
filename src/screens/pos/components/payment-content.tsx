@@ -2,15 +2,14 @@ import {
   Surface,
   Typography,
   Separator,
-  Button as PanelDialogButton,
+  Button,
   Dialog,
   Accordion,
   Countdown,
-  Typography as PanelTypography,
   useToast,
   Card,
   cn,
-  Chip as PanelChip,
+  Chip,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -148,7 +147,7 @@ function PaymentQrPanel({
 
       {canShowQr && target !== null ? (
         <View className="flex-row items-center gap-2 rounded-full bg-warning/10 px-3 py-1">
-          <PanelTypography
+          <Typography
             type="body-sm"
             weight="semibold"
             className="text-warning"
@@ -156,7 +155,7 @@ function PaymentQrPanel({
             importantForAccessibility="no"
           >
             {t("payment.timeRemaining")}
-          </PanelTypography>
+          </Typography>
           <Countdown
             to={target}
             variant="inline"
@@ -205,9 +204,9 @@ function PaymentInfoPanel({
             <Typography type="body-sm" muted>
               {t("payment.status")}
             </Typography>
-            <PanelChip variant={statusChipVariant(status.color)} size="sm">
-              <PanelChip.Label>{status.label}</PanelChip.Label>
-            </PanelChip>
+            <Chip variant={statusChipVariant(status.color)} size="sm">
+              <Chip.Label>{status.label}</Chip.Label>
+            </Chip>
           </View>
           <View className="flex-row items-start justify-between gap-4">
             <Typography type="body-sm" muted>
@@ -280,15 +279,15 @@ function PaymentInfoPanel({
         <Accordion hideSeparator className="rounded-lg bg-secondary px-3">
           <Accordion.Item value="qr-image-url">
             <Accordion.Trigger className="py-2.5">
-              <PanelTypography type="body-xs" weight="semibold" muted className="flex-1">
+              <Typography type="body-xs" weight="semibold" muted className="flex-1">
                 {t("payment.qrImageUrl")}
-              </PanelTypography>
+              </Typography>
               <Accordion.Indicator />
             </Accordion.Trigger>
             <Accordion.Content className="pb-3">
-              <PanelTypography selectable type="body-xs">
+              <Typography selectable type="body-xs">
                 {paymentSession.qr_url!}
-              </PanelTypography>
+              </Typography>
             </Accordion.Content>
           </Accordion.Item>
         </Accordion>
@@ -312,26 +311,26 @@ function PaymentContentFooter({
   return (
     <View className="border-t border-border bg-surface px-safe pb-safe">
       <View className="w-full max-w-5xl self-center flex-row gap-3 px-5 py-4">
-        <PanelDialogButton variant="outline" onPress={onClose}>
+        <Button variant="outline" onPress={onClose}>
           {t("common.close")}
-        </PanelDialogButton>
-        <PanelDialogButton className="flex-1" onPress={onCheck} disabled={paymentStatus.isPending}>
+        </Button>
+        <Button className="flex-1" onPress={onCheck} disabled={paymentStatus.isPending}>
           {paymentStatus.isPending ? (
             <>
               <ActivityIndicator color={primaryForegroundColor} />
-              <PanelTypography type="body-sm" weight="semibold" className="text-primary-foreground">
+              <Typography type="body-sm" weight="semibold" className="text-primary-foreground">
                 {t("payment.checking")}
-              </PanelTypography>
+              </Typography>
             </>
           ) : (
             <>
               <AppIcon icon={AppIcons.refresh} size={16} color={primaryForegroundColor} />
-              <PanelTypography type="body-sm" weight="semibold" className="text-primary-foreground">
+              <Typography type="body-sm" weight="semibold" className="text-primary-foreground">
                 {t("payment.checkStatus")}
-              </PanelTypography>
+              </Typography>
             </>
           )}
-        </PanelDialogButton>
+        </Button>
       </View>
     </View>
   );
@@ -418,14 +417,14 @@ export function PaymentContent({
               {t("payment.order")}: {checkoutResult?.code ?? paymentSession.order_id}
             </Typography>
           </View>
-          <PanelDialogButton
+          <Button
             variant="ghost"
             size="icon"
             accessibilityLabel={t("common.close")}
             onPress={requestClose}
           >
             <AppIcon icon={AppIcons.close} size={20} color={themeColorMuted} />
-          </PanelDialogButton>
+          </Button>
         </View>
       </View>
 
@@ -472,14 +471,10 @@ export function PaymentContent({
           <Dialog.Title>{t("payment.cancelTitle")}</Dialog.Title>
           <Dialog.Description>{t("payment.cancelDescription")}</Dialog.Description>
           <Dialog.Footer>
-            <PanelDialogButton
-              variant="ghost"
-              size="sm"
-              onPress={() => setIsCancelDialogOpen(false)}
-            >
+            <Button variant="ghost" size="sm" onPress={() => setIsCancelDialogOpen(false)}>
               {t("common.cancel")}
-            </PanelDialogButton>
-            <PanelDialogButton
+            </Button>
+            <Button
               variant="destructive"
               size="sm"
               className="flex-1"
@@ -489,7 +484,7 @@ export function PaymentContent({
               }}
             >
               {t("payment.leave")}
-            </PanelDialogButton>
+            </Button>
           </Dialog.Footer>
         </Dialog.Content>
       </Dialog>

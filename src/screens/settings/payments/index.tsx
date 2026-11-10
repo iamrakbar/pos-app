@@ -1,14 +1,4 @@
-import {
-  Frame,
-  Typography,
-  Button as PanelButton,
-  Typography as PanelTypography,
-  useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Skeleton as PanelListSkeleton,
-  Switch as PanelSwitch,
-} from "panelui-native";
+import { Frame, Typography, Button, useToast, Alert, Skeleton, Switch } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage } from "@/api/api-error";
 import AppIcon from "@/components/common/app-icon";
@@ -110,7 +100,7 @@ function PaymentSettingsRow({
       <Frame.Actions>
         <View className="flex-row items-center gap-2">
           <View className="flex-row">
-            <PanelButton
+            <Button
               size="sm"
               variant="ghost"
 
@@ -121,8 +111,8 @@ function PaymentSettingsRow({
               onPress={() => onMove(payment.id, -1)}
             >
               <AppIcon icon={AppIcons.chevronUp} size={18} color={mutedColor} />
-            </PanelButton>
-            <PanelButton
+            </Button>
+            <Button
               size="icon"
               variant="ghost"
 
@@ -133,9 +123,9 @@ function PaymentSettingsRow({
               onPress={() => onMove(payment.id, 1)}
             >
               <AppIcon icon={AppIcons.chevronDown} size={18} color={mutedColor} />
-            </PanelButton>
+            </Button>
           </View>
-          <PanelSwitch
+          <Switch
             value={payment.is_active}
             disabled={isSaving}
             onValueChange={(active) => onToggle(payment.id, active)}
@@ -202,13 +192,13 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
             key={`loading-row-${index}`}
             className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
           >
-            <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+            <Skeleton className="size-11 shrink-0 rounded-xl" />
             <View className="flex-1 gap-2">
-              <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-              <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-              <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+              <Skeleton className="h-4 w-3/5 rounded-md" />
+              <Skeleton className="h-3 w-2/5 rounded-md" />
+              <Skeleton className="h-3 w-1/3 rounded-md" />
             </View>
-            <PanelListSkeleton className="size-4 rounded-full" />
+            <Skeleton className="size-4 rounded-full" />
           </View>
         ))}
       </View>
@@ -216,17 +206,15 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
   if (payments.isError)
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(payments.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void payments.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(payments.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void payments.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
 
@@ -234,21 +222,21 @@ export default function PaymentSettingsScreen(): React.JSX.Element {
     <View className="flex-1 bg-background">
       {isDirty ? (
         <View className="flex-row items-center justify-between gap-3 border-b border-border bg-card px-4 py-3 md:px-6">
-          <PanelTypography type="body-sm" muted className="flex-1">
+          <Typography type="body-sm" muted className="flex-1">
             {t("paymentSettings.unsavedChanges")}
-          </PanelTypography>
+          </Typography>
           <View className="flex-row gap-2">
-            <PanelButton
+            <Button
               size="icon"
               variant="ghost"
               onPress={handleCancel}
               disabled={reorderMutation.isPending}
             >
               {t("common.cancel")}
-            </PanelButton>
-            <PanelButton size="sm" onPress={handleSave} disabled={reorderMutation.isPending}>
+            </Button>
+            <Button size="sm" onPress={handleSave} disabled={reorderMutation.isPending}>
               {reorderMutation.isPending ? t("common.saving") : t("paymentSettings.saveChanges")}
-            </PanelButton>
+            </Button>
           </View>
         </View>
       ) : null}

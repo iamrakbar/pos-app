@@ -1,11 +1,4 @@
-import {
-  Surface,
-  Typography,
-  Button as PanelDialogButton,
-  BottomSheet as PanelBottomSheet,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-} from "panelui-native";
+import { Surface, Typography, Button, BottomSheet, Dialog, Input } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -100,7 +93,7 @@ export default function ParkedOrdersPanel({
 
   return (
     <>
-      <PanelDialogButton
+      <Button
         variant={mode === "park" ? "ghost" : "outline"}
         size="sm"
         className={mode === "park" ? "min-h-10 w-10" : "min-h-10"}
@@ -120,20 +113,20 @@ export default function ParkedOrdersPanel({
         ) : (
           <AppIcon icon={AppIcons.save} size={21} color={colorMuted} />
         )}
-      </PanelDialogButton>
+      </Button>
 
-      <PanelBottomSheet open={isOpen} onOpenChange={setIsOpen}>
-        <PanelBottomSheet.Content size="auto">
-          <PanelBottomSheet.Header
+      <BottomSheet open={isOpen} onOpenChange={setIsOpen}>
+        <BottomSheet.Content size="auto">
+          <BottomSheet.Header
             title={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
             description={
               mode === "park" ? t("pos.parkOrderDescription") : t("pos.parkedOrdersDescription")
             }
           />
-          <PanelBottomSheet.Body>
+          <BottomSheet.Body>
             {mode === "park" ? (
               <View className="gap-4">
-                <PanelInput
+                <Input
                   size="sm"
                   label={t("pos.parkedOrderName")}
                   value={label}
@@ -170,43 +163,39 @@ export default function ParkedOrdersPanel({
                           })}
                         </Typography>
                       </View>
-                      <PanelDialogButton
-                        size="sm"
-                        variant="primary"
-                        onPress={() => handleRestore(draft)}
-                      >
+                      <Button size="sm" variant="primary" onPress={() => handleRestore(draft)}>
                         {t("pos.resumeOrder")}
-                      </PanelDialogButton>
-                      <PanelDialogButton
+                      </Button>
+                      <Button
                         size="icon"
                         variant="ghost"
                         onPress={() => setDeleteTarget(draft)}
                         accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
                       >
                         <AppIcon icon={AppIcons.trash} size={17} color={colorDanger} />
-                      </PanelDialogButton>
+                      </Button>
                     </Surface>
                   ))
                 )}
               </View>
             )}
-          </PanelBottomSheet.Body>
+          </BottomSheet.Body>
           {mode === "park" ? (
-            <PanelBottomSheet.Footer>
-              <PanelDialogButton onPress={handlePark}>{t("pos.parkOrder")}</PanelDialogButton>
-            </PanelBottomSheet.Footer>
+            <BottomSheet.Footer>
+              <Button onPress={handlePark}>{t("pos.parkOrder")}</Button>
+            </BottomSheet.Footer>
           ) : null}
-        </PanelBottomSheet.Content>
-      </PanelBottomSheet>
+        </BottomSheet.Content>
+      </BottomSheet>
 
-      <PanelDialog
+      <Dialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
       >
-        <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
-          <PanelDialogButton
+        <Dialog.Content dismissible={false} className="w-full max-w-md self-center">
+          <Button
             variant="ghost"
             size="icon"
             accessibilityLabel={t("common.close")}
@@ -214,20 +203,20 @@ export default function ParkedOrdersPanel({
             onPress={() => setDeleteTarget(null)}
           >
             <AppIcon icon={AppIcons.close} size={20} />
-          </PanelDialogButton>
+          </Button>
           <View className="mb-5 gap-1.5">
             <View className="pr-10">
-              <PanelDialog.Title>{t("pos.deleteParkedOrderTitle")}</PanelDialog.Title>
+              <Dialog.Title>{t("pos.deleteParkedOrderTitle")}</Dialog.Title>
             </View>
-            <PanelDialog.Description>
+            <Dialog.Description>
               {t("pos.deleteParkedOrderDescription", { label: deleteTarget?.label ?? "" })}
-            </PanelDialog.Description>
+            </Dialog.Description>
           </View>
           <View className="flex-row items-center gap-3">
-            <PanelDialogButton variant="ghost" size="sm" onPress={() => setDeleteTarget(null)}>
+            <Button variant="ghost" size="sm" onPress={() => setDeleteTarget(null)}>
               {t("common.cancel")}
-            </PanelDialogButton>
-            <PanelDialogButton
+            </Button>
+            <Button
               variant="destructive"
               size="sm"
               className="flex-1"
@@ -237,19 +226,19 @@ export default function ParkedOrdersPanel({
               }}
             >
               {t("common.delete")}
-            </PanelDialogButton>
+            </Button>
           </View>
-        </PanelDialog.Content>
-      </PanelDialog>
+        </Dialog.Content>
+      </Dialog>
 
-      <PanelDialog
+      <Dialog
         open={restoreTarget !== null}
         onOpenChange={(open) => {
           if (!open) setRestoreTarget(null);
         }}
       >
-        <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
-          <PanelDialogButton
+        <Dialog.Content dismissible={false} className="w-full max-w-md self-center">
+          <Button
             variant="ghost"
             size="icon"
             accessibilityLabel={t("common.close")}
@@ -257,30 +246,28 @@ export default function ParkedOrdersPanel({
             onPress={() => setRestoreTarget(null)}
           >
             <AppIcon icon={AppIcons.close} size={20} />
-          </PanelDialogButton>
+          </Button>
           <View className="mb-5 gap-1.5">
             <View className="pr-10">
-              <PanelDialog.Title>{t("pos.replaceActiveOrderTitle")}</PanelDialog.Title>
+              <Dialog.Title>{t("pos.replaceActiveOrderTitle")}</Dialog.Title>
             </View>
-            <PanelDialog.Description>
-              {t("pos.replaceActiveOrderDescription")}
-            </PanelDialog.Description>
+            <Dialog.Description>{t("pos.replaceActiveOrderDescription")}</Dialog.Description>
           </View>
           <View className="flex-row items-center gap-3">
-            <PanelDialogButton variant="ghost" size="sm" onPress={() => setRestoreTarget(null)}>
+            <Button variant="ghost" size="sm" onPress={() => setRestoreTarget(null)}>
               {t("common.cancel")}
-            </PanelDialogButton>
-            <PanelDialogButton
+            </Button>
+            <Button
               variant="destructive"
               size="sm"
               className="flex-1"
               onPress={confirmRestoreAfterClear}
             >
               {t("pos.clearAndResume")}
-            </PanelDialogButton>
+            </Button>
           </View>
-        </PanelDialog.Content>
-      </PanelDialog>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

@@ -1,12 +1,4 @@
-import {
-  Button as PanelButton,
-  Chip as PanelChip,
-  Typography as PanelTypography,
-  Skeleton as PanelGridSkeleton,
-  ScrollFade,
-  EmptyState,
-  Card,
-} from "panelui-native";
+import { Button, Chip, Typography, Skeleton, ScrollFade, EmptyState, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import TableSymbol, { type TableSeatCount } from "@/components/table-symbol";
 import { useTables } from "@/hooks/db/use-tables";
@@ -86,7 +78,7 @@ export default function TableSelectionScreen(): JSX.Element {
               }}
               className="overflow-hidden rounded-2xl"
             >
-              <PanelGridSkeleton className="h-full w-full rounded-2xl" />
+              <Skeleton className="h-full w-full rounded-2xl" />
             </View>
           ))}
         </View>
@@ -100,13 +92,13 @@ export default function TableSelectionScreen(): JSX.Element {
   };
 
   const renderArea = ({ item: group }: { item: (typeof groups)[number] }) => (
-    <PanelChip
+    <Chip
       variant={resolvedAreaId === group.id ? "primary" : "default"}
       selected={resolvedAreaId === group.id}
       onPress={() => setActiveAreaId(group.id)}
     >
       {group.name}
-    </PanelChip>
+    </Chip>
   );
 
   const renderTable = ({ item: table }: { item: POSTable }) => {
@@ -128,26 +120,26 @@ export default function TableSelectionScreen(): JSX.Element {
       >
         <Card className={isSelected ? "flex-1 p-4" : "flex-1 p-4 bg-inset"}>
           <Card.Content className="flex-1 h-full min-h-32 items-center justify-center gap-2 py-4 p-0">
-            <PanelChip variant="default">
-              <PanelChip.Label>
-                <PanelTypography type="body-xs" numberOfLines={1}>
+            <Chip variant="default">
+              <Chip.Label>
+                <Typography type="body-xs" numberOfLines={1}>
                   {table.name}
-                </PanelTypography>
-              </PanelChip.Label>
-            </PanelChip>
+                </Typography>
+              </Chip.Label>
+            </Chip>
             <TableSymbol
               seats={seatCount}
               scale={0.5}
               color={isSelected ? accent : muted}
               tableColor={isSelected ? accentSoft : undefined}
             />
-            <PanelChip variant="default" className="self-end">
-              <PanelChip.Label>
-                <PanelTypography type="body-xs" numberOfLines={1}>
+            <Chip variant="default" className="self-end">
+              <Chip.Label>
+                <Typography type="body-xs" numberOfLines={1}>
                   {seats}
-                </PanelTypography>
-              </PanelChip.Label>
-            </PanelChip>
+                </Typography>
+              </Chip.Label>
+            </Chip>
           </Card.Content>
         </Card>
       </Pressable>
@@ -159,14 +151,14 @@ export default function TableSelectionScreen(): JSX.Element {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <PanelButton
+            <Button
               variant="outline"
               size="sm"
               onPress={() => handleSelect(null)}
               accessibilityLabel={t("tables.continueWithoutTable")}
             >
               {t("tables.noTable")}
-            </PanelButton>
+            </Button>
           ),
         }}
       />

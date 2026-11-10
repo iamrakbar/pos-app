@@ -1,13 +1,5 @@
 import { getErrorMessage } from "@/api/api-error";
-import {
-  Fab,
-  PlusIcon,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Skeleton as PanelGridSkeleton,
-  EmptyState,
-  Card,
-} from "panelui-native";
+import { Fab, PlusIcon, Alert, Button, Skeleton, EmptyState, Card } from "panelui-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCSSVariable } from "uniwind";
 import { useAreas } from "@/hooks/db/use-areas";
@@ -66,7 +58,7 @@ export default function AreasScreen(): React.JSX.Element {
               }}
               className="overflow-hidden rounded-2xl"
             >
-              <PanelGridSkeleton className="h-full w-full rounded-2xl" />
+              <Skeleton className="h-full w-full rounded-2xl" />
             </View>
           ))}
         </View>
@@ -76,17 +68,15 @@ export default function AreasScreen(): React.JSX.Element {
   if (areasQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(areasQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void areasQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(areasQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void areasQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -128,7 +118,7 @@ export default function AreasScreen(): React.JSX.Element {
               </View>
             </Card.Content>
             <Card.Footer className="flex-row gap-4 p-0">
-              <PanelErrorButton
+              <Button
                 size="sm"
                 variant="outline"
                 accessibilityLabel={t("areasManagement.openTablesAccessibility", {
@@ -139,8 +129,8 @@ export default function AreasScreen(): React.JSX.Element {
               >
                 <AppIcon icon={AppIcons.eye} size={18} color={mutedColor} />
                 {t("areasManagement.viewTables")}
-              </PanelErrorButton>
-              <PanelErrorButton
+              </Button>
+              <Button
                 size="sm"
                 variant="outline"
                 accessibilityLabel={t("areasManagement.editAreaAccessibility", {
@@ -151,7 +141,7 @@ export default function AreasScreen(): React.JSX.Element {
               >
                 <AppIcon icon={AppIcons.pencil} size={18} color={mutedColor} />
                 {t("areasManagement.editAreaAction")}
-              </PanelErrorButton>
+              </Button>
             </Card.Footer>
           </Card>
         )}

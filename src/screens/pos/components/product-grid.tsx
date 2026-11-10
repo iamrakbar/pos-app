@@ -1,10 +1,4 @@
-import {
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Card as PanelCard,
-  Skeleton as PanelSkeleton,
-  EmptyState,
-} from "panelui-native";
+import { Alert, Button, Card, Skeleton, EmptyState } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore } from "@/stores/use-pos-store";
@@ -84,16 +78,16 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
                     className="m-1.5"
                     accessibilityLabel={t("pos.loadingProduct")}
                   >
-                    <PanelCard className="overflow-hidden rounded-3xl p-0">
-                      <PanelSkeleton className="aspect-square w-full rounded-t-3xl" />
-                      <PanelCard.Content className="min-h-20 justify-between gap-3 px-3.5 py-3">
-                        <PanelSkeleton className="h-4 w-3/4 rounded-md" />
+                    <Card className="overflow-hidden rounded-3xl p-0">
+                      <Skeleton className="aspect-square w-full rounded-t-3xl" />
+                      <Card.Content className="min-h-20 justify-between gap-3 px-3.5 py-3">
+                        <Skeleton className="h-4 w-3/4 rounded-md" />
                         <View className="gap-1.5">
-                          <PanelSkeleton className="h-3 w-2/5 rounded-md" />
-                          <PanelSkeleton className="h-4 w-3/5 rounded-md" />
+                          <Skeleton className="h-3 w-2/5 rounded-md" />
+                          <Skeleton className="h-4 w-3/5 rounded-md" />
                         </View>
-                      </PanelCard.Content>
-                    </PanelCard>
+                      </Card.Content>
+                    </Card>
                   </View>
                 ))}
               </View>
@@ -131,17 +125,15 @@ export default function ProductGrid({ onSelectProduct, bottomInset = 0 }: Props)
             ListEmptyComponent={
               isError ? (
                 <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-                  <PanelErrorAlert variant="destructive">
-                    <PanelErrorAlert.Indicator />
-                    <PanelErrorAlert.Content>
-                      <PanelErrorAlert.Description>
-                        {getErrorMessage(error)}
-                      </PanelErrorAlert.Description>
-                    </PanelErrorAlert.Content>
-                  </PanelErrorAlert>
-                  <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+                  <Alert variant="destructive">
+                    <Alert.Indicator />
+                    <Alert.Content>
+                      <Alert.Description>{getErrorMessage(error)}</Alert.Description>
+                    </Alert.Content>
+                  </Alert>
+                  <Button variant="outline" onPress={() => void refetch()}>
                     {t("common.retry")}
-                  </PanelErrorButton>
+                  </Button>
                 </View>
               ) : (
                 <EmptyState className="py-20">

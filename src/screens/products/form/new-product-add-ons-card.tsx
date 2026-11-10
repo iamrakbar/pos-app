@@ -1,13 +1,4 @@
-import {
-  Surface,
-  Typography,
-  Input as PanelInput,
-  Typography as PanelTypography,
-  Card,
-  NumberInput,
-  Switch as PanelSwitch,
-  Button as PanelButton,
-} from "panelui-native";
+import { Surface, Typography, Input, Card, NumberInput, Switch, Button } from "panelui-native";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import { useLocalizedNumberInputList } from "@/hooks/use-localized-number-input";
@@ -67,7 +58,7 @@ function NewProductAddOnGroup({
           control={control}
           name={`add_ons.${index}.name`}
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               containerClassName="flex-1"
@@ -82,7 +73,7 @@ function NewProductAddOnGroup({
             />
           )}
         />
-        <PanelButton
+        <Button
           size="icon"
           variant="ghost"
 
@@ -90,7 +81,7 @@ function NewProductAddOnGroup({
           accessibilityLabel={t("productForm.removeAddOnGroup")}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelButton>
+        </Button>
       </View>
 
       <Controller
@@ -106,7 +97,7 @@ function NewProductAddOnGroup({
                 {t("addOnManagement.requiredSelectionDescription")}
               </Typography>
             </View>
-            <PanelSwitch
+            <Switch
               value={value}
               label={t("addOnManagement.requiredSelection")}
               onValueChange={(selected) => {
@@ -134,7 +125,7 @@ function NewProductAddOnGroup({
                 {t("addOnManagement.allowMultipleDescription")}
               </Typography>
             </View>
-            <PanelSwitch
+            <Switch
               value={value}
               label={t("addOnManagement.allowMultiple")}
               onValueChange={(selected) => {
@@ -197,7 +188,7 @@ function NewProductAddOnGroup({
               control={control}
               name={`add_ons.${index}.options.${optionIndex}.name`}
               render={({ field: { value, onChange, onBlur, ref } }) => (
-                <PanelInput
+                <Input
                   size="sm"
                   ref={ref}
                   containerClassName="flex-1"
@@ -216,7 +207,7 @@ function NewProductAddOnGroup({
               control={control}
               name={`add_ons.${index}.options.${optionIndex}.price`}
               render={({ field: { value, onChange, onBlur, ref } }) => (
-                <PanelInput
+                <Input
                   size="sm"
                   ref={ref}
                   containerClassName="flex-1"
@@ -226,16 +217,16 @@ function NewProductAddOnGroup({
                   isRequired
                   keyboardType="numeric"
                   startContent={
-                    <PanelTypography type="body-sm" weight="medium" muted>
+                    <Typography type="body-sm" weight="medium" muted>
                       {RUPIAH_PREFIX}
-                    </PanelTypography>
+                    </Typography>
                   }
                   interactiveContent={false}
                   {...getPriceInput(field.id, value, onChange, onBlur)}
                 />
               )}
             />
-            <PanelButton
+            <Button
               size="icon"
               variant="ghost"
 
@@ -243,7 +234,7 @@ function NewProductAddOnGroup({
               accessibilityLabel={t("addOnManagement.removeOption")}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelButton>
+            </Button>
           </View>
         ))}
         {optionsMessage ? (
@@ -251,10 +242,10 @@ function NewProductAddOnGroup({
             {optionsMessage}
           </Typography>
         ) : null}
-        <PanelButton variant="outline" onPress={() => append({ name: "", price: "0" })}>
+        <Button variant="outline" onPress={() => append({ name: "", price: "0" })}>
           <AppIcon icon={AppIcons.add} size={16} />
           {t("addOnManagement.addOption")}
-        </PanelButton>
+        </Button>
       </View>
     </Surface>
   );
@@ -297,7 +288,7 @@ export default function NewProductAddOnsCard({
             onRemove={() => remove(index)}
           />
         ))}
-        <PanelButton
+        <Button
           variant="outline"
           onPress={() =>
             append({
@@ -312,7 +303,7 @@ export default function NewProductAddOnsCard({
         >
           <AppIcon icon={AppIcons.add} size={16} />
           {t("productForm.addAddOnGroup")}
-        </PanelButton>
+        </Button>
       </Card.Content>
     </Card>
   );

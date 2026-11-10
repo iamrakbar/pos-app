@@ -1,11 +1,4 @@
-import {
-  Alert as PanelAlert,
-  Button as PanelButton,
-  Typography,
-  useToast,
-  Card,
-  Chip as PanelChip,
-} from "panelui-native";
+import { Alert, Button, Typography, useToast, Card, Chip } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -185,23 +178,23 @@ function NotificationsCard({
               ) : null}
             </View>
           </View>
-          <PanelChip size="sm" variant={statusColor === "danger" ? "destructive" : statusColor}>
-            <PanelChip.Label>
+          <Chip size="sm" variant={statusColor === "danger" ? "destructive" : statusColor}>
+            <Chip.Label>
               {permission.isLoading ? t("notifications.loading") : statusLabel}
-            </PanelChip.Label>
-          </PanelChip>
+            </Chip.Label>
+          </Chip>
         </View>
 
         {permission.status !== "granted" ? (
-          <PanelAlert variant={permission.status === "denied" ? "warning" : "info"}>
-            <PanelAlert.Indicator />
-            <PanelAlert.Content>
-              <PanelAlert.Title>{t("notifications.permissionTitle")}</PanelAlert.Title>
-              <PanelAlert.Description>
+          <Alert variant={permission.status === "denied" ? "warning" : "info"}>
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>{t("notifications.permissionTitle")}</Alert.Title>
+              <Alert.Description>
                 {t(`notifications.descriptionByStatus.${permission.status}`)}
-              </PanelAlert.Description>
-            </PanelAlert.Content>
-          </PanelAlert>
+              </Alert.Description>
+            </Alert.Content>
+          </Alert>
         ) : null}
 
         <NotificationActions
@@ -255,34 +248,34 @@ function NotificationActions({
     <View className="gap-3 pt-1">
       {permission.status === "undetermined" ||
       (permission.status === "denied" && permission.canAskAgain) ? (
-        <PanelButton
+        <Button
           className="w-full"
           disabled={permission.isLoading || permission.isRequesting}
           onPress={onRequest}
         >
           {permission.isRequesting ? t("notifications.requesting") : t("notifications.allow")}
-        </PanelButton>
+        </Button>
       ) : null}
 
       {permission.status === "denied" && !permission.canAskAgain ? (
-        <PanelButton className="w-full" onPress={onOpenSettings}>
+        <Button className="w-full" onPress={onOpenSettings}>
           {t("notifications.openSettings")}
-        </PanelButton>
+        </Button>
       ) : null}
 
       {permission.status === "granted" && !isProduction ? (
         <>
-          <PanelButton className="w-full" disabled={isSendingTest} onPress={onSendTest}>
+          <Button className="w-full" disabled={isSendingTest} onPress={onSendTest}>
             {isSendingTest ? t("notifications.sendingTest") : t("notifications.sendTest")}
-          </PanelButton>
-          <PanelButton
+          </Button>
+          <Button
             variant="outline"
             className="w-full"
             disabled={isGettingToken}
             onPress={onGetToken}
           >
             {isGettingToken ? t("notifications.gettingToken") : t("notifications.getToken")}
-          </PanelButton>
+          </Button>
         </>
       ) : null}
     </View>

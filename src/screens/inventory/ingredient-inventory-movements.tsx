@@ -8,16 +8,7 @@ import {
   formatRupiah,
   normalizeInventorySource,
 } from "@/utils/format";
-import {
-  Chip as PanelMovementChip,
-  EmptyState as PanelMovementEmpty,
-  Table as PanelMovementTable,
-  Typography as PanelMovementText,
-
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton} from "panelui-native";
+import { Chip, EmptyState, Table, Typography, Spinner, Alert, Button } from "panelui-native";
 import {
   MOVEMENT_TYPE_COLORS,
   MOVEMENT_TABLE_COLUMNS,
@@ -49,108 +40,106 @@ export default function IngredientInventoryMovementsScreen({
     >
       {movementsQuery.isLoading ? (
         <View className="flex-1 items-center justify-center gap-3 py-20">
-          <PanelLoadingSpinner />
-          <PanelLoadingText type="body-sm" muted>
+          <Spinner />
+          <Typography type="body-sm" muted>
             {t("movements.loadingMore")}
-          </PanelLoadingText>
+          </Typography>
         </View>
       ) : movementsQuery.isError ? (
         <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-          <PanelErrorAlert variant="destructive">
-            <PanelErrorAlert.Indicator />
-            <PanelErrorAlert.Content>
-              <PanelErrorAlert.Description>
-                {getErrorMessage(movementsQuery.error)}
-              </PanelErrorAlert.Description>
-            </PanelErrorAlert.Content>
-          </PanelErrorAlert>
-          <PanelErrorButton variant="outline" onPress={() => void movementsQuery.refetch()}>
+          <Alert variant="destructive">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Description>{getErrorMessage(movementsQuery.error)}</Alert.Description>
+            </Alert.Content>
+          </Alert>
+          <Button variant="outline" onPress={() => void movementsQuery.refetch()}>
             {t("common.retry")}
-          </PanelErrorButton>
+          </Button>
         </View>
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator>
           <View style={{ width: MOVEMENT_TABLE_WIDTH }}>
-            <PanelMovementTable columns={MOVEMENT_TABLE_COLUMNS}>
-              <PanelMovementTable.Header>
-                <PanelMovementTable.Row>
-                  <PanelMovementTable.Head>{t("movements.type")}</PanelMovementTable.Head>
-                  <PanelMovementTable.Head>{t("movements.quantity")}</PanelMovementTable.Head>
-                  <PanelMovementTable.Head>{t("movements.balanceAfter")}</PanelMovementTable.Head>
-                  <PanelMovementTable.Head>{t("movements.costPerUnit")}</PanelMovementTable.Head>
-                  <PanelMovementTable.Head>{t("movements.source")}</PanelMovementTable.Head>
-                  <PanelMovementTable.Head>{t("movements.reason")}</PanelMovementTable.Head>
-                  <PanelMovementTable.Head>{t("movements.actor")}</PanelMovementTable.Head>
-                  <PanelMovementTable.Head>{t("movements.movedAt")}</PanelMovementTable.Head>
-                </PanelMovementTable.Row>
-              </PanelMovementTable.Header>
+            <Table columns={MOVEMENT_TABLE_COLUMNS}>
+              <Table.Header>
+                <Table.Row>
+                  <Table.Head>{t("movements.type")}</Table.Head>
+                  <Table.Head>{t("movements.quantity")}</Table.Head>
+                  <Table.Head>{t("movements.balanceAfter")}</Table.Head>
+                  <Table.Head>{t("movements.costPerUnit")}</Table.Head>
+                  <Table.Head>{t("movements.source")}</Table.Head>
+                  <Table.Head>{t("movements.reason")}</Table.Head>
+                  <Table.Head>{t("movements.actor")}</Table.Head>
+                  <Table.Head>{t("movements.movedAt")}</Table.Head>
+                </Table.Row>
+              </Table.Header>
               {movements.length ? (
-                <PanelMovementTable.Body>
+                <Table.Body>
                   {movements.map((movement) => (
-                    <PanelMovementTable.Row key={movement.id}>
-                      <PanelMovementTable.Cell>
-                        <PanelMovementChip variant={MOVEMENT_TYPE_COLORS[movement.type]} size="sm">
+                    <Table.Row key={movement.id}>
+                      <Table.Cell>
+                        <Chip variant={MOVEMENT_TYPE_COLORS[movement.type]} size="sm">
                           {t(`movements.types.${movement.type}` as TranslationKey)}
-                        </PanelMovementChip>
-                      </PanelMovementTable.Cell>
-                      <PanelMovementTable.Cell labelClassName="tabular-nums">
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
                         {formatSignedQuantity(movement.quantity)}
-                      </PanelMovementTable.Cell>
-                      <PanelMovementTable.Cell labelClassName="tabular-nums">
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
                         {formatInventoryQuantity(movement.balance_after)}
-                      </PanelMovementTable.Cell>
-                      <PanelMovementTable.Cell labelClassName="tabular-nums">
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
                         {movement.cost_per_unit === null
                           ? "—"
                           : formatRupiah(movement.cost_per_unit)}
-                      </PanelMovementTable.Cell>
-                      <PanelMovementTable.Cell>
-                        <PanelMovementChip variant="default" size="sm">
-                          <PanelMovementText type="body-xs" numberOfLines={1}>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Chip variant="default" size="sm">
+                          <Typography type="body-xs" numberOfLines={1}>
                             {normalizeInventorySource(movement.source)}
-                          </PanelMovementText>
-                        </PanelMovementChip>
-                      </PanelMovementTable.Cell>
-                      <PanelMovementTable.Cell>
-                        <PanelMovementText type="body-sm" numberOfLines={1}>
+                          </Typography>
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Typography type="body-sm" numberOfLines={1}>
                           {movement.reason ?? "—"}
-                        </PanelMovementText>
-                      </PanelMovementTable.Cell>
-                      <PanelMovementTable.Cell>
-                        <PanelMovementText type="body-sm" numberOfLines={1}>
+                        </Typography>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Typography type="body-sm" numberOfLines={1}>
                           {movement.actor?.name ?? "—"}
-                        </PanelMovementText>
-                      </PanelMovementTable.Cell>
-                      <PanelMovementTable.Cell labelClassName="tabular-nums">
+                        </Typography>
+                      </Table.Cell>
+                      <Table.Cell labelClassName="tabular-nums">
                         {formatDateTime(movement.moved_at)}
-                      </PanelMovementTable.Cell>
-                    </PanelMovementTable.Row>
+                      </Table.Cell>
+                    </Table.Row>
                   ))}
-                </PanelMovementTable.Body>
+                </Table.Body>
               ) : (
-                <PanelMovementTable.Empty>
-                  <PanelMovementEmpty className="py-16">
-                    <PanelMovementEmpty.Header>
-                      <PanelMovementEmpty.Media variant="icon">
+                <Table.Empty>
+                  <EmptyState className="py-16">
+                    <EmptyState.Header>
+                      <EmptyState.Media variant="icon">
                         <AppIcon icon={AppIcons.swapVertical} size={22} color={themeColorMuted} />
-                      </PanelMovementEmpty.Media>
-                      <PanelMovementEmpty.Title>
+                      </EmptyState.Media>
+                      <EmptyState.Title>
                         {t("ingredients.inventoryMovementsEmpty")}
-                      </PanelMovementEmpty.Title>
-                      <PanelMovementEmpty.Description>
+                      </EmptyState.Title>
+                      <EmptyState.Description>
                         {t("ingredients.inventoryMovementsEmptyDescription")}
-                      </PanelMovementEmpty.Description>
-                    </PanelMovementEmpty.Header>
-                  </PanelMovementEmpty>
-                </PanelMovementTable.Empty>
+                      </EmptyState.Description>
+                    </EmptyState.Header>
+                  </EmptyState>
+                </Table.Empty>
               )}
-            </PanelMovementTable>
+            </Table>
           </View>
         </ScrollView>
       )}
       {movementsQuery.hasNextPage ? (
         <View className="flex-row items-center justify-end pt-3">
-          <PanelErrorButton
+          <Button
             size="sm"
             variant="ghost"
             onPress={() => void movementsQuery.fetchNextPage()}
@@ -159,7 +148,7 @@ export default function IngredientInventoryMovementsScreen({
             {movementsQuery.isFetchingNextPage
               ? t("movements.loadingMore")
               : t("movements.loadMore")}
-          </PanelErrorButton>
+          </Button>
         </View>
       ) : null}
     </ScrollView>

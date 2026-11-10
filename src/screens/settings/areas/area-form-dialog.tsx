@@ -1,14 +1,7 @@
 import { AppIcons } from "@/components/common/app-icons";
 import AppIcon from "@/components/common/app-icon";
 import SheetOverlayHost from "@/components/common/sheet-overlay-host";
-import {
-  Typography,
-  Button as PanelDialogButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-  useToast,
-  cn,
-} from "panelui-native";
+import { Typography, Button, Dialog, Input, useToast, cn } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
@@ -113,17 +106,17 @@ export default function AreaFormDialog({
     >
       <View className="flex-1 flex-row items-center gap-3">
         {area ? (
-          <PanelDialogButton variant="destructive" size="sm" onPress={() => setIsDeleteOpen(true)}>
+          <Button variant="destructive" size="sm" onPress={() => setIsDeleteOpen(true)}>
             {t("common.delete")}
-          </PanelDialogButton>
+          </Button>
         ) : null}
-        <PanelDialogButton
+        <Button
           className="flex-1"
           onPress={() => void handleSubmit(submitArea)()}
           disabled={isSaving}
         >
           {isSaving ? t("common.saving") : t("areasManagement.saveArea")}
-        </PanelDialogButton>
+        </Button>
       </View>
     </View>
   );
@@ -133,7 +126,7 @@ export default function AreaFormDialog({
         control={control}
         name="name"
         render={({ field: { value, onChange } }) => (
-          <PanelInput
+          <Input
             size="sm"
             label={t("areasManagement.name")}
             placeholder={t("areasManagement.areaNamePlaceholder")}
@@ -174,7 +167,7 @@ export default function AreaFormDialog({
               <Typography type="body-sm" muted>
                 {description}
               </Typography>
-              <PanelDialogButton
+              <Button
                 variant="ghost"
                 size="icon"
                 accessibilityLabel={t("common.close")}
@@ -182,7 +175,7 @@ export default function AreaFormDialog({
                 onPress={() => onOpenChange(false)}
               >
                 <AppIcon icon={AppIcons.close} size={20} />
-              </PanelDialogButton>
+              </Button>
             </View>
           }
           footer={<View className="bg-surface">{footer}</View>}
@@ -192,13 +185,13 @@ export default function AreaFormDialog({
           </ScrollView>
         </TrueSheet>
       ) : (
-        <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
-          <PanelDialog.Content
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+          <Dialog.Content
             dismissible={false}
             className="w-full max-w-md self-center overflow-hidden p-0"
             style={dialogKeyboardStyle}
           >
-            <PanelDialogButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -206,15 +199,15 @@ export default function AreaFormDialog({
               onPress={() => onOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelDialogButton>
+            </Button>
             <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-              <PanelDialog.Title>{title}</PanelDialog.Title>
-              <PanelDialog.Description>{description}</PanelDialog.Description>
+              <Dialog.Title>{title}</Dialog.Title>
+              <Dialog.Description>{description}</Dialog.Description>
             </View>
             {content}
             {footer}
-          </PanelDialog.Content>
-        </PanelDialog>
+          </Dialog.Content>
+        </Dialog>
       )}
 
       <SheetOverlayHost
@@ -222,9 +215,9 @@ export default function AreaFormDialog({
         visible={isDeleteOpen}
         onRequestClose={() => setIsDeleteOpen(false)}
       >
-        <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <PanelDialog.Content dismissible={false} className="w-full max-w-md self-center">
-            <PanelDialogButton
+        <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+          <Dialog.Content dismissible={false} className="w-full max-w-md self-center">
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -232,20 +225,18 @@ export default function AreaFormDialog({
               onPress={() => setIsDeleteOpen(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelDialogButton>
+            </Button>
             <View className="mb-5 gap-1.5">
               <View className="pr-10">
-                <PanelDialog.Title>{t("areasManagement.deleteAreaTitle")}</PanelDialog.Title>
+                <Dialog.Title>{t("areasManagement.deleteAreaTitle")}</Dialog.Title>
               </View>
-              <PanelDialog.Description>
-                {t("areasManagement.deleteAreaDescription")}
-              </PanelDialog.Description>
+              <Dialog.Description>{t("areasManagement.deleteAreaDescription")}</Dialog.Description>
             </View>
             <View className="flex-row items-center gap-3">
-              <PanelDialogButton variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
+              <Button variant="ghost" size="sm" onPress={() => setIsDeleteOpen(false)}>
                 {t("common.cancel")}
-              </PanelDialogButton>
-              <PanelDialogButton
+              </Button>
+              <Button
                 variant="destructive"
                 size="sm"
                 className="flex-1"
@@ -253,10 +244,10 @@ export default function AreaFormDialog({
                 onPress={handleDelete}
               >
                 {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-              </PanelDialogButton>
+              </Button>
             </View>
-          </PanelDialog.Content>
-        </PanelDialog>
+          </Dialog.Content>
+        </Dialog>
       </SheetOverlayHost>
     </>
   );

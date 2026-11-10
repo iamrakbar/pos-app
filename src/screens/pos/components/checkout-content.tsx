@@ -3,16 +3,15 @@ import {
   Alert,
   Field,
   Typography,
-  Input as PanelInput,
+  Input,
   SearchBar,
   SlideButton,
-  Textarea as PanelTextarea,
-  Typography as PanelTypography,
+  Textarea,
   ScrollFade,
-  RadioGroup as PanelRadioGroup,
-  Button as PanelButton,
-  Chip as PanelChip,
-  Select as PanelSelect,
+  RadioGroup,
+  Button,
+  Chip,
+  Select,
   cn,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
@@ -473,7 +472,7 @@ function PaymentFields({
             showsHorizontalScrollIndicator={false}
             contentContainerClassName="gap-2"
             renderItem={({ item: group }) => (
-              <PanelButton
+              <Button
                 size="sm"
                 variant={paymentGroup === group.group_type ? "primary" : "outline"}
                 onPress={() => {
@@ -496,7 +495,7 @@ function PaymentFields({
                 }}
               >
                 {group.group_label}
-              </PanelButton>
+              </Button>
             )}
           />
         )}
@@ -509,7 +508,7 @@ function PaymentFields({
         {isPending ? (
           <PaymentButtonSkeleton widths={[96, 120, 88]} />
         ) : (
-          <PanelRadioGroup
+          <RadioGroup
             variant="card"
             value={paymentId}
             onValueChange={(id) => {
@@ -529,7 +528,7 @@ function PaymentFields({
               {paymentGroups
                 .find((group) => group.group_type === paymentGroup)
                 ?.payments.map((payment) => (
-                  <PanelRadioGroup.Item
+                  <RadioGroup.Item
                     key={payment.id}
                     value={payment.id}
                     hideIndicator
@@ -549,21 +548,21 @@ function PaymentFields({
                           accessible={false}
                         />
                       ) : null}
-                      <PanelTypography type="body-sm" align="center">
+                      <Typography type="body-sm" align="center">
                         {payment.name}
-                      </PanelTypography>
+                      </Typography>
                     </View>
-                  </PanelRadioGroup.Item>
+                  </RadioGroup.Item>
                 ))}
             </View>
-          </PanelRadioGroup>
+          </RadioGroup>
         )}
         {errors.payment_id ? <Field.Error>{errors.payment_id.message}</Field.Error> : null}
       </View>
 
       {selectedPayment?.tender_input.type === "reference" ? (
         <View className="gap-2">
-          <PanelInput
+          <Input
             size="sm"
             isRequired={selectedPayment.tender_input.required}
             label={selectedPayment.tender_input.label ?? t("checkout.paymentReference")}
@@ -581,32 +580,32 @@ function PaymentFields({
             </Typography>
             <View className="flex-row flex-wrap gap-2">
               {cashPresets.map((amount, index) => (
-                <PanelButton
+                <Button
                   key={amount}
                   size="sm"
                   variant={cashReceivedAmount === amount ? "primary" : "outline"}
                   onPress={() => setValue("tender_value", String(amount), { shouldValidate: true })}
                 >
-                  <PanelTypography type="body-sm" weight="semibold" className="tabular-nums">
+                  <Typography type="body-sm" weight="semibold" className="tabular-nums">
                     {index === 0
                       ? t("checkout.exactCash", { amount: formatRupiah(amount) })
                       : formatRupiah(amount)}
-                  </PanelTypography>
-                </PanelButton>
+                  </Typography>
+                </Button>
               ))}
             </View>
           </View>
           <View className="flex-row items-end gap-4">
-            <PanelInput
+            <Input
               size="sm"
               containerClassName="flex-1"
               label={t("checkout.otherAmount")}
               placeholder={selectedPayment.tender_input.placeholder ?? "Rp0"}
               keyboardType="numeric"
               startContent={
-                <PanelTypography type="body-sm" weight="medium" muted>
+                <Typography type="body-sm" weight="medium" muted>
                   {RUPIAH_PREFIX}
-                </PanelTypography>
+                </Typography>
               }
               interactiveContent={false}
               {...tenderInput}
@@ -665,33 +664,33 @@ function CustomerFields({
           showsHorizontalScrollIndicator={false}
           contentContainerClassName="gap-2 pb-1"
         >
-          <PanelChip
+          <Chip
             variant={customerType === "guest" ? "primary" : "default"}
             selected={customerType === "guest"}
             onPress={() => selectCustomerType("guest")}
           >
             {t("checkout.merchant")}
-          </PanelChip>
-          <PanelChip
+          </Chip>
+          <Chip
             variant={customerType === "customer" ? "primary" : "default"}
             selected={customerType === "customer"}
             onPress={() => selectCustomerType("customer")}
           >
             {t("checkout.registeredCustomer")}
-          </PanelChip>
-          <PanelChip
+          </Chip>
+          <Chip
             variant={customerType === "anonymous" ? "primary" : "default"}
             selected={customerType === "anonymous"}
             onPress={() => selectCustomerType("anonymous")}
           >
             {t("checkout.walkIn")}
-          </PanelChip>
+          </Chip>
         </ScrollView>
       </ScrollFade>
 
       {customerType === "guest" ? (
         <View className="gap-2">
-          <PanelSelect
+          <Select
             size="sm"
             presentation="sheet"
             value={guestId ?? undefined}
@@ -701,9 +700,9 @@ function CustomerFields({
             placeholder={t("checkout.selectMerchantCustomer")}
           >
             {guests.map((guest) => (
-              <PanelSelect.Item key={guest.id} value={guest.id} label={guest.name} />
+              <Select.Item key={guest.id} value={guest.id} label={guest.name} />
             ))}
-          </PanelSelect>
+          </Select>
           {errors.guest_id ? <Field.Error>{errors.guest_id.message}</Field.Error> : null}
         </View>
       ) : null}
@@ -820,7 +819,7 @@ function CheckoutFormScrollContent({
             control={control}
             name="notes"
             render={({ field }) => (
-              <PanelTextarea
+              <Textarea
                 size="sm"
                 ref={field.ref}
                 onBlur={field.onBlur}

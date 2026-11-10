@@ -1,4 +1,4 @@
-import { Typography , Button as PanelButton, Dialog as PanelDialog, Frame } from "panelui-native";
+import { Typography, Button, Dialog, Frame } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -165,28 +165,28 @@ export default function SettingsScreen(): JSX.Element {
             ))}
           </View>
 
-          <PanelButton variant="destructive" onPress={() => setIsLogoutOpen(true)} className="w-full">
+          <Button variant="destructive" onPress={() => setIsLogoutOpen(true)} className="w-full">
             <AppIcon icon={AppIcons.logout} size={18} color={themeColorDestructiveForeground} />
             {t("settings.logout")}
-          </PanelButton>
+          </Button>
         </View>
       </ScrollView>
-      <PanelDialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("logout.title")}</PanelDialog.Title>
-          <PanelDialog.Description>{t("logout.description")}</PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
+        <Dialog.Content>
+          <Dialog.Title>{t("logout.title")}</Dialog.Title>
+          <Dialog.Description>{t("logout.description")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton variant="destructive" size="sm" onPress={logout}>
+              </Button>
+            </Dialog.Close>
+            <Button variant="destructive" size="sm" onPress={logout}>
               {t("logout.confirm")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

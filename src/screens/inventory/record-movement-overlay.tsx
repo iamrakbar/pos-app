@@ -2,14 +2,12 @@ import { AppIcons } from "@/components/common/app-icons";
 import AppIcon from "@/components/common/app-icon";
 import {
   Typography,
-  Typography as PanelFieldText,
-  Button as PanelFooterButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-  Label as PanelLabel,
-  Select as PanelSelect,
-  Textarea as PanelTextarea,
-  Typography as PanelTypography,
+  Button,
+  Dialog,
+  Input,
+  Label,
+  Select,
+  Textarea,
   useToast,
 } from "panelui-native";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
@@ -127,20 +125,16 @@ export default function RecordMovementOverlay({
 
   const footer = (
     <View className="gap-3 px-5 pb-safe pt-4 flex-row">
-      <PanelFooterButton
-        variant="ghost"
-        onPress={() => handleOpenChange(false)}
-        disabled={mutation.isPending}
-      >
+      <Button variant="ghost" onPress={() => handleOpenChange(false)} disabled={mutation.isPending}>
         {t("common.cancel")}
-      </PanelFooterButton>
-      <PanelFooterButton
+      </Button>
+      <Button
         onPress={() => void handleSubmit(submit)()}
         disabled={mutation.isPending}
         className="flex-1"
       >
         {mutation.isPending ? t("common.saving") : t("ingredients.submitMovement")}
-      </PanelFooterButton>
+      </Button>
     </View>
   );
   const content = (
@@ -150,10 +144,10 @@ export default function RecordMovementOverlay({
         name="type"
         render={({ field: { value, onChange } }) => (
           <View className="gap-1.5">
-            <PanelLabel isRequired isInvalid={Boolean(errors.type)}>
+            <Label isRequired isInvalid={Boolean(errors.type)}>
               {t("ingredients.movementType")}
-            </PanelLabel>
-            <PanelSelect
+            </Label>
+            <Select
               size="sm"
               presentation="sheet"
               value={value}
@@ -163,19 +157,19 @@ export default function RecordMovementOverlay({
               triggerClassName={errors.type ? "border-destructive" : ""}
             >
               {movementOptions.map((option) => (
-                <PanelSelect.Item key={option.value} {...option} />
+                <Select.Item key={option.value} {...option} />
               ))}
-            </PanelSelect>
+            </Select>
             {errors.type?.message ? (
-              <PanelFieldText type="body-xs" className="text-destructive">
+              <Typography type="body-xs" className="text-destructive">
                 {errors.type?.message}
-              </PanelFieldText>
+              </Typography>
             ) : null}
           </View>
         )}
       />
 
-      <PanelInput
+      <Input
         size="sm"
         label={t("ingredients.quantity")}
         placeholder={t("ingredients.quantityPlaceholder")}
@@ -184,7 +178,7 @@ export default function RecordMovementOverlay({
         errorMessage={errors.quantity?.message}
         {...quantityInput}
         startContent={
-          <PanelFooterButton
+          <Button
             size="icon"
             variant="ghost"
             accessibilityLabel={t("productForm.decreaseAccessibility", {
@@ -194,10 +188,10 @@ export default function RecordMovementOverlay({
             onPress={() => changeQuantity(String(Math.max(0, (quantityNumber || 0) - 1)))}
           >
             −
-          </PanelFooterButton>
+          </Button>
         }
         endContent={
-          <PanelFooterButton
+          <Button
             size="icon"
             variant="ghost"
             accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -206,11 +200,11 @@ export default function RecordMovementOverlay({
             onPress={() => changeQuantity(String((quantityNumber || 0) + 1))}
           >
             +
-          </PanelFooterButton>
+          </Button>
         }
       />
 
-      <PanelInput
+      <Input
         size="sm"
         ref={costRef}
         label={t("ingredients.movementCostPerUnit")}
@@ -219,9 +213,9 @@ export default function RecordMovementOverlay({
 
         keyboardType="numeric"
         startContent={
-          <PanelTypography type="body-sm" weight="medium" muted>
+          <Typography type="body-sm" weight="medium" muted>
             {RUPIAH_PREFIX}
-          </PanelTypography>
+          </Typography>
         }
         interactiveContent={false}
 
@@ -235,7 +229,7 @@ export default function RecordMovementOverlay({
         control={control}
         name="reason"
         render={({ field: { value, onChange } }) => (
-          <PanelTextarea
+          <Textarea
             size="sm"
             label={t("ingredients.reason")}
             placeholder={t("ingredients.reasonPlaceholder")}
@@ -276,7 +270,7 @@ export default function RecordMovementOverlay({
             <Typography type="body-sm" muted>
               {description}
             </Typography>
-            <PanelFooterButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -284,7 +278,7 @@ export default function RecordMovementOverlay({
               onPress={() => handleOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelFooterButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -295,13 +289,13 @@ export default function RecordMovementOverlay({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-md self-center overflow-hidden p-0"
         style={dialogKeyboardStyle}
       >
-        <PanelFooterButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -309,14 +303,14 @@ export default function RecordMovementOverlay({
           onPress={() => handleOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelFooterButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{title}</PanelDialog.Title>
-          <PanelDialog.Description>{description}</PanelDialog.Description>
+          <Dialog.Title>{title}</Dialog.Title>
+          <Dialog.Description>{description}</Dialog.Description>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }

@@ -3,9 +3,9 @@ import {
   Separator,
   Fab,
   PlusIcon,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Skeleton as PanelListSkeleton,
+  Alert,
+  Button,
+  Skeleton,
   EmptyState,
   Chip,
 } from "panelui-native";
@@ -72,29 +72,27 @@ export default function DiscountsScreen(): React.JSX.Element {
                 key={`loading-row-${index}`}
                 className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
               >
-                <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                <Skeleton className="size-11 shrink-0 rounded-xl" />
                 <View className="flex-1 gap-2">
-                  <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-                  <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-                  <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                  <Skeleton className="h-4 w-3/5 rounded-md" />
+                  <Skeleton className="h-3 w-2/5 rounded-md" />
+                  <Skeleton className="h-3 w-1/3 rounded-md" />
                 </View>
-                <PanelListSkeleton className="size-4 rounded-full" />
+                <Skeleton className="size-4 rounded-full" />
               </View>
             ))}
           </View>
         ) : query.isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>
-                  {getErrorMessage(query.error)}
-                </PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void query.refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : query.data?.length === 0 ? (
           <View className="flex-1">

@@ -3,21 +3,17 @@ import {
   Surface,
   Typography,
   Separator,
-  Button as PanelDialogButton,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
+  Button,
+  Spinner,
   Accordion,
-  Button as PanelButton,
   Countdown,
-  Dialog as PanelDialog,
-  Textarea as PanelTextarea,
-  Typography as PanelTypography,
+  Dialog,
+  Textarea,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
   EmptyState,
   cn,
-  Chip as PanelChip,
+  Chip,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { useOrder, useUpdateOrderStatus } from "@/hooks/db/use-orders";
@@ -180,7 +176,7 @@ function OrderCancelAction({
 
   return (
     <View className="flex-1 gap-2">
-      <PanelButton
+      <Button
         variant="destructive"
         className="w-full"
         onPress={() => setIsCancelOpen(true)}
@@ -188,19 +184,17 @@ function OrderCancelAction({
       >
         <AppIcon icon={AppIcons.closeCircle} size={16} color={themeColorDanger} />
         {t("orders.detail.cancelOrder")}
-      </PanelButton>
+      </Button>
       {error ? (
         <Typography className="text-destructive" type="body-xs">
           {getErrorMessage(error)}
         </Typography>
       ) : null}
-      <PanelDialog open={isCancelOpen} onOpenChange={setIsCancelOpen}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("orders.detail.cancelOrder")}</PanelDialog.Title>
-          <PanelDialog.Description>
-            {t("orders.detail.cancelOrderDescription")}
-          </PanelDialog.Description>
-          <PanelTextarea
+      <Dialog open={isCancelOpen} onOpenChange={setIsCancelOpen}>
+        <Dialog.Content>
+          <Dialog.Title>{t("orders.detail.cancelOrder")}</Dialog.Title>
+          <Dialog.Description>{t("orders.detail.cancelOrderDescription")}</Dialog.Description>
+          <Textarea
             size="sm"
             label={t("orders.detail.cancellationReason")}
             value={cancelReason}
@@ -215,18 +209,18 @@ function OrderCancelAction({
               isCancelReasonInvalid ? t("orders.detail.cancelReasonRequired") : undefined
             }
           />
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton variant="destructive" size="sm" onPress={handleCancel}>
+              </Button>
+            </Dialog.Close>
+            <Button variant="destructive" size="sm" onPress={handleCancel}>
               {t("orders.detail.cancelOrder")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </View>
   );
 }
@@ -266,7 +260,7 @@ function PaymentQrDialog({
         </Typography>
         {target !== null ? (
           <View className="flex-row items-center gap-1">
-            <PanelTypography
+            <Typography
               type="body-xs"
               weight="semibold"
               className="text-warning"
@@ -274,7 +268,7 @@ function PaymentQrDialog({
               importantForAccessibility="no"
             >
               {t("orders.detail.qrValidFor")}
-            </PanelTypography>
+            </Typography>
             <Countdown
               to={target}
               variant="inline"
@@ -307,7 +301,7 @@ function PaymentQrDialog({
             <Typography type="body-sm" muted>
               {code}
             </Typography>
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -315,7 +309,7 @@ function PaymentQrDialog({
               onPress={() => onOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelButton>
+            </Button>
           </View>
         }
       >
@@ -325,12 +319,12 @@ function PaymentQrDialog({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-md self-center overflow-hidden p-0"
       >
-        <PanelButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -338,14 +332,14 @@ function PaymentQrDialog({
           onPress={() => onOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{t("orders.detail.qrisPayment")}</PanelDialog.Title>
-          <PanelDialog.Description>{code}</PanelDialog.Description>
+          <Dialog.Title>{t("orders.detail.qrisPayment")}</Dialog.Title>
+          <Dialog.Description>{code}</Dialog.Description>
         </View>
         {content}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }
 
@@ -360,24 +354,22 @@ function PrinterPromptDialog({
 }) {
   const { t } = useTranslation();
   return (
-    <PanelDialog open={prompt !== null} onOpenChange={(open) => !open && onClose()}>
-      <PanelDialog.Content className="w-full max-w-md self-center">
-        <PanelDialog.Title>{prompt?.title}</PanelDialog.Title>
-        {prompt?.message ? (
-          <PanelDialog.Description>{prompt.message}</PanelDialog.Description>
-        ) : null}
-        <PanelDialog.Footer>
-          <PanelDialogButton variant="ghost" size="sm" onPress={onClose}>
+    <Dialog open={prompt !== null} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Content className="w-full max-w-md self-center">
+        <Dialog.Title>{prompt?.title}</Dialog.Title>
+        {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
+        <Dialog.Footer>
+          <Button variant="ghost" size="sm" onPress={onClose}>
             {prompt?.actionLabel ? t("common.cancel") : t("common.close")}
-          </PanelDialogButton>
+          </Button>
           {prompt?.actionLabel ? (
-            <PanelDialogButton size="sm" className="flex-1" onPress={() => void onAction()}>
+            <Button size="sm" className="flex-1" onPress={() => void onAction()}>
               {prompt.actionLabel}
-            </PanelDialogButton>
+            </Button>
           ) : null}
-        </PanelDialog.Footer>
-      </PanelDialog.Content>
-    </PanelDialog>
+        </Dialog.Footer>
+      </Dialog.Content>
+    </Dialog>
   );
 }
 
@@ -511,7 +503,7 @@ function ReceiptPreviewSheet({
           <Typography type="body-sm" muted>
             {order.code}
           </Typography>
-          <PanelButton
+          <Button
             variant="ghost"
             size="icon"
             className="absolute right-3 top-3"
@@ -519,12 +511,12 @@ function ReceiptPreviewSheet({
             accessibilityLabel={t("common.close")}
           >
             <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
-          </PanelButton>
+          </Button>
         </View>
       }
       footer={
         <View className="flex-row gap-2 bg-surface border-t border-border px-4 pb-safe pt-3">
-          <PanelButton
+          <Button
             size="sm"
             className="min-w-0 flex-1 px-1"
             variant="outline"
@@ -533,8 +525,8 @@ function ReceiptPreviewSheet({
           >
             <AppIcon icon={AppIcons.download} size={16} color={themeColorForeground} />
             {t("common.save")}
-          </PanelButton>
-          <PanelButton
+          </Button>
+          <Button
             size="sm"
             className="min-w-0 flex-1 px-1"
             variant="outline"
@@ -548,8 +540,8 @@ function ReceiptPreviewSheet({
           >
             <AppIcon icon={AppIcons.share} size={16} color={themeColorForeground} />
             {t("orders.detail.shareReceipt")}
-          </PanelButton>
-          <PanelButton
+          </Button>
+          <Button
             size="sm"
             className="min-w-0 flex-1 px-1"
             variant="outline"
@@ -558,7 +550,7 @@ function ReceiptPreviewSheet({
           >
             <AppIcon icon={AppIcons.print} size={16} color={themeColorForeground} />
             {t("orders.detail.printReceipt")}
-          </PanelButton>
+          </Button>
         </View>
       }
     >
@@ -593,9 +585,9 @@ function OrderNotFound({ iconColor, onBack }: { iconColor: string; onBack: () =>
           <EmptyState.Description>{t("orders.detail.notFoundDescription")}</EmptyState.Description>
         </EmptyState.Header>
         <EmptyState.Content>
-          <PanelButton size="sm" variant="outline" onPress={onBack}>
+          <Button size="sm" variant="outline" onPress={onBack}>
             {t("common.goBack")}
-          </PanelButton>
+          </Button>
         </EmptyState.Content>
       </EmptyState>
     </View>
@@ -631,11 +623,9 @@ function OrderOverview({
               <Typography type="h4" weight="bold" className="font-mono tabular-nums">
                 {order.code}
               </Typography>
-              <PanelChip variant={statusChipVariant(orderStatus.color)} size="sm">
-                <PanelChip.Label>
-                  {t(`orders.status.${orderStatus.value}` as TranslationKey)}
-                </PanelChip.Label>
-              </PanelChip>
+              <Chip variant={statusChipVariant(orderStatus.color)} size="sm">
+                <Chip.Label>{t(`orders.status.${orderStatus.value}` as TranslationKey)}</Chip.Label>
+              </Chip>
             </View>
             <Typography type="body-sm" muted>
               {formatDateTime(order.created_at)}
@@ -750,9 +740,9 @@ function DeliveryPanel({ orderable }: { orderable: App.Data.Merchant.Order.Order
       <View className="flex-row items-center justify-between gap-3">
         <SectionTitle>{t("orders.detail.delivery")}</SectionTitle>
         {tracking ? (
-          <PanelChip variant={statusChipVariant(normalizeStatusColor(tracking))} size="sm">
-            <PanelChip.Label>{tracking.label}</PanelChip.Label>
-          </PanelChip>
+          <Chip variant={statusChipVariant(normalizeStatusColor(tracking))} size="sm">
+            <Chip.Label>{tracking.label}</Chip.Label>
+          </Chip>
         ) : null}
       </View>
       <Surface className="w-full p-4 gap-3">
@@ -907,15 +897,15 @@ function OrderPaymentDetails({
         <Accordion hideSeparator className="rounded-lg bg-secondary px-3">
           <Accordion.Item value="qr-image-url">
             <Accordion.Trigger className="py-2.5">
-              <PanelTypography type="body-xs" weight="semibold" muted className="flex-1">
+              <Typography type="body-xs" weight="semibold" muted className="flex-1">
                 {t("payment.qrImageUrl")}
-              </PanelTypography>
+              </Typography>
               <Accordion.Indicator />
             </Accordion.Trigger>
             <Accordion.Content className="pb-3">
-              <PanelTypography selectable type="body-xs">
+              <Typography selectable type="body-xs">
                 {paymentQrUrl ?? ""}
-              </PanelTypography>
+              </Typography>
             </Accordion.Content>
           </Accordion.Item>
         </Accordion>
@@ -929,7 +919,7 @@ function OrderPaymentDetails({
       />
       {canRefreshPayment && target !== null ? (
         <View className="flex-row items-center gap-1">
-          <PanelTypography
+          <Typography
             type="body-sm"
             weight="semibold"
             className="text-warning"
@@ -937,7 +927,7 @@ function OrderPaymentDetails({
             importantForAccessibility="no"
           >
             {t("orders.detail.expiresIn")}
-          </PanelTypography>
+          </Typography>
           <Countdown
             to={target}
             variant="inline"
@@ -949,10 +939,10 @@ function OrderPaymentDetails({
         </View>
       ) : null}
       {canShowQr ? (
-        <PanelButton variant="outline" onPress={onOpenQr}>
+        <Button variant="outline" onPress={onOpenQr}>
           <AppIcon icon={AppIcons.qrCode} size={16} color={foregroundColor} />
           {t("orders.detail.showQris")}
-        </PanelButton>
+        </Button>
       ) : null}
       <OrderPaymentRefresh
         isVisible={canRefreshPayment}
@@ -1000,24 +990,24 @@ function OrderPaymentQrPanel({
         </View>
       ) : null}
       {paymentLink && /^https?:\/\//i.test(paymentLink) ? (
-        <PanelButton variant="outline" onPress={() => void Linking.openURL(paymentLink)}>
+        <Button variant="outline" onPress={() => void Linking.openURL(paymentLink)}>
           <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
           {t("orders.detail.openPaymentLink")}
-        </PanelButton>
+        </Button>
       ) : null}
       {paymentLink && !hasQrImageUrl ? (
         <Accordion hideSeparator className="rounded-lg bg-secondary px-3">
           <Accordion.Item value="qr-image-url">
             <Accordion.Trigger className="py-2.5">
-              <PanelTypography type="body-xs" weight="semibold" muted className="flex-1">
+              <Typography type="body-xs" weight="semibold" muted className="flex-1">
                 {t("payment.qrImageUrl")}
-              </PanelTypography>
+              </Typography>
               <Accordion.Indicator />
             </Accordion.Trigger>
             <Accordion.Content className="pb-3">
-              <PanelTypography selectable type="body-xs">
+              <Typography selectable type="body-xs">
                 {paymentLink}
-              </PanelTypography>
+              </Typography>
             </Accordion.Content>
           </Accordion.Item>
         </Accordion>
@@ -1051,14 +1041,14 @@ function OrderPaymentRefresh({
 
   return (
     <>
-      <PanelButton variant="ghost" onPress={onRefresh} disabled={isPending}>
+      <Button variant="ghost" onPress={onRefresh} disabled={isPending}>
         {isPending ? (
           <ActivityIndicator />
         ) : (
           <AppIcon icon={AppIcons.refresh} size={16} color={foregroundColor} />
         )}
         {t("orders.detail.refreshStatus")}
-      </PanelButton>
+      </Button>
       {isError ? (
         <Typography type="body-xs" className="text-destructive">
           {getErrorMessage(error)}
@@ -1193,16 +1183,16 @@ function OrderPaymentColumn({
         <View className="gap-2">
           <View className="flex-row items-center justify-between gap-3">
             <SectionTitle>{t("orders.detail.payment")}</SectionTitle>
-            <PanelChip
+            <Chip
               variant={statusChipVariant(paymentData.paymentStatusPresentation.color)}
               size="sm"
             >
-              <PanelChip.Label>
+              <Chip.Label>
                 {t(
                   `orders.paymentStatus.${paymentData.paymentStatusPresentation.value}` as TranslationKey
                 )}
-              </PanelChip.Label>
-            </PanelChip>
+              </Chip.Label>
+            </Chip>
           </View>
           <OrderPaymentDetails
             paymentStatus={paymentStatus}
@@ -1230,7 +1220,7 @@ function OrderPaymentColumn({
             canCancel={canCancel}
             onUpdate={updateStatus.mutate}
           />
-          <PanelButton
+          <Button
             variant="outline"
             className="flex-1"
             disabled={isPrinting}
@@ -1242,7 +1232,7 @@ function OrderPaymentColumn({
               <AppIcon icon={AppIcons.print} size={18} color={foregroundColor} />
             )}
             {isPrinting ? t("orders.detail.printingReceipt") : t("orders.detail.printReceipt")}
-          </PanelButton>
+          </Button>
         </View>
       </View>
 
@@ -1268,24 +1258,24 @@ export default function OrderDetailScreen() {
   if (isLoading)
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("orders.detail.loading")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   if (isError)
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>{getErrorMessage(error)}</PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   if (!order) {
@@ -1318,13 +1308,13 @@ function OrderDetailContent({ order }: { order: App.Data.Merchant.Order.OrderDat
       <Stack.Screen
         options={{
           headerRight: () => (
-            <PanelButton
+            <Button
               variant="ghost"
               onPress={() => setIsReceiptPreviewOpen(true)}
               accessibilityLabel={t("orders.detail.previewReceipt")}
             >
               <AppIcon icon={AppIcons.receipt} size={21} color={themeColorForeground} />
-            </PanelButton>
+            </Button>
           ),
         }}
       />

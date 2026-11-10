@@ -1,12 +1,12 @@
 import { buildCartAddOns } from "@/utils/add-on-selection";
 import {
-  Checkbox as PanelCheckbox,
-  Textarea as PanelTextarea,
-  Typography as PanelTypography,
-  Chip as PanelChip,
+  Checkbox,
+  Textarea,
+  Typography,
+  Chip,
   Button,
   Separator,
-  RadioGroup as PanelRadioGroup,
+  RadioGroup,
   Alert,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
@@ -56,21 +56,21 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
         control={control}
         name={`radioSelections.${group.id}`}
         render={({ field }) => (
-          <PanelRadioGroup
+          <RadioGroup
             value={field.value ?? (group.required ? undefined : NO_OPTION_VALUE)}
             onValueChange={(value) => field.onChange(value === NO_OPTION_VALUE ? undefined : value)}
             variant="card"
             className="gap-2"
           >
             {!group.required ? (
-              <PanelRadioGroup.Item
+              <RadioGroup.Item
                 value={NO_OPTION_VALUE}
                 label={t("addOns.noOption")}
                 className="min-h-16"
               />
             ) : null}
             {group.options.map((option) => (
-              <PanelRadioGroup.Item
+              <RadioGroup.Item
                 key={option.id}
                 value={option.id}
                 label={option.name}
@@ -82,7 +82,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
                 className="min-h-16"
               />
             ))}
-          </PanelRadioGroup>
+          </RadioGroup>
         )}
       />
     );
@@ -104,7 +104,7 @@ function AddOnSelection({ control, group }: AddOnSelectionProps): React.JSX.Elem
               const isDisabled = !isSelected && hasLimit && selected.length >= group.max;
 
               return (
-                <PanelCheckbox
+                <Checkbox
                   key={option.id}
                   variant="card"
                   className="min-h-16"
@@ -254,12 +254,12 @@ export default function POSAddOnSheet(): React.JSX.Element {
   const header = (
     <View className="bg-surface">
       <View className="gap-2 px-6 pb-5 pt-8">
-        <PanelTypography type="h4" weight="semibold" numberOfLines={1}>
+        <Typography type="h4" weight="semibold" numberOfLines={1}>
           {product?.name ?? t("addOns.customizeProduct")}
-        </PanelTypography>
-        <PanelTypography type="body-sm" muted className="tabular-nums">
+        </Typography>
+        <Typography type="body-sm" muted className="tabular-nums">
           {t("addOns.basePrice", { price: formatRupiah(product?.price ?? 0) })}
-        </PanelTypography>
+        </Typography>
       </View>
       <Separator />
     </View>
@@ -279,14 +279,14 @@ export default function POSAddOnSheet(): React.JSX.Element {
       <Separator />
       <View className="gap-3 px-5 pb-4 pt-3">
         <View className="flex-row items-center justify-between gap-4">
-          <PanelTypography type="body-xs" muted>
+          <Typography type="body-xs" muted>
             {t(selectedOptionCount === 1 ? "addOns.selectedOne" : "addOns.selectedOther", {
               count: selectedOptionCount,
             })}
-          </PanelTypography>
-          <PanelTypography type="body-sm" weight="semibold" className="tabular-nums">
+          </Typography>
+          <Typography type="body-sm" weight="semibold" className="tabular-nums">
             {formatRupiah(configuredPrice)}
-          </PanelTypography>
+          </Typography>
         </View>
         <View className="flex-row gap-3">
           <Button variant="ghost" onPress={closeSheet}>
@@ -345,32 +345,32 @@ export default function POSAddOnSheet(): React.JSX.Element {
             <View className="gap-3">
               <View className="flex-row items-start justify-between gap-3">
                 <View className="min-w-0 flex-1 gap-1">
-                  <PanelTypography type="body-sm" weight="semibold">
+                  <Typography type="body-sm" weight="semibold">
                     {group.name}
-                  </PanelTypography>
-                  <PanelTypography type="body-xs" muted>
+                  </Typography>
+                  <Typography type="body-xs" muted>
                     {constraintLabel(group, t)}
-                  </PanelTypography>
+                  </Typography>
                 </View>
                 {group.required ? (
-                  <PanelChip size="sm" variant="primary">
+                  <Chip size="sm" variant="primary">
                     {t("addOns.required")}
-                  </PanelChip>
+                  </Chip>
                 ) : null}
               </View>
               {group.multiple && group.max > 0 ? (
-                <PanelTypography type="body-xs" muted>
+                <Typography type="body-xs" muted>
                   {t("addOns.selectionProgress", {
                     selected: values.checkboxSelections?.[group.id]?.length ?? 0,
                     max: group.max,
                   })}
-                </PanelTypography>
+                </Typography>
               ) : null}
               <AddOnSelection control={control} group={group} />
               {error ? (
-                <PanelTypography type="body-xs" className="text-destructive">
+                <Typography type="body-xs" className="text-destructive">
                   {error}
-                </PanelTypography>
+                </Typography>
               ) : null}
             </View>
           );
@@ -381,7 +381,7 @@ export default function POSAddOnSheet(): React.JSX.Element {
               control={control}
               name="notes"
               render={({ field }) => (
-                <PanelTextarea
+                <Textarea
                   size="sm"
                   ref={field.ref}
                   label={t("addOns.notes")}

@@ -1,15 +1,13 @@
 import {
-  Button as PanelButton,
+  Button,
   Typography,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
   Chip,
   EmptyState,
   Fab,
   PlusIcon,
   Table,
-  Typography as PanelTypography,
-  Skeleton as PanelTableSkeleton,
+  Skeleton,
 } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { compareTableValues } from "@/utils/table-sort";
@@ -216,7 +214,7 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                     <Table.Row>
                       {SKELETON_COLUMN_WIDTHS.map((_, index) => (
                         <Table.Head key={`heading-${index}`}>
-                          <PanelTableSkeleton className="h-3 w-20 rounded-md" />
+                          <Skeleton className="h-3 w-20 rounded-md" />
                         </Table.Head>
                       ))}
                     </Table.Row>
@@ -226,7 +224,7 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                       <Table.Row key={`row-${rowIndex}`}>
                         {SKELETON_COLUMN_WIDTHS.map((_, columnIndex) => (
                           <Table.Cell key={`cell-${rowIndex}-${columnIndex}`}>
-                            <PanelTableSkeleton
+                            <Skeleton
                               className={
                                 columnIndex === 6
                                   ? `h-6 ${SKELETON_CELL_WIDTHS[columnIndex] ?? "w-24"} rounded-full`
@@ -244,17 +242,15 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
           </ScrollView>
         ) : query.isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>
-                  {getErrorMessage(query.error)}
-                </PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void query.refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : (
           <ScrollView
@@ -313,19 +309,19 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                             }
                           >
                             <Table.Cell>
-                              <PanelTypography type="body-sm" weight="semibold" numberOfLines={1}>
+                              <Typography type="body-sm" weight="semibold" numberOfLines={1}>
                                 {supplier.name}
-                              </PanelTypography>
+                              </Typography>
                             </Table.Cell>
                             <Table.Cell>
-                              <PanelTypography type="body-sm" numberOfLines={1}>
+                              <Typography type="body-sm" numberOfLines={1}>
                                 {supplier.contact_name ?? "—"}
-                              </PanelTypography>
+                              </Typography>
                             </Table.Cell>
                             <Table.Cell>
-                              <PanelTypography type="body-sm" numberOfLines={1}>
+                              <Typography type="body-sm" numberOfLines={1}>
                                 {supplier.email ?? "—"}
-                              </PanelTypography>
+                              </Typography>
                             </Table.Cell>
                             <Table.Cell>{supplier.phone ?? "—"}</Table.Cell>
                             <Table.Cell labelClassName="tabular-nums">
@@ -388,7 +384,7 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                   <Typography type="body-xs" muted>
                     {t("suppliers.loadedCount", { count: sortedSuppliers.length })}
                   </Typography>
-                  <PanelButton
+                  <Button
                     size="sm"
                     variant="ghost"
                     onPress={() => query.fetchNextPage()}
@@ -397,7 +393,7 @@ export default function InventorySuppliersScreen(): React.JSX.Element {
                     {query.isFetchingNextPage
                       ? t("suppliers.loadingMore")
                       : t("suppliers.loadMore")}
-                  </PanelButton>
+                  </Button>
                 </View>
               ) : null}
             </View>

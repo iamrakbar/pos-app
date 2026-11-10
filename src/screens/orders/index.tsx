@@ -1,13 +1,5 @@
 import { statusChipVariant } from "@/utils/status-chip-variant";
-import {
-  Typography,
-  Separator,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Skeleton as PanelListSkeleton,
-  EmptyState,
-  Chip as PanelChip,
-} from "panelui-native";
+import { Typography, Separator, Alert, Button, Skeleton, EmptyState, Chip } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { useCSSVariable } from "uniwind";
 import { useOrders } from "@/hooks/db/use-orders";
@@ -107,27 +99,27 @@ export default function OrdersScreen(): React.JSX.Element {
                 key={`loading-row-${index}`}
                 className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
               >
-                <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                <Skeleton className="size-11 shrink-0 rounded-xl" />
                 <View className="flex-1 gap-2">
-                  <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-                  <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-                  <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                  <Skeleton className="h-4 w-3/5 rounded-md" />
+                  <Skeleton className="h-3 w-2/5 rounded-md" />
+                  <Skeleton className="h-3 w-1/3 rounded-md" />
                 </View>
-                <PanelListSkeleton className="size-4 rounded-full" />
+                <Skeleton className="size-4 rounded-full" />
               </View>
             ))}
           </View>
         ) : isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>{getErrorMessage(error)}</PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : orders.length === 0 ? (
           <EmptyState className="py-20">
@@ -171,13 +163,13 @@ export default function OrdersScreen(): React.JSX.Element {
                       key={`loading-row-${index}`}
                       className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
                     >
-                      <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                      <Skeleton className="size-11 shrink-0 rounded-xl" />
                       <View className="flex-1 gap-2">
-                        <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-                        <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-                        <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                        <Skeleton className="h-4 w-3/5 rounded-md" />
+                        <Skeleton className="h-3 w-2/5 rounded-md" />
+                        <Skeleton className="h-3 w-1/3 rounded-md" />
                       </View>
-                      <PanelListSkeleton className="size-4 rounded-full" />
+                      <Skeleton className="size-4 rounded-full" />
                     </View>
                   ))}
                 </View>
@@ -230,9 +222,9 @@ function OrderRow({
             <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
               {order.code}
             </Typography>
-            <PanelChip variant={statusChipVariant(orderStatus.color)} size="sm">
-              <PanelChip.Label>{orderStatusLabel}</PanelChip.Label>
-            </PanelChip>
+            <Chip variant={statusChipVariant(orderStatus.color)} size="sm">
+              <Chip.Label>{orderStatusLabel}</Chip.Label>
+            </Chip>
           </View>
           <View className="flex-row items-center gap-1.5">
             <AppIcon
@@ -267,9 +259,9 @@ function OrderRow({
           <Typography type="body-xs" muted>
             {paymentName}
           </Typography>
-          <PanelChip variant={statusChipVariant(paymentStatus.color)} size="sm">
-            <PanelChip.Label>{paymentStatusLabel}</PanelChip.Label>
-          </PanelChip>
+          <Chip variant={statusChipVariant(paymentStatus.color)} size="sm">
+            <Chip.Label>{paymentStatusLabel}</Chip.Label>
+          </Chip>
           <Typography type="body-xs" muted>
             ·
           </Typography>

@@ -1,21 +1,18 @@
 import {
   Typography,
   Separator,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Label as PanelLabel,
-  Dialog as PanelDialog,
-  Input as PanelInput,
+  Spinner,
+  Button,
+  Label,
+  Dialog,
+  Input,
   NumberInput,
-  Select as PanelSelect,
-  Textarea as PanelTextarea,
-  Typography as PanelTypography,
+  Select,
+  Textarea,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
   Card,
-  Switch as PanelSwitch,
+  Switch,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
@@ -229,7 +226,7 @@ function ToggleRow({
           {description}
         </Typography>
       </View>
-      <PanelSwitch value={isSelected} onValueChange={onSelectedChange} label={title} />
+      <Switch value={isSelected} onValueChange={onSelectedChange} label={title} />
     </View>
   );
 }
@@ -318,11 +315,11 @@ function ProductDetailsCard({
           name="category_id"
           render={({ field: { value, onChange } }) => (
             <View className="gap-1.5">
-              <PanelLabel isRequired isInvalid={Boolean(errors.category_id)}>
+              <Label isRequired isInvalid={Boolean(errors.category_id)}>
                 {t("productForm.category")}
-              </PanelLabel>
+              </Label>
               <View className="flex-row items-center gap-2">
-                <PanelSelect
+                <Select
                   size="sm"
                   presentation="sheet"
                   value={value}
@@ -334,10 +331,10 @@ function ProductDetailsCard({
                   title={t("productForm.category")}
                 >
                   {categoryOptions.map((option) => (
-                    <PanelSelect.Item key={option.value} {...option} />
+                    <Select.Item key={option.value} {...option} />
                   ))}
-                </PanelSelect>
-                <PanelButton
+                </Select>
+                <Button
                   variant="ghost"
                   size="icon"
 
@@ -345,29 +342,29 @@ function ProductDetailsCard({
                   onPress={onAddCategory}
                 >
                   <AppIcon icon={AppIcons.add} size={18} color={themeColorForeground} />
-                </PanelButton>
+                </Button>
               </View>
               {didCategoriesFail ? (
                 <View className="flex-row items-center justify-between gap-3">
-                  <PanelTypography type="body-xs" className="flex-1 text-destructive">
+                  <Typography type="body-xs" className="flex-1 text-destructive">
                     {t("productForm.categoriesFailed")}
-                  </PanelTypography>
-                  <PanelButton size="sm" variant="ghost" onPress={onRetryCategories}>
+                  </Typography>
+                  <Button size="sm" variant="ghost" onPress={onRetryCategories}>
                     {t("common.retry")}
-                  </PanelButton>
+                  </Button>
                 </View>
               ) : errors.category_id?.message ? (
-                <PanelTypography type="body-xs" className="text-destructive">
+                <Typography type="body-xs" className="text-destructive">
                   {errors.category_id.message}
-                </PanelTypography>
+                </Typography>
               ) : areCategoriesLoading ? (
-                <PanelTypography type="body-xs" muted>
+                <Typography type="body-xs" muted>
                   {t("categories.loading")}
-                </PanelTypography>
+                </Typography>
               ) : categoryOptions.length === 0 ? (
-                <PanelTypography type="body-xs" className="text-warning">
+                <Typography type="body-xs" className="text-warning">
                   {t("productForm.noCategories")}
-                </PanelTypography>
+                </Typography>
               ) : null}
             </View>
           )}
@@ -376,7 +373,7 @@ function ProductDetailsCard({
           control={control}
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               label={t("productForm.name")}
@@ -394,7 +391,7 @@ function ProductDetailsCard({
           control={control}
           name="description"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelTextarea
+            <Textarea
               size="sm"
               ref={ref}
               label={t("productForm.description")}
@@ -461,10 +458,10 @@ function ProductInventoryFields({
         name="inventory_mode"
         render={({ field: { value, onChange } }) => (
           <View className="gap-1.5">
-            <PanelLabel isRequired isInvalid={Boolean(errors.inventory_mode)}>
+            <Label isRequired isInvalid={Boolean(errors.inventory_mode)}>
               {t("productForm.inventoryMode")}
-            </PanelLabel>
-            <PanelSelect
+            </Label>
+            <Select
               size="sm"
               presentation="sheet"
               value={value}
@@ -478,18 +475,18 @@ function ProductInventoryFields({
               title={t("productForm.inventoryMode")}
             >
               {modeOptions.map((option) => (
-                <PanelSelect.Item key={option.value} {...option} />
+                <Select.Item key={option.value} {...option} />
               ))}
-            </PanelSelect>
-            <PanelTypography type="body-xs" muted>
+            </Select>
+            <Typography type="body-xs" muted>
               {t(`productForm.inventoryModeDescriptions.${inventoryMode}` as TranslationKey)}
-            </PanelTypography>
+            </Typography>
           </View>
         )}
       />
       {capabilities.showInventoryCost ? (
         <View className="flex-row flex-wrap gap-3">
-          <PanelInput
+          <Input
             size="sm"
             ref={costRef}
             containerClassName="flex-1"
@@ -500,9 +497,9 @@ function ProductInventoryFields({
 
             keyboardType="numeric"
             startContent={
-              <PanelTypography type="body-sm" weight="medium" muted>
+              <Typography type="body-sm" weight="medium" muted>
                 {RUPIAH_PREFIX}
-              </PanelTypography>
+              </Typography>
             }
             interactiveContent={false}
             {...costInput}
@@ -586,7 +583,7 @@ function ProductInventoryActions({
   return (
     <Card.Footer className="flex-row flex-wrap gap-2 pt-0 p-0">
       {actions.map((action) => (
-        <PanelButton
+        <Button
           key={action.key}
           size="sm"
           variant="outline"
@@ -595,10 +592,10 @@ function ProductInventoryActions({
           onPress={action.onPress}
         >
           <AppIcon icon={action.icon} size={16} color={themeColorForeground} />
-          <PanelTypography type="body-xs" numberOfLines={1}>
+          <Typography type="body-xs" numberOfLines={1}>
             {action.label}
-          </PanelTypography>
-        </PanelButton>
+          </Typography>
+        </Button>
       ))}
     </Card.Footer>
   );
@@ -718,7 +715,7 @@ function InventoryCard({
           control={control}
           name="code"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               label={t("productForm.code")}
@@ -802,7 +799,7 @@ function PricingCard({
       />
       <Card.Content className="gap-4 p-0">
         <View className="flex-row flex-wrap gap-3">
-          <PanelInput
+          <Input
             size="sm"
             ref={priceRef}
             containerClassName="flex-1"
@@ -813,16 +810,16 @@ function PricingCard({
             isRequired
             keyboardType="numeric"
             startContent={
-              <PanelTypography type="body-sm" weight="medium" muted>
+              <Typography type="body-sm" weight="medium" muted>
                 {RUPIAH_PREFIX}
-              </PanelTypography>
+              </Typography>
             }
             interactiveContent={false}
             {...priceInput}
           />
           {discountedPrice !== null ? (
             <View className="flex-1 gap-1">
-              <PanelLabel>{t("productForm.discountPrice")}</PanelLabel>
+              <Label>{t("productForm.discountPrice")}</Label>
               <Typography type="body-sm" weight="medium">
                 {formatRupiah(discountedPrice)}
               </Typography>
@@ -932,9 +929,9 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
 
   return (
     <View className="gap-1.5">
-      <PanelLabel>{t("productForm.discountOptional")}</PanelLabel>
+      <Label>{t("productForm.discountOptional")}</Label>
       <View className="flex-row items-center gap-2">
-        <PanelSelect
+        <Select
           size="sm"
           presentation="sheet"
           value={selectedOption?.value}
@@ -951,14 +948,14 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
           className="flex-1"
         >
           {discountOptions.map((option) => (
-            <PanelSelect.Item
+            <Select.Item
               key={option.value}
               value={option.value}
               label={`${option.label} · ${option.description}`}
             />
           ))}
-        </PanelSelect>
-        <PanelButton
+        </Select>
+        <Button
           variant="ghost"
           size="icon"
 
@@ -967,9 +964,9 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
           disabled={setProductDiscount.isPending}
         >
           <AppIcon icon={AppIcons.add} size={18} color={themeColorForeground} />
-        </PanelButton>
+        </Button>
         {currentDiscount ? (
-          <PanelButton
+          <Button
             variant="ghost"
             size="icon"
 
@@ -978,21 +975,21 @@ function ProductDiscountField({ productId, onAdd }: { productId: string; onAdd: 
             disabled={setProductDiscount.isPending}
           >
             <AppIcon icon={AppIcons.close} size={18} color={themeColorMuted} />
-          </PanelButton>
+          </Button>
         ) : null}
       </View>
       {discountsQuery.isLoading ? (
-        <PanelTypography type="body-xs" muted>
+        <Typography type="body-xs" muted>
           {t("productForm.discountLoading")}
-        </PanelTypography>
+        </Typography>
       ) : discountsQuery.isError ? (
-        <PanelTypography type="body-xs" className="text-destructive">
+        <Typography type="body-xs" className="text-destructive">
           {t("productForm.discountUnavailable")}
-        </PanelTypography>
+        </Typography>
       ) : (
-        <PanelTypography type="body-xs" muted>
+        <Typography type="body-xs" muted>
           {t("productForm.discountHelp")}
-        </PanelTypography>
+        </Typography>
       )}
     </View>
   );
@@ -1035,7 +1032,7 @@ function SaveProductCard({
   isSaving: boolean;
   serverError?: string;
   onCancel: () => void;
-  onSubmit: React.ComponentProps<typeof PanelButton>["onPress"];
+  onSubmit: React.ComponentProps<typeof Button>["onPress"];
 }) {
   const { t } = useTranslation();
 
@@ -1047,16 +1044,16 @@ function SaveProductCard({
         </Typography>
       ) : null}
       <View className="flex-row gap-3">
-        <PanelButton variant="ghost" onPress={onCancel} disabled={isSaving}>
+        <Button variant="ghost" onPress={onCancel} disabled={isSaving}>
           {t("common.cancel")}
-        </PanelButton>
-        <PanelButton className="flex-1" onPress={onSubmit} disabled={isSaving}>
+        </Button>
+        <Button className="flex-1" onPress={onSubmit} disabled={isSaving}>
           {isSaving
             ? t("common.saving")
             : isNew
               ? t("productForm.create")
               : t("productForm.saveChanges")}
-        </PanelButton>
+        </Button>
       </View>
     </View>
   );
@@ -1340,22 +1337,22 @@ function ProductFormContent({
         />
       ) : null}
 
-      <PanelDialog open={isDeleteOpen} onOpenChange={onDeleteChange}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("productForm.deleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>{t("productForm.deleteDescription")}</PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={isDeleteOpen} onOpenChange={onDeleteChange}>
+        <Dialog.Content>
+          <Dialog.Title>{t("productForm.deleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("productForm.deleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton variant="destructive" size="sm" disabled={isDeleting} onPress={onDelete}>
+              </Button>
+            </Dialog.Close>
+            <Button variant="destructive" size="sm" disabled={isDeleting} onPress={onDelete}>
               {isDeleting ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }
@@ -1399,10 +1396,10 @@ function getProductFormLoadState({
   if (!isNew && productQuery.isLoading) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("productForm.loading")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
@@ -1410,17 +1407,15 @@ function getProductFormLoadState({
   if (!isNew && productQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(productQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void productQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(productQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void productQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -1428,10 +1423,10 @@ function getProductFormLoadState({
   if (!isNew && inventoryEnabled && productInventoryQuery.isLoading) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("productForm.inventoryLoading")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
@@ -1439,17 +1434,15 @@ function getProductFormLoadState({
   if (!isNew && inventoryEnabled && productInventoryQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(productInventoryQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void productInventoryQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(productInventoryQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void productInventoryQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }

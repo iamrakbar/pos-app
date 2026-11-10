@@ -1,10 +1,4 @@
-import {
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Typography,
-  QRCode,
-  useToast,
-} from "panelui-native";
+import { Button, Dialog, Typography, QRCode, useToast } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
@@ -224,7 +218,7 @@ export default function TableQrOverlay({
 
   const footer = (
     <View className="flex-row items-center gap-3 px-5 pb-5 pt-4">
-      <PanelButton
+      <Button
         variant="outline"
         className="flex-1"
         accessibilityLabel={t("areasManagement.tableQrShareAccessibility", {
@@ -237,8 +231,8 @@ export default function TableQrOverlay({
         {activeAction === "share"
           ? t("areasManagement.tableQrSharing")
           : t("areasManagement.tableQrShare")}
-      </PanelButton>
-      <PanelButton
+      </Button>
+      <Button
         className="flex-1"
         accessibilityLabel={t("areasManagement.tableQrDownloadAccessibility", {
           table: table.name,
@@ -250,7 +244,7 @@ export default function TableQrOverlay({
         {activeAction === "download"
           ? t("areasManagement.tableQrDownloading")
           : t("areasManagement.tableQrDownload")}
-      </PanelButton>
+      </Button>
     </View>
   );
   const content = (
@@ -297,7 +291,7 @@ export default function TableQrOverlay({
               {orderUrl ?? t("areasManagement.tableQrUnavailable")}
             </Typography>
           </View>
-          <PanelButton
+          <Button
             variant="ghost"
             size="icon"
             accessibilityLabel={t("areasManagement.tableQrPreviewAccessibility", {
@@ -307,7 +301,7 @@ export default function TableQrOverlay({
             onPress={handlePreview}
           >
             <AppIcon icon={AppIcons.open} size={16} color={foregroundColor} />
-          </PanelButton>
+          </Button>
         </View>
       </View>
     </View>
@@ -333,7 +327,7 @@ export default function TableQrOverlay({
             <Typography type="body-sm" muted>
               {description}
             </Typography>
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -341,7 +335,7 @@ export default function TableQrOverlay({
               onPress={() => onOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -352,12 +346,12 @@ export default function TableQrOverlay({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-lg self-center overflow-hidden p-0"
       >
-        <PanelButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -365,14 +359,14 @@ export default function TableQrOverlay({
           onPress={() => onOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{title}</PanelDialog.Title>
-          <PanelDialog.Description>{description}</PanelDialog.Description>
+          <Dialog.Title>{title}</Dialog.Title>
+          <Dialog.Description>{description}</Dialog.Description>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }

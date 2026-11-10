@@ -3,9 +3,9 @@ import {
   Separator,
   EmptyState,
   Skeleton,
-  TimePicker as PanelTimePicker,
-  Button as PanelButton,
-  Select as PanelSelect,
+  TimePicker,
+  Button,
+  Select,
 } from "panelui-native";
 import {
   TIME_PICKER_INTERVAL_MINUTES,
@@ -74,7 +74,7 @@ function CartOrderControls({
 
   return (
     <View className="min-h-12 min-w-0 flex-1 flex-row items-center gap-2">
-      <PanelSelect
+      <Select
         triggerClassName="w-full"
         className={choicePresentation === "popover" ? "w-40 shrink-0" : "min-w-0 flex-1"}
         presentation="sheet"
@@ -96,14 +96,14 @@ function CartOrderControls({
           });
         }}
       >
-        <PanelSelect.Item value="dine-in" label={t("pos.dineIn")} />
-        <PanelSelect.Item value="takeaway" label={t("pos.takeaway")} />
-      </PanelSelect>
+        <Select.Item value="dine-in" label={t("pos.dineIn")} />
+        <Select.Item value="takeaway" label={t("pos.takeaway")} />
+      </Select>
 
       {checkoutForm.order_type === "dine-in" ? (
         <TableSelectionButton selectedTable={selectedTable} />
       ) : (
-        <PanelTimePicker
+        <TimePicker
           hourCycle={24}
           minuteStep={TIME_PICKER_INTERVAL_MINUTES}
           locale={getLocaleTag(locale)}
@@ -118,15 +118,15 @@ function CartOrderControls({
             });
           }}
         >
-          <PanelButton
+          <Button
             variant="outline"
             size="sm"
             className="min-h-10"
             endContent={<AppIcon icon={AppIcons.time} size={12} color={colorAccent} />}
           >
             {checkoutForm.pickup_time ?? t("pos.pickupTime")}
-          </PanelButton>
-        </PanelTimePicker>
+          </Button>
+        </TimePicker>
       )}
       <ParkedOrdersPanel mode="list" />
     </View>
@@ -185,7 +185,7 @@ function CartHeader({
             updateCheckoutForm={updateCheckoutForm}
           />
           {cartProducts.length > 0 ? (
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               className="h-12 w-12"
@@ -193,7 +193,7 @@ function CartHeader({
               onPress={resetCurrentOrder}
             >
               <AppIcon icon={AppIcons.trash} size={16} color={colorDanger} />
-            </PanelButton>
+            </Button>
           ) : null}
         </>
       )}
@@ -307,13 +307,9 @@ function CartFooter({
         ) : (
           <>
             <ParkedOrdersPanel mode="park" isDisabled={cartProducts.length === 0} />
-            <PanelButton
-              className="flex-1"
-              onPress={onCheckout}
-              disabled={cartProducts.length === 0}
-            >
+            <Button className="flex-1" onPress={onCheckout} disabled={cartProducts.length === 0}>
               {t("navigation.checkout")}
-            </PanelButton>
+            </Button>
           </>
         )}
       </View>

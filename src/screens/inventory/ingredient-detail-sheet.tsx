@@ -1,4 +1,4 @@
-import { Button as PanelButton, Typography, Card, Chip as PanelChip } from "panelui-native";
+import { Button, Typography, Card, Chip } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -31,18 +31,15 @@ function IngredientStatus({ ingredient }: { ingredient: Ingredient }): React.JSX
   )[status];
 
   return (
-    <PanelChip
-      variant={statusPresentation === "danger" ? "destructive" : statusPresentation}
-      size="sm"
-    >
-      <PanelChip.Label>
+    <Chip variant={statusPresentation === "danger" ? "destructive" : statusPresentation} size="sm">
+      <Chip.Label>
         {status === "inactive"
           ? t("common.inactive")
           : status === "lowStock"
             ? t("ingredients.lowStock")
             : t("common.active")}
-      </PanelChip.Label>
-    </PanelChip>
+      </Chip.Label>
+    </Chip>
   );
 }
 
@@ -71,7 +68,7 @@ function DetailAction({
   const [themeColorAccent] = useCSSVariable(["--color-primary"]) as [string];
 
   return (
-    <PanelButton
+    <Button
       variant="outline"
       size="sm"
       className="min-w-0 flex-1"
@@ -82,7 +79,7 @@ function DetailAction({
       <Typography type="body-sm" numberOfLines={1}>
         {label}
       </Typography>
-    </PanelButton>
+    </Button>
   );
 }
 
@@ -195,7 +192,7 @@ export default function IngredientDetailSheet({
                 />
               </View>
               <View className="flex-row gap-2">
-                <PanelButton
+                <Button
                   variant="outline"
                   className="min-w-0 flex-1"
                   onPress={() => void dismissThen(onShowMovements)}
@@ -205,8 +202,8 @@ export default function IngredientDetailSheet({
                   <Typography type="body-sm" numberOfLines={1}>
                     {t("ingredients.inventoryMovements")}
                   </Typography>
-                </PanelButton>
-                <PanelButton
+                </Button>
+                <Button
                   variant="outline"
                   className="min-w-0 flex-1"
                   onPress={() => void dismissThen(onShowSupplierOffers)}
@@ -216,7 +213,7 @@ export default function IngredientDetailSheet({
                   <Typography type="body-sm" numberOfLines={1}>
                     {t("ingredients.supplierOffers")}
                   </Typography>
-                </PanelButton>
+                </Button>
               </View>
               <Typography type="body-xs" muted className="px-3 pt-2">
                 {t("ingredients.updatedAt")}: {formatDateTime(ingredient.updated_at)}

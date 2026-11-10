@@ -1,13 +1,12 @@
 import {
-  Button as PanelButton,
-  Chip as PanelChip,
+  Button,
+  Chip,
   Typography,
   Separator,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Skeleton as PanelListSkeleton,
-  SearchBar as PanelSearchBar,
-  Checkbox as PanelCheckbox,
+  Alert,
+  Skeleton,
+  SearchBar,
+  Checkbox,
   EmptyState,
   Card,
 } from "panelui-native";
@@ -67,7 +66,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
               </Typography>
             </View>
 
-            <PanelSearchBar
+            <SearchBar
               size="sm"
               value={search}
               onChangeText={setSearch}
@@ -85,22 +84,22 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                 showsHorizontalScrollIndicator={false}
                 contentContainerClassName="gap-2"
               >
-                <PanelChip
+                <Chip
                   variant={categoryId === null ? "primary" : "default"}
                   selected={categoryId === null}
                   onPress={() => setCategoryId(null)}
                 >
                   {t("common.all")}
-                </PanelChip>
+                </Chip>
                 {categories.map((category) => (
-                  <PanelChip
+                  <Chip
                     key={category.id}
                     variant={categoryId === category.id ? "primary" : "default"}
                     selected={categoryId === category.id}
                     onPress={() => setCategoryId(category.id)}
                   >
                     {category.name}
-                  </PanelChip>
+                  </Chip>
                 ))}
               </ScrollView>
             </View>
@@ -112,29 +111,27 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                     key={`loading-row-${index}`}
                     className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
                   >
-                    <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                    <Skeleton className="size-11 shrink-0 rounded-xl" />
                     <View className="flex-1 gap-2">
-                      <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-                      <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-                      <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                      <Skeleton className="h-4 w-3/5 rounded-md" />
+                      <Skeleton className="h-3 w-2/5 rounded-md" />
+                      <Skeleton className="h-3 w-1/3 rounded-md" />
                     </View>
-                    <PanelListSkeleton className="size-4 rounded-full" />
+                    <Skeleton className="size-4 rounded-full" />
                   </View>
                 ))}
               </View>
             ) : productsQuery.isError ? (
               <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-                <PanelErrorAlert variant="destructive">
-                  <PanelErrorAlert.Indicator />
-                  <PanelErrorAlert.Content>
-                    <PanelErrorAlert.Description>
-                      {getErrorMessage(productsQuery.error)}
-                    </PanelErrorAlert.Description>
-                  </PanelErrorAlert.Content>
-                </PanelErrorAlert>
-                <PanelErrorButton variant="outline" onPress={() => void productsQuery.refetch()}>
+                <Alert variant="destructive">
+                  <Alert.Indicator />
+                  <Alert.Content>
+                    <Alert.Description>{getErrorMessage(productsQuery.error)}</Alert.Description>
+                  </Alert.Content>
+                </Alert>
+                <Button variant="outline" onPress={() => void productsQuery.refetch()}>
                   {t("common.retry")}
-                </PanelErrorButton>
+                </Button>
               </View>
             ) : products.length === 0 ? (
               <EmptyState className="py-12">
@@ -153,7 +150,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
                     const selected = selectedProductIdSet.has(product.id);
                     return (
                       <View key={product.id}>
-                        <PanelCheckbox
+                        <Checkbox
                           checked={selected}
                           onCheckedChange={() => toggleProduct(product.id)}
                           label={product.name}
@@ -184,13 +181,13 @@ export default function DiscountProductsScreen(): React.JSX.Element {
               </Typography>
             </View>
             {productIds.length ? (
-              <PanelButton variant="ghost" size="sm" onPress={() => setProductIds([])}>
+              <Button variant="ghost" size="sm" onPress={() => setProductIds([])}>
                 {t("common.clear")}
-              </PanelButton>
+              </Button>
             ) : null}
-            <PanelButton size="sm" disabled={!productIds.length} onPress={() => router.back()}>
+            <Button size="sm" disabled={!productIds.length} onPress={() => router.back()}>
               {t("common.apply")}
-            </PanelButton>
+            </Button>
           </View>
         </View>
       </View>

@@ -1,14 +1,6 @@
 import { AppIcons } from "@/components/common/app-icons";
 import AppIcon from "@/components/common/app-icon";
-import {
-  Typography,
-  Button as PanelFooterButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-  Textarea as PanelTextarea,
-  Typography as PanelTypography,
-  useToast,
-} from "panelui-native";
+import { Typography, Button, Dialog, Input, Textarea, useToast } from "panelui-native";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
@@ -139,25 +131,21 @@ export function ProductOpeningBalanceOverlay({
 
   const footer = (
     <View className="gap-3 px-5 pb-safe pt-4 flex-row">
-      <PanelFooterButton
-        variant="ghost"
-        onPress={() => handleOpenChange(false)}
-        disabled={mutation.isPending}
-      >
+      <Button variant="ghost" onPress={() => handleOpenChange(false)} disabled={mutation.isPending}>
         {t("common.cancel")}
-      </PanelFooterButton>
-      <PanelFooterButton
+      </Button>
+      <Button
         onPress={() => void handleSubmit(submit)()}
         disabled={mutation.isPending}
         className="flex-1"
       >
         {mutation.isPending ? t("common.saving") : t("productForm.submitOpeningBalance")}
-      </PanelFooterButton>
+      </Button>
     </View>
   );
   const content = (
     <View className="gap-4 px-5">
-      <PanelInput
+      <Input
         size="sm"
         label={t("productForm.openingQuantity")}
         placeholder={t("productForm.openingQuantityPlaceholder")}
@@ -166,7 +154,7 @@ export function ProductOpeningBalanceOverlay({
         errorMessage={errors.quantity?.message}
         {...quantityInput}
         startContent={
-          <PanelFooterButton
+          <Button
             size="icon"
             variant="ghost"
             accessibilityLabel={t("productForm.decreaseAccessibility", {
@@ -176,10 +164,10 @@ export function ProductOpeningBalanceOverlay({
             onPress={() => changeQuantity(String(Math.max(0, (quantityNumber || 0) - 1)))}
           >
             −
-          </PanelFooterButton>
+          </Button>
         }
         endContent={
-          <PanelFooterButton
+          <Button
             size="icon"
             variant="ghost"
             accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -188,10 +176,10 @@ export function ProductOpeningBalanceOverlay({
             onPress={() => changeQuantity(String((quantityNumber || 0) + 1))}
           >
             +
-          </PanelFooterButton>
+          </Button>
         }
       />
-      <PanelInput
+      <Input
         size="sm"
         ref={costRef}
         label={t("productForm.inventoryCost")}
@@ -200,9 +188,9 @@ export function ProductOpeningBalanceOverlay({
 
         keyboardType="numeric"
         startContent={
-          <PanelTypography type="body-sm" weight="medium" muted>
+          <Typography type="body-sm" weight="medium" muted>
             {RUPIAH_PREFIX}
-          </PanelTypography>
+          </Typography>
         }
         interactiveContent={false}
 
@@ -239,7 +227,7 @@ export function ProductOpeningBalanceOverlay({
             <Typography type="body-sm" muted>
               {description}
             </Typography>
-            <PanelFooterButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -247,7 +235,7 @@ export function ProductOpeningBalanceOverlay({
               onPress={() => handleOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelFooterButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -258,13 +246,13 @@ export function ProductOpeningBalanceOverlay({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-md self-center overflow-hidden p-0"
         style={dialogKeyboardStyle}
       >
-        <PanelFooterButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -272,15 +260,15 @@ export function ProductOpeningBalanceOverlay({
           onPress={() => handleOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelFooterButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{title}</PanelDialog.Title>
-          <PanelDialog.Description>{description}</PanelDialog.Description>
+          <Dialog.Title>{title}</Dialog.Title>
+          <Dialog.Description>{description}</Dialog.Description>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }
 
@@ -358,25 +346,21 @@ export function ProductAdjustStockOverlay({
 
   const footer = (
     <View className="gap-3 px-5 pb-safe pt-4 flex-row">
-      <PanelFooterButton
-        variant="ghost"
-        onPress={() => handleOpenChange(false)}
-        disabled={mutation.isPending}
-      >
+      <Button variant="ghost" onPress={() => handleOpenChange(false)} disabled={mutation.isPending}>
         {t("common.cancel")}
-      </PanelFooterButton>
-      <PanelFooterButton
+      </Button>
+      <Button
         onPress={() => void handleSubmit(submit)()}
         disabled={mutation.isPending}
         className="flex-1"
       >
         {mutation.isPending ? t("common.saving") : t("productForm.submitAdjustment")}
-      </PanelFooterButton>
+      </Button>
     </View>
   );
   const content = (
     <View className="gap-4 px-5">
-      <PanelInput
+      <Input
         size="sm"
         label={t("productForm.targetBalance")}
         placeholder={t("productForm.targetBalancePlaceholder")}
@@ -385,7 +369,7 @@ export function ProductAdjustStockOverlay({
         errorMessage={errors.target_balance?.message}
         {...targetInput}
         startContent={
-          <PanelFooterButton
+          <Button
             size="icon"
             variant="ghost"
             accessibilityLabel={t("productForm.decreaseAccessibility", {
@@ -395,10 +379,10 @@ export function ProductAdjustStockOverlay({
             onPress={() => changeTarget(String(Math.max(0, (targetNumber || 0) - 1)))}
           >
             −
-          </PanelFooterButton>
+          </Button>
         }
         endContent={
-          <PanelFooterButton
+          <Button
             size="icon"
             variant="ghost"
             accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -407,14 +391,14 @@ export function ProductAdjustStockOverlay({
             onPress={() => changeTarget(String((targetNumber || 0) + 1))}
           >
             +
-          </PanelFooterButton>
+          </Button>
         }
       />
       <Controller
         control={control}
         name="reason"
         render={({ field: { value, onChange } }) => (
-          <PanelTextarea
+          <Textarea
             size="sm"
             label={t("productForm.reason")}
             placeholder={t("productForm.reasonPlaceholder")}
@@ -454,7 +438,7 @@ export function ProductAdjustStockOverlay({
             <Typography type="body-sm" muted>
               {description}
             </Typography>
-            <PanelFooterButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -462,7 +446,7 @@ export function ProductAdjustStockOverlay({
               onPress={() => handleOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelFooterButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -473,13 +457,13 @@ export function ProductAdjustStockOverlay({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-md self-center overflow-hidden p-0"
         style={dialogKeyboardStyle}
       >
-        <PanelFooterButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -487,14 +471,14 @@ export function ProductAdjustStockOverlay({
           onPress={() => handleOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelFooterButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{title}</PanelDialog.Title>
-          <PanelDialog.Description>{description}</PanelDialog.Description>
+          <Dialog.Title>{title}</Dialog.Title>
+          <Dialog.Description>{description}</Dialog.Description>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }

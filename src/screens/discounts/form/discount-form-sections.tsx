@@ -1,13 +1,4 @@
-import {
-  Typography,
-  Button as PanelButton,
-  DatePicker,
-  Input as PanelInput,
-  Label as PanelLabel,
-  Typography as PanelTypography,
-  Card,
-  Switch,
-} from "panelui-native";
+import { Typography, Button, DatePicker, Input, Label, Card, Switch } from "panelui-native";
 import { formatLocalDate, parseLocalDate } from "@/utils/local-date";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -65,7 +56,7 @@ export function DiscountDetailsCard({
           control={control}
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               label={t("discounts.name")}
@@ -83,23 +74,23 @@ export function DiscountDetailsCard({
           name="unit"
           render={({ field: { value, onChange } }) => (
             <View className="gap-2">
-              <PanelLabel>{t("discounts.unit")}</PanelLabel>
+              <Label>{t("discounts.unit")}</Label>
               <View className="flex-row gap-2">
                 {(["percentage", "fixed"] as const).map((unit) => (
-                  <PanelButton
+                  <Button
                     key={unit}
                     variant={value === unit ? "primary" : "secondary"}
                     onPress={() => onChange(unit)}
                     className="flex-1"
                   >
                     {unit === "percentage" ? t("discounts.percentage") : t("discounts.fixed")}
-                  </PanelButton>
+                  </Button>
                 ))}
               </View>
             </View>
           )}
         />
-        <PanelInput
+        <Input
           size="sm"
           ref={discountValueRef}
           label={t("discounts.value")}
@@ -110,9 +101,9 @@ export function DiscountDetailsCard({
           keyboardType="numeric"
           startContent={
             unit === "fixed" ? (
-              <PanelTypography type="body-sm" weight="medium" muted>
+              <Typography type="body-sm" weight="medium" muted>
                 {RUPIAH_PREFIX}
-              </PanelTypography>
+              </Typography>
             ) : undefined
           }
           interactiveContent={false}
@@ -130,7 +121,7 @@ export function DiscountDetailsCard({
                 name={fieldName}
                 render={({ field: { value, onChange } }) => (
                   <View className="flex-1 gap-1">
-                    <PanelLabel>{t(`discounts.${fieldName}`)}</PanelLabel>
+                    <Label>{t(`discounts.${fieldName}`)}</Label>
                     <DatePicker
                       selected={
                         value && !Number.isNaN(parseLocalDate(value).getTime())
@@ -141,17 +132,17 @@ export function DiscountDetailsCard({
                       locale={localeTag}
                       presentation="bottom-sheet"
                     >
-                      <PanelButton
+                      <Button
                         variant="outline"
                         accessibilityLabel={`${t(`discounts.${fieldName}`)}: ${value ? formatDate(parseLocalDate(value)) : t(`discounts.${fieldName}`)}`}
                       >
                         {value ? formatDate(parseLocalDate(value)) : t(`discounts.${fieldName}`)}
-                      </PanelButton>
+                      </Button>
                     </DatePicker>
                     {errors[fieldName]?.message ? (
-                      <PanelTypography type="body-xs" className="text-destructive">
+                      <Typography type="body-xs" className="text-destructive">
                         {errors[fieldName]?.message}
-                      </PanelTypography>
+                      </Typography>
                     ) : null}
                   </View>
                 )}
@@ -205,9 +196,9 @@ export function DiscountProductsCard({
                 : t("discounts.noProductsSelected")}
             </Typography>
             {error ? (
-              <PanelTypography type="body-xs" className="text-destructive">
+              <Typography type="body-xs" className="text-destructive">
                 {error}
-              </PanelTypography>
+              </Typography>
             ) : null}
           </View>
           <Typography type="body-sm" className="text-primary">

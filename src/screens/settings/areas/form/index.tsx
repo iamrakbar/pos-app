@@ -1,15 +1,4 @@
-import {
-  Typography,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Input as PanelInput,
-  Card,
-} from "panelui-native";
+import { Typography, Spinner, Button, Dialog, useToast, Alert, Input, Card } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { getErrorMessage, isApiError } from "@/api/api-error";
 import { useArea, useCreateArea, useDeleteArea, useUpdateArea } from "@/hooks/db/use-areas";
@@ -63,27 +52,25 @@ export default function AreaFormScreen(): React.JSX.Element {
   if (!isNew && areaQuery.isLoading) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("areasManagement.loadingArea")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
   if (!isNew && areaQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(areaQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void areaQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(areaQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void areaQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -163,7 +150,7 @@ export default function AreaFormScreen(): React.JSX.Element {
               control={control}
               name="name"
               render={({ field: { value, onChange, onBlur, ref } }) => (
-                <PanelInput
+                <Input
                   size="sm"
                   ref={ref}
                   label={t("areasManagement.name")}
@@ -183,48 +170,43 @@ export default function AreaFormScreen(): React.JSX.Element {
               </Typography>
             ) : null}
             {!isNew ? (
-              <PanelButton
-                variant="outline"
-                onPress={() => router.push(`/settings/areas/${id}/tables`)}
-              >
+              <Button variant="outline" onPress={() => router.push(`/settings/areas/${id}/tables`)}>
                 {t("areasManagement.manageTables")}
-              </PanelButton>
+              </Button>
             ) : null}
             <View className="flex-row justify-end gap-3">
-              <PanelButton variant="ghost" onPress={() => router.back()}>
+              <Button variant="ghost" onPress={() => router.back()}>
                 {t("common.cancel")}
-              </PanelButton>
-              <PanelButton onPress={() => void handleSubmit(submitArea)()} disabled={isSaving}>
+              </Button>
+              <Button onPress={() => void handleSubmit(submitArea)()} disabled={isSaving}>
                 {isSaving ? t("common.saving") : t("areasManagement.saveArea")}
-              </PanelButton>
+              </Button>
             </View>
           </Card.Content>
         </Card>
       </KeyboardAwareScrollView>
 
-      <PanelDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("areasManagement.deleteAreaTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>
-            {t("areasManagement.deleteAreaDescription")}
-          </PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <Dialog.Content>
+          <Dialog.Title>{t("areasManagement.deleteAreaTitle")}</Dialog.Title>
+          <Dialog.Description>{t("areasManagement.deleteAreaDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton
+              </Button>
+            </Dialog.Close>
+            <Button
               variant="destructive"
               size="sm"
               disabled={deleteMutation.isPending}
               onPress={handleDelete}
             >
               {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

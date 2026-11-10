@@ -3,8 +3,8 @@ import {
   Typography,
   Spinner,
   Separator,
-  Button as PanelButton,
-  Dialog as PanelDialog,
+  Button,
+  Dialog,
   Switch,
   cn,
 } from "panelui-native";
@@ -168,7 +168,7 @@ function PaymentSuccessActions({
         </View>
         <View className={cn("gap-3", !isCompact ? "flex-row" : "")}>
           {!receiptSettings.autoPrintOnSuccess ? (
-            <PanelButton
+            <Button
               variant="outline"
               className={isCompact ? "w-full" : "flex-1"}
               onPress={onPrint}
@@ -180,12 +180,12 @@ function PaymentSuccessActions({
                 <AppIcon icon={AppIcons.print} size={16} color={themeColorForeground} />
               )}
               {isPrinting ? t("paymentSuccess.printing") : t("paymentSuccess.printReceipt")}
-            </PanelButton>
+            </Button>
           ) : null}
-          <PanelButton className={isCompact ? "w-full" : "flex-1"} onPress={onNewOrder}>
+          <Button className={isCompact ? "w-full" : "flex-1"} onPress={onNewOrder}>
             <AppIcon icon={AppIcons.addCircle} size={16} color={primaryForegroundColor} />
             {t("paymentSuccess.newOrder")}
-          </PanelButton>
+          </Button>
         </View>
       </View>
     </View>
@@ -264,26 +264,24 @@ export function PaymentSuccessContent({ onNewOrder }: PaymentSuccessContentProps
         />
       </View>
 
-      <PanelDialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{prompt?.title}</PanelDialog.Title>
-          {prompt?.message ? (
-            <PanelDialog.Description>{prompt.message}</PanelDialog.Description>
-          ) : null}
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={prompt !== null} onOpenChange={(open) => !open && setPrompt(null)}>
+        <Dialog.Content>
+          <Dialog.Title>{prompt?.title}</Dialog.Title>
+          {prompt?.message ? <Dialog.Description>{prompt.message}</Dialog.Description> : null}
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {prompt?.actionLabel ? t("common.cancel") : t("common.close")}
-              </PanelButton>
-            </PanelDialog.Close>
+              </Button>
+            </Dialog.Close>
             {prompt?.actionLabel ? (
-              <PanelButton size="sm" onPress={handlePromptAction}>
+              <Button size="sm" onPress={handlePromptAction}>
                 {prompt.actionLabel}
-              </PanelButton>
+              </Button>
             ) : null}
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Typography, Separator, Card, Button as PanelButton } from "panelui-native";
+import { Typography, Separator, Card, Button } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -85,9 +85,9 @@ export default function ProductAddOnsCard({ addOns, onAdd, onEdit }: ProductAddO
           </Typography>
         ) : null}
         <Card.Footer className="pt-4 items-center p-0">
-          <PanelButton variant="outline" size="sm" onPress={onAdd}>
+          <Button variant="outline" size="sm" onPress={onAdd}>
             {t("productForm.add")}
-          </PanelButton>
+          </Button>
         </Card.Footer>
       </Card.Content>
     </Card>

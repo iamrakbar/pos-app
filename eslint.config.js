@@ -23,16 +23,6 @@ module.exports = [
       "no-restricted-imports": [
         "error",
         {
-          paths: [
-            {
-              name: "heroui-native",
-              message: "HeroUI has been removed. Use direct panelui-native exports.",
-            },
-            {
-              name: "heroui-native-pro",
-              message: "HeroUI Pro has been removed. Use direct panelui-native exports.",
-            },
-          ],
           patterns: [
             {
               group: ["panelui-native/*"],

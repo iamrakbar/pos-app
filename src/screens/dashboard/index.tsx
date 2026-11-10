@@ -1,11 +1,11 @@
 import {
   Typography,
   Separator,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
+  Button,
   AreaChart,
   Frame,
-  Chip as PanelChip,
+  Chip,
   EmptyState,
   Spinner,
 } from "panelui-native";
@@ -115,31 +115,29 @@ export default function DashboardScreen(): React.JSX.Element {
           </Typography>
           <View className="flex-row flex-wrap justify-center gap-2">
             {PERIODS.map((item) => (
-              <PanelChip
+              <Chip
                 key={item.value}
                 variant={period === item.value ? "primary" : "default"}
                 selected={period === item.value}
                 onPress={() => setPeriod(item.value)}
               >
-                <PanelChip.Label>{t(`dashboard.periods.${item.value}`)}</PanelChip.Label>
-              </PanelChip>
+                <Chip.Label>{t(`dashboard.periods.${item.value}`)}</Chip.Label>
+              </Chip>
             ))}
           </View>
         </View>
 
         {dashboard.isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>
-                  {getErrorMessage(dashboard.error)}
-                </PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void dashboard.refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(dashboard.error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void dashboard.refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : (
           <>

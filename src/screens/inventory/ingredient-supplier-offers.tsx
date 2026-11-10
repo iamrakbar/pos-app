@@ -1,13 +1,12 @@
 import {
-  Table as PanelTable,
-  Chip as PanelChip,
-  Typography as PanelText,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
+  Table,
+  Chip,
+  Typography,
+  Spinner,
   Fab,
   PlusIcon,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
+  Button,
   EmptyState,
 } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
@@ -54,99 +53,91 @@ export default function IngredientSupplierOffersScreen({
       >
         {supplierOffersQuery.isLoading ? (
           <View className="flex-1 items-center justify-center gap-3 py-20">
-            <PanelLoadingSpinner />
-            <PanelLoadingText type="body-sm" muted>
+            <Spinner />
+            <Typography type="body-sm" muted>
               {t("suppliers.loadingOne")}
-            </PanelLoadingText>
+            </Typography>
           </View>
         ) : supplierOffersQuery.isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>
-                  {getErrorMessage(supplierOffersQuery.error)}
-                </PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void supplierOffersQuery.refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(supplierOffersQuery.error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void supplierOffersQuery.refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator>
             <View className="w-supplier-offers-table">
-              <PanelTable
-                columns={[180, 150, 160, 150, 160, 180, 130, 180].map((width) => ({ width }))}
-              >
-                <PanelTable.Header>
-                  <PanelTable.Row>
-                    <PanelTable.Head>{t("ingredients.supplierOfferSupplier")}</PanelTable.Head>
-                    <PanelTable.Head>{t("ingredients.supplierOfferSku")}</PanelTable.Head>
-                    <PanelTable.Head>{t("ingredients.supplierOfferPurchaseUnit")}</PanelTable.Head>
-                    <PanelTable.Head>{t("ingredients.supplierOfferPackQuantity")}</PanelTable.Head>
-                    <PanelTable.Head>
-                      {t("ingredients.supplierOfferMinimumOrderQuantity")}
-                    </PanelTable.Head>
-                    <PanelTable.Head>
-                      {t("ingredients.supplierOfferLastPurchasePrice")}
-                    </PanelTable.Head>
-                    <PanelTable.Head>{t("ingredients.supplierOfferLeadTime")}</PanelTable.Head>
-                    <PanelTable.Head>{t("suppliers.status")}</PanelTable.Head>
-                  </PanelTable.Row>
-                </PanelTable.Header>
+              <Table columns={[180, 150, 160, 150, 160, 180, 130, 180].map((width) => ({ width }))}>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.Head>{t("ingredients.supplierOfferSupplier")}</Table.Head>
+                    <Table.Head>{t("ingredients.supplierOfferSku")}</Table.Head>
+                    <Table.Head>{t("ingredients.supplierOfferPurchaseUnit")}</Table.Head>
+                    <Table.Head>{t("ingredients.supplierOfferPackQuantity")}</Table.Head>
+                    <Table.Head>{t("ingredients.supplierOfferMinimumOrderQuantity")}</Table.Head>
+                    <Table.Head>{t("ingredients.supplierOfferLastPurchasePrice")}</Table.Head>
+                    <Table.Head>{t("ingredients.supplierOfferLeadTime")}</Table.Head>
+                    <Table.Head>{t("suppliers.status")}</Table.Head>
+                  </Table.Row>
+                </Table.Header>
                 {offers.length ? (
-                  <PanelTable.Body>
+                  <Table.Body>
                     {offers.map((offer) => (
-                      <PanelTable.Row key={offer.id} onPress={() => showOfferForm(offer)}>
-                        <PanelTable.Cell>
-                          <PanelText weight="semibold" numberOfLines={1}>
+                      <Table.Row key={offer.id} onPress={() => showOfferForm(offer)}>
+                        <Table.Cell>
+                          <Typography weight="semibold" numberOfLines={1}>
                             {offer.supplier_name ?? "—"}
-                          </PanelText>
-                        </PanelTable.Cell>
-                        <PanelTable.Cell>
-                          <PanelText numberOfLines={1}>{offer.supplier_sku ?? "—"}</PanelText>
-                        </PanelTable.Cell>
-                        <PanelTable.Cell>
-                          <PanelText numberOfLines={1}>{offer.purchase_unit}</PanelText>
-                        </PanelTable.Cell>
-                        <PanelTable.Cell labelClassName="tabular-nums">
+                          </Typography>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Typography numberOfLines={1}>{offer.supplier_sku ?? "—"}</Typography>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Typography numberOfLines={1}>{offer.purchase_unit}</Typography>
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {formatInventoryQuantity(offer.pack_quantity)}
-                        </PanelTable.Cell>
-                        <PanelTable.Cell labelClassName="tabular-nums">
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {offer.minimum_order_quantity === null
                             ? "—"
                             : formatInventoryQuantity(offer.minimum_order_quantity)}
-                        </PanelTable.Cell>
-                        <PanelTable.Cell labelClassName="tabular-nums">
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {offer.last_purchase_price === null
                             ? "—"
                             : formatRupiah(offer.last_purchase_price)}
-                        </PanelTable.Cell>
-                        <PanelTable.Cell labelClassName="tabular-nums">
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {offer.lead_time_days === null
                             ? "—"
                             : t("suppliers.days", {
                                 count: formatInventoryQuantity(offer.lead_time_days),
                               })}
-                        </PanelTable.Cell>
-                        <PanelTable.Cell>
+                        </Table.Cell>
+                        <Table.Cell>
                           <View className="flex-row flex-wrap gap-1">
                             {offer.is_preferred ? (
-                              <PanelChip size="sm" variant="primary">
+                              <Chip size="sm" variant="primary">
                                 {t("ingredients.supplierOfferPreferred")}
-                              </PanelChip>
+                              </Chip>
                             ) : null}
-                            <PanelChip size="sm" variant={offer.active ? "success" : "default"}>
+                            <Chip size="sm" variant={offer.active ? "success" : "default"}>
                               {offer.active ? t("common.active") : t("common.inactive")}
-                            </PanelChip>
+                            </Chip>
                           </View>
-                        </PanelTable.Cell>
-                      </PanelTable.Row>
+                        </Table.Cell>
+                      </Table.Row>
                     ))}
-                  </PanelTable.Body>
+                  </Table.Body>
                 ) : (
-                  <PanelTable.Empty>
+                  <Table.Empty>
                     <EmptyState className="py-16">
                       <EmptyState.Header>
                         <EmptyState.Media variant="icon">
@@ -158,9 +149,9 @@ export default function IngredientSupplierOffersScreen({
                         </EmptyState.Description>
                       </EmptyState.Header>
                     </EmptyState>
-                  </PanelTable.Empty>
+                  </Table.Empty>
                 )}
-              </PanelTable>
+              </Table>
             </View>
           </ScrollView>
         )}

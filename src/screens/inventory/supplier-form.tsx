@@ -1,15 +1,12 @@
 import {
   Typography,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Switch as PanelSwitch,
-  Typography as PanelTypography,
+  Spinner,
+  Button,
+  Dialog,
+  Switch,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Input as PanelInput,
+  Alert,
+  Input,
   Card,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
@@ -89,7 +86,7 @@ function SupplierFormCard({
           control={control}
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               label={t("suppliers.name")}
               isRequired
@@ -107,7 +104,7 @@ function SupplierFormCard({
           control={control}
           name="contact_name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               label={t("suppliers.contactName")}
               errorMessage={errors.contact_name?.message}
@@ -125,7 +122,7 @@ function SupplierFormCard({
             control={control}
             name="email"
             render={({ field: { value, onChange, onBlur, ref } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 containerClassName="flex-1"
                 label={t("suppliers.email")}
@@ -145,7 +142,7 @@ function SupplierFormCard({
             control={control}
             name="phone"
             render={({ field: { value, onChange, onBlur, ref } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 containerClassName="flex-1"
                 label={t("suppliers.phone")}
@@ -164,7 +161,7 @@ function SupplierFormCard({
         <View className="gap-5 md:flex-row">
           <View className="flex-1 gap-2">
             <View className="flex-row items-end gap-2">
-              <PanelButton
+              <Button
                 variant="outline"
                 size="icon"
                 disabled={Number(leadTimeValue || 0) <= 0}
@@ -174,8 +171,8 @@ function SupplierFormCard({
                 onPress={() => changeLeadTime(String(Math.max(0, Number(leadTimeValue || 0) - 1)))}
               >
                 -
-              </PanelButton>
-              <PanelInput
+              </Button>
+              <Input
                 size="sm"
                 className="flex-1"
                 label={t("suppliers.leadTime")}
@@ -185,7 +182,7 @@ function SupplierFormCard({
                 errorMessage={errors.lead_time_days?.message}
                 ref={leadTimeRef}
               />
-              <PanelButton
+              <Button
                 variant="outline"
                 size="icon"
                 accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -194,12 +191,12 @@ function SupplierFormCard({
                 onPress={() => changeLeadTime(String(Number(leadTimeValue || 0) + 1))}
               >
                 +
-              </PanelButton>
+              </Button>
             </View>
             {!errors.lead_time_days?.message ? (
-              <PanelTypography type="body-xs" muted>
+              <Typography type="body-xs" muted>
                 {t("suppliers.leadTimeDescription")}
-              </PanelTypography>
+              </Typography>
             ) : null}
           </View>
 
@@ -207,7 +204,7 @@ function SupplierFormCard({
             control={control}
             name="payment_terms"
             render={({ field: { value, onChange, onBlur, ref } }) => (
-              <PanelInput
+              <Input
                 size="sm"
                 containerClassName="flex-1"
                 label={t("suppliers.paymentTerms")}
@@ -232,14 +229,14 @@ function SupplierFormCard({
               className="flex-row items-center justify-between gap-4 py-1"
             >
               <View className="flex-1">
-                <PanelTypography type="body-sm" weight="semibold">
+                <Typography type="body-sm" weight="semibold">
                   {t("common.active")}
-                </PanelTypography>
-                <PanelTypography type="body-xs" muted>
+                </Typography>
+                <Typography type="body-xs" muted>
                   {t("suppliers.activeDescription")}
-                </PanelTypography>
+                </Typography>
               </View>
-              <PanelSwitch
+              <Switch
                 value={Boolean(value)}
                 onValueChange={onChange}
                 accessibilityLabel={t("common.active")}
@@ -316,10 +313,10 @@ export default function SupplierFormScreen(): React.JSX.Element {
   if (!isNew && supplierQuery.isLoading) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("suppliers.loadingOne")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
@@ -327,17 +324,15 @@ export default function SupplierFormScreen(): React.JSX.Element {
   if (!isNew && supplierQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(supplierQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void supplierQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(supplierQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void supplierQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -427,40 +422,40 @@ export default function SupplierFormScreen(): React.JSX.Element {
         <SupplierFormCard isNew={isNew} control={control} errors={errors} t={t} />
 
         <View className="flex-row gap-3 pt-2 w-full max-w-3xl">
-          <PanelButton variant="ghost" onPress={() => router.back()} disabled={isSaving}>
+          <Button variant="ghost" onPress={() => router.back()} disabled={isSaving}>
             {t("common.cancel")}
-          </PanelButton>
-          <PanelButton
+          </Button>
+          <Button
             className="flex-1"
             onPress={() => void handleSubmit(submitSupplier)()}
             disabled={isSaving}
           >
             {isSaving ? t("common.saving") : t("suppliers.save")}
-          </PanelButton>
+          </Button>
         </View>
       </KeyboardAwareScrollView>
 
-      <PanelDialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("suppliers.deleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>{t("suppliers.deleteDescription")}</PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
+        <Dialog.Content>
+          <Dialog.Title>{t("suppliers.deleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("suppliers.deleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton
+              </Button>
+            </Dialog.Close>
+            <Button
               variant="destructive"
               size="sm"
               disabled={deleteMutation.isPending}
               onPress={handleDelete}
             >
               {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }

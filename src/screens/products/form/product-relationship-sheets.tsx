@@ -1,16 +1,14 @@
 import {
   Typography,
   Spinner,
-  Chip as PanelMovementChip,
-  EmptyState as PanelMovementEmpty,
-  Table as PanelMovementTable,
-  Typography as PanelMovementText,
+  Chip,
+  EmptyState,
+  Table,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Button as PanelButton,
-  Label as PanelLabel,
-  Input as PanelInput,
+  Alert,
+  Button,
+  Label,
+  Input,
 } from "panelui-native";
 import {
   MOVEMENT_TYPE_COLORS,
@@ -77,7 +75,7 @@ function SheetHeader({
       <Typography type="body-sm" muted numberOfLines={2}>
         {description}
       </Typography>
-      <PanelButton
+      <Button
         variant="ghost"
         size="icon"
 
@@ -86,7 +84,7 @@ function SheetHeader({
         accessibilityLabel={t("common.close")}
       >
         <AppIcon icon={AppIcons.close} size={20} color={themeColorForeground} />
-      </PanelButton>
+      </Button>
     </View>
   );
 }
@@ -133,7 +131,7 @@ function RecipeEditor({
               <Typography type="body-sm" weight="semibold">
                 {t("productForm.recipeIngredient")} {index + 1}
               </Typography>
-              <PanelButton
+              <Button
                 variant="ghost"
                 size="icon"
 
@@ -141,10 +139,10 @@ function RecipeEditor({
                 onPress={() => onRemove(index)}
               >
                 <AppIcon icon={AppIcons.trash} size={17} color={themeColorDanger} />
-              </PanelButton>
+              </Button>
             </View>
             <View className="gap-1.5">
-              <PanelLabel isRequired>{t("productForm.recipeIngredient")}</PanelLabel>
+              <Label isRequired>{t("productForm.recipeIngredient")}</Label>
               <RecipePickerTrigger
                 label={t("productForm.recipeIngredient")}
                 value={
@@ -156,7 +154,7 @@ function RecipeEditor({
               </RecipePickerTrigger>
             </View>
             <View className="flex-row gap-3">
-              <PanelInput
+              <Input
                 size="sm"
                 containerClassName="flex-1"
                 label={t("productForm.recipeQuantity")}
@@ -164,7 +162,7 @@ function RecipeEditor({
                 isRequired
                 {...quantityInput}
                 startContent={
-                  <PanelButton
+                  <Button
                     size="icon"
                     variant="ghost"
                     accessibilityLabel={t("productForm.decreaseAccessibility", {
@@ -179,10 +177,10 @@ function RecipeEditor({
                     }
                   >
                     −
-                  </PanelButton>
+                  </Button>
                 }
                 endContent={
-                  <PanelButton
+                  <Button
                     size="icon"
                     variant="ghost"
                     accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -193,11 +191,11 @@ function RecipeEditor({
                     }
                   >
                     +
-                  </PanelButton>
+                  </Button>
                 }
               />
               <View className="min-w-0 flex-1 gap-1.5">
-                <PanelLabel isRequired>{t("productForm.recipeUnit")}</PanelLabel>
+                <Label isRequired>{t("productForm.recipeUnit")}</Label>
                 <RecipePickerTrigger
                   label={t("productForm.recipeUnit")}
                   value={unitOptions.find((option) => option.value === line.unit)?.label}
@@ -238,7 +236,7 @@ function RecipePickerTrigger({
   const [themeColorMuted] = useCSSVariable(["--color-muted-foreground"]) as [string];
 
   return (
-    <PanelButton
+    <Button
       variant="outline"
       className="min-w-0 justify-between"
       onPress={onPress}
@@ -249,7 +247,7 @@ function RecipePickerTrigger({
         {value ?? children}
       </Typography>
       <AppIcon icon={AppIcons.chevronDown} size={17} color={themeColorMuted} />
-    </PanelButton>
+    </Button>
   );
 }
 
@@ -296,7 +294,7 @@ function RecipePickerSheet({
           const isSelected = option.value === selectedValue;
 
           return (
-            <PanelButton
+            <Button
               variant={isSelected ? "secondary" : "ghost"}
               className="min-w-0 justify-between"
               accessibilityLabel={option.label}
@@ -311,7 +309,7 @@ function RecipePickerSheet({
               {isSelected ? (
                 <AppIcon icon={AppIcons.checkmark} size={18} color={themeColorAccent} />
               ) : null}
-            </PanelButton>
+            </Button>
           );
         }}
         className="flex-1 bg-surface-secondary"
@@ -400,111 +398,106 @@ function ProductMovementsSheet({
           </View>
         ) : query.isError ? (
           <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-            <PanelErrorAlert variant="destructive">
-              <PanelErrorAlert.Indicator />
-              <PanelErrorAlert.Content>
-                <PanelErrorAlert.Description>
-                  {getErrorMessage(query.error)}
-                </PanelErrorAlert.Description>
-              </PanelErrorAlert.Content>
-            </PanelErrorAlert>
-            <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+            <Alert variant="destructive">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            <Button variant="outline" onPress={() => void query.refetch()}>
               {t("common.retry")}
-            </PanelErrorButton>
+            </Button>
           </View>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator>
             <View style={{ width: MOVEMENT_TABLE_WIDTH }}>
-              <PanelMovementTable columns={MOVEMENT_TABLE_COLUMNS} className="bg-secondary">
-                <PanelMovementTable.Header>
-                  <PanelMovementTable.Row>
-                    <PanelMovementTable.Head>{t("movements.type")}</PanelMovementTable.Head>
-                    <PanelMovementTable.Head>{t("movements.quantity")}</PanelMovementTable.Head>
-                    <PanelMovementTable.Head>{t("movements.balanceAfter")}</PanelMovementTable.Head>
-                    <PanelMovementTable.Head>{t("movements.costPerUnit")}</PanelMovementTable.Head>
-                    <PanelMovementTable.Head>{t("movements.source")}</PanelMovementTable.Head>
-                    <PanelMovementTable.Head>{t("movements.reason")}</PanelMovementTable.Head>
-                    <PanelMovementTable.Head>{t("movements.actor")}</PanelMovementTable.Head>
-                    <PanelMovementTable.Head>{t("movements.movedAt")}</PanelMovementTable.Head>
-                  </PanelMovementTable.Row>
-                </PanelMovementTable.Header>
+              <Table columns={MOVEMENT_TABLE_COLUMNS} className="bg-secondary">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.Head>{t("movements.type")}</Table.Head>
+                    <Table.Head>{t("movements.quantity")}</Table.Head>
+                    <Table.Head>{t("movements.balanceAfter")}</Table.Head>
+                    <Table.Head>{t("movements.costPerUnit")}</Table.Head>
+                    <Table.Head>{t("movements.source")}</Table.Head>
+                    <Table.Head>{t("movements.reason")}</Table.Head>
+                    <Table.Head>{t("movements.actor")}</Table.Head>
+                    <Table.Head>{t("movements.movedAt")}</Table.Head>
+                  </Table.Row>
+                </Table.Header>
                 {movements.length ? (
-                  <PanelMovementTable.Body>
+                  <Table.Body>
                     {movements.map((movement) => (
-                      <PanelMovementTable.Row key={movement.id}>
-                        <PanelMovementTable.Cell>
-                          <PanelMovementChip
-                            variant={MOVEMENT_TYPE_COLORS[movement.type]}
-                            size="sm"
-                          >
+                      <Table.Row key={movement.id}>
+                        <Table.Cell>
+                          <Chip variant={MOVEMENT_TYPE_COLORS[movement.type]} size="sm">
                             {t(`movements.types.${movement.type}` as TranslationKey)}
-                          </PanelMovementChip>
-                        </PanelMovementTable.Cell>
-                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                          </Chip>
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {formatSignedQuantity(movement.quantity)}
-                        </PanelMovementTable.Cell>
-                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {formatInventoryQuantity(movement.balance_after)}
-                        </PanelMovementTable.Cell>
-                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {movement.cost_per_unit === null
                             ? "—"
                             : formatRupiah(movement.cost_per_unit)}
-                        </PanelMovementTable.Cell>
-                        <PanelMovementTable.Cell>
-                          <PanelMovementChip variant="default" size="sm">
-                            <PanelMovementText type="body-xs" numberOfLines={1}>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Chip variant="default" size="sm">
+                            <Typography type="body-xs" numberOfLines={1}>
                               {normalizeInventorySource(movement.source)}
-                            </PanelMovementText>
-                          </PanelMovementChip>
-                        </PanelMovementTable.Cell>
-                        <PanelMovementTable.Cell>
-                          <PanelMovementText type="body-sm" numberOfLines={1}>
+                            </Typography>
+                          </Chip>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Typography type="body-sm" numberOfLines={1}>
                             {movement.reason ?? "—"}
-                          </PanelMovementText>
-                        </PanelMovementTable.Cell>
-                        <PanelMovementTable.Cell>
-                          <PanelMovementText type="body-sm" numberOfLines={1}>
+                          </Typography>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Typography type="body-sm" numberOfLines={1}>
                             {movement.actor?.name ?? "—"}
-                          </PanelMovementText>
-                        </PanelMovementTable.Cell>
-                        <PanelMovementTable.Cell labelClassName="tabular-nums">
+                          </Typography>
+                        </Table.Cell>
+                        <Table.Cell labelClassName="tabular-nums">
                           {formatDateTime(movement.moved_at)}
-                        </PanelMovementTable.Cell>
-                      </PanelMovementTable.Row>
+                        </Table.Cell>
+                      </Table.Row>
                     ))}
-                  </PanelMovementTable.Body>
+                  </Table.Body>
                 ) : (
-                  <PanelMovementTable.Empty>
-                    <PanelMovementEmpty className="py-16">
-                      <PanelMovementEmpty.Header>
-                        <PanelMovementEmpty.Media variant="icon">
+                  <Table.Empty>
+                    <EmptyState className="py-16">
+                      <EmptyState.Header>
+                        <EmptyState.Media variant="icon">
                           <AppIcon icon={AppIcons.swapVertical} size={22} color={themeColorMuted} />
-                        </PanelMovementEmpty.Media>
-                        <PanelMovementEmpty.Title>
+                        </EmptyState.Media>
+                        <EmptyState.Title>
                           {t("productForm.inventoryMovementsEmpty")}
-                        </PanelMovementEmpty.Title>
-                        <PanelMovementEmpty.Description>
+                        </EmptyState.Title>
+                        <EmptyState.Description>
                           {t("productForm.inventoryMovementsEmptyDescription")}
-                        </PanelMovementEmpty.Description>
-                      </PanelMovementEmpty.Header>
-                    </PanelMovementEmpty>
-                  </PanelMovementTable.Empty>
+                        </EmptyState.Description>
+                      </EmptyState.Header>
+                    </EmptyState>
+                  </Table.Empty>
                 )}
-              </PanelMovementTable>
+              </Table>
             </View>
           </ScrollView>
         )}
         {query.hasNextPage ? (
           <View className="flex-row items-center justify-end pt-3">
-            <PanelButton
+            <Button
               size="sm"
               variant="ghost"
               onPress={() => void query.fetchNextPage()}
               disabled={query.isFetchingNextPage}
             >
               {query.isFetchingNextPage ? t("movements.loadingMore") : t("movements.loadMore")}
-            </PanelButton>
+            </Button>
           </View>
         ) : null}
       </ScrollView>
@@ -617,7 +610,7 @@ function RecipeEditingFooter({
   return (
     <View className="border-t border-border bg-surface px-4 pb-safe pt-3">
       <View className="flex-row gap-2">
-        <PanelButton
+        <Button
           size="sm"
           variant="outline"
           onPress={onAddLine}
@@ -628,13 +621,13 @@ function RecipeEditingFooter({
           <Typography type="body-sm" numberOfLines={1}>
             {t("productForm.recipeAddIngredient")}
           </Typography>
-        </PanelButton>
-        <PanelButton size="sm" variant="ghost" onPress={onCancel} disabled={isSaving}>
+        </Button>
+        <Button size="sm" variant="ghost" onPress={onCancel} disabled={isSaving}>
           {t("productForm.recipeCancel")}
-        </PanelButton>
-        <PanelButton size="sm" onPress={onSave} disabled={isDisabled}>
+        </Button>
+        <Button size="sm" onPress={onSave} disabled={isDisabled}>
           {isSaving ? t("common.saving") : t("productForm.recipeSave")}
-        </PanelButton>
+        </Button>
       </View>
     </View>
   );
@@ -645,9 +638,9 @@ function RecipeReadFooter({ onEdit }: { onEdit: () => void }): React.JSX.Element
 
   return (
     <View className="border-t border-border bg-surface px-4 pb-safe pt-3">
-      <PanelButton size="sm" variant="outline" onPress={onEdit}>
+      <Button size="sm" variant="outline" onPress={onEdit}>
         {t("productForm.recipeEdit")}
-      </PanelButton>
+      </Button>
     </View>
   );
 }
@@ -677,17 +670,15 @@ function RecipeSheetEditingBody({
   if (ingredientsQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(ingredientsQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void ingredientsQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(ingredientsQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void ingredientsQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }
@@ -740,17 +731,15 @@ function RecipeSheetBody({
         </View>
       ) : query.isError ? (
         <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-          <PanelErrorAlert variant="destructive">
-            <PanelErrorAlert.Indicator />
-            <PanelErrorAlert.Content>
-              <PanelErrorAlert.Description>
-                {getErrorMessage(query.error)}
-              </PanelErrorAlert.Description>
-            </PanelErrorAlert.Content>
-          </PanelErrorAlert>
-          <PanelErrorButton variant="outline" onPress={() => void query.refetch()}>
+          <Alert variant="destructive">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Description>{getErrorMessage(query.error)}</Alert.Description>
+            </Alert.Content>
+          </Alert>
+          <Button variant="outline" onPress={() => void query.refetch()}>
             {t("common.retry")}
-          </PanelErrorButton>
+          </Button>
         </View>
       ) : (
         <>
@@ -781,73 +770,63 @@ function RecipeSheetBody({
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator>
               <View className="w-ingredient-movements-table">
-                <PanelMovementTable
+                <Table
                   className="bg-secondary"
                   columns={[220, 150, 150, 190].map((width) => ({ width }))}
                 >
-                  <PanelMovementTable.Header>
-                    <PanelMovementTable.Row>
-                      <PanelMovementTable.Head>
-                        {t("productForm.recipeIngredient")}
-                      </PanelMovementTable.Head>
-                      <PanelMovementTable.Head>
-                        {t("productForm.recipeQuantity")}
-                      </PanelMovementTable.Head>
-                      <PanelMovementTable.Head>
-                        {t("productForm.recipeUnit")}
-                      </PanelMovementTable.Head>
-                      <PanelMovementTable.Head>
-                        {t("productForm.recipeCostContribution")}
-                      </PanelMovementTable.Head>
-                    </PanelMovementTable.Row>
-                  </PanelMovementTable.Header>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.Head>{t("productForm.recipeIngredient")}</Table.Head>
+                      <Table.Head>{t("productForm.recipeQuantity")}</Table.Head>
+                      <Table.Head>{t("productForm.recipeUnit")}</Table.Head>
+                      <Table.Head>{t("productForm.recipeCostContribution")}</Table.Head>
+                    </Table.Row>
+                  </Table.Header>
                   {recipe?.ingredients.length ? (
-                    <PanelMovementTable.Body>
+                    <Table.Body>
                       {recipe.ingredients.map((ingredient) => (
-                        <PanelMovementTable.Row key={ingredient.ingredient_id}>
-                          <PanelMovementTable.Cell>
-                            <PanelMovementText weight="semibold" numberOfLines={1}>
+                        <Table.Row key={ingredient.ingredient_id}>
+                          <Table.Cell>
+                            <Typography weight="semibold" numberOfLines={1}>
                               {ingredient.name}
-                            </PanelMovementText>
-                          </PanelMovementTable.Cell>
-                          <PanelMovementTable.Cell labelClassName="tabular-nums">
+                            </Typography>
+                          </Table.Cell>
+                          <Table.Cell labelClassName="tabular-nums">
                             {formatInventoryQuantity(ingredient.quantity)}
-                          </PanelMovementTable.Cell>
-                          <PanelMovementTable.Cell>
-                            <PanelMovementText numberOfLines={1}>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Typography numberOfLines={1}>
                               {t(`ingredients.units.${ingredient.unit}` as TranslationKey)}
-                            </PanelMovementText>
-                          </PanelMovementTable.Cell>
-                          <PanelMovementTable.Cell labelClassName="tabular-nums">
+                            </Typography>
+                          </Table.Cell>
+                          <Table.Cell labelClassName="tabular-nums">
                             {ingredient.cost_contribution === null
                               ? "—"
                               : formatRupiah(ingredient.cost_contribution)}
-                          </PanelMovementTable.Cell>
-                        </PanelMovementTable.Row>
+                          </Table.Cell>
+                        </Table.Row>
                       ))}
-                    </PanelMovementTable.Body>
+                    </Table.Body>
                   ) : (
-                    <PanelMovementTable.Empty>
-                      <PanelMovementEmpty className="py-16">
-                        <PanelMovementEmpty.Header>
-                          <PanelMovementEmpty.Media variant="icon">
+                    <Table.Empty>
+                      <EmptyState className="py-16">
+                        <EmptyState.Header>
+                          <EmptyState.Media variant="icon">
                             <AppIcon
                               icon={AppIcons.restaurant}
                               size={22}
                               color={recipeEmptyColor}
                             />
-                          </PanelMovementEmpty.Media>
-                          <PanelMovementEmpty.Title>
-                            {t("productForm.recipeEmpty")}
-                          </PanelMovementEmpty.Title>
-                          <PanelMovementEmpty.Description>
+                          </EmptyState.Media>
+                          <EmptyState.Title>{t("productForm.recipeEmpty")}</EmptyState.Title>
+                          <EmptyState.Description>
                             {t("productForm.recipeEmptyDescription")}
-                          </PanelMovementEmpty.Description>
-                        </PanelMovementEmpty.Header>
-                      </PanelMovementEmpty>
-                    </PanelMovementTable.Empty>
+                          </EmptyState.Description>
+                        </EmptyState.Header>
+                      </EmptyState>
+                    </Table.Empty>
                   )}
-                </PanelMovementTable>
+                </Table>
               </View>
             </ScrollView>
           )}

@@ -1,17 +1,14 @@
 import {
   Typography,
-  Spinner as PanelLoadingSpinner,
-  Typography as PanelLoadingText,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Input as PanelInput,
-  Select as PanelSelect,
-  Label as PanelLabel,
-  Switch as PanelSwitch,
-  Typography as PanelTypography,
+  Spinner,
+  Button,
+  Dialog,
+  Input,
+  Select,
+  Label,
+  Switch,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
+  Alert,
   Card,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
@@ -177,7 +174,7 @@ function IngredientFormCard({
           control={control}
           name="name"
           render={({ field: { value, onChange, onBlur, ref } }) => (
-            <PanelInput
+            <Input
               size="sm"
               ref={ref}
               label={t("ingredients.name")}
@@ -191,7 +188,7 @@ function IngredientFormCard({
           )}
         />
 
-        <PanelInput
+        <Input
           size="sm"
           ref={costFieldRef}
           label={t("ingredients.costPerUnit")}
@@ -200,9 +197,9 @@ function IngredientFormCard({
           errorMessage={errors.cost_per_unit?.message}
           keyboardType="numeric"
           startContent={
-            <PanelTypography type="body-sm" weight="medium" muted>
+            <Typography type="body-sm" weight="medium" muted>
               {RUPIAH_PREFIX}
-            </PanelTypography>
+            </Typography>
           }
           interactiveContent={false}
           {...costInput}
@@ -213,10 +210,10 @@ function IngredientFormCard({
           name="base_unit"
           render={({ field: { value, onChange } }) => (
             <View className="gap-1.5">
-              <PanelLabel isRequired isInvalid={Boolean(errors.base_unit)}>
+              <Label isRequired isInvalid={Boolean(errors.base_unit)}>
                 {t("ingredients.unit")}
-              </PanelLabel>
-              <PanelSelect
+              </Label>
+              <Select
                 size="sm"
                 presentation="sheet"
                 value={value}
@@ -226,13 +223,13 @@ function IngredientFormCard({
                 triggerClassName={errors.base_unit ? "border-destructive" : ""}
               >
                 {unitOptions.map((option) => (
-                  <PanelSelect.Item key={option.value} {...option} />
+                  <Select.Item key={option.value} {...option} />
                 ))}
-              </PanelSelect>
+              </Select>
               {errors.base_unit?.message ? (
-                <PanelTypography type="body-xs" className="text-destructive">
+                <Typography type="body-xs" className="text-destructive">
                   {errors.base_unit.message}
-                </PanelTypography>
+                </Typography>
               ) : null}
             </View>
           )}
@@ -240,7 +237,7 @@ function IngredientFormCard({
 
         <View className="gap-2">
           <View className="flex-row items-end gap-2">
-            <PanelButton
+            <Button
               variant="outline"
               size="icon"
               disabled={Number(reorderValue || 0) <= 0}
@@ -250,8 +247,8 @@ function IngredientFormCard({
               onPress={() => changeReorder(String(Math.max(0, Number(reorderValue || 0) - 1)))}
             >
               -
-            </PanelButton>
-            <PanelInput
+            </Button>
+            <Input
               size="sm"
               className="flex-1"
               label={t("ingredients.reorderPoint")}
@@ -260,7 +257,7 @@ function IngredientFormCard({
               errorMessage={errors.reorder_point?.message}
               ref={reorderRef}
             />
-            <PanelButton
+            <Button
               variant="outline"
               size="icon"
               accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -269,19 +266,19 @@ function IngredientFormCard({
               onPress={() => changeReorder(String(Number(reorderValue || 0) + 1))}
             >
               +
-            </PanelButton>
+            </Button>
           </View>
           {!errors.reorder_point?.message ? (
-            <PanelTypography type="body-xs" muted>
+            <Typography type="body-xs" muted>
               {t("ingredients.reorderPointDescription")}
-            </PanelTypography>
+            </Typography>
           ) : null}
         </View>
 
         {isNew ? (
           <View className="gap-2">
             <View className="flex-row items-end gap-2">
-              <PanelButton
+              <Button
                 variant="outline"
                 size="icon"
                 disabled={Number(initialValue || 0) <= 0}
@@ -291,8 +288,8 @@ function IngredientFormCard({
                 onPress={() => changeInitial(String(Math.max(0, Number(initialValue || 0) - 1)))}
               >
                 -
-              </PanelButton>
-              <PanelInput
+              </Button>
+              <Input
                 size="sm"
                 className="flex-1"
                 label={t("ingredients.initialQuantity")}
@@ -301,7 +298,7 @@ function IngredientFormCard({
                 errorMessage={errors.initial_quantity?.message}
                 ref={initialRef}
               />
-              <PanelButton
+              <Button
                 variant="outline"
                 size="icon"
                 accessibilityLabel={t("productForm.increaseAccessibility", {
@@ -310,12 +307,12 @@ function IngredientFormCard({
                 onPress={() => changeInitial(String(Number(initialValue || 0) + 1))}
               >
                 +
-              </PanelButton>
+              </Button>
             </View>
             {!errors.initial_quantity?.message ? (
-              <PanelTypography type="body-xs" muted>
+              <Typography type="body-xs" muted>
                 {t("ingredients.initialQuantityDescription")}
-              </PanelTypography>
+              </Typography>
             ) : null}
           </View>
         ) : null}
@@ -330,14 +327,14 @@ function IngredientFormCard({
               className="flex-row items-center justify-between gap-4 py-1"
             >
               <View className="flex-1">
-                <PanelTypography type="body-sm" weight="semibold">
+                <Typography type="body-sm" weight="semibold">
                   {t("common.active")}
-                </PanelTypography>
-                <PanelTypography type="body-xs" muted>
+                </Typography>
+                <Typography type="body-xs" muted>
                   {t("ingredients.activeDescription")}
-                </PanelTypography>
+                </Typography>
               </View>
-              <PanelSwitch
+              <Switch
                 value={Boolean(value)}
                 onValueChange={onChange}
                 accessibilityLabel={t("common.active")}
@@ -430,36 +427,31 @@ function IngredientFormContent({
         <IngredientFormCard isNew={isNew} control={control} errors={errors} t={t} />
 
         <View className="flex-row gap-3 pt-2 w-full max-w-3xl">
-          <PanelButton variant="ghost" onPress={onCancel} disabled={isSaving}>
+          <Button variant="ghost" onPress={onCancel} disabled={isSaving}>
             {t("common.cancel")}
-          </PanelButton>
-          <PanelButton className="flex-1" onPress={onSubmit} disabled={isSaving}>
+          </Button>
+          <Button className="flex-1" onPress={onSubmit} disabled={isSaving}>
             {isSaving ? t("common.saving") : t("ingredients.save")}
-          </PanelButton>
+          </Button>
         </View>
       </KeyboardAwareScrollView>
 
-      <PanelDialog open={isConfirmingDelete} onOpenChange={onConfirmingDeleteChange}>
-        <PanelDialog.Content>
-          <PanelDialog.Title>{t("ingredients.deleteTitle")}</PanelDialog.Title>
-          <PanelDialog.Description>{t("ingredients.deleteDescription")}</PanelDialog.Description>
-          <PanelDialog.Footer>
-            <PanelDialog.Close>
-              <PanelButton variant="ghost" size="sm">
+      <Dialog open={isConfirmingDelete} onOpenChange={onConfirmingDeleteChange}>
+        <Dialog.Content>
+          <Dialog.Title>{t("ingredients.deleteTitle")}</Dialog.Title>
+          <Dialog.Description>{t("ingredients.deleteDescription")}</Dialog.Description>
+          <Dialog.Footer>
+            <Dialog.Close>
+              <Button variant="ghost" size="sm">
                 {t("common.cancel")}
-              </PanelButton>
-            </PanelDialog.Close>
-            <PanelButton
-              variant="destructive"
-              size="sm"
-              disabled={isDeletePending}
-              onPress={onDelete}
-            >
+              </Button>
+            </Dialog.Close>
+            <Button variant="destructive" size="sm" disabled={isDeletePending} onPress={onDelete}>
               {isDeletePending ? t("common.deleting") : t("common.delete")}
-            </PanelButton>
-          </PanelDialog.Footer>
-        </PanelDialog.Content>
-      </PanelDialog>
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog>
     </>
   );
 }
@@ -520,10 +512,10 @@ export default function IngredientFormScreen(): React.JSX.Element {
   if (!isNew && ingredientQuery.isLoading) {
     return (
       <View className="flex-1 items-center justify-center gap-3 py-20">
-        <PanelLoadingSpinner />
-        <PanelLoadingText type="body-sm" muted>
+        <Spinner />
+        <Typography type="body-sm" muted>
           {t("ingredients.loadingOne")}
-        </PanelLoadingText>
+        </Typography>
       </View>
     );
   }
@@ -531,17 +523,15 @@ export default function IngredientFormScreen(): React.JSX.Element {
   if (!isNew && ingredientQuery.isError) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-        <PanelErrorAlert variant="destructive">
-          <PanelErrorAlert.Indicator />
-          <PanelErrorAlert.Content>
-            <PanelErrorAlert.Description>
-              {getErrorMessage(ingredientQuery.error)}
-            </PanelErrorAlert.Description>
-          </PanelErrorAlert.Content>
-        </PanelErrorAlert>
-        <PanelErrorButton variant="outline" onPress={() => void ingredientQuery.refetch()}>
+        <Alert variant="destructive">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{getErrorMessage(ingredientQuery.error)}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+        <Button variant="outline" onPress={() => void ingredientQuery.refetch()}>
           {t("common.retry")}
-        </PanelErrorButton>
+        </Button>
       </View>
     );
   }

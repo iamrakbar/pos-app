@@ -1,14 +1,6 @@
 import { AppIcons } from "@/components/common/app-icons";
 import AppIcon from "@/components/common/app-icon";
-import {
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Label as PanelLabel,
-  Typography,
-  Input as PanelInput,
-  Typography as PanelTypography,
-  useToast,
-} from "panelui-native";
+import { Button, Dialog, Label, Typography, Input, useToast } from "panelui-native";
 import { useAdaptiveOverlayPresentation } from "@/hooks/use-adaptive-overlay-presentation";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
@@ -138,16 +130,16 @@ export default function QuickDiscountFormOverlay({
 
   const footer = (
     <View className="flex-row gap-3 px-5 pb-safe pt-4">
-      <PanelButton variant="ghost" onPress={() => handleOpenChange(false)}>
+      <Button variant="ghost" onPress={() => handleOpenChange(false)}>
         {t("common.cancel")}
-      </PanelButton>
-      <PanelButton
+      </Button>
+      <Button
         className="flex-1"
         onPress={() => void handleSubmit(submit)()}
         disabled={createMutation.isPending}
       >
         {createMutation.isPending ? t("common.saving") : t("discounts.create")}
-      </PanelButton>
+      </Button>
     </View>
   );
   const content = (
@@ -156,7 +148,7 @@ export default function QuickDiscountFormOverlay({
         control={control}
         name="name"
         render={({ field: { value, onChange, ref } }) => (
-          <PanelInput
+          <Input
             size="sm"
             ref={ref}
             label={t("discounts.name")}
@@ -175,24 +167,24 @@ export default function QuickDiscountFormOverlay({
         name="unit"
         render={({ field: { value, onChange } }) => (
           <View className="gap-2">
-            <PanelLabel isRequired>{t("discounts.unit")}</PanelLabel>
+            <Label isRequired>{t("discounts.unit")}</Label>
             <View className="flex-row gap-2">
               {(["percentage", "fixed"] as const).map((option) => (
-                <PanelButton
+                <Button
                   key={option}
                   variant={value === option ? "primary" : "secondary"}
                   onPress={() => onChange(option)}
                   className="flex-1"
                 >
                   {option === "percentage" ? t("discounts.percentage") : t("discounts.fixed")}
-                </PanelButton>
+                </Button>
               ))}
             </View>
           </View>
         )}
       />
 
-      <PanelInput
+      <Input
         size="sm"
         ref={discountRef}
         label={t("discounts.value")}
@@ -203,9 +195,9 @@ export default function QuickDiscountFormOverlay({
         keyboardType="numeric"
         startContent={
           unit === "fixed" ? (
-            <PanelTypography type="body-sm" weight="medium" muted>
+            <Typography type="body-sm" weight="medium" muted>
               {RUPIAH_PREFIX}
-            </PanelTypography>
+            </Typography>
           ) : undefined
         }
         interactiveContent={false}
@@ -244,7 +236,7 @@ export default function QuickDiscountFormOverlay({
             <Typography type="body-sm" muted>
               {description}
             </Typography>
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -252,7 +244,7 @@ export default function QuickDiscountFormOverlay({
               onPress={() => handleOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -263,13 +255,13 @@ export default function QuickDiscountFormOverlay({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-md self-center overflow-hidden p-0"
         style={dialogKeyboardStyle}
       >
-        <PanelButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -277,14 +269,14 @@ export default function QuickDiscountFormOverlay({
           onPress={() => handleOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{title}</PanelDialog.Title>
-          <PanelDialog.Description>{description}</PanelDialog.Description>
+          <Dialog.Title>{title}</Dialog.Title>
+          <Dialog.Description>{description}</Dialog.Description>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }

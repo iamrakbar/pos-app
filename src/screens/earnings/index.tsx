@@ -2,19 +2,17 @@ import {
   Typography,
   Separator,
   Frame,
-  Chip as PanelChip,
+  Chip,
   EmptyState,
-  Typography as PanelTypography,
   useToast,
-  Alert as PanelErrorAlert,
-  Button as PanelErrorButton,
-  Skeleton as PanelListSkeleton,
+  Alert,
+  Button,
+  Skeleton,
   cn,
-  DatePicker as PanelDatePicker,
-  Label as PanelLabel,
-  Button as PanelButton,
-  Dialog as PanelDialog,
-  Select as PanelSelect,
+  DatePicker,
+  Label,
+  Dialog,
+  Select,
 } from "panelui-native";
 import { getErrorMessage } from "@/api/api-error";
 import { formatLocalDate, inclusiveLocalCalendarDays, parseLocalDate } from "@/utils/local-date";
@@ -135,22 +133,22 @@ function CustomDateRangeDialog({
         isPhonePortrait ? "items-stretch" : "flex-row justify-end"
       )}
     >
-      <PanelButton
+      <Button
         variant="ghost"
         size="sm"
         className={isPhonePortrait ? "w-full" : ""}
         onPress={onCancel}
       >
         {t("common.cancel")}
-      </PanelButton>
-      <PanelButton
+      </Button>
+      <Button
         size="sm"
         className={isPhonePortrait ? "w-full" : ""}
         onPress={onApply}
         disabled={isApplying}
       >
         {isApplying ? t("earnings.applying") : t("common.apply")}
-      </PanelButton>
+      </Button>
     </View>
   );
   const content = (
@@ -169,10 +167,10 @@ function CustomDateRangeDialog({
             key={field.key}
             className={isPhonePortrait ? "w-full gap-1.5" : "min-w-55 flex-1 gap-1.5"}
           >
-            <PanelLabel isRequired isInvalid={error !== null}>
+            <Label isRequired isInvalid={error !== null}>
               {field.label}
-            </PanelLabel>
-            <PanelDatePicker
+            </Label>
+            <DatePicker
               className="w-full"
               open={isPhonePortrait ? openDateField === field.key : undefined}
               onOpenChange={
@@ -194,9 +192,9 @@ function CustomDateRangeDialog({
           {error}
         </Typography>
       ) : (
-        <PanelTypography type="body-xs" muted>
+        <Typography type="body-xs" muted>
           {t("earnings.rangeGuidance")}
-        </PanelTypography>
+        </Typography>
       )}
     </View>
   );
@@ -225,7 +223,7 @@ function CustomDateRangeDialog({
             <Typography type="body-sm" muted>
               {description}
             </Typography>
-            <PanelButton
+            <Button
               variant="ghost"
               size="icon"
               accessibilityLabel={t("common.close")}
@@ -233,7 +231,7 @@ function CustomDateRangeDialog({
               onPress={() => onOpenChange(false)}
             >
               <AppIcon icon={AppIcons.close} size={20} />
-            </PanelButton>
+            </Button>
           </View>
         }
         footer={<View className="bg-surface">{footer}</View>}
@@ -253,12 +251,12 @@ function CustomDateRangeDialog({
   }
 
   return (
-    <PanelDialog open={isOpen} onOpenChange={onOpenChange}>
-      <PanelDialog.Content
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog.Content
         dismissible={false}
         className="w-full max-w-lg self-center overflow-hidden p-0"
       >
-        <PanelButton
+        <Button
           variant="ghost"
           size="icon"
           accessibilityLabel={t("common.close")}
@@ -266,15 +264,15 @@ function CustomDateRangeDialog({
           onPress={() => onOpenChange(false)}
         >
           <AppIcon icon={AppIcons.close} size={20} />
-        </PanelButton>
+        </Button>
         <View className="gap-2 px-6 pb-5 pr-16 pt-8">
-          <PanelDialog.Title>{title}</PanelDialog.Title>
-          <PanelDialog.Description>{description}</PanelDialog.Description>
+          <Dialog.Title>{title}</Dialog.Title>
+          <Dialog.Description>{description}</Dialog.Description>
         </View>
         {content}
         {footer}
-      </PanelDialog.Content>
-    </PanelDialog>
+      </Dialog.Content>
+    </Dialog>
   );
 }
 
@@ -375,9 +373,9 @@ function RecentEarningsWidget({
         </View>
         <View className="flex-row items-center gap-2">
           <View className="size-2 rounded-full bg-success" />
-          <PanelTypography type="body-xs" muted>
+          <Typography type="body-xs" muted>
             {t("earnings.settled")}
-          </PanelTypography>
+          </Typography>
         </View>
       </Frame.Header>
       <Frame.Panel className="overflow-hidden p-0">
@@ -393,9 +391,9 @@ function RecentEarningsWidget({
                     <Typography type="body-sm" weight="semibold" className="font-mono tabular-nums">
                       {entry.code}
                     </Typography>
-                    <PanelChip variant="success" size="sm">
-                      <PanelChip.Label>{t("earnings.settled")}</PanelChip.Label>
-                    </PanelChip>
+                    <Chip variant="success" size="sm">
+                      <Chip.Label>{t("earnings.settled")}</Chip.Label>
+                    </Chip>
                   </View>
                   <Typography type="body-xs" muted>
                     {formatOrderType(entry.order_type, t)} ·{" "}
@@ -552,7 +550,7 @@ export default function EarningsScreen(): React.JSX.Element {
             <Typography type="body-sm">
               {t("earnings.settledSalesFor", { period: periodLabel })}
             </Typography>
-            <PanelSelect
+            <Select
               presentation="sheet"
               value={dateRangeValue}
               valueLabel={dateRangeLabel}
@@ -563,9 +561,9 @@ export default function EarningsScreen(): React.JSX.Element {
               className={isCompact ? "w-full max-w-56" : "w-56"}
             >
               {dateRangeOptions.map((option) => (
-                <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
+                <Select.Item key={option.value} value={option.value} label={option.label} />
               ))}
-            </PanelSelect>
+            </Select>
           </View>
 
           {isLoading ? (
@@ -575,29 +573,27 @@ export default function EarningsScreen(): React.JSX.Element {
                   key={`loading-row-${index}`}
                   className="min-h-20 flex-row items-center gap-4 px-4 py-3 md:px-6"
                 >
-                  <PanelListSkeleton className="size-11 shrink-0 rounded-xl" />
+                  <Skeleton className="size-11 shrink-0 rounded-xl" />
                   <View className="flex-1 gap-2">
-                    <PanelListSkeleton className="h-4 w-3/5 rounded-md" />
-                    <PanelListSkeleton className="h-3 w-2/5 rounded-md" />
-                    <PanelListSkeleton className="h-3 w-1/3 rounded-md" />
+                    <Skeleton className="h-4 w-3/5 rounded-md" />
+                    <Skeleton className="h-3 w-2/5 rounded-md" />
+                    <Skeleton className="h-3 w-1/3 rounded-md" />
                   </View>
-                  <PanelListSkeleton className="size-4 rounded-full" />
+                  <Skeleton className="size-4 rounded-full" />
                 </View>
               ))}
             </View>
           ) : isError ? (
             <View className="flex-1 items-center justify-center gap-3 px-6 py-20">
-              <PanelErrorAlert variant="destructive">
-                <PanelErrorAlert.Indicator />
-                <PanelErrorAlert.Content>
-                  <PanelErrorAlert.Description>
-                    {getErrorMessage(error)}
-                  </PanelErrorAlert.Description>
-                </PanelErrorAlert.Content>
-              </PanelErrorAlert>
-              <PanelErrorButton variant="outline" onPress={() => void refetch()}>
+              <Alert variant="destructive">
+                <Alert.Indicator />
+                <Alert.Content>
+                  <Alert.Description>{getErrorMessage(error)}</Alert.Description>
+                </Alert.Content>
+              </Alert>
+              <Button variant="outline" onPress={() => void refetch()}>
                 {t("common.retry")}
-              </PanelErrorButton>
+              </Button>
             </View>
           ) : (
             <>
@@ -611,7 +607,7 @@ export default function EarningsScreen(): React.JSX.Element {
                       </View>
                     </Frame.Header>
                     <Frame.Panel className="p-4">
-                      <PanelTypography
+                      <Typography
                         type="h4"
                         weight="bold"
                         className="tabular-nums"
@@ -620,7 +616,7 @@ export default function EarningsScreen(): React.JSX.Element {
                         minimumFontScale={0.72}
                       >
                         {formatRupiah(totalEarnings)}
-                      </PanelTypography>
+                      </Typography>
                     </Frame.Panel>
                   </Frame>
                 </View>
@@ -633,7 +629,7 @@ export default function EarningsScreen(): React.JSX.Element {
                       </View>
                     </Frame.Header>
                     <Frame.Panel className="p-4">
-                      <PanelTypography
+                      <Typography
                         type="h4"
                         weight="bold"
                         className="tabular-nums"
@@ -642,7 +638,7 @@ export default function EarningsScreen(): React.JSX.Element {
                         minimumFontScale={0.72}
                       >
                         {String(data.length)}
-                      </PanelTypography>
+                      </Typography>
                     </Frame.Panel>
                   </Frame>
                 </View>
@@ -655,7 +651,7 @@ export default function EarningsScreen(): React.JSX.Element {
                       </View>
                     </Frame.Header>
                     <Frame.Panel className="p-4">
-                      <PanelTypography
+                      <Typography
                         type="h4"
                         weight="bold"
                         className="tabular-nums"
@@ -664,7 +660,7 @@ export default function EarningsScreen(): React.JSX.Element {
                         minimumFontScale={0.72}
                       >
                         {formatRupiah(averageOrder)}
-                      </PanelTypography>
+                      </Typography>
                     </Frame.Panel>
                   </Frame>
                 </View>
@@ -677,7 +673,7 @@ export default function EarningsScreen(): React.JSX.Element {
                       </View>
                     </Frame.Header>
                     <Frame.Panel className="p-4">
-                      <PanelTypography
+                      <Typography
                         type="h4"
                         weight="bold"
                         className="tabular-nums"
@@ -686,7 +682,7 @@ export default function EarningsScreen(): React.JSX.Element {
                         minimumFontScale={0.72}
                       >
                         {String(itemCount)}
-                      </PanelTypography>
+                      </Typography>
                     </Frame.Panel>
                   </Frame>
                 </View>
