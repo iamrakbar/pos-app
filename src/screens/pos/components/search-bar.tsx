@@ -5,17 +5,19 @@ import {
   SearchBar as PanelSearchBar,
   ScrollFade,
   Skeleton,
+  BottomSheet,
+  Typography,
 } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore, type ProductSort } from "@/stores/use-pos-store";
 import { useCategories } from "@/hooks/db/use-categories";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
-import type { JSX } from "react";
-import { View } from "react-native";
+import { useState, type JSX } from "react";
+import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
-import { useOverlayPresentation } from "@/hooks/use-overlay-presentation";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { useTranslation } from "@/stores/use-locale";
 
 type SearchBarProps = {
@@ -26,7 +28,8 @@ const CATEGORY_SKELETON_WIDTHS = [64, 88, 72, 104, 80];
 
 export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.Element {
   const { t } = useTranslation();
-  const { choicePresentation } = useOverlayPresentation();
+  const { isCompact } = useResponsiveLayout();
+  const [isSortOpen, setIsSortOpen] = useState(false);
   const [themeColorForeground, themeColorAccent] = useCSSVariable([
     "--color-foreground",
     "--color-primary",
@@ -107,21 +110,64 @@ export default function SearchBar({ isLoading = false }: SearchBarProps): JSX.El
               color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
             />
           </PanelButton>
-          <PanelSelect
-            presentation="sheet"
-            value={selectedSort.value}
-            valueLabel={selectedSort.label}
-            onValueChange={(value) => setProductSort(value as ProductSort)}
-            title={t("pos.sortProducts")}
-            placeholder={t("pos.sortProducts")}
-            size="sm"
-            contentWidth="content"
-            className={choicePresentation === "popover" ? "w-56" : "w-28"}
-          >
-            {sortOptions.map((option) => (
-              <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
-            ))}
-          </PanelSelect>
+          {isCompact ? (
+            <BottomSheet open={isSortOpen} onOpenChange={setIsSortOpen}>
+              <PanelButton
+                variant="outline"
+                size="sm"
+                className="min-h-11 flex-row items-center gap-1 px-2.5"
+                accessibilityLabel={t("pos.sortProductsAccessibility", {
+                  sort: selectedSort.label,
+                })}
+                accessibilityState={{ expanded: isSortOpen }}
+                onPress={() => setIsSortOpen(true)}
+              >
+                <AppIcon icon={AppIcons.swapVertical} size={18} color={themeColorForeground} />
+                {t("pos.sortAction")}
+              </PanelButton>
+              <BottomSheet.Content>
+                <BottomSheet.Header title={t("pos.sortProducts")} />
+                <View accessibilityRole="radiogroup" className="pb-2">
+                  {sortOptions.map((option) => {
+                    const selected = option.value === productSort;
+                    return (
+                      <Pressable
+                        key={option.value}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selected }}
+                        onPress={() => {
+                          setProductSort(option.value);
+                          setIsSortOpen(false);
+                        }}
+                        className="min-h-12 flex-row items-center justify-between gap-3 px-2"
+                      >
+                        <Typography>{option.label}</Typography>
+                        {selected ? (
+                          <AppIcon icon={AppIcons.checkmark} size={20} color={themeColorAccent} />
+                        ) : null}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </BottomSheet.Content>
+            </BottomSheet>
+          ) : (
+            <PanelSelect
+              presentation="sheet"
+              value={selectedSort.value}
+              valueLabel={selectedSort.label}
+              onValueChange={(value) => setProductSort(value as ProductSort)}
+              title={t("pos.sortProducts")}
+              placeholder={t("pos.sortProducts")}
+              size="sm"
+              contentWidth="content"
+              className="w-56"
+            >
+              {sortOptions.map((option) => (
+                <PanelSelect.Item key={option.value} value={option.value} label={option.label} />
+              ))}
+            </PanelSelect>
+          )}
         </View>
       </View>
 

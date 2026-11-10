@@ -669,6 +669,7 @@ export const id: TranslationSchema = {
     showCategories: "Tampilkan kategori",
     hideCategories: "Sembunyikan kategori",
     sortProducts: "Urutkan produk",
+    sortAction: "Urutkan",
     sortProductsAccessibility: "Urutkan produk: {{sort}}",
     sortNameAscending: "Nama · A–Z",
     sortNameDescending: "Nama · Z–A",

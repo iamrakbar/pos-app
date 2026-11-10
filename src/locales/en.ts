@@ -665,6 +665,7 @@ export const en = {
     showCategories: "Show categories",
     hideCategories: "Hide categories",
     sortProducts: "Sort products",
+    sortAction: "Sort",
     sortProductsAccessibility: "Sort products: {{sort}}",
     sortNameAscending: "Name · A–Z",
     sortNameDescending: "Name · Z–A",
