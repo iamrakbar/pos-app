@@ -12,7 +12,8 @@ import { EncodingType, File as ExpoFile, Paths } from "expo-file-system";
 import * as Linking from "expo-linking";
 import * as Sharing from "expo-sharing";
 import React from "react";
-import { Platform, View } from "react-native";
+import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyledImage as Image } from "@/components/common/styled-image";
 import { captureRef } from "react-native-view-shot";
 
@@ -28,18 +29,6 @@ type TableQrOverlayProps = {
 const QR_EXPORT_SIZE = 1024;
 const QR_CODE_SIZE = 240;
 const SOEAT_LOGO = require("../../../../../assets/images/logo.svg");
-
-function getTableNumberLabel(tableName: string): string {
-  const tableNumber = tableName.match(/\d+/)?.[0];
-  if (tableNumber) return `TABLE ${tableNumber}`;
-
-  const fallback = tableName
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, " ")
-    .trim()
-    .slice(0, 10);
-  return fallback || "TABLE";
-}
 
 function getQrFileName(tableName: string): string {
   const safeName = tableName
@@ -101,20 +90,25 @@ export default function TableQrOverlay({
 }: TableQrOverlayProps): React.JSX.Element {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [foregroundColor, mutedColor, accentForegroundColor] = useCSSVariable([
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const [foregroundColor, mutedColor, accentForegroundColor, surfaceColor] = useCSSVariable([
     "--color-foreground",
     "--color-muted-foreground",
     "--color-primary-foreground",
-  ]) as [string, string, string];
+    "--color-surface",
+  ]) as [string, string, string, string];
   const [activeAction, setActiveAction] = React.useState<QrAction>(null);
   const qrRef = React.useRef<React.ComponentRef<typeof View>>(null);
   const orderUrl = table ? getTableOrderUrl(table.id) : null;
-  const tableNumberLabel = table ? getTableNumberLabel(table.name) : "TABLE";
   const isUnavailable = !orderUrl;
   const { isPhonePortrait, sheetRef, handleDidDismiss } = useAdaptiveOverlayPresentation(
     isOpen && !!table,
     onOpenChange
   );
+  const qrCodeSize = isPhonePortrait
+    ? Math.min(QR_CODE_SIZE, Math.max(1, width - 104))
+    : QR_CODE_SIZE;
 
   const getQrDataUrl = async (): Promise<string> => {
     if (!qrRef.current) throw new Error(t("areasManagement.tableQrNotReady"));
@@ -218,7 +212,10 @@ export default function TableQrOverlay({
   if (!table) return <></>;
 
   const footer = (
-    <View className="flex-row items-center gap-3 px-5 pb-5 pt-4">
+    <View
+      className="flex-row items-center gap-3 px-5 pt-4"
+      style={{ paddingBottom: isPhonePortrait ? Math.max(insets.bottom, 20) : 20 }}
+    >
       <Button
         variant="outline"
         className="flex-1"
@@ -252,7 +249,6 @@ export default function TableQrOverlay({
     <View className="px-5 gap-4">
       {orderUrl ? (
         <View
-          className="rounded-3xl border border-border bg-paper p-4"
           accessible
           accessibilityRole="image"
           accessibilityLabel={t("areasManagement.tableQrImageAccessibility", {
@@ -263,15 +259,15 @@ export default function TableQrOverlay({
             <View ref={qrRef} collapsable={false}>
               <QRCode value={orderUrl} size="lg" errorCorrection="H">
                 <QRCode.Panel>
-                  <QRCode.Canvas pixelSize={QR_CODE_SIZE} />
+                  <QRCode.Canvas pixelSize={qrCodeSize} />
                   <QRCode.Logo>
                     <Image source={SOEAT_LOGO} className="size-12" contentFit="contain" />
                   </QRCode.Logo>
                 </QRCode.Panel>
               </QRCode>
             </View>
-            <Typography type="h6" weight="bold" className="text-paper-black" align="center">
-              {tableNumberLabel}
+            <Typography type="h6" weight="bold" align="center">
+              {table.name}
             </Typography>
           </View>
         </View>
@@ -315,13 +311,16 @@ export default function TableQrOverlay({
       <FormSheet
         sheetRef={sheetRef}
         detents={[0.9]}
+        backgroundColor={surfaceColor}
         onDidDismiss={handleDidDismiss}
         onClose={() => onOpenChange(false)}
         title={title}
         description={description}
         footer={footer}
       >
-        {content}
+        <ScrollView className="bg-surface" contentContainerClassName="pb-4">
+          {content}
+        </ScrollView>
       </FormSheet>
     );
   }
