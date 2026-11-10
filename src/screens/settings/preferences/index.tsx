@@ -63,44 +63,6 @@ export default function PreferencesScreen(): JSX.Element {
                   title={t("settings.appearance")}
                 >
                   {themeOptions.map((option) => (
-                    <PanelSelect.Item key={option.value} {...option} labelClassName="text-nowrap" />
-                  ))}
-                </PanelSelect>
-              </Frame.Actions>
-            </Frame.Row>
-
-            <Frame.Row>
-              <Frame.Media>
-                <AppIcon
-                  icon={
-                    themeMode === "dark"
-                      ? AppIcons.moon
-                      : themeMode === "light"
-                        ? AppIcons.sunny
-                        : AppIcons.desktop
-                  }
-                  size={21}
-                  color={mutedColor}
-                />
-              </Frame.Media>
-              <Frame.Content>
-                <Frame.Title>{t("settings.appearance")}</Frame.Title>
-                <Frame.Description numberOfLines={2}>
-                  {t("settings.appearanceDescription")}
-                </Frame.Description>
-              </Frame.Content>
-              <Frame.Actions>
-                <PanelSelect
-                  size="sm"
-                  triggerClassName="w-40"
-                  key={`theme-${locale}`}
-                  presentation="sheet"
-                  value={themeMode}
-                  onValueChange={(value) => setThemeMode(value as ThemeMode)}
-                  placeholder={t("settings.appearance")}
-                  title={t("settings.appearance")}
-                >
-                  {themeOptions.map((option) => (
                     <PanelSelect.Item key={option.value} {...option} />
                   ))}
                 </PanelSelect>
