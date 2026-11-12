@@ -9,3 +9,7 @@ function getCartAddOnTotal(item: CartItem): number {
 export function getCartItemSubtotal(item: CartItem): number {
   return (item.price + getCartAddOnTotal(item)) * item.qty;
 }
+
+export function getCartSubtotal(items: CartItem[]): number {
+  return items.reduce((total, item) => total + getCartItemSubtotal(item), 0);
+}

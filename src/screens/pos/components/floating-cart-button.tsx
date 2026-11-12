@@ -18,6 +18,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "@/stores/use-locale";
+import { getCartSubtotal } from "@/utils/cart-pricing";
 
 export const FLOATING_CART_BUTTON_SPACE = 88;
 
@@ -28,7 +29,7 @@ export default function FloatingCartButton(): JSX.Element | null {
   const foreground = useCSSVariable("--color-primary-foreground") as string;
   const products = useCartStore((state) => state.products);
   const itemCount = products.reduce((total, product) => total + product.qty, 0);
-  const subtotal = products.reduce((total, product) => total + product.subtotal, 0);
+  const subtotal = getCartSubtotal(products);
   const previousItemCount = useRef(0);
   const prefersReducedMotion = useReducedMotion();
   const scale = useSharedValue(1);

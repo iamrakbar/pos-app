@@ -62,6 +62,7 @@ import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
+import { getCartSubtotal } from "@/utils/cart-pricing";
 
 type CheckoutError =
   | {
@@ -951,7 +952,6 @@ function CheckoutContentLayout({
 function getCheckoutViewData({
   checkoutError,
   t,
-  totalPrice,
   paymentGroups,
   paymentId,
   tenderValue,
@@ -964,7 +964,6 @@ function getCheckoutViewData({
 }: {
   checkoutError: CheckoutError | null;
   t: Translate;
-  totalPrice: () => number;
   paymentGroups: POSPaymentGroup[];
   paymentId: string;
   tenderValue: string;
@@ -979,7 +978,7 @@ function getCheckoutViewData({
     checkoutError && "key" in checkoutError
       ? t(checkoutError.key)
       : (checkoutError?.message ?? null);
-  const subtotal = totalPrice();
+  const subtotal = getCartSubtotal(cartProducts);
   const allPayments = paymentGroups.flatMap((g) => g.payments);
   const selectedPayment = allPayments.find((p) => p.id === paymentId);
   const pricing = computePricing({
@@ -1035,7 +1034,6 @@ function CheckoutContentBody({
   accentColor,
   checkoutForm,
   cartProducts,
-  totalPrice,
   activeMerchant,
   paymentGroups,
   arePaymentGroupsPending,
@@ -1062,7 +1060,6 @@ function CheckoutContentBody({
   accentColor: string;
   checkoutForm: CheckoutFormState;
   cartProducts: ReturnType<typeof useCartStore.getState>["products"];
-  totalPrice: () => number;
   activeMerchant: App.Data.Merchant.Auth.MerchantSummaryData | null;
   paymentGroups: POSPaymentGroup[];
   arePaymentGroupsPending: boolean;
@@ -1122,7 +1119,6 @@ function CheckoutContentBody({
   } = getCheckoutViewData({
     checkoutError,
     t,
-    totalPrice,
     paymentGroups,
     paymentId,
     tenderValue,
@@ -1235,7 +1231,6 @@ export function CheckoutContent({
   const checkoutForm = usePOSStore((s) => s.checkoutForm);
 
   const cartProducts = useCartStore((s) => s.products);
-  const totalPrice = useCartStore((s) => s.totalPrice);
   const activeMerchant = useAuth((s) => s.activeMerchant);
   const { data: paymentGroups = [], isPending: arePaymentGroupsPending } = usePaymentGroups();
   const { data: guests = [] } = useGuests();
@@ -1296,7 +1291,6 @@ export function CheckoutContent({
       accentColor={accentColor}
       checkoutForm={checkoutForm}
       cartProducts={cartProducts}
-      totalPrice={totalPrice}
       activeMerchant={activeMerchant}
       paymentGroups={paymentGroups}
       arePaymentGroupsPending={arePaymentGroupsPending}

@@ -21,9 +21,11 @@ import { formatRupiah } from "@/utils/format";
 import { Stack, useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function DiscountProductsScreen(): React.JSX.Element {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const muted = useCSSVariable("--color-muted-foreground") as string;
   const [search, setSearch] = React.useState("");
@@ -53,7 +55,8 @@ export default function DiscountProductsScreen(): React.JSX.Element {
         <ScrollView
           className="flex-1"
           keyboardShouldPersistTaps="handled"
-          contentContainerClassName="gap-4 px-4 py-4 pb-28 md:px-6"
+          contentContainerClassName="gap-4 px-4 py-4 md:px-6"
+          contentContainerStyle={{ paddingBottom: 112 + insets.bottom }}
         >
           <View className="mx-auto w-full max-w-3xl gap-4">
             <View className="gap-1">
@@ -148,7 +151,10 @@ export default function DiscountProductsScreen(): React.JSX.Element {
           </View>
         </ScrollView>
 
-        <View className="absolute inset-x-0 bottom-0 border-t border-border bg-background px-4 pb-safe pt-3 md:px-6">
+        <View
+          className="absolute inset-x-0 bottom-0 border-t border-border bg-background px-4 pt-3 md:px-6"
+          style={{ paddingBottom: insets.bottom + 12 }}
+        >
           <View className="mx-auto w-full max-w-3xl flex-row items-center gap-3">
             <View className="flex-1">
               <Typography type="body-sm" weight="semibold">

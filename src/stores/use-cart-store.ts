@@ -2,6 +2,7 @@ import { CartAddOn, Cart, CartAction, CartItem } from "@/types/cart";
 import { zustandStorage } from "@/lib/storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { getCartSubtotal } from "@/utils/cart-pricing";
 
 const cartStorage = createJSONStorage(() => zustandStorage);
 
@@ -70,8 +71,7 @@ export const useCartStore = create<Cart & CartAction>()(
         return computeItemSubtotal(product);
       },
 
-      totalPrice: () =>
-        get().products.reduce((total, product) => total + get().getItemTotal(product.id), 0),
+      totalPrice: () => getCartSubtotal(get().products),
 
       // ➕ Add item (handles notes per product)
       addItem: (product) => {

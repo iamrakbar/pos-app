@@ -3,6 +3,7 @@ import { validateCart } from '@/api/endpoints/cart';
 import { useAuth } from '@/stores/use-auth';
 import { useCartStore } from '@/stores/use-cart-store';
 import type { CartItem } from '@/types/cart';
+import { getCartItemSubtotal } from '@/utils/cart-pricing';
 
 export function buildCartProducts(
     items: CartItem[],
@@ -13,7 +14,7 @@ export function buildCartProducts(
         name: item.name,
         qty: item.qty,
         price: item.price,
-        subtotal: item.subtotal,
+        subtotal: getCartItemSubtotal(item),
         notes: item.notes ?? undefined,
         add_ons: item.add_ons.length > 0 ? item.add_ons : undefined,
     }));

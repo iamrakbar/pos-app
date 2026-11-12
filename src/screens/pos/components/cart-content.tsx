@@ -40,6 +40,7 @@ import Animated from "react-native-reanimated";
 import ParkedOrdersPanel from "./parked-orders-panel";
 import type { CartItem } from "@/types/cart";
 import type { CheckoutFormState, POSProduct, POSTable } from "@/types/pos";
+import { getCartSubtotal } from "@/utils/cart-pricing";
 
 function CartOrderControls({
   checkoutForm,
@@ -332,13 +333,12 @@ export default function CartContent(): JSX.Element {
   const itemCount = useCartStore((s) =>
     s.products.reduce((total, product) => total + product.qty, 0)
   );
-  const totalPrice = useCartStore((s) => s.totalPrice);
   const checkoutForm = usePOSStore((s) => s.checkoutForm);
   const updateCheckoutForm = usePOSStore((s) => s.updateCheckoutForm);
   const { data: catalogProducts, isLoading: isProductsLoading } = useProducts();
   const { data: tables = [] } = useTables();
 
-  const subtotal = totalPrice();
+  const subtotal = getCartSubtotal(cartProducts);
   const productById = new Map((catalogProducts ?? []).map((product) => [product.id, product]));
   const selectedTable = tables.find((table) => table.id === checkoutForm.table_id);
   const usesCheckoutScreen = isCompact && isPortrait;
