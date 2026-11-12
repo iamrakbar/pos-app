@@ -109,7 +109,7 @@ export default function ProductSearchBar({ isLoading = false }: SearchBarProps):
             placeholder={t("pos.sortProducts")}
             size="sm"
             contentWidth="content"
-            className={isCompact ? "w-32" : "w-56"}
+            className={isCompact ? "w-32" : "w-64"}
           >
             {sortOptions.map((option) => (
               <Select.Item key={option.value} value={option.value} label={option.label} />
