@@ -45,10 +45,11 @@ export default function ParkedOrdersPanel({
   const [label, setLabel] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<ParkedOrder | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<ParkedOrder | null>(null);
-  const [colorMuted, colorDanger] = useCSSVariable([
+  const [colorMuted, colorDanger, colorAccent] = useCSSVariable([
     "--color-muted-foreground",
     "--color-destructive",
-  ]) as [string, string];
+    "--color-primary",
+  ]) as [string, string, string];
 
   const merchantDrafts = drafts
     .filter((draft) => draft.merchant_id === merchantId)
@@ -111,8 +112,9 @@ export default function ParkedOrdersPanel({
           disabled={!merchantId}
           onPress={openPanel}
           accessibilityLabel={t("pos.parkedOrders")}
+          startContent={<AppIcon icon={AppIcons.queue} size={18} color={colorAccent} />}
         >
-          {`${t("pos.parkedOrders")} (${merchantDrafts.length})`}
+          {String(merchantDrafts.length)}
         </Button>
       )}
 
