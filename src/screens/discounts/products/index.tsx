@@ -56,7 +56,6 @@ export default function DiscountProductsScreen(): React.JSX.Element {
           className="flex-1"
           keyboardShouldPersistTaps="handled"
           contentContainerClassName="gap-4 px-4 py-4 md:px-6"
-          contentContainerStyle={{ paddingBottom: 112 + insets.bottom }}
         >
           <View className="mx-auto w-full max-w-3xl gap-4">
             <View className="gap-1">
@@ -152,7 +151,7 @@ export default function DiscountProductsScreen(): React.JSX.Element {
         </ScrollView>
 
         <View
-          className="absolute inset-x-0 bottom-0 border-t border-border bg-background px-4 pt-3 md:px-6"
+          className="border-t border-border bg-background px-4 pt-3 md:px-6"
           style={{ paddingBottom: insets.bottom + 12 }}
         >
           <View className="mx-auto w-full max-w-3xl flex-row items-center gap-3">

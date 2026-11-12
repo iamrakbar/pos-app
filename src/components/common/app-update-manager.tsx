@@ -2,8 +2,8 @@ import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
 import * as Updates from "expo-updates";
-import { Alert, Button, Card, Spinner, Typography } from "panelui-native";
-import { useState, type JSX } from "react";
+import { Button, Card, Spinner, Typography, useToast } from "panelui-native";
+import { useEffect, useRef, useState, type JSX } from "react";
 import { Alert as NativeAlert, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 import { formatDateTime } from "@/utils/format";
@@ -28,7 +28,6 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
   ]) as [string, string];
   const [actionStatus, setActionStatus] = useState<UpdateActionStatus>("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const [dismissedUpdateId, setDismissedUpdateId] = useState<string | null>(null);
 
   const isBusy =
     updates.isChecking ||
@@ -102,15 +101,12 @@ export default function AppUpdateManager({ mode }: AppUpdateManagerProps): JSX.E
   };
 
   if (mode === "banner") {
-    if (!updates.isUpdatePending || dismissedUpdateId === downloadedUpdateId) {
+    if (!updates.isUpdatePending) {
       return null;
     }
 
     return (
-      <UpdateBanner
-        onDismiss={() => setDismissedUpdateId(downloadedUpdateId)}
-        onRestart={restartApp}
-      />
+      <UpdateToast key={downloadedUpdateId} onRestart={restartApp} />
     );
   }
 
@@ -150,34 +146,33 @@ function getUpdateStatusText({
   return t("updates.current");
 }
 
-function UpdateBanner({
-  onDismiss,
-  onRestart,
-}: {
-  onDismiss: () => void;
-  onRestart: () => void;
-}): JSX.Element {
+function UpdateToast({ onRestart }: { onRestart: () => void }): null {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const restartRef = useRef(onRestart);
+  const title = t("updates.ready");
+  const description = t("updates.readyDescription");
+  const restartLabel = t("updates.restart");
 
-  return (
-    <View className="absolute left-4 right-4 bottom-4">
-      <Alert variant="info" className="items-center shadow-lg">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Title>{t("updates.ready")}</Alert.Title>
-          <Alert.Description>{t("updates.readyDescription")}</Alert.Description>
-        </Alert.Content>
-        <View className="flex-row gap-2">
-          <Button size="sm" variant="ghost" onPress={onDismiss}>
-            {t("updates.later")}
-          </Button>
-          <Button size="sm" variant="primary" onPress={onRestart}>
-            {t("updates.restart")}
-          </Button>
-        </View>
-      </Alert>
-    </View>
-  );
+  useEffect(() => {
+    restartRef.current = onRestart;
+  }, [onRestart]);
+
+  useEffect(() => {
+    const id = toast.show({
+      variant: "info",
+      placement: "top",
+      label: title,
+      description,
+      actionLabel: restartLabel,
+      onActionPress: () => restartRef.current(),
+      closable: true,
+      duration: 0,
+    });
+    return () => toast.hide(id);
+  }, [description, restartLabel, title, toast]);
+
+  return null;
 }
 
 function UpdateSettingsCard({
