@@ -1,19 +1,10 @@
-import {
-  Button,
-  Chip,
-  Select,
-  SearchBar,
-  ScrollFade,
-  Skeleton,
-  BottomSheet,
-  Typography,
-} from "panelui-native";
+import { Button, Chip, Select, SearchBar, ScrollFade, Skeleton } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import { usePOSStore, type ProductSort } from "@/stores/use-pos-store";
 import { useCategories } from "@/hooks/db/use-categories";
 import DrawerMenuButton from "@/components/navigation/drawer-menu-button";
-import { useState, type JSX } from "react";
-import { Pressable, View } from "react-native";
+import type { JSX } from "react";
+import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -29,7 +20,6 @@ const CATEGORY_SKELETON_WIDTHS = [64, 88, 72, 104, 80];
 export default function ProductSearchBar({ isLoading = false }: SearchBarProps): JSX.Element {
   const { t } = useTranslation();
   const { isCompact } = useResponsiveLayout();
-  const [isSortOpen, setIsSortOpen] = useState(false);
   const [themeColorForeground, themeColorAccent] = useCSSVariable([
     "--color-foreground",
     "--color-primary",
@@ -110,64 +100,21 @@ export default function ProductSearchBar({ isLoading = false }: SearchBarProps):
               color={areCategoriesVisible ? themeColorAccent : themeColorForeground}
             />
           </Button>
-          {isCompact ? (
-            <BottomSheet open={isSortOpen} onOpenChange={setIsSortOpen}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-11 flex-row items-center gap-1 px-2.5"
-                accessibilityLabel={t("pos.sortProductsAccessibility", {
-                  sort: selectedSort.label,
-                })}
-                accessibilityState={{ expanded: isSortOpen }}
-                onPress={() => setIsSortOpen(true)}
-              >
-                <AppIcon icon={AppIcons.swapVertical} size={18} color={themeColorForeground} />
-                {t("pos.sortAction")}
-              </Button>
-              <BottomSheet.Content>
-                <BottomSheet.Header title={t("pos.sortProducts")} />
-                <View accessibilityRole="radiogroup" className="pb-2">
-                  {sortOptions.map((option) => {
-                    const selected = option.value === productSort;
-                    return (
-                      <Pressable
-                        key={option.value}
-                        accessibilityRole="radio"
-                        accessibilityState={{ checked: selected }}
-                        onPress={() => {
-                          setProductSort(option.value);
-                          setIsSortOpen(false);
-                        }}
-                        className="min-h-12 flex-row items-center justify-between gap-3 px-2"
-                      >
-                        <Typography>{option.label}</Typography>
-                        {selected ? (
-                          <AppIcon icon={AppIcons.checkmark} size={20} color={themeColorAccent} />
-                        ) : null}
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </BottomSheet.Content>
-            </BottomSheet>
-          ) : (
-            <Select
-              presentation="sheet"
-              value={selectedSort.value}
-              valueLabel={selectedSort.label}
-              onValueChange={(value) => setProductSort(value as ProductSort)}
-              title={t("pos.sortProducts")}
-              placeholder={t("pos.sortProducts")}
-              size="sm"
-              contentWidth="content"
-              className="w-56"
-            >
-              {sortOptions.map((option) => (
-                <Select.Item key={option.value} value={option.value} label={option.label} />
-              ))}
-            </Select>
-          )}
+          <Select
+            presentation={isCompact ? "sheet" : "overlay"}
+            value={selectedSort.value}
+            valueLabel={selectedSort.label}
+            onValueChange={(value) => setProductSort(value as ProductSort)}
+            title={t("pos.sortProducts")}
+            placeholder={t("pos.sortProducts")}
+            size="sm"
+            contentWidth="content"
+            className={isCompact ? "w-32" : "w-56"}
+          >
+            {sortOptions.map((option) => (
+              <Select.Item key={option.value} value={option.value} label={option.label} />
+            ))}
+          </Select>
         </View>
       </View>
 

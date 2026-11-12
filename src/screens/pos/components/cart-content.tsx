@@ -59,6 +59,7 @@ function CartOrderControls({
   colorAccent: string;
   updateCheckoutForm: (patch: Partial<CheckoutFormState>) => void;
 }): JSX.Element {
+  const { isCompact } = useResponsiveLayout();
   const nextPickupTime = getNextPickupTime();
   const pickupValue = checkoutForm.pickup_time
     ? {
@@ -78,7 +79,7 @@ function CartOrderControls({
       <Select
         triggerClassName="w-full"
         className={choicePresentation === "popover" ? "w-40 shrink-0" : "min-w-0 flex-1"}
-        presentation="sheet"
+        presentation={isCompact ? "sheet" : "overlay"}
         value={checkoutForm.order_type}
         size="sm"
         contentWidth="content"
@@ -108,7 +109,7 @@ function CartOrderControls({
           hourCycle={24}
           minuteStep={TIME_PICKER_INTERVAL_MINUTES}
           locale={getLocaleTag(locale)}
-          presentation="bottom-sheet"
+          presentation={isCompact ? "bottom-sheet" : "popover"}
           value={pickupValue}
           minTime={minimumPickupValue}
           disabled={!nextPickupTime}

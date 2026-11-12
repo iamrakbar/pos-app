@@ -62,6 +62,7 @@ import type { MerchantCheckoutData } from "@/api/endpoints/checkout";
 import { useLocalizedNumberInput } from "@/hooks/use-localized-number-input";
 import { useTranslation } from "@/stores/use-locale";
 import { useAuth } from "@/stores/use-auth";
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
 import { getCartSubtotal } from "@/utils/cart-pricing";
 
 type CheckoutError =
@@ -647,6 +648,7 @@ function CustomerFields({
   setValue: UseFormSetValue<CheckoutFormValues>;
 }) {
   const { t } = useTranslation();
+  const { isCompact } = useResponsiveLayout();
   const selectCustomerType = (type: CheckoutFormValues["customer_type"]) => {
     setValue("customer_type", type);
     setValue("guest_id", null);
@@ -693,7 +695,8 @@ function CustomerFields({
         <View className="gap-2">
           <Select
             size="sm"
-            presentation="sheet"
+            presentation={isCompact ? "sheet" : "overlay"}
+            contentWidth="content"
             value={guestId ?? undefined}
             valueLabel={guests.find((guest) => guest.id === guestId)?.name}
             onValueChange={(value) => setValue("guest_id", value || null)}

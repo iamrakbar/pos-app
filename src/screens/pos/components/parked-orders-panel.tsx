@@ -1,4 +1,4 @@
-import { Surface, Typography, Button, BottomSheet, Dialog, Input } from "panelui-native";
+import { Button, Dialog, EmptyState, Input, Surface, Typography } from "panelui-native";
 import { useCSSVariable } from "uniwind";
 import AppIcon from "@/components/common/app-icon";
 import { AppIcons } from "@/components/common/app-icons";
@@ -11,7 +11,7 @@ import { formatTime } from "@/utils/format";
 import type { ParkedOrder } from "@/types/parked-order";
 import type { JSX } from "react";
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useTranslation } from "@/stores/use-locale";
 
 type TriggerMode = "park" | "list";
@@ -45,11 +45,10 @@ export default function ParkedOrdersPanel({
   const [label, setLabel] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<ParkedOrder | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<ParkedOrder | null>(null);
-  const [colorAcent, colorMuted, colorDanger] = useCSSVariable([
-    "--color-primary",
+  const [colorMuted, colorDanger] = useCSSVariable([
     "--color-muted-foreground",
     "--color-destructive",
-  ]) as [string, string, string];
+  ]) as [string, string];
 
   const merchantDrafts = drafts
     .filter((draft) => draft.merchant_id === merchantId)
@@ -93,69 +92,74 @@ export default function ParkedOrdersPanel({
 
   return (
     <>
-      <Button
-        variant={mode === "park" ? "ghost" : "outline"}
-        size="sm"
-        className={mode === "park" ? "min-h-10 w-10" : "min-h-10"}
-        disabled={isDisabled || !merchantId}
-        onPress={openPanel}
-        accessibilityLabel={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
-        startContent={
-          mode === "list" ? (
-            <AppIcon icon={AppIcons.queue} size={18} color={colorAcent} />
-          ) : undefined
-        }
-      >
-        {mode === "list" ? (
-          <Typography type="body-sm" weight="semibold" className="tabular-nums">
-            {String(merchantDrafts.length)}
-          </Typography>
-        ) : (
+      {mode === "park" ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="min-h-10 w-10"
+          disabled={isDisabled || !merchantId}
+          onPress={openPanel}
+          accessibilityLabel={t("pos.parkOrder")}
+        >
           <AppIcon icon={AppIcons.save} size={21} color={colorMuted} />
-        )}
-      </Button>
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          className="min-h-10"
+          disabled={!merchantId}
+          onPress={openPanel}
+          accessibilityLabel={t("pos.parkedOrders")}
+        >
+          {`${t("pos.parkedOrders")} (${merchantDrafts.length})`}
+        </Button>
+      )}
 
-      <BottomSheet open={isOpen} onOpenChange={setIsOpen}>
-        <BottomSheet.Content size="auto">
-          <BottomSheet.Header
-            title={mode === "park" ? t("pos.parkOrder") : t("pos.parkedOrders")}
-            description={
-              mode === "park" ? t("pos.parkOrderDescription") : t("pos.parkedOrdersDescription")
-            }
-          />
-          <BottomSheet.Body>
-            {mode === "park" ? (
-              <View className="gap-4">
-                <Input
-                  size="sm"
-                  label={t("pos.parkedOrderName")}
-                  value={label}
-                  onChangeText={setLabel}
-                  placeholder={t("pos.parkedOrderNamePlaceholder")}
-                  returnKeyType="done"
-                />
-              </View>
-            ) : (
-              <View className="gap-3">
-                {merchantDrafts.length === 0 ? (
-                  <Surface variant="secondary" className="items-center gap-1 p-5">
-                    <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
-                    <Typography weight="semibold">{t("pos.parkedOrdersEmpty")}</Typography>
-                    <Typography type="body-sm" muted align="center">
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog.Content className="w-full max-w-md self-center">
+          <Dialog.Title>{t(mode === "park" ? "pos.parkOrder" : "pos.parkedOrders")}</Dialog.Title>
+          <Dialog.Description>
+            {t(mode === "park" ? "pos.parkOrderDescription" : "pos.parkedOrdersDescription")}
+          </Dialog.Description>
+          {mode === "park" ? (
+            <>
+              <Input
+                size="sm"
+                label={t("pos.parkedOrderName")}
+                value={label}
+                onChangeText={setLabel}
+                placeholder={t("pos.parkedOrderNamePlaceholder")}
+                returnKeyType="done"
+              />
+              <Dialog.Footer>
+                <Button onPress={handlePark}>{t("pos.parkOrder")}</Button>
+              </Dialog.Footer>
+            </>
+          ) : (
+            <ScrollView className="max-h-96">
+              {merchantDrafts.length === 0 ? (
+                <EmptyState size="sm">
+                  <EmptyState.Header>
+                    <EmptyState.Media variant="icon">
+                      <AppIcon icon={AppIcons.time} size={22} color={colorMuted} />
+                    </EmptyState.Media>
+                    <EmptyState.Title>{t("pos.parkedOrdersEmpty")}</EmptyState.Title>
+                    <EmptyState.Description>
                       {t("pos.parkedOrdersEmptyDescription")}
-                    </Typography>
-                  </Surface>
-                ) : (
-                  merchantDrafts.map((draft) => (
+                    </EmptyState.Description>
+                  </EmptyState.Header>
+                </EmptyState>
+              ) : (
+                <View className="gap-3">
+                  {merchantDrafts.map((draft) => (
                     <Surface
                       key={draft.id}
                       variant="secondary"
                       className="flex-row items-center gap-3 p-3"
                     >
-                      <View className="min-w-0 flex-1 gap-0.5">
-                        <Typography weight="semibold" numberOfLines={1}>
-                          {draft.label}
-                        </Typography>
+                      <View className="min-w-0 flex-1 gap-1">
+                        <Typography weight="semibold">{draft.label}</Typography>
                         <Typography type="body-xs" muted>
                           {t("pos.parkedOrderMeta", {
                             count: draft.cart.products.reduce((total, item) => total + item.qty, 0),
@@ -163,30 +167,34 @@ export default function ParkedOrdersPanel({
                           })}
                         </Typography>
                       </View>
-                      <Button size="sm" variant="primary" onPress={() => handleRestore(draft)}>
+                      <Button
+                        size="sm"
+                        onPress={() => {
+                          setIsOpen(false);
+                          handleRestore(draft);
+                        }}
+                      >
                         {t("pos.resumeOrder")}
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        onPress={() => setDeleteTarget(draft)}
                         accessibilityLabel={t("pos.deleteParkedOrder", { label: draft.label })}
+                        onPress={() => {
+                          setIsOpen(false);
+                          setDeleteTarget(draft);
+                        }}
                       >
-                        <AppIcon icon={AppIcons.trash} size={17} color={colorDanger} />
+                        <AppIcon icon={AppIcons.trash} size={18} color={colorDanger} />
                       </Button>
                     </Surface>
-                  ))
-                )}
-              </View>
-            )}
-          </BottomSheet.Body>
-          {mode === "park" ? (
-            <BottomSheet.Footer>
-              <Button onPress={handlePark}>{t("pos.parkOrder")}</Button>
-            </BottomSheet.Footer>
-          ) : null}
-        </BottomSheet.Content>
-      </BottomSheet>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+          )}
+        </Dialog.Content>
+      </Dialog>
 
       <Dialog
         open={deleteTarget !== null}
